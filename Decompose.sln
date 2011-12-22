@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Decompose", "Decompose\Decompose.csproj", "{C01E1A28-CB10-42BD-941C-B7A752E9E285}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Decompose.Numerics", "Decompose.Numerics\Decompose.Numerics.csproj", "{D758D3C3-E06B-4BC3-B3EF-6B5B0780662F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Decompose.Numerics.Test", "Decompose.Numerics.Test\Decompose.Numerics.Test.csproj", "{E9E4E788-7A23-42D5-B542-3432FEBE968A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3794FEC8-C7AB-4784-AFA2-6A8EC5C74E10}"
+	ProjectSection(SolutionItems) = preProject
+		Decompose.vsmdi = Decompose.vsmdi
+		Local.testsettings = Local.testsettings
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
+	EndGlobalSection
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = Decompose.vsmdi
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C01E1A28-CB10-42BD-941C-B7A752E9E285}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{C01E1A28-CB10-42BD-941C-B7A752E9E285}.Debug|x86.ActiveCfg = Debug|x86
+		{C01E1A28-CB10-42BD-941C-B7A752E9E285}.Debug|x86.Build.0 = Debug|x86
+		{C01E1A28-CB10-42BD-941C-B7A752E9E285}.Release|Any CPU.ActiveCfg = Release|x86
+		{C01E1A28-CB10-42BD-941C-B7A752E9E285}.Release|x86.ActiveCfg = Release|x86
+		{C01E1A28-CB10-42BD-941C-B7A752E9E285}.Release|x86.Build.0 = Release|x86
+		{D758D3C3-E06B-4BC3-B3EF-6B5B0780662F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D758D3C3-E06B-4BC3-B3EF-6B5B0780662F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D758D3C3-E06B-4BC3-B3EF-6B5B0780662F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D758D3C3-E06B-4BC3-B3EF-6B5B0780662F}.Debug|x86.Build.0 = Debug|Any CPU
+		{D758D3C3-E06B-4BC3-B3EF-6B5B0780662F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D758D3C3-E06B-4BC3-B3EF-6B5B0780662F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D758D3C3-E06B-4BC3-B3EF-6B5B0780662F}.Release|x86.ActiveCfg = Release|Any CPU
+		{D758D3C3-E06B-4BC3-B3EF-6B5B0780662F}.Release|x86.Build.0 = Release|Any CPU
+		{E9E4E788-7A23-42D5-B542-3432FEBE968A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9E4E788-7A23-42D5-B542-3432FEBE968A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9E4E788-7A23-42D5-B542-3432FEBE968A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E9E4E788-7A23-42D5-B542-3432FEBE968A}.Debug|x86.Build.0 = Debug|Any CPU
+		{E9E4E788-7A23-42D5-B542-3432FEBE968A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9E4E788-7A23-42D5-B542-3432FEBE968A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9E4E788-7A23-42D5-B542-3432FEBE968A}.Release|x86.ActiveCfg = Release|Any CPU
+		{E9E4E788-7A23-42D5-B542-3432FEBE968A}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
