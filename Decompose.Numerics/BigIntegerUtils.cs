@@ -32,17 +32,12 @@ namespace Decompose.Numerics
             Debug.Assert(b >= BigInteger.Zero && b < n);
             if (a.IsZero || b.IsZero)
                 return BigInteger.Zero;
-            if (a > b)
-                return MulModInternal(a, b, n);
-            if (a < b)
+            int compare = a.CompareTo(b);
+            if (compare < 0)
                 return MulModInternal(b, a, n);
+            if (compare > 0)
+                return MulModInternal(a, b, n);
             return SquareMod(a, n);
-        }
-
-        public static BigInteger SquareMod(BigInteger a, BigInteger n)
-        {
-            Debug.Assert(a >= BigInteger.Zero && a < n);
-            return MulModInternal(a, a, n);
         }
 
         private static BigInteger MulModInternal(BigInteger a, BigInteger b, BigInteger n)
@@ -51,12 +46,18 @@ namespace Decompose.Numerics
             // a * 2d = (a * d) + (a * d)
             if (b.IsEven)
             {
-                var x = MulModInternal(a, b / Two, n);
+                var x = MulModInternal(a, b >> 1, n);
                 return AddMod(x, x, n);
             }
             if (b.IsOne)
                 return a;
             return AddMod(MulModInternal(a, b - BigInteger.One, n), a, n);
+        }
+
+        public static BigInteger SquareMod(BigInteger a, BigInteger n)
+        {
+            Debug.Assert(a >= BigInteger.Zero && a < n);
+            return MulModInternal(a, a, n);
         }
 
         public static BigInteger ModPow(BigInteger b, BigInteger e, BigInteger m)
@@ -73,14 +74,53 @@ namespace Decompose.Numerics
             return ModPowInternal(b, e - 1, b * p % modulus, modulus);
         }
 
-        private static ISqrtAlgorithm sqrt = new SqrtNewtonsMethod();
+        public static int GetBitLength(BigInteger n)
+        {
+            var bytes = n.ToByteArray();
+            for (int i = bytes.Length - 1; i >= 0; i--)
+            {
+                var b = bytes[i];
+                for (int j = 8 - 1; j >= 0; j--)
+                {
+                    if ((b & (1 << j)) != 0)
+                        return i * 8 + j + 1;
+                }
+            }
+            return 0;
+        }
+
+        public static void ExtendedGreatestCommonDivisor(BigInteger a, BigInteger b, out BigInteger c, out BigInteger d)
+        {
+            var x = BigInteger.Zero;
+            var lastx = BigInteger.One;
+            var y = BigInteger.One;
+            var lasty = BigInteger.Zero;
+
+            while (!b.IsZero)
+            {
+                var quotient = a / b;
+                var tmpa = a;
+                a = b;
+                b = tmpa % b;
+                var tmpx = x;
+                x = lastx - quotient * x;
+                lastx = tmpx;
+                var tmpy = y;
+                y = lasty - quotient * y;
+                lasty = tmpy;
+            }
+            c = lastx;
+            d = lasty;
+        }
+
+        private static ISqrtAlgorithm<BigInteger> sqrt = new SqrtNewtonsMethod();
 
         public static BigInteger Sqrt(BigInteger n)
         {
             return sqrt.Sqrt(n);
         }
 
-        private static IPrimalityAlgorithm millerRabin = new MillerRabin(16);
+        private static IPrimalityAlgorithm<BigInteger> millerRabin = new MillerRabin(16);
 
         public static bool IsPrime(BigInteger n)
         {

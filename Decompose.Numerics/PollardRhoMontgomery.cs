@@ -4,11 +4,11 @@ using System.Threading;
 
 namespace Decompose.Numerics
 {
-    public class PollardRhoBrent : PollardRhoBase
+    public class PollardRhoMontgomery : PollardRhoBase
     {
         const int iterations = 100;
 
-        public PollardRhoBrent(int threads)
+        public PollardRhoMontgomery(int threads)
             : base(threads)
         {
         }
@@ -24,12 +24,16 @@ namespace Decompose.Numerics
             var r = 1;
             var m = iterations;
             var g = BigInteger.One;
+            var residue = new MontgomeryReduction(n);
+            var cPrime = residue.ToResidue(c);
 
             do
             {
                 x = y;
+                y = residue.ToResidue(y);
                 for (int i = 0; i < r; i++)
-                    y = F(y, c, n);
+                    y = BigIntegerUtils.AddMod(residue.Multiply(y, y), cPrime, n);
+                y = residue.FromResidue(y);
                 var k = 0;
                 while (k < r && g == 1)
                 {

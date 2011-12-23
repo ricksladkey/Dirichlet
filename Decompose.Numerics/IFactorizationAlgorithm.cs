@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public interface IFactorizationAlgorithm
+    public interface IFactorizationAlgorithm<T>
     {
-        IEnumerable<BigInteger> Factor(BigInteger n);
+        IEnumerable<T> Factor(T n);
     }
 }

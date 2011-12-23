@@ -17,6 +17,8 @@ namespace Decompose
 
         static void FactorTest1()
         {
+            var algorithm = new PollardRhoMontgomery(1);
+            var n = BigInteger.Parse("10023859281455311421");
             int iterations = 25;
             var elapsed = new double[iterations];
             for (int i = 0; i < iterations; i++)
@@ -24,8 +26,6 @@ namespace Decompose
                 GC.Collect();
                 var timer = new Stopwatch();
                 timer.Start();
-                var n = BigInteger.Parse("10023859281455311421");
-                var algorithm = new PollardRho(4);
                 var factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
                 var product = factors.Aggregate((sofar, current) => sofar * current);
                 if (factors.Length != 2)
@@ -41,11 +41,11 @@ namespace Decompose
 
         static void FactorTest2()
         {
+            var algorithm = new PollardRhoBrent(4);
+            var n = BigInteger.Parse("10023859281455311421");
             int iterations = 250;
             for (int i = 0; i < iterations; i++)
             {
-                var n = BigInteger.Parse("10023859281455311421");
-                var algorithm = new PollardRho(4);
                 var factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
                 var product = factors.Aggregate((sofar, current) => sofar * current);
                 if (factors.Length != 2)

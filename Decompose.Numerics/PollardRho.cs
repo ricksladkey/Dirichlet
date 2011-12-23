@@ -12,30 +12,29 @@ namespace Decompose.Numerics
         {
         }
 
-        protected override BigInteger Rho(BigInteger n, CancellationToken cancellationToken)
+        protected override BigInteger Rho(BigInteger n, BigInteger xInit, BigInteger c, CancellationToken cancellationToken)
         {
             if (n % BigIntegerUtils.Two == 0)
                 return BigIntegerUtils.Two;
 
-            var c = random.Next(n - BigInteger.One) + BigInteger.One;
-            var x = random.Next(n);
-            var y = x;
+            var x = xInit;
+            var y = xInit;
 
             var divisor = BigInteger.One;
             var x0 = x;
-            var xx0 = y;
+            var y0 = y;
             do
             {
                 var z = BigInteger.One;
                 x0 = x;
-                xx0 = y;
+                y0 = y;
                 for (int i = 0; i < iterations; i++)
                 {
                     if (cancellationToken.IsCancellationRequested)
                         return BigInteger.Zero;
-                    x = (x * x + c) % n;
-                    y = (y * y + c) % n;
-                    y = (y * y + c) % n;
+                    x = F(x, c, n);
+                    y = F(y, c, n);
+                    y = F(y, c, n);
                     z = z * (x - y) % n;
                 }
                 divisor = BigInteger.GreatestCommonDivisor(z, n);
@@ -44,14 +43,14 @@ namespace Decompose.Numerics
             if (divisor == n)
             {
                 x = x0;
-                y = xx0;
+                y = y0;
                 do
                 {
                     if (cancellationToken.IsCancellationRequested)
                         return BigInteger.Zero;
-                    x = (x * x + c) % n;
-                    y = (y * y + c) % n;
-                    y = (y * y + c) % n;
+                    x = F(x, c, n);
+                    y = F(y, c, n);
+                    y = F(y, c, n);
                     divisor = BigInteger.GreatestCommonDivisor(y - x, n);
                 } while (divisor.IsOne);
             }

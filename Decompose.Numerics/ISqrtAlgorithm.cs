@@ -1,9 +1,7 @@
-﻿using System.Numerics;
-
-namespace Decompose.Numerics
+﻿namespace Decompose.Numerics
 {
-    public interface ISqrtAlgorithm
+    public interface ISqrtAlgorithm<T>
     {
-        BigInteger Sqrt(BigInteger n);
+        T Sqrt(T n);
     }
 }

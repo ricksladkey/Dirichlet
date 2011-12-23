@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Decompose.Numerics.Test
 {
     [TestClass]
-    public class MathUtilsTests
+    public class NumericsTests
     {
         [TestMethod]
         public void TestSqrt1()
@@ -67,6 +67,35 @@ namespace Decompose.Numerics.Test
             var product = factors.Aggregate((sofar, current) => sofar * current);
             Assert.AreEqual(n, product);
             Assert.IsTrue(((IStructuralEquatable)factors).Equals(expected, EqualityComparer<BigInteger>.Default));
+        }
+
+        [TestMethod]
+        public void TestExtendedGreatestCommonDivisor()
+        {
+            var a = (BigInteger)120;
+            var b = (BigInteger)23;
+            var cExpected = (BigInteger)(-9);
+            var dExpected = (BigInteger)47;
+            BigInteger c;
+            BigInteger d;
+            BigIntegerUtils.ExtendedGreatestCommonDivisor(a, b, out c, out d);
+            Assert.AreEqual(cExpected, c);
+            Assert.AreEqual(dExpected, d);
+        }
+
+        [TestMethod]
+        public void TestMontgomery()
+        {
+            var a = (BigInteger)24;
+            var b = (BigInteger)74;
+            var n = (BigInteger)1201;
+            var expected = a * b % n;
+            var residue = new MontgomeryReduction(n);
+            var aPrime = residue.ToResidue(a);
+            var bPrime = residue.ToResidue(b);
+            var cPrime = residue.Multiply(aPrime, bPrime);
+            var result = residue.FromResidue(cPrime);
+            Assert.AreEqual(expected, result);
         }
     }
 }

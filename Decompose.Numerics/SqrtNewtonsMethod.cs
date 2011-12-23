@@ -2,7 +2,7 @@
 
 namespace Decompose.Numerics
 {
-    public class SqrtNewtonsMethod : ISqrtAlgorithm
+    public class SqrtNewtonsMethod : ISqrtAlgorithm<BigInteger>
     {
         public BigInteger Sqrt(BigInteger n)
         {
@@ -13,7 +13,7 @@ namespace Decompose.Numerics
             do
             {
                 x0 = x1;
-                x1 = (x0 + n / x0) / BigIntegerUtils.Two;
+                x1 = (x0 + n / x0) >> 1;
             } while (x1 < x0);
             return x0;
         }

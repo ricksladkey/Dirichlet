@@ -2,7 +2,7 @@
 
 namespace Decompose.Numerics
 {
-    public class SqrtBinarySearch : ISqrtAlgorithm
+    public class SqrtBinarySearch : ISqrtAlgorithm<BigInteger>
     {
         public BigInteger Sqrt(BigInteger n)
         {

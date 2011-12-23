@@ -1,9 +1,7 @@
-﻿using System.Numerics;
-
-namespace Decompose.Numerics
+﻿namespace Decompose.Numerics
 {
-    public interface IPrimalityAlgorithm
+    public interface IPrimalityAlgorithm<T>
     {
-        bool IsPrime(BigInteger n);
+        bool IsPrime(T n);
     }
 }
