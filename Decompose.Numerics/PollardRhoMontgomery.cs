@@ -24,16 +24,16 @@ namespace Decompose.Numerics
             var r = 1;
             var m = iterations;
             var g = BigInteger.One;
-            var residue = new MontgomeryReduction(n);
-            var cPrime = residue.ToResidue(c);
+            var reduction = new MontgomeryReductionBigInteger(n);
+            var cPrime = reduction.ToResidue(c);
 
             do
             {
                 x = y;
-                y = residue.ToResidue(y);
+                var yPrime = reduction.ToResidue(y);
                 for (int i = 0; i < r; i++)
-                    y = BigIntegerUtils.AddMod(residue.Multiply(y, y), cPrime, n);
-                y = residue.FromResidue(y);
+                    yPrime.Multiply(yPrime).Add(cPrime);
+                y = yPrime.ToBigInteger();
                 var k = 0;
                 while (k < r && g == 1)
                 {

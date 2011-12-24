@@ -5,17 +5,16 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
+#if false
     public class ModuloInteger
     {
         private BigInteger modulus;
-        private uint[] modulusBits;
-        private int length;
-        private uint[] bits;
+        private Radix32 modulusRep;
 
         public ModuloInteger(BigInteger n)
         {
             modulus = n;
-            modulusBits = GetBits(n);
+            modulusRep = Radix32.GetBits(n);
             length = modulusBits.Length;
             bits = new uint[length];
         }
@@ -30,78 +29,16 @@ namespace Decompose.Numerics
 
         public ModuloInteger Assign(BigInteger n)
         {
-            bits = GetBits(n % modulus);
+            bits = Radix32.GetBits(n % modulus);
             return this;
         }
 
         public ModuloInteger Add(ModuloInteger n)
         {
-            Add(bits, n.bits, length);
-            if (Compare(bits, modulusBits) >= 0)
-                Subtract(bits, modulusBits, length);
+            Radix32.Add(bits, 0, bits, 0, n.bits, 0, length);
+            if (Radix32.Compare(bits, 0, modulusBits, 0, length) >= 0)
+                Radix32.Subtract(bits, 0, bits, 0, modulusBits, 0, length);
             return this;
-        }
-
-        private int Compare(uint[] a, uint[] b)
-        {
-            for (int i = length - 1; i >= 0; i--)
-            {
-                var a0 = a[i];
-                var b0 = b[i];
-                if (a0 < b0)
-                    return -1;
-                if (a0 > b0)
-                    return 1;
-            }
-            return 0;
-        }
-
-        private static uint Add(uint[] a, uint[] b, int length)
-        {
-            ulong carry = 0;
-            for (int i = 0; i < length; i++)
-            {
-                var sum = (ulong)a[i] + (ulong)b[i] + carry;
-                a[i] = (uint)sum;
-                carry = sum >> 32;
-            }
-            return (uint)carry;
-        }
-
-        private static uint Subtract(uint[] a, uint[] b, int length)
-        {
-            ulong borrow = 0;
-            for (int i = 0; i < length; i++)
-            {
-                var diff = (ulong)a[i] - (ulong)b[i] - borrow;
-                a[i] = (uint)diff;
-                borrow = (ulong)(-(uint)((int)(diff >> 32)));
-            }
-            return (uint)borrow;
-        }
-
-        private static uint Multiply(uint[] a, uint[] b, int length)
-        {
-            ulong carry = 0;
-            for (int i = 0; i < length; i++)
-            {
-                var sum = (ulong)a[i] + (ulong)b[i] + carry;
-                a[i] = (uint)sum;
-                carry = sum >> 32;
-            }
-            return (uint)carry;
-        }
-
-        private static uint[] GetBits(BigInteger n)
-        {
-            var bytes = n.ToByteArray();
-            int length = (bytes.Length + 3) / 4;
-            if (4 * length != bytes.Length)
-                bytes = bytes.Concat(new byte[4 * length - bytes.Length]).ToArray();
-            var bits = new uint[length];
-            for (int i = 0; i < length; i++)
-                bits[i] = (uint)BitConverter.ToInt32(bytes, 4 * i);
-            return bits;
         }
 
         public ModuloInteger Mult(ModuloInteger n)
@@ -109,4 +46,5 @@ namespace Decompose.Numerics
             return this;
         }
     }
+#endif
 }

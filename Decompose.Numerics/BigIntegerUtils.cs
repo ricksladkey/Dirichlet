@@ -89,7 +89,7 @@ namespace Decompose.Numerics
             return 0;
         }
 
-        public static void ExtendedGreatestCommonDivisor(BigInteger a, BigInteger b, out BigInteger c, out BigInteger d)
+        public static BigInteger[] ExtendedGreatestCommonDivisor(BigInteger a, BigInteger b)
         {
             var x = BigInteger.Zero;
             var lastx = BigInteger.One;
@@ -109,8 +109,7 @@ namespace Decompose.Numerics
                 y = lasty - quotient * y;
                 lasty = tmpy;
             }
-            c = lastx;
-            d = lasty;
+            return new[] { lastx, lasty };
         }
 
         private static ISqrtAlgorithm<BigInteger> sqrt = new SqrtNewtonsMethod();

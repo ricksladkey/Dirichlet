@@ -10,14 +10,67 @@ namespace Decompose
     {
         static void Main(string[] args)
         {
-            FactorTest1();
+            Radix32Test1();
+            //FactorTest1();
             //FactorTest2();
             //MulModTest1();
         }
 
+        static void Radix32Test1()
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                Radix32Test1("sum:     ", (c, a, b) => c.SetSum(a, b), (a, b) => a + b);
+                Radix32Test1("product: ", (c, a, b) => c.SetProduct(a, b), (a, b) => a * b);
+            }
+        }
+
+        static void Radix32Test1(string label,
+            Action<Radix32Integer, Radix32Integer, Radix32Integer> operation1,
+            Func<BigInteger, BigInteger, BigInteger> operation2)
+        {
+            var n = BigInteger.Parse("10023859281455311421");
+            var length = (BigIntegerUtils.GetBitLength(n) * 2 + 31) / 32;
+            var random1 = new MersenneTwister32(0);
+            var random2 = new MersenneTwister32(0);
+            var timer1 = new Stopwatch();
+            var timer2 = new Stopwatch();
+            var iterations1 = 1000;
+            var iterations2 = 1000;
+
+            timer1.Start();
+            for (int i = 0; i < iterations1; i++)
+            {
+                var bits = new uint[3 * length];
+                var a = new Radix32Integer(bits, 0 * length, length);
+                var b = new Radix32Integer(bits, 1 * length, length);
+                var c = new Radix32Integer(bits, 2 * length, length);
+                a.Set(random1.Next(n));
+                b.Set(random1.Next(n));
+
+                for (int j = 0; j < iterations2; j++)
+                    operation1(c, a, b);
+            }
+            var elapsed1 = timer1.ElapsedMilliseconds;
+
+            timer2.Start();
+            for (int i = 0; i < iterations1; i++)
+            {
+                var a = random2.Next(n);
+                var b = random2.Next(n);
+                var c = BigInteger.Zero;
+
+                for (int j = 0; j < iterations2; j++)
+                    c = operation2(a, b);
+            }
+            var elapsed2 = timer1.ElapsedMilliseconds;
+
+            Console.WriteLine("{0}: elapsed1 = {1}, elapsed2 = {2}", label, elapsed1, elapsed2);
+        }
+
         static void FactorTest1()
         {
-            var algorithm = new PollardRhoMontgomery(1);
+            var algorithm = new PollardRhoMontgomery(4);
             var n = BigInteger.Parse("10023859281455311421");
             int iterations = 25;
             var elapsed = new double[iterations];
@@ -41,7 +94,7 @@ namespace Decompose
 
         static void FactorTest2()
         {
-            var algorithm = new PollardRhoBrent(4);
+            var algorithm = new PollardRhoMontgomery(4);
             var n = BigInteger.Parse("10023859281455311421");
             int iterations = 250;
             for (int i = 0; i < iterations; i++)
