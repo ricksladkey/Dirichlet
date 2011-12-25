@@ -22,18 +22,13 @@ namespace Decompose
         {
             var p = BigInteger.Parse("10023859281455311421");
             var random = new MersenneTwister32(0);
-#if false
             var x = random.Next(p);
             var y = random.Next(p);
-#else
-            var x = BigInteger.Parse("9312633710543442424");
-            var y = BigInteger.Parse("9312633710543442424");
-#endif
             var z = x * y;
             var expected = z % p;
             var bLength = 32;
             var b = BigInteger.One << bLength;
-            var k = BigIntegerUtils.GetBitLength(p) / bLength + 1;
+            var k = (BigIntegerUtils.GetBitLength(p) - 1) / bLength + 1;
             var mu = BigInteger.Pow(b, 2 * k) / p;
             var bToTheKPlusOne = BigInteger.Pow(b, k + 1);
 

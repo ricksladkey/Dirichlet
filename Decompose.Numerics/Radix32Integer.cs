@@ -295,6 +295,45 @@ namespace Decompose.Numerics
             return this;
         }
 
+        public Radix32Integer SetProductMask(Radix32Integer a, Radix32Integer b, int n)
+        {
+            AssertValid();
+            Debug.Assert(a.BitLength + b.BitLength <= length * 32);
+            Clear();
+            if (a.IsZero || b.IsZero)
+                return this;
+            if (a.IsOne)
+                return Set(b);
+            if (b.IsOne)
+                return Set(a);
+            ulong carry = 0;
+            int climit = (n + 31) / 32;
+            int alimit = a.last < climit ? a.last : climit;
+            for (int i = 0; i <= alimit; i++)
+            {
+                int blimit = b.last < climit - i ? b.last : climit - i;
+                for (int j = 0; j <= blimit; j++)
+                {
+                    carry = (ulong)a.bits[a.index + i] * (ulong)b.bits[b.index + j];
+                    for (int k = i + j; k < climit; k++)
+                    {
+                        var sum = (ulong)bits[index + k] + carry;
+                        bits[index + k] = (uint)sum;
+                        carry = (sum >> 32);
+                        if (carry == 0)
+                            break;
+                    }
+                }
+            }
+            last = a.last + b.last + 1;
+            if (last == length + 1)
+                --last;
+            if (bits[index + last] == 0)
+                --last;
+            AssertValid();
+            return this;
+        }
+
         public Radix32Integer SetGreatestCommonDivisor(Radix32Integer a, Radix32Integer b)
         {
 #if false

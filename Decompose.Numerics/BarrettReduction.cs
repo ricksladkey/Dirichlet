@@ -129,7 +129,7 @@ namespace Decompose.Numerics
             bLength = 32;
             b = BigInteger.One << bLength;
             var pLength = BigIntegerUtils.GetBitLength(p);
-            k = pLength / bLength + 1;
+            k = (pLength - 1) / bLength + 1;
             mu = BigInteger.Pow(b, 2 * k) / p;
 
             var muLength = BigIntegerUtils.GetBitLength(mu);
@@ -171,15 +171,15 @@ namespace Decompose.Numerics
 #endif
             // var r = z % bToTheKPlusOne - qhat * p % bToTheKPlusOne;
             z.Mask(bToTheKPlusOneLength);
+#if true
+            reg1.SetProductMask(reg2, pRep, bToTheKPlusOneLength);
+#else
             reg1.SetProduct(reg2, pRep);
+            reg1.Mask(bToTheKPlusOneLength);
+#endif
 #if DEBUG
             var bToTheKPlusOne = BigInteger.Pow(b, k + 1);
             Debug.Assert(z.ToBigInteger() == zOrig % bToTheKPlusOne);
-            var expected = qhat * p;
-            Debug.Assert(reg1.ToBigInteger() == expected);
-#endif
-            reg1.Mask(bToTheKPlusOneLength);
-#if DEBUG
             Debug.Assert(reg1.ToBigInteger() == qhat * p % bToTheKPlusOne);
 #endif
             // if (r.Sign == -1) r += bToTheKPlusOne;
