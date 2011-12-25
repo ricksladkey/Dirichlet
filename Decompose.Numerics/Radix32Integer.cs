@@ -264,12 +264,6 @@ namespace Decompose.Numerics
             AssertValid();
             Debug.Assert(a.BitLength + b.BitLength <= length * 32);
             Clear();
-            if (a.IsZero || b.IsZero)
-                return this;
-            if (a.IsOne)
-                return Set(b);
-            if (b.IsOne)
-                return Set(a);
             ulong carry = 0;
             for (int i = 0; i <= a.last; i++)
             {
@@ -289,7 +283,7 @@ namespace Decompose.Numerics
             last = a.last + b.last + 1;
             if (last == length)
                 --last;
-            if (bits[index + last] == 0)
+            while (bits[index + last] == 0)
                 --last;
             AssertValid();
             return this;
