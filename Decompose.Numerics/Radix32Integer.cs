@@ -283,8 +283,8 @@ namespace Decompose.Numerics
             last = a.last + b.last + 1;
             if (last == length)
                 --last;
-            while (bits[index + last] == 0)
-                --last;
+            while (last > 0 && bits[index + last] == 0)
+F                --last;
             AssertValid();
             return this;
         }

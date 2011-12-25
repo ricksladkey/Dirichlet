@@ -12,9 +12,11 @@ namespace Decompose.Numerics
                 private Reducer reducer;
                 private Radix32Integer r;
 
-                public bool IsZero { get { return r.IsZero; } }
+                public Radix32Integer Rep { get { return r; } }
 
-                public bool IsOne { get { return r.IsOne; } }
+                public bool IsZero { get { return r.CompareTo(reducer.zeroRep) == 0; } }
+
+                public bool IsOne { get { return r.CompareTo(reducer.oneRep) == 0; } }
 
                 protected Residue(Reducer reducer)
                 {
@@ -105,6 +107,8 @@ namespace Decompose.Numerics
             private Radix32Integer reg1;
             private Radix32Integer reg2;
             private Radix32Integer reg3;
+            private Radix32Integer zeroRep;
+            private Radix32Integer oneRep;
 
             public BigInteger Modulus
             {
@@ -127,17 +131,22 @@ namespace Decompose.Numerics
                 if (k.Sign == -1)
                     k += r;
                 Debug.Assert(r * rInverse == k * n + 1);
-                bits = new uint[6 * length];
+
+                bits = new uint[8 * length];
                 nRep = new Radix32Integer(bits, 0 * length, length);
                 rSquaredModNRep = new Radix32Integer(bits, 1 * length, length);
                 kRep = new Radix32Integer(bits, 2 * length, length);
                 reg1 = new Radix32Integer(bits, 3 * length, length);
                 reg2 = new Radix32Integer(bits, 4 * length, length);
                 reg3 = new Radix32Integer(bits, 5 * length, length);
+                zeroRep = new Radix32Integer(bits, 6 * length, length);
+                oneRep = new Radix32Integer(bits, 7 * length, length);
 
                 nRep.Set(n);
                 rSquaredModNRep.Set(rSquaredModN);
                 kRep.Set(k);
+                zeroRep.Set(new Residue(this, BigInteger.Zero).Rep);
+                oneRep.Set(new Residue(this, BigInteger.One).Rep);
             }
 
             public IResidue ToResidue(BigInteger x)
