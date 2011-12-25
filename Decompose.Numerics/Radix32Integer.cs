@@ -21,7 +21,7 @@ namespace Decompose.Numerics
         {
             get
             {
-                Debug.Assert(last == 0 || bits[index] != 0);
+                AssertValid();
                 if (last == 0 && bits[index] == 0)
                     return 0;
                 var b = bits[index + last];

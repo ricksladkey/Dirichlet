@@ -10,10 +10,10 @@ namespace Decompose.Numerics
         const int iterations = 100;
         IReductionAlgorithm reduction;
 
-        public PollardRhoReduction(int threads)
+        public PollardRhoReduction(int threads, IReductionAlgorithm reduction)
             : base(threads)
         {
-            reduction = new BarrettReduction();
+            this.reduction = reduction;
         }
 
         protected override BigInteger Rho(BigInteger n, BigInteger xInit, BigInteger c, CancellationToken cancellationToken)

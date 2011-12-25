@@ -99,7 +99,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void TestMontgomeryReduction()
+        public void TestMontgomeryReduction1()
         {
             var a = (BigInteger)24;
             var b = (BigInteger)74;
@@ -113,6 +113,12 @@ namespace Decompose.Numerics.Test
             Assert.AreEqual(expected, result);
         }
 
+        [TestMethod]
+        public void TestMontgomeryReduction2()
+        {
+            var p = BigInteger.Parse("10023859281455311421");
+            TestReduction(new MontgomeryReduction().GetReducer(p));
+        }
 
         [TestMethod]
         public void TestBarrettReduction()
