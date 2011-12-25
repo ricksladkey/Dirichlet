@@ -6,7 +6,7 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public interface IResidue : IComparable<IResidue>
+    public interface IResidue : IComparable<IResidue>, IEquatable<IResidue>
     {
         bool IsZero { get; }
         bool IsOne { get; }
@@ -15,7 +15,6 @@ namespace Decompose.Numerics
         IResidue Multiply(IResidue x);
         IResidue Add(IResidue x);
         IResidue Subtract(IResidue x);
-        IResidue SetGreatestCommonDivisor(IResidue a, IResidue b);
         BigInteger ToBigInteger();
     }
 }

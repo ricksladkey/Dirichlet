@@ -41,41 +41,32 @@ namespace Decompose
             if (r != expected)
                 throw new InvalidOperationException();
 
-            var reduction = new BarrettReduction(p);
-            var zPrime = reduction.Create();
-            zPrime.Set(z);
-            reduction.Reduce(zPrime);
-            if (zPrime.ToBigInteger() != expected)
+            var reducer = new BarrettReduction().GetReducer(p);
+            var actual = reducer.ToResidue(z).ToBigInteger();
+            if (actual != expected)
                 throw new InvalidOperationException();
         }
 
         static void BarrettReductionTest2()
         {
             var n = BigInteger.Parse("10023859281455311421");
-            var length = (BigIntegerUtils.GetBitLength(n) * 2 + 31) / 32;
             var random1 = new MersenneTwister32(0);
             var random2 = new MersenneTwister32(0);
             var timer1 = new Stopwatch();
             var timer2 = new Stopwatch();
             var iterations1 = 1000;
             var iterations2 = 1000;
-            var reduction = new BarrettReduction(n);
+            var reducer = new BarrettReduction().GetReducer(n);
 
             timer1.Start();
             for (int i = 0; i < iterations1; i++)
             {
-                var a = reduction.Create();
-                var b = reduction.Create();
-                var c = reduction.Create();
-
-                a.Set(random1.Next(n));
-                b.Set(random1.Next(n));
+                var a = reducer.ToResidue(random1.Next(n));
+                var b = reducer.ToResidue(random1.Next(n));
+                var c = reducer.ToResidue(0);
 
                 for (int j = 0; j < iterations2; j++)
-                {
-                    c.SetProduct(a, b);
-                    reduction.Reduce(c);
-                }
+                    c.Set(a).Multiply(b);
             }
             var elapsed1 = timer1.ElapsedMilliseconds;
 
@@ -152,7 +143,7 @@ namespace Decompose
         static void FactorTest1()
         {
             FactorTest1(new PollardRhoBrent(4));
-            FactorTest1(new PollardRhoBarrett(4));
+            FactorTest1(new PollardRhoReduction(4));
         }
 
         static void FactorTest1(IFactorizationAlgorithm<BigInteger> algorithm)
@@ -180,7 +171,7 @@ namespace Decompose
 
         static void FactorTest2()
         {
-            var algorithm = new PollardRhoBarrett(4);
+            var algorithm = new PollardRhoReduction(4);
             var n = BigInteger.Parse("10023859281455311421");
             int iterations = 250;
             for (int i = 0; i < iterations; i++)

@@ -2,9 +2,9 @@
 
 namespace Decompose.Numerics
 {
-    public interface IReduction
+    public interface IReducer
     {
+        BigInteger Modulus { get; }
         IResidue ToResidue(BigInteger x);
-        IResidue Multiply(IResidue x, IResidue y);
     }
 }

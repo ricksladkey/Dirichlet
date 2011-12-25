@@ -90,7 +90,7 @@ namespace Decompose.Numerics
             nBits.CopyTo(bits, index);
             for (int i = nBits.Length; i < length; i++)
                 bits[index + i] = 0;
-            last = nBits.Length - 1;
+            last = Math.Max(nBits.Length - 1, 0);
             AssertValid();
             return this;
         }
@@ -287,7 +287,7 @@ namespace Decompose.Numerics
                 }
             }
             last = a.last + b.last + 1;
-            if (last == length + 1)
+            if (last == length)
                 --last;
             if (bits[index + last] == 0)
                 --last;
@@ -295,7 +295,39 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer SetProductMask(Radix32Integer a, Radix32Integer b, int n)
+        public Radix32Integer SetProduct2(Radix32Integer a, Radix32Integer b)
+        {
+            AssertValid();
+            Debug.Assert(a.BitLength + b.BitLength <= length * 32);
+            Clear();
+            ulong carry = 0;
+            var limit = Math.Min(a.last + b.last + 1, length - 1);
+            for (int l = 0; l < limit; l++)
+            {
+                var min = Math.Max(l - b.last, 0);
+                var max = Math.Min(l, a.last);
+                for (int i = min; i <= max; i++)
+                {
+                    int j = l - i;
+                    carry += (ulong)a.bits[a.index + i] * (ulong)b.bits[b.index + j];
+                }
+                for (int k = l; k < length; k++)
+                {
+                    var sum = (ulong)bits[index + k] + carry;
+                    bits[index + k] = (uint)sum;
+                    carry = (sum >> 32);
+                    if (carry == 0)
+                        break;
+                }
+            }
+            last = limit;
+            while (last > 0 && bits[index + last] == 0)
+                --last;
+            AssertValid();
+            return this;
+        }
+
+        public Radix32Integer SetMaskedProduct(Radix32Integer a, Radix32Integer b, int n)
         {
             AssertValid();
             Debug.Assert(a.BitLength + b.BitLength <= length * 32);
@@ -308,10 +340,10 @@ namespace Decompose.Numerics
                 return Set(a);
             ulong carry = 0;
             int climit = (n + 31) / 32;
-            int alimit = a.last < climit ? a.last : climit;
+            int alimit = Math.Min(a.last, climit);
             for (int i = 0; i <= alimit; i++)
             {
-                int blimit = b.last < climit - i ? b.last : climit - i;
+                int blimit = Math.Min(b.last, climit - i);
                 for (int j = 0; j <= blimit; j++)
                 {
                     carry = (ulong)a.bits[a.index + i] * (ulong)b.bits[b.index + j];

@@ -1,10 +1,9 @@
-﻿using System;
+﻿using System.Numerics;
 using System.Diagnostics;
-using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public class BarrettReduction : IReductionAlgorithm
+    public class MontgomeryReduction : IReductionAlgorithm
     {
         private class Reducer : IReducer
         {
@@ -25,8 +24,9 @@ namespace Decompose.Numerics
                 public Residue(Reducer reducer, BigInteger x)
                     : this(reducer)
                 {
+                    reducer.reg3.Set(x % reducer.n);
                     r = reducer.CreateRep();
-                    r.Set(x);
+                    r.SetProduct(reducer.reg3, reducer.rSquaredModNRep);
                     reducer.Reduce(r);
                 }
 
@@ -46,8 +46,8 @@ namespace Decompose.Numerics
 
                 public IResidue Multiply(IResidue x)
                 {
-                    reducer.reg3.Set(r);
-                    r.SetProduct(reducer.reg3, x == this ? reducer.reg3 : ((Residue)x).r);
+                    reducer.reg1.Set(r);
+                    r.SetProduct(reducer.reg1, x == this ? reducer.reg1 : ((Residue)x).r);
                     reducer.Reduce(r);
                     return this;
                 }
@@ -55,8 +55,8 @@ namespace Decompose.Numerics
                 public IResidue Add(IResidue x)
                 {
                     r.Add(((Residue)x).r);
-                    if (r.CompareTo(reducer.pRep) >= 0)
-                        r.Subtract(reducer.pRep);
+                    if (r.CompareTo(reducer.nRep) >= 0)
+                        r.Subtract(reducer.nRep);
                     return this;
                 }
 
@@ -78,57 +78,66 @@ namespace Decompose.Numerics
 
                 public BigInteger ToBigInteger()
                 {
-                    return r.ToBigInteger();
+                    reducer.reg3.Set(r);
+                    reducer.Reduce(reducer.reg3);
+                    return reducer.reg3.ToBigInteger();
                 }
 
                 public override string ToString()
                 {
-                    return ToBigInteger().ToString();
+                    return ToBigInteger().ToString() + " (" + r.ToBigInteger() + ")";
                 }
             }
 
-            private BigInteger p;
-            private int bLength;
-            private BigInteger b;
-            private int k;
-            private BigInteger mu;
-
+            private BigInteger n;
+            private int rLength;
             private int length;
-            private int bToTheKMinusOneLength;
-            private int bToTheKPlusOneLength;
+            private BigInteger r;
+            private BigInteger rMinusOne;
+            private BigInteger rSquaredModN;
+            private BigInteger rInverse;
+            private BigInteger k;
             private uint[] bits;
-            private Radix32Integer muRep;
-            private Radix32Integer pRep;
-            private Radix32Integer reg2;
+
+            private Radix32Integer nRep;
+            private Radix32Integer rSquaredModNRep;
+            private Radix32Integer kRep;
             private Radix32Integer reg1;
+            private Radix32Integer reg2;
             private Radix32Integer reg3;
 
             public BigInteger Modulus
             {
-                get { return p; }
+                get { return n; }
             }
 
-            public Reducer(BigInteger p)
+            public Reducer(BigInteger n)
             {
-                this.p = p;
-                bLength = 32;
-                b = BigInteger.One << bLength;
-                var pLength = BigIntegerUtils.GetBitLength(p);
-                k = (pLength - 1) / bLength + 1;
-                mu = BigInteger.Pow(b, 2 * k) / p;
+                this.n = n;
+                rLength = (BigIntegerUtils.GetBitLength(n) + 31) / 32 * 32;
+                length = (rLength * 2 + 31) / 32;
+                r = BigInteger.One << rLength;
+                rMinusOne = r - BigInteger.One;
+                rSquaredModN = r * r % n;
+                var results = BigIntegerUtils.ExtendedGreatestCommonDivisor(r, n);
+                rInverse = results[0];
+                k = -results[1];
+                if (rInverse.Sign == -1)
+                    rInverse += n;
+                if (k.Sign == -1)
+                    k += r;
+                Debug.Assert(r * rInverse == k * n + 1);
+                bits = new uint[6 * length];
+                nRep = new Radix32Integer(bits, 0 * length, length);
+                rSquaredModNRep = new Radix32Integer(bits, 1 * length, length);
+                kRep = new Radix32Integer(bits, 2 * length, length);
+                reg1 = new Radix32Integer(bits, 3 * length, length);
+                reg2 = new Radix32Integer(bits, 4 * length, length);
+                reg3 = new Radix32Integer(bits, 5 * length, length);
 
-                var muLength = BigIntegerUtils.GetBitLength(mu);
-                length = (pLength + 31) / 32 * 2 + (muLength + 31) / 32;
-                bits = new uint[5 * length];
-                muRep = new Radix32Integer(bits, 0 * length, length);
-                pRep = new Radix32Integer(bits, 1 * length, length);
-                reg1 = new Radix32Integer(bits, 2 * length, length);
-                reg2 = new Radix32Integer(bits, 3 * length, length);
-                reg3 = new Radix32Integer(bits, 4 * length, length);
-                muRep.Set(mu);
-                pRep.Set(p);
-                bToTheKMinusOneLength = bLength * (k - 1);
-                bToTheKPlusOneLength = bLength * (k + 1);
+                nRep.Set(n);
+                rSquaredModNRep.Set(rSquaredModN);
+                kRep.Set(k);
             }
 
             public IResidue ToResidue(BigInteger x)
@@ -141,23 +150,17 @@ namespace Decompose.Numerics
                 return new Radix32Integer(new uint[length], 0, length);
             }
 
-            private void Reduce(Radix32Integer z)
+            private void Reduce(Radix32Integer t)
             {
-                // var qhat = (z >> (bLength * (k - 1))) * mu >> (bLength * (k + 1));
-                reg1.Set(z);
-                reg1.RightShift(bToTheKMinusOneLength);
-                reg2.SetProduct(reg1, muRep);
-                reg2.RightShift(bToTheKPlusOneLength);
-                // var r = z % bToTheKPlusOne - qhat * p % bToTheKPlusOne;
-                z.Mask(bToTheKPlusOneLength);
-                reg1.SetMaskedProduct(reg2, pRep, bToTheKPlusOneLength);
-                // if (r.Sign == -1) r += bToTheKPlusOne;
-                if (z.CompareTo(reg1) < 0)
-                    z.AddPowerOfTwo(bToTheKPlusOneLength);
-                z.Subtract(reg1);
-                // while (r >= p) r -= p;
-                while (z.CompareTo(pRep) >= 0)
-                    z.Subtract(pRep);
+                reg1.Set(t);
+                reg1.Mask(rLength);
+                reg2.SetProduct(reg1, kRep);
+                reg2.Mask(rLength);
+                reg1.SetProduct(reg2, nRep);
+                t.Add(reg1);
+                t.RightShift(rLength);
+                if (t.CompareTo(nRep) >= 0)
+                    t.Subtract(nRep);
             }
         }
 

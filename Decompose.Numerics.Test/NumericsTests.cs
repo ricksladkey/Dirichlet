@@ -84,18 +84,57 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void TestMontgomery()
+        public void TestBigIntegerReduction()
         {
             var a = (BigInteger)24;
             var b = (BigInteger)74;
             var n = (BigInteger)1201;
             var expected = a * b % n;
-            var reduction = new MontgomeryReductionBigInteger(n);
-            var aPrime = reduction.ToResidue(a);
-            var bPrime = reduction.ToResidue(b);
-            var cPrime = reduction.Multiply(aPrime, bPrime);
+            var reducer = new BigIntegerReduction().GetReducer(n);
+            var aPrime = reducer.ToResidue(a);
+            var bPrime = reducer.ToResidue(b);
+            var cPrime = aPrime.Copy().Multiply(bPrime);
             var result = cPrime.ToBigInteger();
             Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void TestMontgomeryReduction()
+        {
+            var a = (BigInteger)24;
+            var b = (BigInteger)74;
+            var n = (BigInteger)1201;
+            var expected = a * b % n;
+            var reducer = new MontgomeryReduction().GetReducer(n);
+            var aPrime = reducer.ToResidue(a);
+            var bPrime = reducer.ToResidue(b);
+            var cPrime = aPrime.Copy().Multiply(bPrime);
+            var result = cPrime.ToBigInteger();
+            Assert.AreEqual(expected, result);
+        }
+
+
+        [TestMethod]
+        public void TestBarrettReduction()
+        {
+            var p = BigInteger.Parse("10023859281455311421");
+            TestReduction(new BarrettReduction().GetReducer(p));
+        }
+
+        private void TestReduction(IReducer reducer)
+        {
+            var p = reducer.Modulus;
+            var random = new MersenneTwister32(0);
+            for (int i = 0; i < 100; i++)
+            {
+                var x = random.Next(p);
+                var y = random.Next(p);
+                var z = x * y;
+                var expected = z % p;
+
+                var actual = reducer.ToResidue(z).ToBigInteger();
+                Assert.AreEqual(expected, actual);
+            }
         }
 
         [TestMethod]
@@ -135,26 +174,6 @@ namespace Decompose.Numerics.Test
                     var difference = x.ToBigInteger();
                     Assert.AreEqual(bPrime - aPrime, difference);
                 }
-            }
-        }
-
-        [TestMethod]
-        public void TestBarrettReduction()
-        {
-            var p = BigInteger.Parse("10023859281455311421");
-            var random = new MersenneTwister32(0);
-            var reduction = new BarrettReduction(p);
-            for (int i = 0; i < 100; i++)
-            {
-                var x = random.Next(p);
-                var y = random.Next(p);
-                var z = x * y;
-                var expected = z % p;
-
-                var zPrime = reduction.Create();
-                zPrime.Set(z);
-                reduction.Reduce(zPrime);
-                Assert.AreEqual(expected, zPrime.ToBigInteger());
             }
         }
     }

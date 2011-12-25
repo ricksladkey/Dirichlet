@@ -5,13 +5,15 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class PollardRhoBarrett : PollardRhoBase
+    public class PollardRhoReduction : PollardRhoBase
     {
         const int iterations = 100;
+        IReductionAlgorithm reduction;
 
-        public PollardRhoBarrett(int threads)
+        public PollardRhoReduction(int threads)
             : base(threads)
         {
+            reduction = new BarrettReduction();
         }
 
         protected override BigInteger Rho(BigInteger n, BigInteger xInit, BigInteger c, CancellationToken cancellationToken)
@@ -19,24 +21,23 @@ namespace Decompose.Numerics
             if (n.IsEven)
                 return BigIntegerUtils.Two;
 
-            var reduction = new BarrettReduction(n);
-            var x = reduction.ToResidue(xInit);
+            var reducer = reduction.GetReducer(n);
+            var x = reducer.ToResidue(xInit);
             var y = x.Copy();
             var ys = x.Copy();
             var r = 1;
             var m = iterations;
-            var nPrime = reduction.ToResidue(n);
-            var cPrime = reduction.ToResidue(c);
-            var one = reduction.ToResidue(BigInteger.One);
+            var cPrime = reducer.ToResidue(c);
+            var one = reducer.ToResidue(BigInteger.One);
             var diff = one.Copy();
             var q = one.Copy();
-            var g = one.Copy();
+            var g = BigInteger.One;
 
             do
             {
                 x.Set(y);
                 for (int i = 0; i < r; i++)
-                    NextF(y, cPrime);
+                    AdvanceF(y, cPrime);
                 var k = 0;
                 while (k < r && g.IsOne)
                 {
@@ -47,7 +48,7 @@ namespace Decompose.Numerics
                     {
                         if (cancellationToken.IsCancellationRequested)
                             return BigInteger.Zero;
-                        NextF(y, cPrime);
+                        AdvanceF(y, cPrime);
                         
                         if (x.CompareTo(y) <= 0)
                             diff.Set(y).Subtract(x);
@@ -55,34 +56,34 @@ namespace Decompose.Numerics
                             diff.Set(x).Subtract(y);
                         q.Multiply(diff);
                     }
-                    g.SetGreatestCommonDivisor(q, nPrime);
+                    g = BigInteger.GreatestCommonDivisor(q.ToBigInteger(), n);
                     k += limit;
                 }
                 r <<= 1;
             } while (g.IsOne);
 
-            if (g.CompareTo(nPrime) == 0)
+            if (g.CompareTo(n) == 0)
             {
                 do
                 {
                     if (cancellationToken.IsCancellationRequested)
                         return BigInteger.Zero;
-                    NextF(ys, cPrime);
+                    AdvanceF(ys, cPrime);
                     if (x.CompareTo(ys) <= 0)
                         diff.Set(ys).Subtract(x);
                     else
                         diff.Set(x).Subtract(ys);
-                    g.SetGreatestCommonDivisor(diff, nPrime);
+                    g = BigInteger.GreatestCommonDivisor(diff.ToBigInteger(), n);
                 } while (g.IsOne);
             }
 
-            if (g.CompareTo(nPrime) == 0)
+            if (g.CompareTo(n) == 0)
                 throw new InvalidOperationException("failed");
 
-            return g.ToBigInteger();
+            return g;
         }
 
-        private static void NextF(IResidue x, IResidue c)
+        private static void AdvanceF(IResidue x, IResidue c)
         {
             x.Multiply(x).Add(c);
         }
