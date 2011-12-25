@@ -10,10 +10,96 @@ namespace Decompose
     {
         static void Main(string[] args)
         {
-            Radix32Test1();
-            //FactorTest1();
+            //BarrettReductionTest1();
+            //BarrettReductionTest2();
+            //Radix32Test1();
+            FactorTest1();
             //FactorTest2();
             //MulModTest1();
+        }
+
+        static void BarrettReductionTest1()
+        {
+            var p = BigInteger.Parse("10023859281455311421");
+            var random = new MersenneTwister32(0);
+#if false
+            var x = random.Next(p);
+            var y = random.Next(p);
+#else
+            var x = BigInteger.Parse("9312633710543442424");
+            var y = BigInteger.Parse("9312633710543442424");
+#endif
+            var z = x * y;
+            var expected = z % p;
+            var bLength = 32;
+            var b = BigInteger.One << bLength;
+            var k = BigIntegerUtils.GetBitLength(p) / bLength + 1;
+            var mu = BigInteger.Pow(b, 2 * k) / p;
+            var bToTheKPlusOne = BigInteger.Pow(b, k + 1);
+
+            var qhat = (z >> (bLength * (k - 1))) * mu >> (bLength * (k + 1));
+            var r = z % bToTheKPlusOne - qhat * p % bToTheKPlusOne;
+            if (r.Sign == -1)
+                r += bToTheKPlusOne;
+            while (r >= p)
+                r -= p;
+            if (r != expected)
+                throw new InvalidOperationException();
+
+            var reduction = new BarrettReduction(p);
+            var zPrime = reduction.Create();
+            zPrime.Set(z);
+            reduction.Reduce(zPrime);
+            if (zPrime.ToBigInteger() != expected)
+                throw new InvalidOperationException();
+        }
+
+        static void BarrettReductionTest2()
+        {
+            var n = BigInteger.Parse("10023859281455311421");
+            var length = (BigIntegerUtils.GetBitLength(n) * 2 + 31) / 32;
+            var random1 = new MersenneTwister32(0);
+            var random2 = new MersenneTwister32(0);
+            var timer1 = new Stopwatch();
+            var timer2 = new Stopwatch();
+            var iterations1 = 1000;
+            var iterations2 = 1000;
+            var reduction = new BarrettReduction(n);
+
+            timer1.Start();
+            for (int i = 0; i < iterations1; i++)
+            {
+                var a = reduction.Create();
+                var b = reduction.Create();
+                var c = reduction.Create();
+
+                a.Set(random1.Next(n));
+                b.Set(random1.Next(n));
+
+                for (int j = 0; j < iterations2; j++)
+                {
+                    c.SetProduct(a, b);
+                    reduction.Reduce(c);
+                }
+            }
+            var elapsed1 = timer1.ElapsedMilliseconds;
+
+            timer2.Start();
+            for (int i = 0; i < iterations1; i++)
+            {
+                var a = random2.Next(n);
+                var b = random2.Next(n);
+                var c = BigInteger.Zero;
+
+                for (int j = 0; j < iterations2; j++)
+                {
+                    c = a * b;
+                    c %= n;
+                }
+            }
+            var elapsed2 = timer1.ElapsedMilliseconds;
+
+            Console.WriteLine("elapsed1 = {0}, elapsed2 = {1}", elapsed1, elapsed2);
         }
 
         static void Radix32Test1()
@@ -70,7 +156,12 @@ namespace Decompose
 
         static void FactorTest1()
         {
-            var algorithm = new PollardRhoMontgomery(4);
+            FactorTest1(new PollardRhoBrent(4));
+            FactorTest1(new PollardRhoBarrett(4));
+        }
+
+        static void FactorTest1(IFactorizationAlgorithm<BigInteger> algorithm)
+        {
             var n = BigInteger.Parse("10023859281455311421");
             int iterations = 25;
             var elapsed = new double[iterations];
@@ -94,7 +185,7 @@ namespace Decompose
 
         static void FactorTest2()
         {
-            var algorithm = new PollardRhoMontgomery(4);
+            var algorithm = new PollardRhoBarrett(4);
             var n = BigInteger.Parse("10023859281455311421");
             int iterations = 250;
             for (int i = 0; i < iterations; i++)

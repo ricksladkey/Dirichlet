@@ -10,6 +10,10 @@ namespace Decompose.Numerics
             private MontgomeryReductionBigInteger reduction;
             private BigInteger r;
 
+            public bool IsZero { get { return r.IsZero; } }
+
+            public bool IsOne { get { return r.IsOne; } }
+
             protected Residue(MontgomeryReductionBigInteger reduction)
             {
                 this.reduction = reduction;
@@ -19,6 +23,12 @@ namespace Decompose.Numerics
                 : this(reduction)
             {
                 this.r = reduction.REDC(x % reduction.n * reduction.rSquaredModN);
+            }
+
+            public IResidue Set(IResidue x)
+            {
+                r = ((Residue)x).r;
+                return this;
             }
 
             public IResidue Copy()
@@ -40,9 +50,31 @@ namespace Decompose.Numerics
                 return this;
             }
 
+            public IResidue Subtract(IResidue x)
+            {
+                r -= ((Residue)x).r;
+                return this;
+            }
+
+            public IResidue SetGreatestCommonDivisor(IResidue a, IResidue b)
+            {
+                r = BigInteger.GreatestCommonDivisor(((Residue)a).r, ((Residue)b).r);
+                return this;
+            }
+
             public BigInteger ToBigInteger()
             {
                 return reduction.REDC(r);
+            }
+
+            public override string ToString()
+            {
+                return ToBigInteger().ToString();
+            }
+
+            public int CompareTo(IResidue other)
+            {
+                return r.CompareTo(((Residue)other).r);
             }
         }
 
