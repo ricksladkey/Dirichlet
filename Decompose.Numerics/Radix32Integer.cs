@@ -284,7 +284,7 @@ namespace Decompose.Numerics
             if (last == length)
                 --last;
             while (last > 0 && bits[index + last] == 0)
-F                --last;
+                --last;
             AssertValid();
             return this;
         }
