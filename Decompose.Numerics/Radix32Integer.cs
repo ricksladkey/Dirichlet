@@ -60,15 +60,9 @@ namespace Decompose.Numerics
             this.bits = bits;
             this.index = index;
             this.length = length;
-            last = 0;
-            for (int i = length - 1; i >= 0; i--)
-            {
-                if (bits[index + i] != 0)
-                {
-                    last = i;
-                    break;
-                }
-            }
+            last = length - 1;
+            while (last > 0 && bits[index + last] == 0)
+                --last;
             AssertValid();
         }
 
@@ -82,11 +76,11 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer Set(BigInteger n)
+        public Radix32Integer Set(BigInteger a)
         {
             AssertValid();
-            Debug.Assert(BigIntegerUtils.GetBitLength(n) <= 32 * length);
-            var nBits = GetBits(n);
+            Debug.Assert(BigIntegerUtils.GetBitLength(a) <= 32 * length);
+            var nBits = GetBits(a);
             nBits.CopyTo(bits, index);
             for (int i = nBits.Length; i < length; i++)
                 bits[index + i] = 0;
@@ -95,15 +89,33 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer Set(Radix32Integer n)
+        public Radix32Integer Set(Radix32Integer a)
         {
             AssertValid();
-            Debug.Assert(length == n.length);
-            for (int i = 0; i <= n.last; i++)
-                bits[index + i] = n.Bits[n.index + i];
-            for (int i = n.last + 1; i <= last; i++)
+            Debug.Assert(length == a.length);
+            for (int i = 0; i <= a.last; i++)
+                bits[index + i] = a.Bits[a.index + i];
+            for (int i = a.last + 1; i <= last; i++)
                 bits[index + i] = 0;
-            last = n.last;
+            last = a.last;
+            AssertValid();
+            return this;
+        }
+
+        public Radix32Integer SetMasked(Radix32Integer a, int n)
+        {
+            AssertValid();
+            Debug.Assert(length == a.length);
+            Debug.Assert(n % 32 == 0 && n > 0);
+            int clast = (n + 31) / 32 - 1;
+            int alast = Math.Min(a.last, clast);
+            for (int i = 0; i <= alast; i++)
+                bits[index + i] = a.Bits[a.index + i];
+            for (int i = alast + 1; i <= last; i++)
+                bits[index + i] = 0;
+            last = alast;
+            while (last > 0 && bits[index + last] == 0)
+                --last;
             AssertValid();
             return this;
         }
@@ -112,7 +124,7 @@ namespace Decompose.Numerics
         {
             AssertValid();
             var newBits = new uint[length];
-            Array.Copy(bits, index, newBits, 0, length);
+            Array.Copy(bits, index, newBits, 0, last + 1);
             return new Radix32Integer(newBits, 0, length);
         }
 
@@ -282,7 +294,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer SetMaskedProduct(Radix32Integer a, Radix32Integer b, int n)
+        public Radix32Integer SetProductMasked(Radix32Integer a, Radix32Integer b, int n)
         {
             AssertValid();
             Debug.Assert(n % 32 == 0);
@@ -320,7 +332,7 @@ namespace Decompose.Numerics
         /// Note: the result may be less than the result of separate multiplication
         /// and shifting operations by at most one.
         /// </remarks>
-        public Radix32Integer SetShiftedProduct(Radix32Integer a, Radix32Integer b, int n)
+        public Radix32Integer SetProductShifted(Radix32Integer a, Radix32Integer b, int n)
         {
             // Use product scanning algorithm.
             AssertValid();
@@ -434,6 +446,35 @@ namespace Decompose.Numerics
 #endif
             return this;
         }
+
+#if false
+        public Radix32Integer REDC(Radix32Integer p, Radix32Integer pPrime, int n)
+        {
+            // Use operand scanning algorithm.
+            AssertValid();
+            Debug.Assert(a.BitLength + b.BitLength <= length * 32);
+            Clear();
+            for (int i = 0; i <= a.last; i++)
+            {
+                ulong avalue = (ulong)a.bits[a.index + i];
+                ulong carry = 0;
+                for (int j = 0; j <= b.last; j++)
+                {
+                    carry += (ulong)bits[index + i + j] + avalue * (ulong)b.bits[b.index + j];
+                    bits[index + i + j] = (uint)carry;
+                    carry >>= 32;
+                }
+                bits[index + i + b.last + 1] = (uint)carry;
+            }
+            last = a.last + b.last + 1;
+            if (last == length)
+                --last;
+            while (last > 0 && bits[index + last] == 0)
+                --last;
+            AssertValid();
+            return this;
+        }
+#endif
 
         private static uint[] GetBits(BigInteger n)
         {

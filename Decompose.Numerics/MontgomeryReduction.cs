@@ -164,10 +164,8 @@ namespace Decompose.Numerics
 
             private void Reduce(Radix32Integer t)
             {
-                reg1.Set(t);
-                reg1.Mask(rLength);
-                reg2.SetProduct(reg1, kRep);
-                reg2.Mask(rLength);
+                reg1.SetMasked(t, rLength);
+                reg2.SetProductMasked(reg1, kRep, rLength);
                 reg1.SetProduct(reg2, nRep);
                 t.Add(reg1);
                 t.RightShift(rLength);

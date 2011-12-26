@@ -161,10 +161,10 @@ namespace Decompose.Numerics
                 // var qhat = (z >> (bLength * (k - 1))) * mu >> (bLength * (k + 1));
                 reg1.Set(z);
                 reg1.RightShift(bToTheKMinusOneLength);
-                reg2.SetShiftedProduct(reg1, muRep, bToTheKPlusOneLength);
+                reg2.SetProductShifted(reg1, muRep, bToTheKPlusOneLength);
                 // var r = z % bToTheKPlusOne - qhat * p % bToTheKPlusOne;
                 z.Mask(bToTheKPlusOneLength);
-                reg1.SetMaskedProduct(reg2, pRep, bToTheKPlusOneLength);
+                reg1.SetProductMasked(reg2, pRep, bToTheKPlusOneLength);
                 // if (r.Sign == -1) r += bToTheKPlusOne;
                 if (z.CompareTo(reg1) < 0)
                     z.AddPowerOfTwo(bToTheKPlusOneLength);
