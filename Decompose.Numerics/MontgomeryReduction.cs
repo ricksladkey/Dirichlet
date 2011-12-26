@@ -48,8 +48,11 @@ namespace Decompose.Numerics
 
                 public IResidue Multiply(IResidue x)
                 {
-                    reducer.reg1.Set(r);
-                    r.SetProduct(reducer.reg1, x == this ? reducer.reg1 : ((Residue)x).r);
+                    reducer.reg3.Set(r);
+                    if (this == x)
+                        r.SetSquare(reducer.reg3);
+                    else
+                        r.SetProduct(reducer.reg3, ((Residue)x).r);
                     reducer.Reduce(r);
                     return this;
                 }

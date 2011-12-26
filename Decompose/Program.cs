@@ -145,7 +145,7 @@ namespace Decompose
             //FactorTest1(25, new PollardRhoBrent(4));
             //FactorTest1(25, new PollardRhoReduction(4, new BigIntegerReduction()));
             FactorTest1(25, new PollardRhoReduction(1, new BarrettReduction()));
-            //FactorTest1(25, new PollardRhoReduction(4, new MontgomeryReduction()));
+            FactorTest1(25, new PollardRhoReduction(4, new MontgomeryReduction()));
 
             //FactorTest1(500, new PollardRhoReduction(4, new MontgomeryReduction()));
         }

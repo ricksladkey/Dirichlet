@@ -156,7 +156,7 @@ namespace Decompose.Numerics.Test
             var a = new Radix32Integer(bits, 0 * length, length);
             var b = new Radix32Integer(bits, 1 * length, length);
             var x = new Radix32Integer(bits, 2 * length, length);
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1000; i++)
             {
                 var aPrime = random.Next(n);
                 var bPrime = random.Next(n);
@@ -170,6 +170,10 @@ namespace Decompose.Numerics.Test
                 x.SetProduct(a, b);
                 var product = x.ToBigInteger();
                 Assert.AreEqual(aPrime * bPrime, product);
+
+                x.SetSquare(a);
+                var square = x.ToBigInteger();
+                Assert.AreEqual(aPrime * aPrime, square);
 
                 if (aPrime > bPrime)
                 {

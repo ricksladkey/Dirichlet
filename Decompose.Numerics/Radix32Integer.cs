@@ -263,10 +263,11 @@ namespace Decompose.Numerics
             Clear();
             for (int i = 0; i <= a.last; i++)
             {
+                ulong avalue = (ulong)a.bits[a.index + i];
                 ulong carry = 0;
                 for (int j = 0; j <= b.last; j++)
                 {
-                    carry += (ulong)bits[index + i + j] + (ulong)a.bits[a.index + i] * (ulong)b.bits[b.index + j];
+                    carry += (ulong)bits[index + i + j] + avalue * (ulong)b.bits[b.index + j];
                     bits[index + i + j] = (uint)carry;
                     carry >>= 32;
                 }
@@ -308,6 +309,17 @@ namespace Decompose.Numerics
             return this;
         }
 
+        /// <summary>
+        /// Evaluate the product of two numbers and discard some of the lower bits.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Note: the result may be less than the result of separate multiplication
+        /// and shifting operations by at most one.
+        /// </remarks>
         public Radix32Integer SetShiftedProduct(Radix32Integer a, Radix32Integer b, int n)
         {
             // Use product scanning algorithm.
@@ -344,6 +356,44 @@ namespace Decompose.Numerics
             }
             bits[index + clast - shifted] = (uint)r0;
             last = clast - shifted;
+            if (last == length)
+                --last;
+            while (last > 0 && bits[index + last] == 0)
+                --last;
+            AssertValid();
+            return this;
+        }
+
+        public Radix32Integer SetSquare(Radix32Integer a)
+        {
+            // Use operand scanning algorithm.
+            AssertValid();
+            Debug.Assert(2 * a.BitLength <= length * 32);
+            Clear();
+            for (int i = 0; i <= a.last; i++)
+            {
+                ulong avalue = (ulong)a.bits[a.index + i];
+                ulong carry = avalue * avalue + (ulong)bits[index + 2 * i];
+                bits[index + 2 * i] = (uint)carry;
+                carry >>= 32;
+                for (int j = i + 1; j <= a.last; j++)
+                {
+                    ulong value = avalue * (ulong)a.bits[a.index + j];
+                    var eps = value >> 63;
+                    value <<= 1;
+                    carry += value + (ulong)bits[index + i + j];
+                    bits[index + i + j] = (uint)carry;
+                    carry >>= 32;
+                    carry += eps << 32;
+                }
+                int k = index + i + a.last + 1;
+                carry += bits[k];
+                bits[k] = (uint)carry;
+                carry >>= 32;
+                if (carry != 0)
+                    bits[k + 1] = (uint)carry;
+            }
+            last = 2 * a.last + 1;
             if (last == length)
                 --last;
             while (last > 0 && bits[index + last] == 0)

@@ -47,7 +47,22 @@ namespace Decompose.Numerics
                 public IResidue Multiply(IResidue x)
                 {
                     reducer.reg3.Set(r);
-                    r.SetProduct(reducer.reg3, x == this ? reducer.reg3 : ((Residue)x).r);
+                    if (this == x)
+                    {
+#if false
+                        r.SetSquare(reducer.reg3);
+                        var r1 = r.ToBigInteger();
+                        r.SetProduct(reducer.reg3, reducer.reg3);
+                        var r2 = r.ToBigInteger();
+                        if (r1 != r2)
+                            Debugger.Break();
+#else
+                        r.SetSquare(reducer.reg3);
+                        //r.SetProduct(reducer.reg3, reducer.reg3);
+#endif
+                    }
+                    else
+                        r.SetProduct(reducer.reg3, ((Residue)x).r);
                     reducer.Reduce(r);
                     return this;
                 }
