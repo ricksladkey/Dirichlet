@@ -146,8 +146,7 @@ namespace Decompose.Numerics
                 // var qhat = (z >> (bLength * (k - 1))) * mu >> (bLength * (k + 1));
                 reg1.Set(z);
                 reg1.RightShift(bToTheKMinusOneLength);
-                reg2.SetProduct(reg1, muRep);
-                reg2.RightShift(bToTheKPlusOneLength);
+                reg2.SetShiftedProduct(reg1, muRep, bToTheKPlusOneLength);
                 // var r = z % bToTheKPlusOne - qhat * p % bToTheKPlusOne;
                 z.Mask(bToTheKPlusOneLength);
                 reg1.SetMaskedProduct(reg2, pRep, bToTheKPlusOneLength);

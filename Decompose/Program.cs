@@ -142,16 +142,17 @@ namespace Decompose
 
         static void FactorTest1()
         {
-            //FactorTest1(new PollardRhoBrent(4));
-            //FactorTest1(new PollardRhoReduction(4, new BigIntegerReduction()));
-            FactorTest1(new PollardRhoReduction(4, new BarrettReduction()));
-            FactorTest1(new PollardRhoReduction(4, new MontgomeryReduction()));
+            //FactorTest1(25, new PollardRhoBrent(4));
+            //FactorTest1(25, new PollardRhoReduction(4, new BigIntegerReduction()));
+            FactorTest1(25, new PollardRhoReduction(1, new BarrettReduction()));
+            //FactorTest1(25, new PollardRhoReduction(4, new MontgomeryReduction()));
+
+            //FactorTest1(500, new PollardRhoReduction(4, new MontgomeryReduction()));
         }
 
-        static void FactorTest1(IFactorizationAlgorithm<BigInteger> algorithm)
+        static void FactorTest1(int iterations, IFactorizationAlgorithm<BigInteger> algorithm)
         {
             var n = BigInteger.Parse("10023859281455311421");
-            int iterations = 25;
             var elapsed = new double[iterations];
             for (int i = 0; i < iterations; i++)
             {

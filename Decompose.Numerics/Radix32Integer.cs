@@ -171,22 +171,16 @@ namespace Decompose.Numerics
         public Radix32Integer RightShift(int n)
         {
             AssertValid();
+            Debug.Assert(n % 32 == 0);
             int i = n / 32;
             int j = n - i * 32;
-            if (j == 0)
-            {
-                for (int k = 0; k < length - i; k++)
-                    bits[index + k] = bits[index + k + i];
-                for (int k = length - i; k <= last; k++)
-                    bits[index + k] = 0;
-                last -= i;
-                if (last < 0)
-                    last = 0;
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
+            for (int k = 0; k < length - i; k++)
+                bits[index + k] = bits[index + k + i];
+            for (int k = length - i; k <= last; k++)
+                bits[index + k] = 0;
+            last -= i;
+            if (last < 0)
+                last = 0;
             AssertValid();
             return this;
         }
@@ -194,8 +188,10 @@ namespace Decompose.Numerics
         public Radix32Integer AddPowerOfTwo(int n)
         {
             AssertValid();
+            Debug.Assert(n % 32 == 0);
             int i = n / 32;
             int j = n - i * 32;
+            Debug.Assert(bits[index + i] == 0);
             ++bits[index + i];
             last = Math.Max(last, i);
             AssertValid();
@@ -288,6 +284,7 @@ namespace Decompose.Numerics
         public Radix32Integer SetMaskedProduct(Radix32Integer a, Radix32Integer b, int n)
         {
             AssertValid();
+            Debug.Assert(n % 32 == 0);
             Clear();
             int clast = (n + 31) / 32 - 1;
             int alast = Math.Min(a.last, clast);
@@ -311,18 +308,19 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer SetProductProductScanning(Radix32Integer a, Radix32Integer b)
+        public Radix32Integer SetShiftedProduct(Radix32Integer a, Radix32Integer b, int n)
         {
             // Use product scanning algorithm.
             AssertValid();
-            Debug.Assert(a.BitLength + b.BitLength <= length * 32);
+            Debug.Assert(n % 32 == 0 && n > 0);
+            int shifted = n / 32;
             Clear();
             ulong r0 = 0;
             ulong r1 = 0;
             ulong r2 = 0;
             ulong eps = 0;
             var clast = a.last + b.last + 1;
-            for (int k = 0; k < clast; k++)
+            for (int k = shifted - 1; k < clast; k++)
             {
                 var min = Math.Max(k - b.last, 0);
                 var max = Math.Min(k, a.last);
@@ -338,13 +336,14 @@ namespace Decompose.Numerics
                     r1 &= (1ul << 32) - 1;
                     r2 += eps;
                 }
-                bits[index + k] = (uint)r0;
+                if (k >= shifted)
+                    bits[index + k - shifted] = (uint)r0;
                 r0 = r1;
                 r1 = r2;
                 r2 = 0;
             }
-            bits[index + clast] = (uint)r0;
-            last = clast;
+            bits[index + clast - shifted] = (uint)r0;
+            last = clast - shifted;
             if (last == length)
                 --last;
             while (last > 0 && bits[index + last] == 0)
