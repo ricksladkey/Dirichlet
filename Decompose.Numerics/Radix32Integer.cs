@@ -261,6 +261,7 @@ namespace Decompose.Numerics
 
         public Radix32Integer SetProduct(Radix32Integer a, Radix32Integer b)
         {
+            // Use operand scanning algorithm.
             AssertValid();
             Debug.Assert(a.BitLength + b.BitLength <= length * 32);
             Clear();
@@ -300,7 +301,7 @@ namespace Decompose.Numerics
                     bits[index + i + j] = (uint)carry;
                     carry >>= 32;
                 }
-                if (blast < clast)
+                if (i + blast < clast)
                     bits[index + i + blast + 1] = (uint)carry;
             }
             last = clast;
@@ -310,39 +311,47 @@ namespace Decompose.Numerics
             return this;
         }
 
-#if false
-        public Radix32Integer SetProduct2(Radix32Integer a, Radix32Integer b)
+        public Radix32Integer SetProductProductScanning(Radix32Integer a, Radix32Integer b)
         {
+            // Use product scanning algorithm.
             AssertValid();
             Debug.Assert(a.BitLength + b.BitLength <= length * 32);
             Clear();
-            ulong carry = 0;
-            var limit = Math.Min(a.last + b.last + 1, length - 1);
-            for (int l = 0; l < limit; l++)
+            ulong r0 = 0;
+            ulong r1 = 0;
+            ulong r2 = 0;
+            ulong eps = 0;
+            var clast = a.last + b.last + 1;
+            for (int k = 0; k < clast; k++)
             {
-                var min = Math.Max(l - b.last, 0);
-                var max = Math.Min(l, a.last);
+                var min = Math.Max(k - b.last, 0);
+                var max = Math.Min(k, a.last);
                 for (int i = min; i <= max; i++)
                 {
-                    int j = l - i;
-                    carry += (ulong)a.bits[a.index + i] * (ulong)b.bits[b.index + j];
+                    int j = k - i;
+                    var uv = (ulong)a.bits[a.index + i] * (ulong)b.bits[b.index + j];
+                    r0 += (uint)uv;
+                    eps = r0 >> 32;
+                    r0 &= (1ul << 32) - 1;
+                    r1 += (uv >> 32) + eps;
+                    eps = r1 >> 32;
+                    r1 &= (1ul << 32) - 1;
+                    r2 += eps;
                 }
-                for (int k = l; k < length; k++)
-                {
-                    var sum = (ulong)bits[index + k] + carry;
-                    bits[index + k] = (uint)sum;
-                    carry = (sum >> 32);
-                    if (carry == 0)
-                        break;
-                }
+                bits[index + k] = (uint)r0;
+                r0 = r1;
+                r1 = r2;
+                r2 = 0;
             }
-            last = limit;
+            bits[index + clast] = (uint)r0;
+            last = clast;
+            if (last == length)
+                --last;
             while (last > 0 && bits[index + last] == 0)
                 --last;
             AssertValid();
             return this;
         }
-#endif
 
         public Radix32Integer SetGreatestCommonDivisor(Radix32Integer a, Radix32Integer b)
         {
