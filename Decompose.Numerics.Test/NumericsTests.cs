@@ -138,7 +138,10 @@ namespace Decompose.Numerics.Test
                 var z = x * y;
                 var expected = z % p;
 
-                var actual = reducer.ToResidue(z).ToBigInteger();
+                var xPrime = reducer.ToResidue(x);
+                var yPrime = reducer.ToResidue(y);
+                var zPrime = xPrime.Copy().Multiply(yPrime);
+                var actual = zPrime.ToBigInteger();
                 Assert.AreEqual(expected, actual);
             }
         }

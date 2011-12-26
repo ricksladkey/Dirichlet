@@ -26,8 +26,8 @@ namespace Decompose.Numerics
                 public Residue(Reducer reducer, BigInteger x)
                     : this(reducer)
                 {
-                    reducer.reg3.Set(x % reducer.n);
                     r = reducer.CreateRep();
+                    reducer.reg3.Set(x);
                     r.SetProduct(reducer.reg3, reducer.rSquaredModNRep);
                     reducer.Reduce(r);
                 }

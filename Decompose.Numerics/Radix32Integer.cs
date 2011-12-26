@@ -264,21 +264,16 @@ namespace Decompose.Numerics
             AssertValid();
             Debug.Assert(a.BitLength + b.BitLength <= length * 32);
             Clear();
-            ulong carry = 0;
             for (int i = 0; i <= a.last; i++)
             {
+                ulong carry = 0;
                 for (int j = 0; j <= b.last; j++)
                 {
-                    carry = (ulong)a.bits[a.index + i] * (ulong)b.bits[b.index + j];
-                    for (int k = i + j; k < length; k++)
-                    {
-                        var sum = (ulong)bits[index + k] + carry;
-                        bits[index + k] = (uint)sum;
-                        carry = (sum >> 32);
-                        if (carry == 0)
-                            break;
-                    }
+                    carry += (ulong)bits[index + i + j] + (ulong)a.bits[a.index + i] * (ulong)b.bits[b.index + j];
+                    bits[index + i + j] = (uint)carry;
+                    carry >>= 32;
                 }
+                bits[index + i + b.last + 1] = (uint)carry;
             }
             last = a.last + b.last + 1;
             if (last == length)
@@ -289,6 +284,33 @@ namespace Decompose.Numerics
             return this;
         }
 
+        public Radix32Integer SetMaskedProduct(Radix32Integer a, Radix32Integer b, int n)
+        {
+            AssertValid();
+            Clear();
+            int clast = (n + 31) / 32 - 1;
+            int alast = Math.Min(a.last, clast);
+            for (int i = 0; i <= alast; i++)
+            {
+                int blast = Math.Min(b.last, clast - i);
+                ulong carry = 0;
+                for (int j = 0; j <= blast; j++)
+                {
+                    carry += (ulong)bits[index + i + j] + (ulong)a.bits[a.index + i] * (ulong)b.bits[b.index + j];
+                    bits[index + i + j] = (uint)carry;
+                    carry >>= 32;
+                }
+                if (blast < clast)
+                    bits[index + i + blast + 1] = (uint)carry;
+            }
+            last = clast;
+            while (last > 0 && bits[index + last] == 0)
+                --last;
+            AssertValid();
+            return this;
+        }
+
+#if false
         public Radix32Integer SetProduct2(Radix32Integer a, Radix32Integer b)
         {
             AssertValid();
@@ -320,45 +342,7 @@ namespace Decompose.Numerics
             AssertValid();
             return this;
         }
-
-        public Radix32Integer SetMaskedProduct(Radix32Integer a, Radix32Integer b, int n)
-        {
-            AssertValid();
-            Debug.Assert(a.BitLength + b.BitLength <= length * 32);
-            Clear();
-            if (a.IsZero || b.IsZero)
-                return this;
-            if (a.IsOne)
-                return Set(b);
-            if (b.IsOne)
-                return Set(a);
-            ulong carry = 0;
-            int climit = (n + 31) / 32;
-            int alimit = Math.Min(a.last, climit);
-            for (int i = 0; i <= alimit; i++)
-            {
-                int blimit = Math.Min(b.last, climit - i);
-                for (int j = 0; j <= blimit; j++)
-                {
-                    carry = (ulong)a.bits[a.index + i] * (ulong)b.bits[b.index + j];
-                    for (int k = i + j; k < climit; k++)
-                    {
-                        var sum = (ulong)bits[index + k] + carry;
-                        bits[index + k] = (uint)sum;
-                        carry = (sum >> 32);
-                        if (carry == 0)
-                            break;
-                    }
-                }
-            }
-            last = a.last + b.last + 1;
-            if (last == length + 1)
-                --last;
-            if (bits[index + last] == 0)
-                --last;
-            AssertValid();
-            return this;
-        }
+#endif
 
         public Radix32Integer SetGreatestCommonDivisor(Radix32Integer a, Radix32Integer b)
         {
