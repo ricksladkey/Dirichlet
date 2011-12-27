@@ -10,12 +10,23 @@ namespace Decompose
     {
         static void Main(string[] args)
         {
+            //FindPrimeTest1();
             //BarrettReductionTest1();
             //BarrettReductionTest2();
             //Radix32Test1();
             FactorTest1();
             //FactorTest2();
             //MulModTest1();
+        }
+
+        static void FindPrimeTest1()
+        {
+            var random = new MersenneTwister32(0);
+            var limit = BigInteger.One << (32 * 4);
+            var x = random.Next(limit);
+            while (!BigIntegerUtils.IsPrime(x))
+                ++x;
+            Console.WriteLine("x = {0}", x);
         }
 
         static void BarrettReductionTest1()
@@ -28,7 +39,7 @@ namespace Decompose
             var expected = z % p;
             var bLength = 32;
             var b = BigInteger.One << bLength;
-            var k = (BigIntegerUtils.GetBitLength(p) - 1) / bLength + 1;
+            var k = (p.GetBitLength() - 1) / bLength + 1;
             var mu = BigInteger.Pow(b, 2 * k) / p;
             var bToTheKPlusOne = BigInteger.Pow(b, k + 1);
 
@@ -102,7 +113,7 @@ namespace Decompose
             Func<BigInteger, BigInteger, BigInteger> operation2)
         {
             var n = BigInteger.Parse("10023859281455311421");
-            var length = (BigIntegerUtils.GetBitLength(n) * 2 + 31) / 32;
+            var length = (n.GetBitLength() * 2 + 31) / 32;
             var random1 = new MersenneTwister32(0);
             var random2 = new MersenneTwister32(0);
             var timer1 = new Stopwatch();
@@ -142,17 +153,24 @@ namespace Decompose
 
         static void FactorTest1()
         {
-            //FactorTest1(25, new PollardRhoBrent(4));
-            //FactorTest1(25, new PollardRhoReduction(4, new BigIntegerReduction()));
-            FactorTest1(25, new PollardRhoReduction(1, new BarrettReduction()));
-            FactorTest1(25, new PollardRhoReduction(4, new MontgomeryReduction()));
+            var p = BigInteger.Parse("287288745765902964785862069919080712937");
+            var q = BigInteger.Parse("7660450463");
+            var n = p * q;
+            //var n = BigInteger.Parse("10023859281455311421");
 
-            //FactorTest1(500, new PollardRhoReduction(4, new MontgomeryReduction()));
+            //FactorTest1(25, n, new PollardRhoBrent(4));
+            //FactorTest1(25, n, new PollardRhoReduction(4, new BigIntegerReduction()));
+            //FactorTest1(25, n, new PollardRhoReduction(4, new BarrettReduction()));
+            //FactorTest1(25, n, new PollardRhoReduction(4, new MontgomeryReduction()));
+
+            FactorTest1(10, n, new PollardRhoReduction(1, new BarrettReduction()));
+            FactorTest1(10, n, new PollardRhoReduction(1, new MontgomeryReduction()));
+
+            //FactorTest1(500, n, new PollardRhoReduction(4, new MontgomeryReduction()));
         }
 
-        static void FactorTest1(int iterations, IFactorizationAlgorithm<BigInteger> algorithm)
+        static void FactorTest1(int iterations, BigInteger n, IFactorizationAlgorithm<BigInteger> algorithm)
         {
-            var n = BigInteger.Parse("10023859281455311421");
             var elapsed = new double[iterations];
             for (int i = 0; i < iterations; i++)
             {

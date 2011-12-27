@@ -74,21 +74,6 @@ namespace Decompose.Numerics
             return ModPowInternal(b, e - 1, b * p % modulus, modulus);
         }
 
-        public static int GetBitLength(BigInteger n)
-        {
-            var bytes = n.ToByteArray();
-            for (int i = bytes.Length - 1; i >= 0; i--)
-            {
-                var b = bytes[i];
-                for (int j = 8 - 1; j >= 0; j--)
-                {
-                    if ((b & (1 << j)) != 0)
-                        return i * 8 + j + 1;
-                }
-            }
-            return 0;
-        }
-
         public static BigInteger[] ExtendedGreatestCommonDivisor(BigInteger a, BigInteger b)
         {
             var x = BigInteger.Zero;

@@ -150,8 +150,8 @@ namespace Decompose.Numerics.Test
         public void TestRadix32()
         {
             var n = BigInteger.Parse("10023859281455311421");
-            var random = new MersenneTwister32(0);  
-            var length = (BigIntegerUtils.GetBitLength(n) * 2 + 31) / 32;
+            var random = new MersenneTwister32(0);
+            var length = (n.GetBitLength() * 2 + 31) / 32;
             var bits = new uint[3 * length];
             var a = new Radix32Integer(bits, 0 * length, length);
             var b = new Radix32Integer(bits, 1 * length, length);
@@ -160,6 +160,7 @@ namespace Decompose.Numerics.Test
             {
                 var aPrime = random.Next(n);
                 var bPrime = random.Next(n);
+                uint c = random.Next();
                 a.Set(aPrime);
                 b.Set(bPrime);
 
@@ -174,6 +175,12 @@ namespace Decompose.Numerics.Test
                 x.SetSquare(a);
                 var square = x.ToBigInteger();
                 Assert.AreEqual(aPrime * aPrime, square);
+
+                x.SetProduct(c, a);
+                var scaled = x.ToBigInteger();
+                if (c * aPrime != scaled)
+                    Debugger.Break();
+                Assert.AreEqual(c * aPrime, scaled);
 
                 if (aPrime > bPrime)
                 {

@@ -48,19 +48,7 @@ namespace Decompose.Numerics
                 {
                     reducer.reg3.Set(r);
                     if (this == x)
-                    {
-#if false
                         r.SetSquare(reducer.reg3);
-                        var r1 = r.ToBigInteger();
-                        r.SetProduct(reducer.reg3, reducer.reg3);
-                        var r2 = r.ToBigInteger();
-                        if (r1 != r2)
-                            Debugger.Break();
-#else
-                        r.SetSquare(reducer.reg3);
-                        //r.SetProduct(reducer.reg3, reducer.reg3);
-#endif
-                    }
                     else
                         r.SetProduct(reducer.reg3, ((Residue)x).r);
                     reducer.Reduce(r);
@@ -128,11 +116,11 @@ namespace Decompose.Numerics
                 this.p = p;
                 bLength = 32;
                 b = BigInteger.One << bLength;
-                var pLength = BigIntegerUtils.GetBitLength(p);
+                var pLength = p.GetBitLength();
                 k = (pLength - 1) / bLength + 1;
                 mu = BigInteger.Pow(b, 2 * k) / p;
 
-                var muLength = BigIntegerUtils.GetBitLength(mu);
+                var muLength = mu.GetBitLength();
                 length = (pLength + 31) / 32 * 2 + (muLength + 31) / 32;
                 bits = new uint[5 * length];
                 muRep = new Radix32Integer(bits, 0 * length, length);

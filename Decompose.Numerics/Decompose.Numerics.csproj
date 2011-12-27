@@ -53,6 +53,7 @@
     <Compile Include="MillerRabin.cs" />
     <Compile Include="BigIntegerReduction.cs" />
     <Compile Include="MontgomeryReduction.cs" />
+    <Compile Include="NumericExtensions.cs" />
     <Compile Include="PollardRho.cs" />
     <Compile Include="PollardRhoBase.cs" />
     <Compile Include="PollardRhoBrent.cs" />

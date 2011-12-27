@@ -121,7 +121,7 @@ namespace Decompose.Numerics
             public Reducer(BigInteger n)
             {
                 this.n = n;
-                rLength = (BigIntegerUtils.GetBitLength(n) + 31) / 32 * 32;
+                rLength = (n.GetBitLength() + 31) / 32 * 32;
                 length = (rLength * 2 + 31) / 32;
                 r = BigInteger.One << rLength;
                 rMinusOne = r - BigInteger.One;
