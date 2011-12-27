@@ -370,15 +370,20 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer MontgomeryOperation(Radix32Integer n, uint k0, int rLength)
+        /// <summary>
+        /// Perform a single Montgomery operation
+        /// </summary>
+        /// <param name="n"></param>
+        /// <param name="k0"></param>
+        /// <returns></returns>
+        public Radix32Integer MontgomeryOperation(Radix32Integer n, uint k0)
         {
             CheckValid();
-            Debug.Assert(rLength % 32 == 0);
-            int s = rLength / 32;
+            int s = n.last + 1;
             for (int i = 0; i < s; i++)
             {
                 ulong carry = 0;
-                ulong m = ((ulong)bits[index + i] * (ulong)k0) & ((1ul << 32) - 1);
+                ulong m = bits[index + i] * k0;
                 for (int j = 0; j <= n.last; j++)
                 {
                     carry += (ulong)bits[index + i + j] + m * n.bits[n.index + j];
@@ -393,7 +398,7 @@ namespace Decompose.Numerics
                 }
             }
             SetLast(2 * s);
-            RightShift(rLength);
+            RightShift(32 * s);
             return this;
         }
 

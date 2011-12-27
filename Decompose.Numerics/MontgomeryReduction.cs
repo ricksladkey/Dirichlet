@@ -98,10 +98,6 @@ namespace Decompose.Numerics
             private BigInteger n;
             private int rLength;
             private int length;
-            private BigInteger r;
-            private BigInteger rMinusOne;
-            private BigInteger rSquaredModN;
-            private BigInteger rInverse;
             private BigInteger k;
             private uint k0;
             private uint[] bits;
@@ -123,24 +119,24 @@ namespace Decompose.Numerics
             public Reducer(BigInteger n)
             {
                 this.n = n;
-                rLength = (n.GetBitLength() + 31) / 32 * 32;
-                length = (rLength * 4 + 31) / 32 + 1;
-                r = BigInteger.One << rLength;
                 if (n.IsEven)
                     throw new InvalidOperationException("not relatively prime");
-                rMinusOne = r - BigInteger.One;
-                rSquaredModN = r * r % n;
-                var results = BigIntegerUtils.ExtendedGreatestCommonDivisor(r, n);
-                rInverse = results[0];
-                k = -results[1];
+                rLength = (n.GetBitLength() + 31) / 32 * 32;
+                length = 2 * rLength / 32 + 1;
+                var r = BigInteger.One << rLength;
+                var rSquaredModN = r * r % n;
+                BigInteger c;
+                BigInteger d;
+                BigIntegerUtils.ExtendedGreatestCommonDivisor(r, n, out c, out d);
+                var rInverse = c;
+                k = -d;
                 if (rInverse.Sign == -1)
                     rInverse += n;
                 if (k.Sign == -1)
                     k += r;
                 Debug.Assert(r * rInverse == k * n + 1);
                 var w = BigInteger.One << 32;
-                results = BigIntegerUtils.ExtendedGreatestCommonDivisor(w, n);
-                k0 = (uint)-results[1];
+                k0 = (uint)(k % w);
 
                 bits = new uint[8 * length];
                 nRep = new Radix32Integer(bits, 0 * length, length);
@@ -171,15 +167,19 @@ namespace Decompose.Numerics
 
             private void Reduce(Radix32Integer t)
             {
-#if false
+                t.MontgomeryOperation(nRep, k0);
+                if (t.CompareTo(nRep) >= 0)
+                    t.Subtract(nRep);
+                Debug.Assert(t.CompareTo(nRep) < 0);
+            }
+
+            private void SimpleReduce(Radix32Integer t)
+            {
                 reg1.SetMasked(t, rLength);
                 reg2.SetProductMasked(reg1, kRep, rLength);
                 reg1.SetProduct(reg2, nRep);
                 t.Add(reg1);
                 t.RightShift(rLength);
-#else
-                t.MontgomeryOperation(nRep, k0, rLength);
-#endif
                 if (t.CompareTo(nRep) >= 0)
                     t.Subtract(nRep);
                 Debug.Assert(t.CompareTo(nRep) < 0);

@@ -76,9 +76,9 @@ namespace Decompose.Numerics.Test
             var b = (BigInteger)23;
             var cExpected = (BigInteger)(-9);
             var dExpected = (BigInteger)47;
-            var results = BigIntegerUtils.ExtendedGreatestCommonDivisor(a, b);
-            BigInteger c = results[0];
-            BigInteger d = results[1];
+            BigInteger c;
+            BigInteger d;
+            BigIntegerUtils.ExtendedGreatestCommonDivisor(a, b, out c, out d);
             Assert.AreEqual(cExpected, c);
             Assert.AreEqual(dExpected, d);
         }

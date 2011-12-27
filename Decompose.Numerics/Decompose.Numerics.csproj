@@ -63,6 +63,7 @@
     <Compile Include="IResidue.cs" />
     <Compile Include="SqrtBinarySearch.cs" />
     <Compile Include="SqrtNewtonsMethod.cs" />
+    <Compile Include="Unused.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
