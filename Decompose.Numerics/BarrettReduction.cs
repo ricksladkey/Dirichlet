@@ -99,7 +99,8 @@ namespace Decompose.Numerics
             private int length;
             private int bToTheKMinusOneLength;
             private int bToTheKPlusOneLength;
-            private uint[] bits;
+            private Radix32Store store;
+
             private Radix32Integer muRep;
             private Radix32Integer pRep;
             private Radix32Integer reg2;
@@ -122,12 +123,12 @@ namespace Decompose.Numerics
 
                 var muLength = mu.GetBitLength();
                 length = (pLength + 31) / 32 * 2 + (muLength + 31) / 32;
-                bits = new uint[5 * length];
-                muRep = new Radix32Integer(bits, 0 * length, length);
-                pRep = new Radix32Integer(bits, 1 * length, length);
-                reg1 = new Radix32Integer(bits, 2 * length, length);
-                reg2 = new Radix32Integer(bits, 3 * length, length);
-                reg3 = new Radix32Integer(bits, 4 * length, length);
+                store = new Radix32Store(length);
+                muRep = store.Create();
+                pRep = store.Create();
+                reg1 = store.Create();
+                reg2 = store.Create();
+                reg3 = store.Create();
                 muRep.Set(mu);
                 pRep.Set(p);
                 bToTheKMinusOneLength = bLength * (k - 1);
@@ -141,7 +142,7 @@ namespace Decompose.Numerics
 
             private Radix32Integer CreateRep()
             {
-                return new Radix32Integer(new uint[length], 0, length);
+                return new Radix32Integer(length);
             }
 
             private void Reduce(Radix32Integer z)

@@ -151,11 +151,11 @@ namespace Decompose.Numerics.Test
         {
             var n = BigInteger.Parse("10023859281455311421");
             var random = new MersenneTwister32(0);
-            var length = (n.GetBitLength() * 2 + 31) / 32;
-            var bits = new uint[3 * length];
-            var a = new Radix32Integer(bits, 0 * length, length);
-            var b = new Radix32Integer(bits, 1 * length, length);
-            var x = new Radix32Integer(bits, 2 * length, length);
+            var length = (n.GetBitLength() * 2 + 31) / 32 + 3;
+            var store = new Radix32Store(length);
+            var a = store.Create();
+            var b = store.Create();
+            var x = store.Create();
             for (int i = 0; i < 1000; i++)
             {
                 var aPrime = random.Next(n);
@@ -164,35 +164,36 @@ namespace Decompose.Numerics.Test
                 a.Set(aPrime);
                 b.Set(bPrime);
 
+                for (int j = 0; j <= 65; j++)
+                {
+                    x.Set(a).LeftShift(j);
+                    Assert.AreEqual(aPrime << j, x.ToBigInteger());
+
+                    x.Set(a).RightShift(j);
+                    Assert.AreEqual(aPrime >> j, x.ToBigInteger());
+                }
+
                 x.SetSum(a, b);
-                var sum = x.ToBigInteger();
-                Assert.AreEqual(aPrime + bPrime, sum);
+                Assert.AreEqual(aPrime + bPrime, x.ToBigInteger());
 
                 x.SetProduct(a, b);
-                var product = x.ToBigInteger();
-                Assert.AreEqual(aPrime * bPrime, product);
+                Assert.AreEqual(aPrime * bPrime, x.ToBigInteger());
 
                 x.SetSquare(a);
-                var square = x.ToBigInteger();
-                Assert.AreEqual(aPrime * aPrime, square);
+                Assert.AreEqual(aPrime * aPrime, x.ToBigInteger());
 
                 x.SetProduct(c, a);
-                var scaled = x.ToBigInteger();
-                if (c * aPrime != scaled)
-                    Debugger.Break();
-                Assert.AreEqual(c * aPrime, scaled);
+                Assert.AreEqual(c * aPrime, x.ToBigInteger());
 
                 if (aPrime > bPrime)
                 {
                     x.SetDifference(a, b);
-                    var difference = x.ToBigInteger();
-                    Assert.AreEqual(aPrime - bPrime, difference);
+                    Assert.AreEqual(aPrime - bPrime, x.ToBigInteger());
                 }
                 else
                 {
                     x.SetDifference(b, a);
-                    var difference = x.ToBigInteger();
-                    Assert.AreEqual(bPrime - aPrime, difference);
+                    Assert.AreEqual(bPrime - aPrime, x.ToBigInteger());
                 }
             }
         }

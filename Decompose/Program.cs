@@ -14,8 +14,8 @@ namespace Decompose
             //BarrettReductionTest1();
             //BarrettReductionTest2();
             //Radix32Test1();
-            FactorTest1();
-            //FactorTest2();
+            //FactorTest1();
+            FactorTest2();
         }
 
         static void FindPrimeTest1()
@@ -123,10 +123,10 @@ namespace Decompose
             timer1.Start();
             for (int i = 0; i < iterations1; i++)
             {
-                var bits = new uint[3 * length];
-                var a = new Radix32Integer(bits, 0 * length, length);
-                var b = new Radix32Integer(bits, 1 * length, length);
-                var c = new Radix32Integer(bits, 2 * length, length);
+                var store = new Radix32Store(length);
+                var a = store.Create();
+                var b = store.Create();
+                var c = store.Create();
                 a.Set(random1.Next(n));
                 b.Set(random1.Next(n));
 
@@ -152,24 +152,31 @@ namespace Decompose
 
         static void FactorTest1()
         {
-            var p = BigInteger.Parse("287288745765902964785862069919080712937");
-            var q = BigInteger.Parse("7660450463");
-            //var n = p * q;
             var n = BigInteger.Parse("10023859281455311421");
 
-            //FactorTest1(25, n, new PollardRhoBrent(4));
-            //FactorTest1(25, n, new PollardRhoReduction(4, new BigIntegerReduction()));
-            FactorTest1(25, n, new PollardRhoReduction(4, new BarrettReduction()));
-            FactorTest1(25, n, new PollardRhoReduction(4, new MontgomeryReduction()));
+            FactorTest(25, n, new PollardRhoBrent(4));
+            //FactorTest(25, n, new PollardRhoReduction(4, new BigIntegerReduction()));
+            FactorTest(25, n, new PollardRhoReduction(4, new BarrettReduction()));
+            FactorTest(25, n, new PollardRhoReduction(4, new MontgomeryReduction()));
 
-            //FactorTest1(10, n, new PollardRhoBrent(1));
-            //FactorTest1(10, n, new PollardRhoReduction(1, new BarrettReduction()));
-            //FactorTest1(10, n, new PollardRhoReduction(1, new MontgomeryReduction()));
+            //FactorTest(10, n, new PollardRhoBrent(1));
+            //FactorTest(10, n, new PollardRhoReduction(1, new BarrettReduction()));
+            //FactorTest(10, n, new PollardRhoReduction(1, new MontgomeryReduction()));
 
-            //FactorTest1(500, n, new PollardRhoReduction(4, new MontgomeryReduction()));
+            //FactorTest(500, n, new PollardRhoReduction(4, new MontgomeryReduction()));
         }
 
-        static void FactorTest1(int iterations, BigInteger n, IFactorizationAlgorithm<BigInteger> algorithm)
+        static void FactorTest2()
+        {
+            var p = BigInteger.Parse("287288745765902964785862069919080712937");
+            var q = BigInteger.Parse("7660450463");
+            var n = p * q;
+            //FactorTest(25, n, new PollardRhoBrent(4));
+            //FactorTest(25, n, new PollardRhoReduction(4, new BarrettReduction()));
+            FactorTest(25, n, new PollardRhoReduction(4, new MontgomeryReduction()));
+        }
+
+        static void FactorTest(int iterations, BigInteger n, IFactorizationAlgorithm<BigInteger> algorithm)
         {
             var elapsed = new double[iterations];
             for (int i = 0; i < iterations; i++)
@@ -188,22 +195,6 @@ namespace Decompose
             }
             var total = elapsed.Aggregate((sofar, current) => sofar + current);
             Console.WriteLine("{0} iterations in {1} msec, {2} msec/iteration", iterations, total, total / iterations);
-        }
-
-        static void FactorTest2()
-        {
-            var algorithm = new PollardRhoReduction(4, new BarrettReduction());
-            var n = BigInteger.Parse("10023859281455311421");
-            int iterations = 250;
-            for (int i = 0; i < iterations; i++)
-            {
-                var factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
-                var product = factors.Aggregate((sofar, current) => sofar * current);
-                if (factors.Length != 2)
-                    throw new InvalidOperationException();
-                if (n != product)
-                    throw new InvalidOperationException();
-            }
         }
     }
 }

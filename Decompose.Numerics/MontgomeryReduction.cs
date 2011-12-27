@@ -91,7 +91,7 @@ namespace Decompose.Numerics
 
                 public override string ToString()
                 {
-                    return ToBigInteger().ToString() + " (" + r.ToBigInteger() + ")";
+                    return ToBigInteger().ToString();
                 }
             }
 
@@ -100,7 +100,7 @@ namespace Decompose.Numerics
             private int length;
             private BigInteger k;
             private uint k0;
-            private uint[] bits;
+            private Radix32Store store;
 
             private Radix32Integer nRep;
             private Radix32Integer rSquaredModNRep;
@@ -138,15 +138,15 @@ namespace Decompose.Numerics
                 var w = BigInteger.One << 32;
                 k0 = (uint)(k % w);
 
-                bits = new uint[8 * length];
-                nRep = new Radix32Integer(bits, 0 * length, length);
-                rSquaredModNRep = new Radix32Integer(bits, 1 * length, length);
-                kRep = new Radix32Integer(bits, 2 * length, length);
-                reg1 = new Radix32Integer(bits, 3 * length, length);
-                reg2 = new Radix32Integer(bits, 4 * length, length);
-                reg3 = new Radix32Integer(bits, 5 * length, length);
-                zeroRep = new Radix32Integer(bits, 6 * length, length);
-                oneRep = new Radix32Integer(bits, 7 * length, length);
+                store = new Radix32Store(length);
+                nRep = store.Create();
+                rSquaredModNRep = store.Create();
+                kRep = store.Create();
+                reg1 = store.Create();
+                reg2 = store.Create();
+                reg3 = store.Create();
+                zeroRep = store.Create();
+                oneRep = store.Create();
 
                 nRep.Set(n);
                 rSquaredModNRep.Set(rSquaredModN);
@@ -162,7 +162,7 @@ namespace Decompose.Numerics
 
             private Radix32Integer CreateRep()
             {
-                return new Radix32Integer(new uint[length], 0, length);
+                return new Radix32Integer(length);
             }
 
             private void Reduce(Radix32Integer t)
@@ -173,7 +173,7 @@ namespace Decompose.Numerics
                 Debug.Assert(t.CompareTo(nRep) < 0);
             }
 
-            private void SimpleReduce(Radix32Integer t)
+            private void BasicReduce(Radix32Integer t)
             {
                 reg1.SetMasked(t, rLength);
                 reg2.SetProductMasked(reg1, kRep, rLength);

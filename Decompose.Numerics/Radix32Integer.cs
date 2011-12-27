@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class Radix32Integer : IComparable<Radix32Integer>
+    public class Radix32Integer : IComparable<Radix32Integer>, IEquatable<Radix32Integer>
     {
         private uint[] bits;
         private int index;
@@ -15,7 +15,7 @@ namespace Decompose.Numerics
         public uint[] Bits { get { return bits; } }
         public int Index { get { return index; } }
         public int Length { get { return length; } }
-        public int Last { get { return last; } set { last = value; } }
+        public int Last { get { return last; } }
 
         public int GetBitLength()
         {
@@ -23,7 +23,7 @@ namespace Decompose.Numerics
             if (last == 0 && bits[index] == 0)
                 return 0;
             var b = bits[index + last];
-            return last * 32 + bits[index + last].GetBitLength();
+            return 32 * last + bits[index + last].GetBitLength();
         }
 
         private uint[] DebugBits
@@ -46,12 +46,21 @@ namespace Decompose.Numerics
             get { return last == 0 && bits[index] == 1; }
         }
 
+        public bool IsEven
+        {
+            get { return (bits[index] & 1) == 0; }
+        }
+
+        public Radix32Integer(int length)
+            : this(new uint[length], 0, length)
+        {
+        }
+
         public Radix32Integer(uint[] bits, int index, int length)
         {
             this.bits = bits;
             this.index = index;
             this.length = length;
-            last = length - 1;
             SetLast(length - 1);
         }
 
@@ -65,13 +74,24 @@ namespace Decompose.Numerics
             return this;
         }
 
+        public Radix32Integer Set(uint a)
+        {
+            CheckValid();
+            bits[index] = a;
+            for (int i = 1; i <= last; i++)
+                bits[index + i] = 0;
+            last = 0;
+            CheckValid();
+            return this;
+        }
+
         public Radix32Integer Set(BigInteger a)
         {
             CheckValid();
             Debug.Assert(a.GetBitLength() <= 32 * length);
             var nBits = GetBits(a);
             nBits.CopyTo(bits, index);
-            for (int i = nBits.Length; i < length; i++)
+            for (int i = nBits.Length; i <= last; i++)
                 bits[index + i] = 0;
             last = Math.Max(nBits.Length - 1, 0);
             CheckValid();
@@ -127,6 +147,11 @@ namespace Decompose.Numerics
             return ToBigInteger().ToString();
         }
 
+        public bool Equals(Radix32Integer other)
+        {
+            return CompareTo(other) == 0;
+        }
+
         public int CompareTo(Radix32Integer other)
         {
             CheckValid();
@@ -147,7 +172,7 @@ namespace Decompose.Numerics
         {
             CheckValid();
             int i = n / 32;
-            int j = n - i * 32;
+            int j = n - 32 * i;
             if (j == 0)
             {
                 for (int k = last; k >= i; k--)
@@ -163,20 +188,64 @@ namespace Decompose.Numerics
             return this;
         }
 
+        public Radix32Integer LeftShift(int n)
+        {
+            CheckValid();
+            Debug.Assert(GetBitLength() + n <= 32 * length);
+            if (n == 0)
+                return this;
+            int i = n / 32;
+            int j = n - 32 * i;
+            if (j == 0)
+            {
+                for (int k = last; k >= 0; k--)
+                    bits[index + k + i] = bits[index + k];
+                for (int k = 0; k < i; k++)
+                    bits[index + k] = 0;
+                SetLast(last + i);
+            }
+            else
+            {
+                int jneg = 32 - j;
+                bits[index + last + i + 1] = bits[index + last] >> jneg;
+                for (int k = last - 1; k >= 0; k--)
+                    bits[index + k + i + 1] = (bits[index + k + 1] << j) | (bits[index + k] >> jneg);
+                bits[index + i] = bits[index] << j;
+                for (int k = 0; k < i; k++)
+                    bits[index + k] = 0;
+                SetLast(last + i + 1);
+            }
+            return this;
+        }
+
         public Radix32Integer RightShift(int n)
         {
             CheckValid();
-            Debug.Assert(n % 32 == 0);
             int i = n / 32;
-            int j = n - i * 32;
-            for (int k = 0; k < length - i; k++)
-                bits[index + k] = bits[index + k + i];
-            for (int k = length - i; k <= last; k++)
-                bits[index + k] = 0;
-            last -= i;
-            if (last < 0)
-                last = 0;
-            CheckValid();
+            if (i > last)
+            {
+                Clear();
+                return this;
+            }
+            int j = n - 32 * i;
+            int limit = last - i;
+            if (j == 0)
+            {
+                for (int k = 0; k <= limit; k++)
+                    bits[index + k] = bits[index + k + i];
+                for (int k = limit + 1; k <= last; k++)
+                    bits[index + k] = 0;
+            }
+            else
+            {
+                int jneg = 32 - j;
+                for (int k = 0; k < limit; k++)
+                    bits[index + k] = (bits[index + i + k + 1] << jneg) | (bits[index + i + k] >> j);
+                bits[index + limit] = bits[index + i + limit] >> j;
+                for (int k = limit + 1; k <= last; k++)
+                    bits[index + k] = 0;
+            }
+            SetLast(limit);
             return this;
         }
 
@@ -185,7 +254,7 @@ namespace Decompose.Numerics
             CheckValid();
             Debug.Assert(n % 32 == 0);
             int i = n / 32;
-            int j = n - i * 32;
+            int j = n - 32 * i;
             Debug.Assert(bits[index + i] == 0);
             ++bits[index + i];
             last = Math.Max(last, i);
@@ -254,7 +323,7 @@ namespace Decompose.Numerics
         {
             // Use operand scanning algorithm.
             CheckValid();
-            Debug.Assert(a.GetBitLength() + b.GetBitLength() <= length * 32);
+            Debug.Assert(a.GetBitLength() + b.GetBitLength() <= 32 * length);
             Clear();
             for (int i = 0; i <= a.last; i++)
             {
@@ -276,7 +345,7 @@ namespace Decompose.Numerics
         {
             // Use operand scanning algorithm.
             CheckValid();
-            Debug.Assert(a.GetBitLength() + b.GetBitLength() <= length * 32);
+            Debug.Assert(a.GetBitLength() + b.GetBitLength() <= 32 * length);
             ulong carry = 0;
             for (int j = 0; j <= b.last; j++)
             {
@@ -406,7 +475,7 @@ namespace Decompose.Numerics
         {
             // Use operand scanning algorithm.
             CheckValid();
-            Debug.Assert(2 * a.GetBitLength() <= length * 32);
+            Debug.Assert(2 * a.GetBitLength() <= 32 * length);
             Clear();
             for (int i = 0; i <= a.last; i++)
             {
@@ -470,12 +539,17 @@ namespace Decompose.Numerics
 
         private void SetLast(int n)
         {
-            int i = n;
-            if (i == length)
-                --i;
-            while (i > 0 && bits[index + i] == 0)
-                --i;
-            last = i;
+            if (n < 0)
+                last = 0;
+            else
+            {
+                int i = n;
+                if (i == length)
+                    --i;
+                while (i > 0 && bits[index + i] == 0)
+                    --i;
+                last = i;
+            }
             CheckValid();
         }
 

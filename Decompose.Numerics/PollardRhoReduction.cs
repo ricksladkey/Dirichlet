@@ -49,12 +49,7 @@ namespace Decompose.Numerics
                         if (cancellationToken.IsCancellationRequested)
                             return BigInteger.Zero;
                         AdvanceF(y, cPrime);
-                        
-                        if (x.CompareTo(y) <= 0)
-                            diff.Set(y).Subtract(x);
-                        else
-                            diff.Set(x).Subtract(y);
-                        q.Multiply(diff);
+                        q.Multiply(AbsDiff(diff, x, y));
                     }
                     g = BigInteger.GreatestCommonDivisor(q.ToBigInteger(), n);
                     k += limit;
@@ -64,15 +59,13 @@ namespace Decompose.Numerics
 
             if (g.CompareTo(n) == 0)
             {
+                // Backtrack.
                 do
                 {
                     if (cancellationToken.IsCancellationRequested)
                         return BigInteger.Zero;
                     AdvanceF(ys, cPrime);
-                    if (x.CompareTo(ys) <= 0)
-                        diff.Set(ys).Subtract(x);
-                    else
-                        diff.Set(x).Subtract(ys);
+                    AbsDiff(diff, ys, x);
                     g = BigInteger.GreatestCommonDivisor(diff.ToBigInteger(), n);
                 } while (g.IsOne);
             }
@@ -86,6 +79,15 @@ namespace Decompose.Numerics
         private static void AdvanceF(IResidue x, IResidue c)
         {
             x.Multiply(x).Add(c);
+        }
+
+        private static IResidue AbsDiff(IResidue diff, IResidue x, IResidue y)
+        {
+            if (x.CompareTo(y) <= 0)
+                diff.Set(y).Subtract(x);
+            else
+                diff.Set(x).Subtract(y);
+            return diff;
         }
     }
 }

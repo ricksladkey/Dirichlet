@@ -57,6 +57,8 @@ namespace Decompose.Numerics
                 public IResidue Subtract(IResidue x)
                 {
                     r -= ((Residue)x).r;
+                    if (r < reducer.Modulus)
+                        r += reducer.Modulus;
                     return this;
                 }
 
