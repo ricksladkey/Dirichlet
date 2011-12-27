@@ -19,7 +19,7 @@ namespace Decompose.Numerics
 
         public int GetBitLength()
         {
-            AssertValid();
+            CheckValid();
             if (last == 0 && bits[index] == 0)
                 return 0;
             var b = bits[index + last];
@@ -52,50 +52,48 @@ namespace Decompose.Numerics
             this.index = index;
             this.length = length;
             last = length - 1;
-            while (last > 0 && bits[index + last] == 0)
-                --last;
-            AssertValid();
+            SetLast(length - 1);
         }
 
         public Radix32Integer Clear()
         {
-            AssertValid();
+            CheckValid();
             for (int i = 0; i <= last; i++)
                 bits[index + i] = 0;
             last = 0;
-            AssertValid();
+            CheckValid();
             return this;
         }
 
         public Radix32Integer Set(BigInteger a)
         {
-            AssertValid();
+            CheckValid();
             Debug.Assert(a.GetBitLength() <= 32 * length);
             var nBits = GetBits(a);
             nBits.CopyTo(bits, index);
             for (int i = nBits.Length; i < length; i++)
                 bits[index + i] = 0;
             last = Math.Max(nBits.Length - 1, 0);
-            AssertValid();
+            CheckValid();
             return this;
         }
 
         public Radix32Integer Set(Radix32Integer a)
         {
-            AssertValid();
+            CheckValid();
             Debug.Assert(length == a.length);
             for (int i = 0; i <= a.last; i++)
                 bits[index + i] = a.Bits[a.index + i];
             for (int i = a.last + 1; i <= last; i++)
                 bits[index + i] = 0;
             last = a.last;
-            AssertValid();
+            CheckValid();
             return this;
         }
 
         public Radix32Integer SetMasked(Radix32Integer a, int n)
         {
-            AssertValid();
+            CheckValid();
             Debug.Assert(length == a.length);
             Debug.Assert(n % 32 == 0 && n > 0);
             int clast = (n + 31) / 32 - 1;
@@ -104,16 +102,13 @@ namespace Decompose.Numerics
                 bits[index + i] = a.Bits[a.index + i];
             for (int i = alast + 1; i <= last; i++)
                 bits[index + i] = 0;
-            last = alast;
-            while (last > 0 && bits[index + last] == 0)
-                --last;
-            AssertValid();
+            SetLast(alast);
             return this;
         }
 
         public Radix32Integer Copy()
         {
-            AssertValid();
+            CheckValid();
             var newBits = new uint[length];
             Array.Copy(bits, index, newBits, 0, last + 1);
             return new Radix32Integer(newBits, 0, length);
@@ -134,7 +129,7 @@ namespace Decompose.Numerics
 
         public int CompareTo(Radix32Integer other)
         {
-            AssertValid();
+            CheckValid();
             Debug.Assert(length == other.length);
             var diff = last - other.last;
             if (diff != 0)
@@ -150,7 +145,7 @@ namespace Decompose.Numerics
 
         public Radix32Integer Mask(int n)
         {
-            AssertValid();
+            CheckValid();
             int i = n / 32;
             int j = n - i * 32;
             if (j == 0)
@@ -164,16 +159,13 @@ namespace Decompose.Numerics
                     bits[index + k] = 0;
                 bits[index + i] &= (1u << j) - 1;
             }
-            last = i - 1;
-            while (last > 0 && bits[index + last] == 0)
-                --last;
-            AssertValid();
+            SetLast(i - 1);
             return this;
         }
 
         public Radix32Integer RightShift(int n)
         {
-            AssertValid();
+            CheckValid();
             Debug.Assert(n % 32 == 0);
             int i = n / 32;
             int j = n - i * 32;
@@ -184,26 +176,26 @@ namespace Decompose.Numerics
             last -= i;
             if (last < 0)
                 last = 0;
-            AssertValid();
+            CheckValid();
             return this;
         }
 
         public Radix32Integer AddPowerOfTwo(int n)
         {
-            AssertValid();
+            CheckValid();
             Debug.Assert(n % 32 == 0);
             int i = n / 32;
             int j = n - i * 32;
             Debug.Assert(bits[index + i] == 0);
             ++bits[index + i];
             last = Math.Max(last, i);
-            AssertValid();
+            CheckValid();
             return this;
         }
 
         public Radix32Integer SetSum(Radix32Integer a, Radix32Integer b)
         {
-            AssertValid();
+            CheckValid();
             Debug.Assert(length == a.length && length == b.length);
             ulong carry = 0;
             var limit = Math.Max(a.last, b.last);
@@ -222,7 +214,7 @@ namespace Decompose.Numerics
             for (int i = limit + 1; i <= last; i++)
                 bits[index + i] = 0;
             last = limit;
-            AssertValid();
+            CheckValid();
             return this;
         }
 
@@ -233,7 +225,7 @@ namespace Decompose.Numerics
 
         public Radix32Integer SetDifference(Radix32Integer a, Radix32Integer b)
         {
-            AssertValid();
+            CheckValid();
             Debug.Assert(length == a.length && length == b.length);
             Debug.Assert(a.CompareTo(b) >= 0);
             ulong borrow = 0;
@@ -249,7 +241,7 @@ namespace Decompose.Numerics
             while (limit > 0 && bits[index + limit] == 0)
                 --limit;
             last = limit;
-            AssertValid();
+            CheckValid();
             return this;
         }
 
@@ -261,7 +253,7 @@ namespace Decompose.Numerics
         public Radix32Integer SetProduct(Radix32Integer a, Radix32Integer b)
         {
             // Use operand scanning algorithm.
-            AssertValid();
+            CheckValid();
             Debug.Assert(a.GetBitLength() + b.GetBitLength() <= length * 32);
             Clear();
             for (int i = 0; i <= a.last; i++)
@@ -276,19 +268,14 @@ namespace Decompose.Numerics
                 }
                 bits[index + i + b.last + 1] = (uint)carry;
             }
-            last = a.last + b.last + 1;
-            if (last == length)
-                --last;
-            while (last > 0 && bits[index + last] == 0)
-                --last;
-            AssertValid();
+            SetLast(a.last + b.last + 1);
             return this;
         }
 
         public Radix32Integer SetProduct(uint a, Radix32Integer b)
         {
             // Use operand scanning algorithm.
-            AssertValid();
+            CheckValid();
             Debug.Assert(a.GetBitLength() + b.GetBitLength() <= length * 32);
             ulong carry = 0;
             for (int j = 0; j <= b.last; j++)
@@ -300,12 +287,7 @@ namespace Decompose.Numerics
             bits[index + b.last + 1] = (uint)carry;
             for (int j = b.last + 2; j <= last; j++)
                 bits[index + j] = 0;
-            last = b.last + 1;
-            if (last == length)
-                --last;
-            while (last > 0 && bits[index + last] == 0)
-                --last;
-            AssertValid();
+            SetLast(b.last + 1);
             return this;
         }
 
@@ -316,7 +298,7 @@ namespace Decompose.Numerics
 
         public Radix32Integer SetProductMasked(Radix32Integer a, Radix32Integer b, int n)
         {
-            AssertValid();
+            CheckValid();
             Debug.Assert(n % 32 == 0);
             Clear();
             int clast = (n + 31) / 32 - 1;
@@ -334,10 +316,7 @@ namespace Decompose.Numerics
                 if (i + blast < clast)
                     bits[index + i + blast + 1] = (uint)carry;
             }
-            last = clast;
-            while (last > 0 && bits[index + last] == 0)
-                --last;
-            AssertValid();
+            SetLast(clast);
             return this;
         }
 
@@ -355,7 +334,7 @@ namespace Decompose.Numerics
         public Radix32Integer SetProductShifted(Radix32Integer a, Radix32Integer b, int n)
         {
             // Use product scanning algorithm.
-            AssertValid();
+            CheckValid();
             Debug.Assert(n % 32 == 0 && n > 0);
             int shifted = n / 32;
             Clear();
@@ -387,19 +366,41 @@ namespace Decompose.Numerics
                 r2 = 0;
             }
             bits[index + clast - shifted] = (uint)r0;
-            last = clast - shifted;
-            if (last == length)
-                --last;
-            while (last > 0 && bits[index + last] == 0)
-                --last;
-            AssertValid();
+            SetLast(clast - shifted);
+            return this;
+        }
+
+        public Radix32Integer MontgomeryOperation(Radix32Integer n, uint k0, int rLength)
+        {
+            CheckValid();
+            Debug.Assert(rLength % 32 == 0);
+            int s = rLength / 32;
+            for (int i = 0; i < s; i++)
+            {
+                ulong carry = 0;
+                ulong m = ((ulong)bits[index + i] * (ulong)k0) & ((1ul << 32) - 1);
+                for (int j = 0; j <= n.last; j++)
+                {
+                    carry += (ulong)bits[index + i + j] + m * n.bits[n.index + j];
+                    bits[index + i + j] = (uint)carry;
+                    carry >>= 32;
+                }
+                for (int j = n.last + 1; carry != 0; j++)
+                {
+                    carry += (ulong)bits[index + i + j];
+                    bits[index + i + j] = (uint)carry;
+                    carry >>= 32;
+                }
+            }
+            SetLast(2 * s);
+            RightShift(rLength);
             return this;
         }
 
         public Radix32Integer SetSquare(Radix32Integer a)
         {
             // Use operand scanning algorithm.
-            AssertValid();
+            CheckValid();
             Debug.Assert(2 * a.GetBitLength() <= length * 32);
             Clear();
             for (int i = 0; i <= a.last; i++)
@@ -425,12 +426,7 @@ namespace Decompose.Numerics
                 if (carry != 0)
                     bits[k + 1] = (uint)carry;
             }
-            last = 2 * a.last + 1;
-            if (last == length)
-                --last;
-            while (last > 0 && bits[index + last] == 0)
-                --last;
-            AssertValid();
+            SetLast(2 * a.last + 1);
             return this;
         }
 
@@ -467,34 +463,16 @@ namespace Decompose.Numerics
             return this;
         }
 
-#if false
-        public Radix32Integer REDC(Radix32Integer p, Radix32Integer pPrime, int n)
+        private void SetLast(int n)
         {
-            // Use operand scanning algorithm.
-            AssertValid();
-            Debug.Assert(a.GetBitLength() + b.GetBitLength() <= length * 32);
-            Clear();
-            for (int i = 0; i <= a.last; i++)
-            {
-                ulong avalue = (ulong)a.bits[a.index + i];
-                ulong carry = 0;
-                for (int j = 0; j <= b.last; j++)
-                {
-                    carry += (ulong)bits[index + i + j] + avalue * (ulong)b.bits[b.index + j];
-                    bits[index + i + j] = (uint)carry;
-                    carry >>= 32;
-                }
-                bits[index + i + b.last + 1] = (uint)carry;
-            }
-            last = a.last + b.last + 1;
-            if (last == length)
-                --last;
-            while (last > 0 && bits[index + last] == 0)
-                --last;
-            AssertValid();
-            return this;
+            int i = n;
+            if (i == length)
+                --i;
+            while (i > 0 && bits[index + i] == 0)
+                --i;
+            last = i;
+            CheckValid();
         }
-#endif
 
         private static uint[] GetBits(BigInteger n)
         {
@@ -516,13 +494,13 @@ namespace Decompose.Numerics
         }
 
         [Conditional("DEBUG")]
-        private void AssertValid()
+        private void CheckValid()
         {
-            AssertValid(this);
+            CheckValid(this);
         }
 
         [Conditional("DEBUG")]
-        private static void AssertValid(Radix32Integer x)
+        private static void CheckValid(Radix32Integer x)
         {
             if (x.last == 0 && x.bits[x.index] == 0)
                 return;

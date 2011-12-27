@@ -1,5 +1,6 @@
-﻿using System.Numerics;
+﻿using System;
 using System.Diagnostics;
+using System.Numerics;
 
 namespace Decompose.Numerics
 {
@@ -102,6 +103,7 @@ namespace Decompose.Numerics
             private BigInteger rSquaredModN;
             private BigInteger rInverse;
             private BigInteger k;
+            private uint k0;
             private uint[] bits;
 
             private Radix32Integer nRep;
@@ -122,8 +124,10 @@ namespace Decompose.Numerics
             {
                 this.n = n;
                 rLength = (n.GetBitLength() + 31) / 32 * 32;
-                length = (rLength * 2 + 31) / 32;
+                length = (rLength * 4 + 31) / 32 + 1;
                 r = BigInteger.One << rLength;
+                if (n.IsEven)
+                    throw new InvalidOperationException("not relatively prime");
                 rMinusOne = r - BigInteger.One;
                 rSquaredModN = r * r % n;
                 var results = BigIntegerUtils.ExtendedGreatestCommonDivisor(r, n);
@@ -134,6 +138,9 @@ namespace Decompose.Numerics
                 if (k.Sign == -1)
                     k += r;
                 Debug.Assert(r * rInverse == k * n + 1);
+                var w = BigInteger.One << 32;
+                results = BigIntegerUtils.ExtendedGreatestCommonDivisor(w, n);
+                k0 = (uint)-results[1];
 
                 bits = new uint[8 * length];
                 nRep = new Radix32Integer(bits, 0 * length, length);
@@ -164,13 +171,18 @@ namespace Decompose.Numerics
 
             private void Reduce(Radix32Integer t)
             {
+#if false
                 reg1.SetMasked(t, rLength);
                 reg2.SetProductMasked(reg1, kRep, rLength);
                 reg1.SetProduct(reg2, nRep);
                 t.Add(reg1);
                 t.RightShift(rLength);
+#else
+                t.MontgomeryOperation(nRep, k0, rLength);
+#endif
                 if (t.CompareTo(nRep) >= 0)
                     t.Subtract(nRep);
+                Debug.Assert(t.CompareTo(nRep) < 0);
             }
         }
 

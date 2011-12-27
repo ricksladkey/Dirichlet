@@ -155,16 +155,17 @@ namespace Decompose
         {
             var p = BigInteger.Parse("287288745765902964785862069919080712937");
             var q = BigInteger.Parse("7660450463");
-            var n = p * q;
-            //var n = BigInteger.Parse("10023859281455311421");
+            //var n = p * q;
+            var n = BigInteger.Parse("10023859281455311421");
 
             //FactorTest1(25, n, new PollardRhoBrent(4));
             //FactorTest1(25, n, new PollardRhoReduction(4, new BigIntegerReduction()));
-            //FactorTest1(25, n, new PollardRhoReduction(4, new BarrettReduction()));
-            //FactorTest1(25, n, new PollardRhoReduction(4, new MontgomeryReduction()));
+            FactorTest1(25, n, new PollardRhoReduction(4, new BarrettReduction()));
+            FactorTest1(25, n, new PollardRhoReduction(4, new MontgomeryReduction()));
 
-            FactorTest1(10, n, new PollardRhoReduction(1, new BarrettReduction()));
-            FactorTest1(10, n, new PollardRhoReduction(1, new MontgomeryReduction()));
+            //FactorTest1(10, n, new PollardRhoBrent(1));
+            //FactorTest1(10, n, new PollardRhoReduction(1, new BarrettReduction()));
+            //FactorTest1(10, n, new PollardRhoReduction(1, new MontgomeryReduction()));
 
             //FactorTest1(500, n, new PollardRhoReduction(4, new MontgomeryReduction()));
         }
