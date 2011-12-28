@@ -281,7 +281,7 @@ namespace Decompose.Numerics
             var limit = Math.Max(a.last, b.last);
             for (int i = 0; i <= limit; i++)
             {
-                carry += (ulong)a.bits[a.index + i] + (ulong)b.bits[b.index + i];
+                carry += (ulong)a.bits[a.index + i] + b.bits[b.index + i];
                 bits[index + i] = (uint)carry;
                 carry >>= 32;
             }
@@ -312,7 +312,7 @@ namespace Decompose.Numerics
             var limit = Math.Max(a.last, b.last);
             for (int i = 0; i <= limit; i++)
             {
-                borrow += (ulong)a.bits[a.index + i] - (ulong)b.bits[b.index + i];
+                borrow += (ulong)a.bits[a.index + i] - b.bits[b.index + i];
                 bits[index + i] = (uint)borrow;
                 borrow = (ulong)((long)borrow >> 32);
             }
@@ -338,11 +338,11 @@ namespace Decompose.Numerics
             Clear();
             for (int i = 0; i <= a.last; i++)
             {
-                ulong avalue = (ulong)a.bits[a.index + i];
+                ulong ai = a.bits[a.index + i];
                 ulong carry = 0;
                 for (int j = 0; j <= b.last; j++)
                 {
-                    carry += (ulong)bits[index + i + j] + avalue * (ulong)b.bits[b.index + j];
+                    carry += (ulong)bits[index + i + j] + ai * b.bits[b.index + j];
                     bits[index + i + j] = (uint)carry;
                     carry >>= 32;
                 }
@@ -359,7 +359,7 @@ namespace Decompose.Numerics
             ulong carry = 0;
             for (int j = 0; j <= b.last; j++)
             {
-                carry += a * (ulong)b.bits[b.index + j];
+                carry += (ulong)a * b.bits[b.index + j];
                 bits[index + j] = (uint)carry;
                 carry >>= 32;
             }
@@ -387,7 +387,7 @@ namespace Decompose.Numerics
                 ulong carry = 0;
                 for (int j = 0; j <= blast; j++)
                 {
-                    carry += (ulong)bits[index + i + j] + (ulong)a.bits[a.index + i] * (ulong)b.bits[b.index + j];
+                    carry += (ulong)bits[index + i + j] + (ulong)a.bits[a.index + i] * b.bits[b.index + j];
                     bits[index + i + j] = (uint)carry;
                     carry >>= 32;
                 }
@@ -427,7 +427,7 @@ namespace Decompose.Numerics
                 for (int i = min; i <= max; i++)
                 {
                     int j = k - i;
-                    var uv = (ulong)a.bits[a.index + i] * (ulong)b.bits[b.index + j];
+                    var uv = (ulong)a.bits[a.index + i] * b.bits[b.index + j];
                     r0 += (uint)uv;
                     eps = r0 >> 32;
                     r0 &= (1ul << 32) - 1;
@@ -468,7 +468,7 @@ namespace Decompose.Numerics
                 }
                 for (int j = n.last + 1; carry != 0; j++)
                 {
-                    carry += (ulong)bits[index + i + j];
+                    carry += bits[index + i + j];
                     bits[index + i + j] = (uint)carry;
                     carry >>= 32;
                 }
@@ -539,11 +539,11 @@ namespace Decompose.Numerics
                 uint u0 = u.bits[left];
                 uint u1 = u.bits[left - 1];
                 uint u2 = u.bits[left - 2];
-                ulong u01 = (((ulong)u0 << 32) | (ulong)u1);
-                ulong qhat = u0 == v1 ? (1ul << 32) - 1 : u01 / v1;
+                ulong u0u1 = ((ulong)u0 << 32) | u1;
+                ulong qhat = u0 == v1 ? (1ul << 32) - 1 : u0u1 / v1;
                 while (true)
                 {
-                    ulong r = u01 - qhat * v1;
+                    ulong r = u0u1 - qhat * v1;
                     if (r != (uint)r)
                         break;
                     if (v2 * qhat <= ((r << 32) | u2))
@@ -569,7 +569,7 @@ namespace Decompose.Numerics
                     carry = 0;
                     for (int i = 0; i < n; i++)
                     {
-                        carry += (ulong)u.bits[left - n + i] + (ulong)v.bits[v.index + i];
+                        carry += (ulong)u.bits[left - n + i] + v.bits[v.index + i];
                         u.bits[left - n + i] = (uint)carry;
                         carry >>= 32;
                     }
@@ -629,9 +629,9 @@ namespace Decompose.Numerics
                 int left = u.index + 1 + m - j;
                 uint u0 = u.bits[left];
                 uint u1 = u.bits[left - 1];
-                ulong u01 = (((ulong)u0 << 32) | (ulong)u1);
-                ulong qhat = u0 == v ? (1ul << 32) - 1 : u01 / v;
-                ulong borrow = u01 - qhat * v;
+                ulong u0u1 = ((ulong)u0 << 32) | u1;
+                ulong qhat = u0 == v ? (1ul << 32) - 1 : u0u1 / v;
+                ulong borrow = u0u1 - qhat * v;
                 u.bits[left - 1] = (uint)borrow;
                 u.bits[left] = (uint)(borrow >> 32);
                 q.bits[q.index + m - j] = (uint)qhat;
@@ -652,16 +652,16 @@ namespace Decompose.Numerics
             Clear();
             for (int i = 0; i <= a.last; i++)
             {
-                ulong avalue = (ulong)a.bits[a.index + i];
-                ulong carry = avalue * avalue + (ulong)bits[index + 2 * i];
+                ulong avalue = a.bits[a.index + i];
+                ulong carry = avalue * avalue + bits[index + 2 * i];
                 bits[index + 2 * i] = (uint)carry;
                 carry >>= 32;
                 for (int j = i + 1; j <= a.last; j++)
                 {
-                    ulong value = avalue * (ulong)a.bits[a.index + j];
+                    ulong value = avalue * a.bits[a.index + j];
                     var eps = value >> 63;
                     value <<= 1;
-                    carry += value + (ulong)bits[index + i + j];
+                    carry += value + bits[index + i + j];
                     bits[index + i + j] = (uint)carry;
                     carry >>= 32;
                     carry += eps << 32;
