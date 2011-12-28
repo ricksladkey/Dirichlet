@@ -171,10 +171,10 @@ namespace Decompose.Numerics.Test
                 x.SetProduct(c, a);
                 Assert.AreEqual(c * aPrime, x.ToBigInteger());
 
-                x.SetQuotient(a, b, reg1, reg2);
+                x.SetQuotient(a, b, reg1);
                 Assert.AreEqual(aPrime / bPrime, x.ToBigInteger());
 
-                x.SetRemainder(a, b, reg1, reg2);
+                x.SetRemainder(a, b, reg1);
                 Assert.AreEqual(aPrime % bPrime, x.ToBigInteger());
 
                 x.SetQuotient(a, c, reg1);
@@ -209,7 +209,7 @@ namespace Decompose.Numerics.Test
             a.Set(BigInteger.Parse("9580940093428730948"));
             b.Set(BigInteger.Parse("9460544844897193437"));
             c.Set(BigInteger.Parse("120395248531537511"));
-            x.SetRemainder(a, b, reg1, reg2);
+            x.SetRemainder(a, b, reg1);
             Assert.AreEqual(a.ToBigInteger() % b.ToBigInteger(), x.ToBigInteger());
             Assert.AreEqual(c, x);
         }

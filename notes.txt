@@ -1,0 +1,3 @@
+- Make Radix32IntegerReduction memory adjacent
+- File Connect bug: shift with computed lhs miscalculated
+- Store partial quotient in upper words of u

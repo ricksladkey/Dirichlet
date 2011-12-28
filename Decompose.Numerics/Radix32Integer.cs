@@ -166,6 +166,14 @@ namespace Decompose.Numerics
             return Equals((Radix32Integer)obj);
         }
 
+        public override int GetHashCode()
+        {
+            int hash = 0;
+            for (int i = 0; i <= last; i++)
+                hash ^= (int)bits[index + i];
+            return hash;
+        }
+
         public int CompareTo(Radix32Integer other)
         {
             CheckValid();
@@ -477,40 +485,39 @@ namespace Decompose.Numerics
             return RightShift(32 * s);
         }
 
-        public Radix32Integer Divide(Radix32Integer a, Radix32Integer reg1, Radix32Integer reg2)
+        public Radix32Integer Divide(Radix32Integer a, Radix32Integer reg1)
         {
             reg1.Set(this);
-            reg2.Set(a);
-            DivMod(reg1, reg2, this);
+            DivMod(reg1, a, this);
             return this;
         }
 
-        public Radix32Integer Modulo(Radix32Integer a, Radix32Integer reg1, Radix32Integer reg2)
+        public Radix32Integer Modulo(Radix32Integer a, Radix32Integer reg1)
+        {
+            DivMod(this, a, reg1);
+            return this;
+        }
+
+        public Radix32Integer SetQuotient(Radix32Integer a, Radix32Integer b, Radix32Integer reg1)
         {
             reg1.Set(a);
-            DivMod(this, reg1, reg2);
+            DivMod(reg1, b, this);
             return this;
         }
 
-        public Radix32Integer SetQuotient(Radix32Integer a, Radix32Integer b, Radix32Integer reg1, Radix32Integer reg2)
-        {
-            reg1.Set(a);
-            reg2.Set(b);
-            DivMod(reg1, reg2, this);
-            return this;
-        }
-
-        public Radix32Integer SetRemainder(Radix32Integer a, Radix32Integer b, Radix32Integer reg1, Radix32Integer reg2)
+        public Radix32Integer SetRemainder(Radix32Integer a, Radix32Integer b, Radix32Integer reg1)
         {
             if (this != a)
                 Set(a);
-            reg1.Set(b);
-            DivMod(this, reg1, reg2);
+            DivMod(this, b, reg1);
             return this;
         }
 
         private static void DivMod(Radix32Integer u, Radix32Integer v, Radix32Integer q)
         {
+#if DEBUG
+            var quotient = u.Copy().Set(u.ToBigInteger() / v.ToBigInteger());
+#endif
             if (u.CompareTo(v) < 0)
             {
                 q.Clear();
@@ -519,6 +526,7 @@ namespace Decompose.Numerics
             if (v.IsZero)
                 throw new InvalidOperationException("division by zero");
             int d = 32 - v.bits[v.index + v.last].GetBitLength();
+            int dneg = 32 - d;
             int n = v.last + 1;
             if (n == 1)
             {
@@ -526,19 +534,27 @@ namespace Decompose.Numerics
                 return;
             }
             int m = u.last + 1 - n;
-            u.LeftShift(d);
-            v.LeftShift(d);
             uint v1 = v.bits[v.index + v.last];
             uint v2 = v.bits[v.index + v.last - 1];
-#if DEBUG
-            var quotient = u.Copy().Set(u.ToBigInteger() / v.ToBigInteger());
-#endif
+            if (d != 0)
+            {
+                uint v3 = n == 2 ? v.bits[v.index + v.last - 2] : 0;
+                v1 = (v1 << d) | (v2 >> dneg);
+                v2 = (v2 << d) | (v3 >> dneg);
+            }
             for (int j = 0; j <= m; j++)
             {
                 int left = u.index + n + m - j;
                 uint u0 = u.bits[left];
                 uint u1 = u.bits[left - 1];
                 uint u2 = u.bits[left - 2];
+                if (d != 0)
+                {
+                    uint u3 = j < m ? u.bits[left - 3] : 0;
+                    u0 = (u0 << d) | (u1 >> dneg);
+                    u1 = (u1 << d) | (u2 >> dneg);
+                    u2 = (u2 << d) | (u3 >> dneg);
+                }
                 ulong u0u1 = ((ulong)u0 << 32) | u1;
                 ulong qhat = u0 == v1 ? (1ul << 32) - 1 : u0u1 / v1;
                 while (true)
@@ -588,7 +604,6 @@ namespace Decompose.Numerics
                 u.bits[u.index + i] = 0;
             q.SetLast(m);
             u.SetLast(n - 1);
-            u.RightShift(d);
         }
 
         public Radix32Integer Divide(uint a, Radix32Integer reg1)

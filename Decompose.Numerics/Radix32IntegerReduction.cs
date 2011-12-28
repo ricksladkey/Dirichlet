@@ -127,7 +127,7 @@ namespace Decompose.Numerics
 
             private void Reduce(Radix32Integer r)
             {
-                r.Modulo(nRep, reg1, reg2);
+                r.Modulo(nRep, reg1);
             }
         }
 
