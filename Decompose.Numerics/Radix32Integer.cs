@@ -156,6 +156,8 @@ namespace Decompose.Numerics
 
         public bool Equals(Radix32Integer other)
         {
+            if ((object)other == null)
+                return false;
             return CompareTo(other) == 0;
         }
 
@@ -164,6 +166,40 @@ namespace Decompose.Numerics
             if (!(obj is Radix32Integer))
                 return false;
             return Equals((Radix32Integer)obj);
+        }
+
+        public static bool operator ==(Radix32Integer a, Radix32Integer b)
+        {
+            if ((object)a == (object)b)
+                return true;
+            if ((object)a == null || (object)b == null)
+                return false;
+            return a.CompareTo(b) == 0;
+        }
+
+        public static bool operator !=(Radix32Integer a, Radix32Integer b)
+        {
+            return !(a == b);
+        }
+
+        public static bool operator <(Radix32Integer a, Radix32Integer b)
+        {
+            return a.CompareTo(b) < 0;
+        }
+
+        public static bool operator <=(Radix32Integer a, Radix32Integer b)
+        {
+            return a.CompareTo(b) <= 0;
+        }
+
+        public static bool operator >(Radix32Integer a, Radix32Integer b)
+        {
+            return a.CompareTo(b) > 0;
+        }
+
+        public static bool operator >=(Radix32Integer a, Radix32Integer b)
+        {
+            return a.CompareTo(b) >= 0;
         }
 
         public override int GetHashCode()
@@ -183,9 +219,8 @@ namespace Decompose.Numerics
                 return diff;
             for (int i = last; i >= 0; i--)
             {
-                diff = bits[index + i].CompareTo(other.bits[other.index + i]);
-                if (diff != 0)
-                    return diff;
+                if (bits[index + i] != other.bits[other.index + i])
+                    return bits[index + i].CompareTo(other.bits[other.index + i]);
             }
             return 0;
         }
@@ -525,6 +560,7 @@ namespace Decompose.Numerics
         {
 #if DEBUG
             var quotient = u.Copy().Set(u.ToBigInteger() / v.ToBigInteger());
+            var remainder = u.Copy().Set(u.ToBigInteger() % v.ToBigInteger());
 #endif
             if (u.CompareTo(v) < 0)
             {
@@ -598,12 +634,11 @@ namespace Decompose.Numerics
                         carry >>= 32;
                     }
                     u.bits[left] += (uint)carry;
+                    Debug.Assert(carry >> 32 == 1);
                 }
                 q.bits[q.index + m - j] = (uint)qhat;
 #if DEBUG
-                if (q.bits[q.index + m - j] != quotient.bits[quotient.index + m - j])
-                    Debugger.Break();
-                m += 0;
+                Debug.Assert(q.bits[q.index + m - j] == quotient.bits[quotient.index + m - j]);
 #endif
             }
             for (int i = m + 1; i <= q.last; i++)
@@ -612,6 +647,9 @@ namespace Decompose.Numerics
                 u.bits[u.index + i] = 0;
             q.SetLast(m);
             u.SetLast(n - 1);
+#if DEBUG
+            Debug.Assert(u == remainder);
+#endif
         }
 
         public Radix32Integer Divide(uint a, Radix32Integer reg1)

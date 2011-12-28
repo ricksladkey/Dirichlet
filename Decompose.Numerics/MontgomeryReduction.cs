@@ -15,9 +15,9 @@ namespace Decompose.Numerics
 
                 public Radix32Integer Rep { get { return r; } }
 
-                public bool IsZero { get { return r.CompareTo(reducer.zeroRep) == 0; } }
+                public bool IsZero { get { return r == reducer.zeroRep; } }
 
-                public bool IsOne { get { return r.CompareTo(reducer.oneRep) == 0; } }
+                public bool IsOne { get { return r == reducer.oneRep; } }
 
                 protected Residue(Reducer reducer)
                 {
@@ -63,7 +63,7 @@ namespace Decompose.Numerics
                 public IResidue Add(IResidue x)
                 {
                     r.Add(((Residue)x).r);
-                    if (r.CompareTo(reducer.nRep) >= 0)
+                    if (r >= reducer.nRep)
                         r.Subtract(reducer.nRep);
                     return this;
                 }
@@ -76,7 +76,7 @@ namespace Decompose.Numerics
 
                 public bool Equals(IResidue other)
                 {
-                    return r.CompareTo(((Residue)other).r) == 0;
+                    return r == ((Residue)other).r;
                 }
 
                 public int CompareTo(IResidue other)
@@ -170,9 +170,9 @@ namespace Decompose.Numerics
             private void Reduce(Radix32Integer t)
             {
                 t.MontgomeryOperation(nRep, k0);
-                if (t.CompareTo(nRep) >= 0)
+                if (t >= nRep)
                     t.Subtract(nRep);
-                Debug.Assert(t.CompareTo(nRep) < 0);
+                Debug.Assert(t < nRep);
             }
 
             private void BasicReduce(Radix32Integer t)
@@ -182,9 +182,9 @@ namespace Decompose.Numerics
                 reg1.SetProduct(reg2, nRep);
                 t.Add(reg1);
                 t.RightShift(rLength);
-                if (t.CompareTo(nRep) >= 0)
+                if (t >= nRep)
                     t.Subtract(nRep);
-                Debug.Assert(t.CompareTo(nRep) < 0);
+                Debug.Assert(t < nRep);
             }
         }
 

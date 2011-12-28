@@ -60,7 +60,7 @@ namespace Decompose.Numerics
                 public IResidue Add(IResidue x)
                 {
                     r.Add(((Residue)x).r);
-                    if (r.CompareTo(reducer.pRep) >= 0)
+                    if (r >= reducer.pRep)
                         r.Subtract(reducer.pRep);
                     return this;
                 }
@@ -73,7 +73,7 @@ namespace Decompose.Numerics
 
                 public bool Equals(IResidue other)
                 {
-                    return r.CompareTo(((Residue)other).r) == 0;
+                    return r == ((Residue)other).r;
                 }
 
                 public int CompareTo(IResidue other)
@@ -157,11 +157,11 @@ namespace Decompose.Numerics
                 z.Mask(bToTheKPlusOneLength);
                 reg1.SetProductMasked(reg2, pRep, bToTheKPlusOneLength);
                 // if (r.Sign == -1) r += bToTheKPlusOne;
-                if (z.CompareTo(reg1) < 0)
+                if (z < reg1)
                     z.AddPowerOfTwo(bToTheKPlusOneLength);
                 z.Subtract(reg1);
                 // while (r >= p) r -= p;
-                while (z.CompareTo(pRep) >= 0)
+                while (z >= pRep)
                     z.Subtract(pRep);
             }
         }
