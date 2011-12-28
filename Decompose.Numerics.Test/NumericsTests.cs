@@ -205,6 +205,7 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void DivModTest1()
         {
+            // Triggers "borrow != 0" special case.
             Radix32Store store = new Radix32Store(20);
             var a = store.Create();
             var b = store.Create();
@@ -212,12 +213,10 @@ namespace Decompose.Numerics.Test
             var x = store.Create();
             var reg1 = store.Create();
             var reg2 = store.Create();
-            a.Set(BigInteger.Parse("9580940093428730948"));
-            b.Set(BigInteger.Parse("9460544844897193437"));
-            c.Set(BigInteger.Parse("120395248531537511"));
+            a.Set(BigInteger.Parse("851968723384911158384830467125731460171903460330379450819468842227482878637917031244505597763225"));
+            b.Set(BigInteger.Parse("2200761205517100656206929789365760219952611739831"));
             x.SetRemainder(a, b, reg1);
             Assert.AreEqual(a.ToBigInteger() % b.ToBigInteger(), x.ToBigInteger());
-            Assert.AreEqual(c, x);
         }
     }
 }

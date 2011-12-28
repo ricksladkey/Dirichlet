@@ -634,8 +634,8 @@ namespace Decompose.Numerics
                         carry >>= 32;
                     }
                     u.bits[left] += (uint)carry;
-                    Debug.Assert(carry >> 32 == 1);
                 }
+                Debug.Assert(u.bits[left] == 0);
                 q.bits[q.index + m - j] = (uint)qhat;
 #if DEBUG
                 Debug.Assert(q.bits[q.index + m - j] == quotient.bits[quotient.index + m - j]);
@@ -643,8 +643,6 @@ namespace Decompose.Numerics
             }
             for (int i = m + 1; i <= q.last; i++)
                 q.bits[q.index + i] = 0;
-            for (int i = n; i <= u.last; i++)
-                u.bits[u.index + i] = 0;
             q.SetLast(m);
             u.SetLast(n - 1);
 #if DEBUG
