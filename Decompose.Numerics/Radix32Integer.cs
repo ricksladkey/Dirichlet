@@ -477,6 +477,21 @@ namespace Decompose.Numerics
             return RightShift(32 * s);
         }
 
+        public Radix32Integer Divide(Radix32Integer a, Radix32Integer reg1, Radix32Integer reg2)
+        {
+            reg1.Set(this);
+            reg2.Set(a);
+            DivMod(reg1, reg2, this);
+            return this;
+        }
+
+        public Radix32Integer Modulo(Radix32Integer a, Radix32Integer reg1, Radix32Integer reg2)
+        {
+            reg1.Set(a);
+            DivMod(this, reg1, reg2);
+            return this;
+        }
+
         public Radix32Integer SetQuotient(Radix32Integer a, Radix32Integer b, Radix32Integer reg1, Radix32Integer reg2)
         {
             reg1.Set(a);
@@ -487,7 +502,8 @@ namespace Decompose.Numerics
 
         public Radix32Integer SetRemainder(Radix32Integer a, Radix32Integer b, Radix32Integer reg1, Radix32Integer reg2)
         {
-            Set(a);
+            if (this != a)
+                Set(a);
             reg1.Set(b);
             DivMod(this, reg1, reg2);
             return this;
@@ -514,6 +530,9 @@ namespace Decompose.Numerics
             v.LeftShift(d);
             uint v1 = v.bits[v.index + v.last];
             uint v2 = v.bits[v.index + v.last - 1];
+#if DEBUG
+            var quotient = u.Copy().Set(u.ToBigInteger() / v.ToBigInteger());
+#endif
             for (int j = 0; j <= m; j++)
             {
                 int left = u.index + n + m - j;
@@ -522,8 +541,15 @@ namespace Decompose.Numerics
                 uint u2 = u.bits[left - 2];
                 ulong u01 = (((ulong)u0 << 32) | (ulong)u1);
                 ulong qhat = u0 == v1 ? (1ul << 32) - 1 : u01 / v1;
-                while (v2 * qhat > (((u01 - qhat * v1) << 32) | u2))
+                while (true)
+                {
+                    ulong r = u01 - qhat * v1;
+                    if (r != (uint)r)
+                        break;
+                    if (v2 * qhat <= ((r << 32) | u2))
+                        break;
                     --qhat;
+                }
                 ulong carry = 0;
                 ulong borrow = 0;
                 for (int i = 0; i < n; i++)
@@ -550,6 +576,11 @@ namespace Decompose.Numerics
                     u.bits[left] += (uint)carry;
                 }
                 q.bits[q.index + m - j] = (uint)qhat;
+#if DEBUG
+                if (q.bits[q.index + m - j] != quotient.bits[quotient.index + m - j])
+                    Debugger.Break();
+                m += 0;
+#endif
             }
             for (int i = m + 1; i <= q.last; i++)
                 q.bits[q.index + i] = 0;
@@ -558,6 +589,19 @@ namespace Decompose.Numerics
             q.SetLast(m);
             u.SetLast(n - 1);
             u.RightShift(d);
+        }
+
+        public Radix32Integer Divide(uint a, Radix32Integer reg1)
+        {
+            reg1.Set(this);
+            DivMod(reg1, a, this);
+            return this;
+        }
+
+        public Radix32Integer Modulo(uint a, Radix32Integer reg1)
+        {
+            DivMod(this, a, reg1);
+            return this;
         }
 
         public Radix32Integer SetQuotient(Radix32Integer a, uint b, Radix32Integer reg1)
@@ -569,7 +613,8 @@ namespace Decompose.Numerics
 
         public Radix32Integer SetRemainder(Radix32Integer a, uint b, Radix32Integer reg1)
         {
-            Set(a);
+            if (this != a)
+                Set(a);
             DivMod(this, b, reg1);
             return this;
         }

@@ -86,35 +86,19 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void TestBigIntegerReduction()
         {
-            var a = (BigInteger)24;
-            var b = (BigInteger)74;
-            var n = (BigInteger)1201;
-            var expected = a * b % n;
-            var reducer = new BigIntegerReduction().GetReducer(n);
-            var aPrime = reducer.ToResidue(a);
-            var bPrime = reducer.ToResidue(b);
-            var cPrime = aPrime.Copy().Multiply(bPrime);
-            var result = cPrime.ToBigInteger();
-            Assert.AreEqual(expected, result);
+            var p = BigInteger.Parse("10023859281455311421");
+            TestReduction(new BigIntegerReduction().GetReducer(p));
         }
 
         [TestMethod]
-        public void TestMontgomeryReduction1()
+        public void TestRadix32IntegerReduction()
         {
-            var a = (BigInteger)24;
-            var b = (BigInteger)74;
-            var n = (BigInteger)1201;
-            var expected = a * b % n;
-            var reducer = new MontgomeryReduction().GetReducer(n);
-            var aPrime = reducer.ToResidue(a);
-            var bPrime = reducer.ToResidue(b);
-            var cPrime = aPrime.Copy().Multiply(bPrime);
-            var result = cPrime.ToBigInteger();
-            Assert.AreEqual(expected, result);
+            var p = BigInteger.Parse("10023859281455311421");
+            TestReduction(new Radix32IntegerReduction().GetReducer(p));
         }
 
         [TestMethod]
-        public void TestMontgomeryReduction2()
+        public void TestMontgomeryReduction()
         {
             var p = BigInteger.Parse("10023859281455311421");
             TestReduction(new MontgomeryReduction().GetReducer(p));

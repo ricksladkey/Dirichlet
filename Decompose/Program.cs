@@ -154,10 +154,11 @@ namespace Decompose
         {
             var n = BigInteger.Parse("10023859281455311421");
 
-            FactorTest(25, n, new PollardRhoBrent(4));
-            //FactorTest(25, n, new PollardRhoReduction(4, new BigIntegerReduction()));
-            FactorTest(25, n, new PollardRhoReduction(4, new BarrettReduction()));
-            FactorTest(25, n, new PollardRhoReduction(4, new MontgomeryReduction()));
+            //FactorTest(25, n, new PollardRhoBrent(4));
+            FactorTest(25, n, new PollardRhoReduction(4, new BigIntegerReduction()));
+            FactorTest(25, n, new PollardRhoReduction(4, new Radix32IntegerReduction()));
+            //FactorTest(25, n, new PollardRhoReduction(4, new BarrettReduction()));
+            //FactorTest(25, n, new PollardRhoReduction(4, new MontgomeryReduction()));
 
             //FactorTest(10, n, new PollardRhoBrent(1));
             //FactorTest(10, n, new PollardRhoReduction(1, new BarrettReduction()));
@@ -172,8 +173,9 @@ namespace Decompose
             var q = BigInteger.Parse("7660450463");
             var n = p * q;
             //FactorTest(25, n, new PollardRhoBrent(4));
-            //FactorTest(25, n, new PollardRhoReduction(4, new BarrettReduction()));
-            FactorTest(25, n, new PollardRhoReduction(4, new MontgomeryReduction()));
+            //FactorTest(25, n, new PollardRhoReduction(1, new Radix32IntegerReduction()));
+            FactorTest(25, n, new PollardRhoReduction(4, new BarrettReduction()));
+            FactorTest(25, n, new PollardRhoReduction(1, new MontgomeryReduction()));
         }
 
         static void FactorTest(int iterations, BigInteger n, IFactorizationAlgorithm<BigInteger> algorithm)
