@@ -28,14 +28,13 @@ namespace Decompose.Numerics
                     : this(reducer)
                 {
                     r = reducer.CreateRep();
-                    r.Multiply(reducer.rSquaredModNRep, reducer.reg3);
+                    r.Set(x).Multiply(reducer.rSquaredModNRep, reducer.reg3);
                     reducer.Reduce(r);
                 }
 
                 public IResidue Set(BigInteger x)
                 {
-                    r.Set(x);
-                    r.Multiply(reducer.rSquaredModNRep, reducer.reg3);
+                    r.Set(x).Multiply(reducer.rSquaredModNRep, reducer.reg3);
                     reducer.Reduce(r);
                     return this;
                 }

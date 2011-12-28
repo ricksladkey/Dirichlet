@@ -463,7 +463,7 @@ namespace Decompose.Numerics
         }
 
         /// <summary>
-        /// Perform a single Montgomery operation
+        /// Perform a single Montgomery operation.
         /// </summary>
         /// <param name="n"></param>
         /// <param name="k0"></param>
