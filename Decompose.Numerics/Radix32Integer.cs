@@ -699,9 +699,8 @@ namespace Decompose.Numerics
             return SetLast(2 * a.last + 1);
         }
 
-        public Radix32Integer SetGreatestCommonDivisor(Radix32Integer a, Radix32Integer b)
+        public Radix32Integer SetGreatestCommonDivisor(Radix32Integer a, Radix32Integer b, Radix32Integer reg1, Radix32Integer reg2)
         {
-#if false
             if (a.IsZero)
                 Set(b);
             else if (b.IsZero)
@@ -712,13 +711,13 @@ namespace Decompose.Numerics
                 reg2.Set(b);
                 while (true)
                 {
-                    reg1.Modulus(reg2);
+                    DivMod(reg1, reg2, this);
                     if (reg1.IsZero)
                     {
                         Set(reg2);
                         break;
                     }
-                    reg2.Modulus(reg1);
+                    DivMod(reg2, reg1, this);
                     if (reg2.IsZero)
                     {
                         Set(reg1);
@@ -726,9 +725,6 @@ namespace Decompose.Numerics
                     }
                 }
             }
-#else
-            Set(BigInteger.GreatestCommonDivisor(a.ToBigInteger(), b.ToBigInteger()));
-#endif
             return this;
         }
 

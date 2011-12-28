@@ -172,10 +172,10 @@ namespace Decompose
             var p = BigInteger.Parse("287288745765902964785862069919080712937");
             var q = BigInteger.Parse("7660450463");
             var n = p * q;
-            //FactorTest(25, n, new PollardRhoBrent(4));
-            //FactorTest(25, n, new PollardRhoReduction(4, new Radix32IntegerReduction()));
-            //FactorTest(25, n, new PollardRhoReduction(4, new BarrettReduction()));
-            FactorTest(25, n, new PollardRhoReduction(1, new MontgomeryReduction()));
+            FactorTest(25, n, new PollardRhoBrent(4));
+            FactorTest(25, n, new PollardRhoReduction(4, new Radix32IntegerReduction()));
+            FactorTest(25, n, new PollardRhoReduction(4, new BarrettReduction()));
+            FactorTest(25, n, new PollardRhoReduction(4, new MontgomeryReduction()));
         }
 
         static void FactorTest(int iterations, BigInteger n, IFactorizationAlgorithm<BigInteger> algorithm)

@@ -2,3 +2,4 @@
 - store partial quotient in upper words of u
 - check equality before using CompareTo
 - allow unequal sized numbers, e.g. when adding
+- find/create test case for division special case

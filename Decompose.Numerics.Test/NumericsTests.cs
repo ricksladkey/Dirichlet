@@ -196,6 +196,9 @@ namespace Decompose.Numerics.Test
                     x.SetDifference(b, a);
                     Assert.AreEqual(bPrime - aPrime, x.ToBigInteger());
                 }
+
+                x.SetGreatestCommonDivisor(a, b, reg1, reg2);
+                Assert.AreEqual(BigInteger.GreatestCommonDivisor(aPrime, bPrime), x.ToBigInteger());
             }
         }
 
