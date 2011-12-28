@@ -136,6 +136,7 @@ namespace Decompose.Numerics
         public uint ToInteger()
         {
             CheckValid();
+            Debug.Assert(last == 0);
             return bits[index];
         }
 
@@ -520,25 +521,26 @@ namespace Decompose.Numerics
                 uint u1 = u.bits[left - 1];
                 uint u2 = u.bits[left - 2];
                 ulong u01 = (((ulong)u0 << 32) | (ulong)u1);
-                ulong qhat = (1ul << 32) - 1;
-                if (u0 != v1)
-                    qhat = u01 / v1;
+                ulong qhat = u0 == v1 ? (1ul << 32) - 1 : u01 / v1;
                 while (v2 * qhat > (((u01 - qhat * v1) << 32) | u2))
                     --qhat;
+                ulong carry = 0;
                 ulong borrow = 0;
                 for (int i = 0; i < n; i++)
                 {
-                    borrow += (ulong)u.bits[left - n + i] - qhat * v.bits[v.index + i];
+                    carry += qhat * v.bits[v.index + i];
+                    borrow += (ulong)u.bits[left - n + i] - (uint)carry;
+                    carry >>= 32;
                     u.bits[left - n + i] = (uint)borrow;
                     borrow = (ulong)((long)borrow >> 32);
                 }
-                borrow += u.bits[left];
+                borrow += u.bits[left] - carry;
                 u.bits[left] = (uint)borrow;
                 borrow = (ulong)((long)borrow >> 32);
                 if (borrow != 0)
                 {
                     --qhat;
-                    ulong carry = 0;
+                    carry = 0;
                     for (int i = 0; i < n; i++)
                     {
                         carry += (ulong)u.bits[left - n + i] + (ulong)v.bits[v.index + i];
@@ -583,9 +585,7 @@ namespace Decompose.Numerics
                 uint u0 = u.bits[left];
                 uint u1 = u.bits[left - 1];
                 ulong u01 = (((ulong)u0 << 32) | (ulong)u1);
-                ulong qhat = (1ul << 32) - 1;
-                if (u0 != v)
-                    qhat = u01 / v;
+                ulong qhat = u0 == v ? (1ul << 32) - 1 : u01 / v;
                 ulong borrow = u01 - qhat * v;
                 u.bits[left - 1] = (uint)borrow;
                 u.bits[left] = (uint)(borrow >> 32);
