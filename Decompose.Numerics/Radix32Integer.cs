@@ -623,7 +623,7 @@ namespace Decompose.Numerics
                     borrow = (ulong)((long)borrow >> 32);
                 }
                 borrow += u.bits[left] - carry;
-                u.bits[left] = (uint)borrow;
+                u.bits[left] = 0;
                 borrow = (ulong)((long)borrow >> 32);
                 if (borrow != 0)
                 {
@@ -635,9 +635,7 @@ namespace Decompose.Numerics
                         u.bits[left - n + i] = (uint)carry;
                         carry >>= 32;
                     }
-                    u.bits[left] += (uint)carry;
                 }
-                Debug.Assert(u.bits[left] == 0);
                 if (q != null)
                     q.bits[q.index + m - j] = (uint)qhat;
 #if DEBUG
