@@ -536,9 +536,9 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer Modulo(Radix32Integer a, Radix32Integer reg1)
+        public Radix32Integer Modulo(Radix32Integer a)
         {
-            DivMod(this, a, reg1);
+            DivMod(this, a, null);
             return this;
         }
 
@@ -549,11 +549,11 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer SetRemainder(Radix32Integer a, Radix32Integer b, Radix32Integer reg1)
+        public Radix32Integer SetRemainder(Radix32Integer a, Radix32Integer b)
         {
             if (this != a)
                 Set(a);
-            DivMod(this, b, reg1);
+            DivMod(this, b, null);
             return this;
         }
 
@@ -565,7 +565,8 @@ namespace Decompose.Numerics
 #endif
             if (u.CompareTo(v) < 0)
             {
-                q.Clear();
+                if (q != null)
+                    q.Clear();
                 return;
             }
             if (v.IsZero)
@@ -637,14 +638,18 @@ namespace Decompose.Numerics
                     u.bits[left] += (uint)carry;
                 }
                 Debug.Assert(u.bits[left] == 0);
-                q.bits[q.index + m - j] = (uint)qhat;
+                if (q != null)
+                    q.bits[q.index + m - j] = (uint)qhat;
 #if DEBUG
-                Debug.Assert(q.bits[q.index + m - j] == quotient.bits[quotient.index + m - j]);
+                Debug.Assert(qhat == quotient.bits[quotient.index + m - j]);
 #endif
             }
-            for (int i = m + 1; i <= q.last; i++)
-                q.bits[q.index + i] = 0;
-            q.SetLast(m);
+            if (q != null)
+            {
+                for (int i = m + 1; i <= q.last; i++)
+                    q.bits[q.index + i] = 0;
+                q.SetLast(m);
+            }
             u.SetLast(n - 1);
 #if DEBUG
             Debug.Assert(u == remainder);
@@ -658,9 +663,9 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer Modulo(uint a, Radix32Integer reg1)
+        public Radix32Integer Modulo(uint a)
         {
-            DivMod(this, a, reg1);
+            DivMod(this, a, null);
             return this;
         }
 
@@ -671,11 +676,11 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer SetRemainder(Radix32Integer a, uint b, Radix32Integer reg1)
+        public Radix32Integer SetRemainder(Radix32Integer a, uint b)
         {
             if (this != a)
                 Set(a);
-            DivMod(this, b, reg1);
+            DivMod(this, b, null);
             return this;
         }
 
@@ -694,11 +699,15 @@ namespace Decompose.Numerics
                 ulong borrow = u0u1 - qhat * v;
                 u.bits[left - 1] = (uint)borrow;
                 u.bits[left] = 0;
-                q.bits[q.index + m - j] = (uint)qhat;
+                if (q != null)
+                    q.bits[q.index + m - j] = (uint)qhat;
             }
-            for (int i = m + 1; i <= q.last; i++)
-                q.bits[q.index + i] = 0;
-            q.SetLast(m);
+            if (q != null)
+            {
+                for (int i = m + 1; i <= q.last; i++)
+                    q.bits[q.index + i] = 0;
+                q.SetLast(m);
+            }
             u.SetLast(0);
         }
 
