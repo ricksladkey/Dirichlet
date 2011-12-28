@@ -156,6 +156,8 @@ namespace Decompose.Numerics.Test
             var a = store.Create();
             var b = store.Create();
             var x = store.Create();
+            var reg1 = store.Create();
+            var reg2 = store.Create();
             for (int i = 0; i < 1000; i++)
             {
                 var aPrime = random.Next(n);
@@ -185,6 +187,12 @@ namespace Decompose.Numerics.Test
                 x.SetProduct(c, a);
                 Assert.AreEqual(c * aPrime, x.ToBigInteger());
 
+                x.SetQuotient(a, b, reg1, reg2);
+                Assert.AreEqual(aPrime / bPrime, x.ToBigInteger());
+
+                x.SetRemainder(a, b, reg1, reg2);
+                Assert.AreEqual(aPrime % bPrime, x.ToBigInteger());
+
                 if (aPrime > bPrime)
                 {
                     x.SetDifference(a, b);
@@ -196,6 +204,24 @@ namespace Decompose.Numerics.Test
                     Assert.AreEqual(bPrime - aPrime, x.ToBigInteger());
                 }
             }
+        }
+
+        [TestMethod]
+        public void DivModTest1()
+        {
+            Radix32Store store = new Radix32Store(20);
+            var a = store.Create();
+            var b = store.Create();
+            var c = store.Create();
+            var x = store.Create();
+            var reg1 = store.Create();
+            var reg2 = store.Create();
+            a.Set(BigInteger.Parse("9580940093428730948"));
+            b.Set(BigInteger.Parse("9460544844897193437"));
+            c.Set(BigInteger.Parse("120395248531537511"));
+            x.SetRemainder(a, b, reg1, reg2);
+            Assert.AreEqual(a.ToBigInteger() % b.ToBigInteger(), x.ToBigInteger());
+            Assert.AreEqual(c, x);
         }
     }
 }

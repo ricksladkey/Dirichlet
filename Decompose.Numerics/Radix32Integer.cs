@@ -152,6 +152,13 @@ namespace Decompose.Numerics
             return CompareTo(other) == 0;
         }
 
+        public override bool Equals(object obj)
+        {
+            if (!(obj is Radix32Integer))
+                return false;
+            return Equals((Radix32Integer)obj);
+        }
+
         public int CompareTo(Radix32Integer other)
         {
             CheckValid();
@@ -270,9 +277,9 @@ namespace Decompose.Numerics
             var limit = Math.Max(a.last, b.last);
             for (int i = 0; i <= limit; i++)
             {
-                var sum = (ulong)a.bits[a.index + i] + (ulong)b.bits[b.index + i] + carry;
-                bits[index + i] = (uint)sum;
-                carry = sum >> 32;
+                carry += (ulong)a.bits[a.index + i] + (ulong)b.bits[b.index + i];
+                bits[index + i] = (uint)carry;
+                carry >>= 32;
             }
             if (carry != 0)
             {
@@ -301,9 +308,9 @@ namespace Decompose.Numerics
             var limit = Math.Max(a.last, b.last);
             for (int i = 0; i <= limit; i++)
             {
-                var diff = (ulong)a.bits[a.index + i] - (ulong)b.bits[b.index + i] - borrow;
-                bits[index + i] = (uint)diff;
-                borrow = (ulong)(-(int)(diff >> 32));
+                borrow += (ulong)a.bits[a.index + i] - (ulong)b.bits[b.index + i];
+                bits[index + i] = (uint)borrow;
+                borrow = (ulong)((long)borrow >> 32);
             }
             for (int i = limit + 1; i <= last; i++)
                 bits[index + i] = 0;
@@ -469,6 +476,87 @@ namespace Decompose.Numerics
             SetLast(2 * s);
             RightShift(32 * s);
             return this;
+        }
+
+        public void SetQuotient(Radix32Integer a, Radix32Integer b, Radix32Integer reg1, Radix32Integer reg2)
+        {
+            reg1.Set(a);
+            reg2.Set(b);
+            DivMod(reg1, reg2, this);
+        }
+
+        public void SetRemainder(Radix32Integer a, Radix32Integer b, Radix32Integer reg1, Radix32Integer reg2)
+        {
+            Set(a);
+            reg1.Set(b);
+            DivMod(this, reg1, reg2);
+        }
+
+        private static void DivMod(Radix32Integer u, Radix32Integer v, Radix32Integer q)
+        {
+            if (u.CompareTo(v) < 0)
+            {
+                q.Clear();
+                return;
+            }
+            if (u.IsZero)
+                throw new InvalidOperationException("division by zero");
+            int d = 32 - v.bits[v.index + v.last].GetBitLength();
+            int n = v.last + 1;
+            if (n == 1)
+            {
+                // Use simpler algorithm in exercise 16.
+                throw new InvalidOperationException("not supported");
+            }
+            int m = n - (u.last + 1);
+            u.LeftShift(d);
+            v.LeftShift(d);
+            uint v1 = v.bits[v.index + v.last];
+            uint v2 = v.bits[v.index + v.last - 1];
+            for (int j = 0; j <= m; j++)
+            {
+                int left = u.index + n + m - j;
+                uint u0 = u.bits[left];
+                uint u1 = u.bits[left - 1];
+                uint u2 = u.bits[left - 2];
+                ulong u01 = (((ulong)u0 << 32) | (ulong)u1);
+                ulong qhat = (1ul << 32) - 1;
+                if (u0 != v1)
+                    qhat = u01 / v1;
+                while (v2 * qhat > (((u01 - qhat * v1) << 32) | u2))
+                    --qhat;
+                int right = left - n;
+                ulong borrow = 0;
+                for (int i = 0; i < n; i++)
+                {
+                    borrow += (ulong)u.bits[right + i] - qhat * v.bits[v.index + i];
+                    u.bits[right + i] = (uint)borrow;
+                    borrow = (ulong)((long)borrow >> 32);
+                }
+                borrow += u.bits[right + n];
+                u.bits[right + n] = (uint)borrow;
+                borrow = (ulong)((long)borrow >> 32);
+                if (borrow != 0)
+                {
+                    --qhat;
+                    ulong carry = 0;
+                    for (int i = 0; i < n; i++)
+                    {
+                        carry += (ulong)u.bits[right + i] + (ulong)v.bits[v.index + i];
+                        u.bits[right + i] = (uint)carry;
+                        carry >>= 32;
+                    }
+                    u.bits[right + n] = (uint)carry;
+                }
+                q.bits[q.index + m - j] = (uint)qhat;
+            }
+            for (int i = m + 1; i <= q.last; i++)
+                q.bits[q.index + i] = 0;
+            for (int i = n; i <= u.last; i++)
+                u.bits[u.index + i] = 0;
+            q.SetLast(m);
+            u.SetLast(n - 1);
+            u.RightShift(d);
         }
 
         public Radix32Integer SetSquare(Radix32Integer a)
