@@ -193,6 +193,12 @@ namespace Decompose.Numerics.Test
                 x.SetRemainder(a, b, reg1, reg2);
                 Assert.AreEqual(aPrime % bPrime, x.ToBigInteger());
 
+                x.SetQuotient(a, c, reg1);
+                Assert.AreEqual(aPrime / c, x.ToBigInteger());
+
+                x.SetRemainder(a, c, reg1);
+                Assert.AreEqual(aPrime % c, x.ToBigInteger());
+
                 if (aPrime > bPrime)
                 {
                     x.SetDifference(a, b);
