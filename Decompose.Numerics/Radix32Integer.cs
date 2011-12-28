@@ -316,6 +316,11 @@ namespace Decompose.Numerics
             return this;
         }
 
+        public Radix32Integer Add(Radix32Integer a)
+        {
+            return SetSum(this, a);
+        }
+
         public Radix32Integer SetSum(Radix32Integer a, Radix32Integer b)
         {
             CheckValid();
@@ -341,9 +346,9 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer Add(Radix32Integer a)
+        public Radix32Integer Subtract(Radix32Integer a)
         {
-            return SetSum(this, a);
+            return SetDifference(this, a);
         }
 
         public Radix32Integer SetDifference(Radix32Integer a, Radix32Integer b)
@@ -368,17 +373,44 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer Subtract(Radix32Integer a)
-        {
-            return SetDifference(this, a);
-        }
-
         public Radix32Integer Multiply(Radix32Integer a, Radix32Integer reg1)
         {
             reg1.Set(this);
             if (this == a)
                 return SetSquare(reg1);
             return SetProduct(reg1, a);
+        }
+
+        public Radix32Integer SetSquare(Radix32Integer a)
+        {
+            // Use operand scanning algorithm.
+            CheckValid();
+            Debug.Assert(2 * a.GetBitLength() <= 32 * length);
+            Clear();
+            for (int i = 0; i <= a.last; i++)
+            {
+                ulong avalue = a.bits[a.index + i];
+                ulong carry = avalue * avalue + bits[index + 2 * i];
+                bits[index + 2 * i] = (uint)carry;
+                carry >>= 32;
+                for (int j = i + 1; j <= a.last; j++)
+                {
+                    ulong value = avalue * a.bits[a.index + j];
+                    var eps = value >> 63;
+                    value <<= 1;
+                    carry += value + bits[index + i + j];
+                    bits[index + i + j] = (uint)carry;
+                    carry >>= 32;
+                    carry += eps << 32;
+                }
+                int k = index + i + a.last + 1;
+                carry += bits[k];
+                bits[k] = (uint)carry;
+                carry >>= 32;
+                if (carry != 0)
+                    bits[k + 1] = (uint)carry;
+            }
+            return SetLast(2 * a.last + 1);
         }
 
         public Radix32Integer SetProduct(Radix32Integer a, Radix32Integer b)
@@ -402,6 +434,11 @@ namespace Decompose.Numerics
             return SetLast(a.last + b.last + 1);
         }
 
+        public Radix32Integer Multiply(uint a)
+        {
+            return SetProduct(this, a);
+        }
+
         public Radix32Integer SetProduct(Radix32Integer a, uint b)
         {
             // Use operand scanning algorithm.
@@ -418,11 +455,6 @@ namespace Decompose.Numerics
             for (int j = a.last + 2; j <= last; j++)
                 bits[index + j] = 0;
             return SetLast(a.last + 1);
-        }
-
-        public Radix32Integer Multiply(uint a)
-        {
-            return SetProduct(this, a);
         }
 
         public Radix32Integer SetProductMasked(Radix32Integer a, Radix32Integer b, int n)
@@ -495,37 +527,6 @@ namespace Decompose.Numerics
             }
             bits[index + clast - shifted] = (uint)r0;
             return SetLast(clast - shifted);
-        }
-
-        /// <summary>
-        /// Perform a single Montgomery operation.
-        /// </summary>
-        /// <param name="n"></param>
-        /// <param name="k0"></param>
-        /// <returns></returns>
-        public Radix32Integer MontgomeryOperation(Radix32Integer n, uint k0)
-        {
-            CheckValid();
-            int s = n.last + 1;
-            for (int i = 0; i < s; i++)
-            {
-                ulong carry = 0;
-                ulong m = bits[index + i] * k0;
-                for (int j = 0; j <= n.last; j++)
-                {
-                    carry += (ulong)bits[index + i + j] + m * n.bits[n.index + j];
-                    bits[index + i + j] = (uint)carry;
-                    carry >>= 32;
-                }
-                for (int j = n.last + 1; carry != 0; j++)
-                {
-                    carry += bits[index + i + j];
-                    bits[index + i + j] = (uint)carry;
-                    carry >>= 32;
-                }
-            }
-            SetLast(2 * s);
-            return RightShift(32 * s);
         }
 
         public Radix32Integer Divide(Radix32Integer a, Radix32Integer reg1)
@@ -692,47 +693,13 @@ namespace Decompose.Numerics
                 ulong qhat = u0 == v ? (1ul << 32) - 1 : u0u1 / v;
                 ulong borrow = u0u1 - qhat * v;
                 u.bits[left - 1] = (uint)borrow;
-                u.bits[left] = (uint)(borrow >> 32);
+                u.bits[left] = 0;
                 q.bits[q.index + m - j] = (uint)qhat;
             }
             for (int i = m + 1; i <= q.last; i++)
                 q.bits[q.index + i] = 0;
-            for (int i = 1; i <= u.last; i++)
-                u.bits[u.index + i] = 0;
             q.SetLast(m);
             u.SetLast(0);
-        }
-
-        public Radix32Integer SetSquare(Radix32Integer a)
-        {
-            // Use operand scanning algorithm.
-            CheckValid();
-            Debug.Assert(2 * a.GetBitLength() <= 32 * length);
-            Clear();
-            for (int i = 0; i <= a.last; i++)
-            {
-                ulong avalue = a.bits[a.index + i];
-                ulong carry = avalue * avalue + bits[index + 2 * i];
-                bits[index + 2 * i] = (uint)carry;
-                carry >>= 32;
-                for (int j = i + 1; j <= a.last; j++)
-                {
-                    ulong value = avalue * a.bits[a.index + j];
-                    var eps = value >> 63;
-                    value <<= 1;
-                    carry += value + bits[index + i + j];
-                    bits[index + i + j] = (uint)carry;
-                    carry >>= 32;
-                    carry += eps << 32;
-                }
-                int k = index + i + a.last + 1;
-                carry += bits[k];
-                bits[k] = (uint)carry;
-                carry >>= 32;
-                if (carry != 0)
-                    bits[k + 1] = (uint)carry;
-            }
-            return SetLast(2 * a.last + 1);
         }
 
         public Radix32Integer SetGreatestCommonDivisor(Radix32Integer a, Radix32Integer b, Radix32Integer reg1, Radix32Integer reg2)
@@ -762,6 +729,37 @@ namespace Decompose.Numerics
                 }
             }
             return this;
+        }
+
+        /// <summary>
+        /// Perform a single Montgomery operation.
+        /// </summary>
+        /// <param name="n"></param>
+        /// <param name="k0"></param>
+        /// <returns></returns>
+        public Radix32Integer MontgomeryOperation(Radix32Integer n, uint k0)
+        {
+            CheckValid();
+            int s = n.last + 1;
+            for (int i = 0; i < s; i++)
+            {
+                ulong carry = 0;
+                ulong m = bits[index + i] * k0;
+                for (int j = 0; j <= n.last; j++)
+                {
+                    carry += (ulong)bits[index + i + j] + m * n.bits[n.index + j];
+                    bits[index + i + j] = (uint)carry;
+                    carry >>= 32;
+                }
+                for (int j = n.last + 1; carry != 0; j++)
+                {
+                    carry += bits[index + i + j];
+                    bits[index + i + j] = (uint)carry;
+                    carry >>= 32;
+                }
+            }
+            SetLast(2 * s);
+            return RightShift(32 * s);
         }
 
         private Radix32Integer SetLast(int n)
