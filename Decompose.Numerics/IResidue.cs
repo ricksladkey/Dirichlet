@@ -10,6 +10,7 @@ namespace Decompose.Numerics
     {
         bool IsZero { get; }
         bool IsOne { get; }
+        IResidue Set(BigInteger x);
         IResidue Set(IResidue x);
         IResidue Copy();
         IResidue Multiply(IResidue x);

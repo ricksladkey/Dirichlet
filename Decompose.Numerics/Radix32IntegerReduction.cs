@@ -29,6 +29,12 @@ namespace Decompose.Numerics
                     reducer.Reduce(r);
                 }
 
+                public IResidue Set(BigInteger x)
+                {
+                    r.Set(x);
+                    return this;
+                }
+
                 public IResidue Set(IResidue x)
                 {
                     r.Set(((Residue)x).r);
@@ -108,11 +114,11 @@ namespace Decompose.Numerics
                 this.n = n;
                 length = (n.GetBitLength() + 31) / 32 * 2 + 1;
                 store = new Radix32Store(length);
-                nRep = CreateRep();
+                nRep = store.Create();
+                reg1 = store.Create();
+                reg2 = store.Create();
+                reg3 = store.Create();
                 nRep.Set(n);
-                reg1 = CreateRep();
-                reg2 = CreateRep();
-                reg3 = CreateRep();
             }
 
             public IResidue ToResidue(BigInteger x)
@@ -122,7 +128,7 @@ namespace Decompose.Numerics
 
             private Radix32Integer CreateRep()
             {
-                return new Radix32Integer(length);
+                return store.Create();
             }
 
             private void Reduce(Radix32Integer r)

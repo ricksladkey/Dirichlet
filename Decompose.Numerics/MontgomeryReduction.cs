@@ -28,9 +28,16 @@ namespace Decompose.Numerics
                     : this(reducer)
                 {
                     r = reducer.CreateRep();
-                    reducer.reg3.Set(x);
-                    r.SetProduct(reducer.reg3, reducer.rSquaredModNRep);
+                    r.Multiply(reducer.rSquaredModNRep, reducer.reg3);
                     reducer.Reduce(r);
+                }
+
+                public IResidue Set(BigInteger x)
+                {
+                    r.Set(x);
+                    r.Multiply(reducer.rSquaredModNRep, reducer.reg3);
+                    reducer.Reduce(r);
+                    return this;
                 }
 
                 public IResidue Set(IResidue x)
@@ -49,11 +56,7 @@ namespace Decompose.Numerics
 
                 public IResidue Multiply(IResidue x)
                 {
-                    reducer.reg3.Set(r);
-                    if (this == x)
-                        r.SetSquare(reducer.reg3);
-                    else
-                        r.SetProduct(reducer.reg3, ((Residue)x).r);
+                    r.Multiply(((Residue)x).r, reducer.reg3);
                     reducer.Reduce(r);
                     return this;
                 }

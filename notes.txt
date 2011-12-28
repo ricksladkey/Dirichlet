@@ -1,3 +1,5 @@
-- Make Radix32IntegerReduction memory adjacent
-- File Connect bug: shift with computed lhs miscalculated
-- Store partial quotient in upper words of u
+- make Radix32IntegerReduction memory adjacent
+- file Connect bug: shift with computed lhs miscalculated
+- store partial quotient in upper words of u
+- check equality before using CompareTo
+- allow unequal sized numbers, e.g. when adding

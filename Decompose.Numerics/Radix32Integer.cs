@@ -338,6 +338,14 @@ namespace Decompose.Numerics
             return SetDifference(this, a);
         }
 
+        public Radix32Integer Multiply(Radix32Integer a, Radix32Integer reg1)
+        {
+            reg1.Set(this);
+            if (this == a)
+                return SetSquare(reg1);
+            return SetProduct(reg1, a);
+        }
+
         public Radix32Integer SetProduct(Radix32Integer a, Radix32Integer b)
         {
             // Use operand scanning algorithm.
@@ -359,27 +367,27 @@ namespace Decompose.Numerics
             return SetLast(a.last + b.last + 1);
         }
 
-        public Radix32Integer SetProduct(uint a, Radix32Integer b)
+        public Radix32Integer SetProduct(Radix32Integer a, uint b)
         {
             // Use operand scanning algorithm.
             CheckValid();
             Debug.Assert(a.GetBitLength() + b.GetBitLength() <= 32 * length);
             ulong carry = 0;
-            for (int j = 0; j <= b.last; j++)
+            for (int j = 0; j <= a.last; j++)
             {
-                carry += (ulong)a * b.bits[b.index + j];
+                carry += (ulong)b * a.bits[a.index + j];
                 bits[index + j] = (uint)carry;
                 carry >>= 32;
             }
-            bits[index + b.last + 1] = (uint)carry;
-            for (int j = b.last + 2; j <= last; j++)
+            bits[index + a.last + 1] = (uint)carry;
+            for (int j = a.last + 2; j <= last; j++)
                 bits[index + j] = 0;
-            return SetLast(b.last + 1);
+            return SetLast(a.last + 1);
         }
 
         public Radix32Integer Multiply(uint a)
         {
-            return SetProduct(a, this);
+            return SetProduct(this, a);
         }
 
         public Radix32Integer SetProductMasked(Radix32Integer a, Radix32Integer b, int n)

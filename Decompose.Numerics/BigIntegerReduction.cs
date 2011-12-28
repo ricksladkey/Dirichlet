@@ -27,6 +27,12 @@ namespace Decompose.Numerics
                     this.r = x % reducer.Modulus;
                 }
 
+                public IResidue Set(BigInteger x)
+                {
+                    r = x;
+                    return this;
+                }
+
                 public IResidue Set(IResidue x)
                 {
                     r = ((Residue)x).r;

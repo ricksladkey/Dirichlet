@@ -114,6 +114,9 @@ namespace Decompose.Numerics.Test
         private void TestReduction(IReducer reducer)
         {
             var p = reducer.Modulus;
+            var xPrime = reducer.ToResidue(0);
+            var yPrime = reducer.ToResidue(0);
+            var zPrime = reducer.ToResidue(0);
             var random = new MersenneTwister32(0);
             for (int i = 0; i < 100; i++)
             {
@@ -122,9 +125,9 @@ namespace Decompose.Numerics.Test
                 var z = x * y;
                 var expected = z % p;
 
-                var xPrime = reducer.ToResidue(x);
-                var yPrime = reducer.ToResidue(y);
-                var zPrime = xPrime.Copy().Multiply(yPrime);
+                xPrime.Set(x);
+                yPrime.Set(y);
+                zPrime.Set(xPrime).Multiply(yPrime);
                 var actual = zPrime.ToBigInteger();
                 Assert.AreEqual(expected, actual);
             }
@@ -168,7 +171,7 @@ namespace Decompose.Numerics.Test
                 x.SetSquare(a);
                 Assert.AreEqual(aPrime * aPrime, x.ToBigInteger());
 
-                x.SetProduct(c, a);
+                x.SetProduct(a, c);
                 Assert.AreEqual(c * aPrime, x.ToBigInteger());
 
                 x.SetQuotient(a, b, reg1);
