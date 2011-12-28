@@ -265,7 +265,7 @@ namespace Decompose.Numerics
                 int jneg = 32 - j;
                 bits[index + last + i + 1] = bits[index + last] >> jneg;
                 for (int k = last - 1; k >= 0; k--)
-                    bits[index + k + i + 1] = (bits[index + k + 1] << j) | (bits[index + k] >> jneg);
+                    bits[index + k + i + 1] = bits[index + k + 1] << j | bits[index + k] >> jneg;
                 bits[index + i] = bits[index] << j;
                 for (int k = 0; k < i; k++)
                     bits[index + k] = 0;
@@ -295,7 +295,7 @@ namespace Decompose.Numerics
             {
                 int jneg = 32 - j;
                 for (int k = 0; k < limit; k++)
-                    bits[index + k] = (bits[index + i + k + 1] << jneg) | (bits[index + i + k] >> j);
+                    bits[index + k] = bits[index + i + k + 1] << jneg | bits[index + i + k] >> j;
                 bits[index + limit] = bits[index + i + limit] >> j;
                 for (int k = limit + 1; k <= last; k++)
                     bits[index + k] = 0;
@@ -583,8 +583,8 @@ namespace Decompose.Numerics
             if (d != 0)
             {
                 uint v3 = n == 2 ? v.bits[v.index + v.last - 2] : 0;
-                v1 = (v1 << d) | (v2 >> dneg);
-                v2 = (v2 << d) | (v3 >> dneg);
+                v1 = v1 << d | v2 >> dneg;
+                v2 = v2 << d | v3 >> dneg;
             }
             for (int j = 0; j <= m; j++)
             {
@@ -595,18 +595,18 @@ namespace Decompose.Numerics
                 if (d != 0)
                 {
                     uint u3 = j < m ? u.bits[left - 3] : 0;
-                    u0 = (u0 << d) | (u1 >> dneg);
-                    u1 = (u1 << d) | (u2 >> dneg);
-                    u2 = (u2 << d) | (u3 >> dneg);
+                    u0 = u0 << d | u1 >> dneg;
+                    u1 = u1 << d | u2 >> dneg;
+                    u2 = u2 << d | u3 >> dneg;
                 }
-                ulong u0u1 = ((ulong)u0 << 32) | u1;
+                ulong u0u1 = (ulong)u0 << 32 | u1;
                 ulong qhat = u0 == v1 ? (1ul << 32) - 1 : u0u1 / v1;
                 while (true)
                 {
                     ulong r = u0u1 - qhat * v1;
                     if (r != (uint)r)
                         break;
-                    if (v2 * qhat <= ((r << 32) | u2))
+                    if (v2 * qhat <= (r << 32 | u2))
                         break;
                     --qhat;
                 }
@@ -688,7 +688,7 @@ namespace Decompose.Numerics
                 int left = u.index + 1 + m - j;
                 uint u0 = u.bits[left];
                 uint u1 = u.bits[left - 1];
-                ulong u0u1 = ((ulong)u0 << 32) | u1;
+                ulong u0u1 = (ulong)u0 << 32 | u1;
                 ulong qhat = u0 == v ? (1ul << 32) - 1 : u0u1 / v;
                 ulong borrow = u0u1 - qhat * v;
                 u.bits[left - 1] = (uint)borrow;
