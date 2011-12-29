@@ -59,7 +59,22 @@ namespace Decompose.Numerics
                     r.Multiply(((Residue)x).r, reducer.reg3);
                     reducer.Reduce(r);
                     return this;
-#else
+#endif
+#if false
+                    if (this == x)
+                    {
+                        r.Multiply(r, reducer.reg3);
+                        reducer.Reduce(r);
+                        return this;
+                    }
+                    else
+                    {
+                        reducer.reg3.Set(r);
+                        reducer.Reduce(r, reducer.reg3, ((Residue)x).r);
+                        return this;
+                    }
+#endif
+#if true
                     reducer.reg3.Set(r);
                     if (this == x)
                         reducer.Reduce(r, reducer.reg3, reducer.reg3);
@@ -178,24 +193,10 @@ namespace Decompose.Numerics
 
             private void Reduce(Radix32Integer t, Radix32Integer u, Radix32Integer v)
             {
-#if DEBUG
-                t.Set(u).Multiply(v, reg1);
-                t.MontgomerySOS(nRep, k0);
-                var expected = t.Copy();
-#endif
                 t.MontgomeryCIOS(u, v, nRep, k0);
                 if (t >= nRep)
                     t.Subtract(nRep);
                 Debug.Assert(t < nRep);
-#if DEBUG
-                if (t != expected)
-                {
-                    Debugger.Break();
-                    t.MontgomeryCIOS(u, v, nRep, k0);
-                    if (t >= nRep)
-                        t.Subtract(nRep);
-                }
-#endif
             }
 
             private void Reduce(Radix32Integer t)

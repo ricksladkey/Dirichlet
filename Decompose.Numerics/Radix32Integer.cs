@@ -769,48 +769,11 @@ namespace Decompose.Numerics
                     carry >>= 32;
                 }
             }
-            for (int i = 0; i < s; i++)
+            for (int i = 0; i <= s; i++)
             {
                 bits[index + i] = bits[index + i + s];
                 bits[index + i + s] = 0;
             }
-            return SetLast(s);
-        }
-
-        public Radix32Integer MontgomeryCIOS(Radix32Integer u, Radix32Integer n, uint k0)
-        {
-            // CIOS Method - Coarsely Integrated Operand Scanning
-            CheckValid();
-            Clear();
-            int s = n.last + 1;
-            for (int i = 0; i < s; i++)
-            {
-                ulong carry = 0;
-                ulong ui = u.bits[u.index + i];
-                for (int j = 0; j < s; j++)
-                {
-                    carry += (ulong)bits[index + j] + ui * v.bits[v.index + j];
-                    bits[index + j] = (uint)carry;
-                    carry >>= 32;
-                }
-                carry += bits[index + s];
-                bits[index + s] = (uint)carry;
-                bits[index + s + 1] = (uint)(carry >> 32);
-                ulong m = bits[index] * k0;
-                carry = bits[index] + m * n.bits[n.index];
-                carry >>= 32;
-                for (int j = 1; j < s; j++)
-                {
-                    carry += (ulong)bits[index + j] + m * n.bits[n.index + j];
-                    bits[index + j - 1] = (uint)carry;
-                    carry >>= 32;
-                }
-                carry += bits[index + s];
-                bits[index + s - 1] = (uint)carry;
-                carry >>= 32;
-                bits[index + s] = bits[index + s + 1] + (uint)carry;
-            }
-            bits[index + s + 1] = 0;
             return SetLast(s);
         }
 
@@ -848,43 +811,6 @@ namespace Decompose.Numerics
                 bits[index + s] = bits[index + s + 1] + (uint)carry;
             }
             bits[index + s + 1] = 0;
-            return SetLast(s);
-        }
-
-        public Radix32Integer MontgomeryFIOS(Radix32Integer u, Radix32Integer v, Radix32Integer n, uint k0)
-        {
-            // FIOS Method - Finely Integrated Operand Scanning
-            CheckValid();
-            Clear();
-            int s = n.last + 1;
-            for (int i = 0; i < s; i++)
-            {
-                int left = index + i + s;
-                ulong carry = 0;
-                ulong ui = u.bits[u.index + i];
-                uint ti = bits[index + i] + (uint)ui * v.bits[v.index];
-                ulong m = ti * k0;
-                for (int j = 0; j < s; j++)
-                {
-                    carry += bits[index + i + j];
-                    ulong uv = ui * v.bits[v.index + j];
-                    ulong mn = m * n.bits[n.index + j];
-                    ulong lo = (ulong)(uint)carry + (uint)uv + (uint)mn;
-                    bits[index + i + j] = (uint)lo;
-                    carry = (carry >> 32) + (uv >> 32) + (mn >> 32) + (lo >> 32);
-                }
-                carry += bits[left];
-                bits[left] = (uint)carry;
-                carry >>= 32;
-                bits[left + 1] += (uint)carry;
-                carry >>= 32;
-                Debug.Assert(carry == 0);
-            }
-            for (int i = 0; i < s; i++)
-            {
-                bits[index + i] = bits[index + i + s];
-                bits[index + i + s] = 0;
-            }
             return SetLast(s);
         }
 
