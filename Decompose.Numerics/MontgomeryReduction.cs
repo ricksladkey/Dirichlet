@@ -55,9 +55,18 @@ namespace Decompose.Numerics
 
                 public IResidue Multiply(IResidue x)
                 {
+#if false
                     r.Multiply(((Residue)x).r, reducer.reg3);
                     reducer.Reduce(r);
                     return this;
+#else
+                    reducer.reg3.Set(r);
+                    if (this == x)
+                        reducer.Reduce(r, reducer.reg3, reducer.reg3);
+                    else
+                        reducer.Reduce(r, reducer.reg3, ((Residue)x).r);
+                    return this;
+#endif
                 }
 
                 public IResidue Add(IResidue x)
@@ -165,6 +174,28 @@ namespace Decompose.Numerics
             private Radix32Integer CreateRep()
             {
                 return new Radix32Integer(length);
+            }
+
+            private void Reduce(Radix32Integer t, Radix32Integer u, Radix32Integer v)
+            {
+#if DEBUG
+                t.Set(u).Multiply(v, reg1);
+                t.MontgomeryOperation(nRep, k0);
+                var expected = t.ToBigInteger();
+#endif
+                t.MontgomeryOperation(u, v, nRep, k0);
+                if (t >= nRep)
+                    t.Subtract(nRep);
+                Debug.Assert(t < nRep);
+#if DEBUG
+                if (t.ToBigInteger() != expected)
+                {
+                    Debugger.Break();
+                    t.MontgomeryOperation(u, v, nRep, k0);
+                    if (t >= nRep)
+                        t.Subtract(nRep);
+                }
+#endif
             }
 
             private void Reduce(Radix32Integer t)

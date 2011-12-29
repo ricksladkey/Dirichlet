@@ -603,14 +603,13 @@ namespace Decompose.Numerics
                 }
                 ulong u0u1 = (ulong)u0 << 32 | u1;
                 ulong qhat = u0 == v1 ? (1ul << 32) - 1 : u0u1 / v1;
-                while (true)
+                ulong r = u0u1 - qhat * v1;
+                if (r == (uint)r && v2 * qhat > (r << 32 | u2))
                 {
-                    ulong r = u0u1 - qhat * v1;
-                    if (r != (uint)r)
-                        break;
-                    if (v2 * qhat <= (r << 32 | u2))
-                        break;
                     --qhat;
+                    r = u0u1 - qhat * v1;
+                    if (r == (uint)r && v2 * qhat > (r << 32 | u2))
+                        --qhat;
                 }
                 ulong carry = 0;
                 ulong borrow = 0;
@@ -738,35 +737,74 @@ namespace Decompose.Numerics
             return this;
         }
 
-        /// <summary>
-        /// Perform a single Montgomery operation.
-        /// </summary>
-        /// <param name="n"></param>
-        /// <param name="k0"></param>
-        /// <returns></returns>
         public Radix32Integer MontgomeryOperation(Radix32Integer n, uint k0)
         {
+            // SOS Method - Separated Operand Scanning
             CheckValid();
             int s = n.last + 1;
             for (int i = 0; i < s; i++)
             {
                 ulong carry = 0;
                 ulong m = bits[index + i] * k0;
-                for (int j = 0; j <= n.last; j++)
+                for (int j = 0; j < s; j++)
                 {
                     carry += (ulong)bits[index + i + j] + m * n.bits[n.index + j];
                     bits[index + i + j] = (uint)carry;
                     carry >>= 32;
                 }
-                for (int j = n.last + 1; carry != 0; j++)
+                for (int j = s; carry != 0; j++)
                 {
                     carry += bits[index + i + j];
                     bits[index + i + j] = (uint)carry;
                     carry >>= 32;
                 }
             }
-            SetLast(2 * s);
-            return RightShift(32 * s);
+            for (int i = 0; i < s; i++)
+            {
+                bits[index + i] = bits[index + i + s];
+                bits[index + i + s] = 0;
+            }
+            return SetLast(s);
+        }
+
+        public Radix32Integer MontgomeryOperation(Radix32Integer u, Radix32Integer v, Radix32Integer n, uint k0)
+        {
+            // CIOS Method - Coarsely Integrated Operand Scanning
+            CheckValid();
+            Clear();
+            int s = n.last + 1;
+            for (int i = 0; i < s; i++)
+            {
+                ulong carry = 0;
+                ulong ui = u.bits[u.index + i];
+                for (int j = 0; j < s; j++)
+                {
+                    carry += (ulong)bits[index + i + j] + ui * v.bits[v.index + j];
+                    bits[index + i + j] = (uint)carry;
+                    carry >>= 32;
+                }
+                int left = index + i + s;
+                carry += bits[left];
+                bits[left] = (uint)carry;
+                carry >>= 32;
+                ulong m = bits[index + i] * k0;
+                for (int j = 0; j < s; j++)
+                {
+                    carry += (ulong)bits[index + i + j] + m * n.bits[n.index + j];
+                    bits[index + i + j] = (uint)carry;
+                    carry >>= 32;
+                }
+                carry += bits[left];
+                bits[left] = (uint)carry;
+                carry >>= 32;
+                bits[left + 1] += (uint)carry;
+            }
+            for (int i = 0; i < s; i++)
+            {
+                bits[index + i] = bits[index + i + s];
+                bits[index + i + s] = 0;
+            }
+            return SetLast(s);
         }
 
         private Radix32Integer SetLast(int n)
