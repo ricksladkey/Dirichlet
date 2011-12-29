@@ -45,17 +45,28 @@ namespace Decompose.Numerics
                 var c = random.Next(n - BigInteger.One) + BigInteger.One;
                 return Rho(n, xInit, c, CancellationToken.None);
             }
-            var cancellationToken = new CancellationTokenSource();
+            var cancellationTokenSource = new CancellationTokenSource();
             var tasks = new Task<BigInteger>[threads];
             for (int i = 0; i < threads; i++)
+                tasks[i] = StartNew(n, cancellationTokenSource.Token);
+            var result = BigInteger.Zero;
+            while (true)
             {
-                var xInit = random.Next(n);
-                var c = random.Next(n - BigInteger.One) + BigInteger.One;
-                tasks[i] = Task.Factory.StartNew(() => Rho(n, xInit, c, cancellationToken.Token));
+                var index = Task.WaitAny(tasks);
+                result = tasks[index].Result;
+                if (result != BigInteger.Zero)
+                    break;
+                tasks[index] = StartNew(n, cancellationTokenSource.Token);
             }
-            var index = Task.WaitAny(tasks);
-            cancellationToken.Cancel();
-            return tasks[index].Result;
+            cancellationTokenSource.Cancel();
+            return result;
+        }
+
+        private Task<BigInteger> StartNew(BigInteger n, CancellationToken cancellationToken)
+        {
+            var xInit = random.Next(n);
+            var c = random.Next(n - BigInteger.One) + BigInteger.One;
+            return Task.Factory.StartNew(() => Rho(n, xInit, c, cancellationToken));
         }
 
         protected static BigInteger F(BigInteger x, BigInteger c, BigInteger n)

@@ -71,7 +71,7 @@ namespace Decompose.Numerics
             }
 
             if (g.CompareTo(n) == 0)
-                throw new InvalidOperationException("failed");
+                return BigInteger.Zero;
 
             return g;
         }

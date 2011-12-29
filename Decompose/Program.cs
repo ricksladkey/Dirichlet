@@ -14,8 +14,10 @@ namespace Decompose
             //BarrettReductionTest1();
             //BarrettReductionTest2();
             //Radix32Test1();
-            FactorTest1();
+            //FactorTest1();
             //FactorTest2();
+            //FactorTest3();
+            FactorTest4();
         }
 
         static void FindPrimeTest1()
@@ -181,25 +183,87 @@ namespace Decompose
             FactorTest(25, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
         }
 
-        static void FactorTest(int iterations, BigInteger n, IFactorizationAlgorithm<BigInteger> algorithm)
+        static void FactorTest3()
+        {
+            for (int i = 214; i <= 214; i++)
+            {
+                var n = (BigInteger.One << i) + 1;
+                Console.WriteLine("i = {0}, n = {1}", i, n);
+                if (BigIntegerUtils.IsPrime(n))
+                    continue;
+                int threads = 4;
+                var factors = null as BigInteger[];
+                //factors = FactorTest(1, n, new PollardRho(threads));
+                //factors = FactorTest(1, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
+                factors = FactorTest(1, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+                foreach (var factor in factors)
+                    Console.WriteLine("{0}", factor);
+            }
+
+        }
+
+        static void FactorTest4()
+        {
+            var random = new MersenneTwister32(0);
+            for (int i = 15; i <= 15; i++)
+            {
+                var limit = BigInteger.Pow(new BigInteger(10), i);
+                var p = NextPrime(random, limit);
+                var q = NextPrime(random, limit);
+                var n = p * q;
+                Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
+                int threads = 4;
+                var factors = null as BigInteger[];
+                //factors = FactorTest(1, n, new PollardRho(threads));
+                //factors = FactorTest(1, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
+                factors = FactorTest(10, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+            }
+        }
+
+        static BigInteger NextPrime(MersenneTwister32 random, BigInteger limit)
+        {
+            var n = random.Next(limit);
+            while (GetDigitLength(n, 10) < GetDigitLength(limit - 1, 10))
+                n = random.Next(limit);
+            while (!BigIntegerUtils.IsPrime(n))
+                ++n;
+            return n;
+        }
+
+        static int GetDigitLength(BigInteger n, int b)
+        {
+            int i = 0;
+            while (!n.IsZero)
+            {
+                ++i;
+                n /= b;
+            }
+            return i;
+        }
+
+        static BigInteger[] FactorTest(int iterations, BigInteger n, IFactorizationAlgorithm<BigInteger> algorithm)
         {
             var elapsed = new double[iterations];
+            var factors = null as BigInteger[];
             for (int i = 0; i < iterations; i++)
             {
                 GC.Collect();
                 var timer = new Stopwatch();
                 timer.Start();
-                var factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
+                factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
                 var product = factors.Aggregate((sofar, current) => sofar * current);
-                if (factors.Length != 2)
-                    throw new InvalidOperationException();
+                if (factors.Any(factor => factor == BigInteger.One || factor == n || !BigIntegerUtils.IsPrime(factor)))
+                    throw new InvalidOperationException("invalid factor");
+                if (factors.Length < 2)
+                    throw new InvalidOperationException("too few factors");
                 if (n != product)
-                    throw new InvalidOperationException();
+                    throw new InvalidOperationException("validation failure");
                 elapsed[i] = timer.ElapsedMilliseconds;
                 Console.WriteLine("elapsed = {0}", elapsed[i]);
             }
             var total = elapsed.Aggregate((sofar, current) => sofar + current);
             Console.WriteLine("{0} iterations in {1} msec, {2} msec/iteration", iterations, total, total / iterations);
+            return factors;
         }
     }
 }

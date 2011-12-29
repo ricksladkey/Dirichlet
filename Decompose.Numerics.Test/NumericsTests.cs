@@ -186,6 +186,9 @@ namespace Decompose.Numerics.Test
                 x.SetRemainder(a, c);
                 Assert.AreEqual(aPrime % c, x.ToBigInteger());
 
+                x.SetSquare(a);
+                Assert.AreEqual(aPrime * aPrime, x.ToBigInteger());
+
                 if (aPrime > bPrime)
                 {
                     x.SetDifference(a, b);
@@ -197,7 +200,7 @@ namespace Decompose.Numerics.Test
                     Assert.AreEqual(bPrime - aPrime, x.ToBigInteger());
                 }
 
-                x.SetGreatestCommonDivisor(a, b, reg1, reg2);
+                x.SetGreatestCommonDivisor(a, b, reg1);
                 Assert.AreEqual(BigInteger.GreatestCommonDivisor(aPrime, bPrime), x.ToBigInteger());
             }
         }

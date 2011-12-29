@@ -60,7 +60,7 @@ namespace Decompose.Numerics
                     reducer.Reduce(r);
                     return this;
 #endif
-#if false
+#if true
                     if (this == x)
                     {
                         r.Multiply(r, reducer.reg3);
@@ -74,7 +74,7 @@ namespace Decompose.Numerics
                         return this;
                     }
 #endif
-#if true
+#if false
                     reducer.reg3.Set(r);
                     if (this == x)
                         reducer.Reduce(r, reducer.reg3, reducer.reg3);

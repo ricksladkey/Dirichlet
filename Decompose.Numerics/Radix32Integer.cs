@@ -718,7 +718,7 @@ namespace Decompose.Numerics
             u.SetLast(0);
         }
 
-        public Radix32Integer SetGreatestCommonDivisor(Radix32Integer a, Radix32Integer b, Radix32Integer reg1, Radix32Integer reg2)
+        public Radix32Integer SetGreatestCommonDivisor(Radix32Integer a, Radix32Integer b, Radix32Integer reg1)
         {
             if (a.IsZero)
                 Set(b);
@@ -727,17 +727,14 @@ namespace Decompose.Numerics
             else
             {
                 reg1.Set(a);
-                reg2.Set(b);
+                Set(b);
                 while (true)
                 {
-                    DivMod(reg1, reg2, this);
+                    DivMod(reg1, this, null);
                     if (reg1.IsZero)
-                    {
-                        Set(reg2);
                         break;
-                    }
-                    DivMod(reg2, reg1, this);
-                    if (reg2.IsZero)
+                    DivMod(this, reg1, null);
+                    if (IsZero)
                     {
                         Set(reg1);
                         break;
