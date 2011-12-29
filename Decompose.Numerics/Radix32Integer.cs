@@ -777,6 +777,43 @@ namespace Decompose.Numerics
             return SetLast(s);
         }
 
+        public Radix32Integer MontgomeryCIOS(Radix32Integer u, Radix32Integer n, uint k0)
+        {
+            // CIOS Method - Coarsely Integrated Operand Scanning
+            CheckValid();
+            Clear();
+            int s = n.last + 1;
+            for (int i = 0; i < s; i++)
+            {
+                ulong carry = 0;
+                ulong ui = u.bits[u.index + i];
+                for (int j = 0; j < s; j++)
+                {
+                    carry += (ulong)bits[index + j] + ui * v.bits[v.index + j];
+                    bits[index + j] = (uint)carry;
+                    carry >>= 32;
+                }
+                carry += bits[index + s];
+                bits[index + s] = (uint)carry;
+                bits[index + s + 1] = (uint)(carry >> 32);
+                ulong m = bits[index] * k0;
+                carry = bits[index] + m * n.bits[n.index];
+                carry >>= 32;
+                for (int j = 1; j < s; j++)
+                {
+                    carry += (ulong)bits[index + j] + m * n.bits[n.index + j];
+                    bits[index + j - 1] = (uint)carry;
+                    carry >>= 32;
+                }
+                carry += bits[index + s];
+                bits[index + s - 1] = (uint)carry;
+                carry >>= 32;
+                bits[index + s] = bits[index + s + 1] + (uint)carry;
+            }
+            bits[index + s + 1] = 0;
+            return SetLast(s);
+        }
+
         public Radix32Integer MontgomeryCIOS(Radix32Integer u, Radix32Integer v, Radix32Integer n, uint k0)
         {
             // CIOS Method - Coarsely Integrated Operand Scanning
@@ -785,35 +822,32 @@ namespace Decompose.Numerics
             int s = n.last + 1;
             for (int i = 0; i < s; i++)
             {
-                int left = index + i + s;
                 ulong carry = 0;
                 ulong ui = u.bits[u.index + i];
                 for (int j = 0; j < s; j++)
                 {
-                    carry += (ulong)bits[index + i + j] + ui * v.bits[v.index + j];
-                    bits[index + i + j] = (uint)carry;
+                    carry += (ulong)bits[index + j] + ui * v.bits[v.index + j];
+                    bits[index + j] = (uint)carry;
                     carry >>= 32;
                 }
-                carry += bits[left];
-                bits[left] = (uint)carry;
+                carry += bits[index + s];
+                bits[index + s] = (uint)carry;
+                bits[index + s + 1] = (uint)(carry >> 32);
+                ulong m = bits[index] * k0;
+                carry = bits[index] + m * n.bits[n.index];
                 carry >>= 32;
-                ulong m = bits[index + i] * k0;
-                for (int j = 0; j < s; j++)
+                for (int j = 1; j < s; j++)
                 {
-                    carry += (ulong)bits[index + i + j] + m * n.bits[n.index + j];
-                    bits[index + i + j] = (uint)carry;
+                    carry += (ulong)bits[index + j] + m * n.bits[n.index + j];
+                    bits[index + j - 1] = (uint)carry;
                     carry >>= 32;
                 }
-                carry += bits[left];
-                bits[left] = (uint)carry;
+                carry += bits[index + s];
+                bits[index + s - 1] = (uint)carry;
                 carry >>= 32;
-                bits[left + 1] += (uint)carry;
+                bits[index + s] = bits[index + s + 1] + (uint)carry;
             }
-            for (int i = 0; i < s; i++)
-            {
-                bits[index + i] = bits[index + i + s];
-                bits[index + i + s] = 0;
-            }
+            bits[index + s + 1] = 0;
             return SetLast(s);
         }
 

@@ -180,18 +180,18 @@ namespace Decompose.Numerics
             {
 #if DEBUG
                 t.Set(u).Multiply(v, reg1);
-                t.MontgomeryOperation(nRep, k0);
-                var expected = t.ToBigInteger();
+                t.MontgomerySOS(nRep, k0);
+                var expected = t.Copy();
 #endif
                 t.MontgomeryCIOS(u, v, nRep, k0);
                 if (t >= nRep)
                     t.Subtract(nRep);
                 Debug.Assert(t < nRep);
 #if DEBUG
-                if (t.ToBigInteger() != expected)
+                if (t != expected)
                 {
                     Debugger.Break();
-                    t.MontgomeryOperation(u, v, nRep, k0);
+                    t.MontgomeryCIOS(u, v, nRep, k0);
                     if (t >= nRep)
                         t.Subtract(nRep);
                 }
