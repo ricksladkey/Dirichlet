@@ -396,7 +396,7 @@ namespace Decompose.Numerics
                 for (int j = i + 1; j <= a.last; j++)
                 {
                     ulong value = avalue * a.bits[a.index + j];
-                    var eps = value >> 63;
+                    ulong eps = value >> 63;
                     value <<= 1;
                     carry += value + bits[index + i + j];
                     bits[index + i + j] = (uint)carry;
@@ -775,6 +775,7 @@ namespace Decompose.Numerics
             int s = n.last + 1;
             for (int i = 0; i < s; i++)
             {
+                int left = index + i + s;
                 ulong carry = 0;
                 ulong ui = u.bits[u.index + i];
                 for (int j = 0; j < s; j++)
@@ -783,7 +784,6 @@ namespace Decompose.Numerics
                     bits[index + i + j] = (uint)carry;
                     carry >>= 32;
                 }
-                int left = index + i + s;
                 carry += bits[left];
                 bits[left] = (uint)carry;
                 carry >>= 32;
