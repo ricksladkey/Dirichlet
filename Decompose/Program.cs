@@ -172,9 +172,9 @@ namespace Decompose
             var p = BigInteger.Parse("287288745765902964785862069919080712937");
             var q = BigInteger.Parse("7660450463");
             var n = p * q;
-            int threads = 1;
+            int threads = 4;
             //FactorTest(25, n, new PollardRhoBrent(threads));
-            //FactorTest(25, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
+            FactorTest(25, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
             //FactorTest(25, n, new PollardRhoReduction(threads, new BarrettReduction()));
             FactorTest(25, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
         }

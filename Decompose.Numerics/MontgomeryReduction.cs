@@ -183,7 +183,7 @@ namespace Decompose.Numerics
                 t.MontgomeryOperation(nRep, k0);
                 var expected = t.ToBigInteger();
 #endif
-                t.MontgomeryOperation(u, v, nRep, k0);
+                t.MontgomeryCIOS(u, v, nRep, k0);
                 if (t >= nRep)
                     t.Subtract(nRep);
                 Debug.Assert(t < nRep);
@@ -200,7 +200,7 @@ namespace Decompose.Numerics
 
             private void Reduce(Radix32Integer t)
             {
-                t.MontgomeryOperation(nRep, k0);
+                t.MontgomerySOS(nRep, k0);
                 if (t >= nRep)
                     t.Subtract(nRep);
                 Debug.Assert(t < nRep);

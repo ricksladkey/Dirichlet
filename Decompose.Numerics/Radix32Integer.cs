@@ -395,6 +395,7 @@ namespace Decompose.Numerics
                 carry >>= 32;
                 for (int j = i + 1; j <= a.last; j++)
                 {
+#if true
                     ulong value = avalue * a.bits[a.index + j];
                     ulong eps = value >> 63;
                     value <<= 1;
@@ -402,6 +403,15 @@ namespace Decompose.Numerics
                     bits[index + i + j] = (uint)carry;
                     carry >>= 32;
                     carry += eps << 32;
+#else
+                    ulong oldCarry = carry;
+                    ulong oldBits = bits[index + i + j];
+                    carry += bits[index + i + j];
+                    ulong value = avalue * a.bits[a.index + j];
+                    ulong lo = (uint)carry + 2ul * (uint)value;
+                    bits[index + i + j] = (uint)lo;
+                    carry = (carry >> 32) + 2ul * (value >> 32) + (lo >> 32);
+#endif
                 }
                 int k = index + i + a.last + 1;
                 carry += bits[k];
@@ -510,13 +520,13 @@ namespace Decompose.Numerics
                 for (int i = min; i <= max; i++)
                 {
                     int j = k - i;
-                    var uv = (ulong)a.bits[a.index + i] * b.bits[b.index + j];
+                    ulong uv = (ulong)a.bits[a.index + i] * b.bits[b.index + j];
                     r0 += (uint)uv;
                     eps = r0 >> 32;
-                    r0 &= (1ul << 32) - 1;
+                    r0 = (uint)r0;
                     r1 += (uv >> 32) + eps;
                     eps = r1 >> 32;
-                    r1 &= (1ul << 32) - 1;
+                    r1 = (uint)r1;
                     r2 += eps;
                 }
                 if (k >= shifted)
@@ -737,7 +747,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer MontgomeryOperation(Radix32Integer n, uint k0)
+        public Radix32Integer MontgomerySOS(Radix32Integer n, uint k0)
         {
             // SOS Method - Separated Operand Scanning
             CheckValid();
@@ -767,7 +777,7 @@ namespace Decompose.Numerics
             return SetLast(s);
         }
 
-        public Radix32Integer MontgomeryOperation(Radix32Integer u, Radix32Integer v, Radix32Integer n, uint k0)
+        public Radix32Integer MontgomeryCIOS(Radix32Integer u, Radix32Integer v, Radix32Integer n, uint k0)
         {
             // CIOS Method - Coarsely Integrated Operand Scanning
             CheckValid();
@@ -798,6 +808,43 @@ namespace Decompose.Numerics
                 bits[left] = (uint)carry;
                 carry >>= 32;
                 bits[left + 1] += (uint)carry;
+            }
+            for (int i = 0; i < s; i++)
+            {
+                bits[index + i] = bits[index + i + s];
+                bits[index + i + s] = 0;
+            }
+            return SetLast(s);
+        }
+
+        public Radix32Integer MontgomeryFIOS(Radix32Integer u, Radix32Integer v, Radix32Integer n, uint k0)
+        {
+            // FIOS Method - Finely Integrated Operand Scanning
+            CheckValid();
+            Clear();
+            int s = n.last + 1;
+            for (int i = 0; i < s; i++)
+            {
+                int left = index + i + s;
+                ulong carry = 0;
+                ulong ui = u.bits[u.index + i];
+                uint ti = bits[index + i] + (uint)ui * v.bits[v.index];
+                ulong m = ti * k0;
+                for (int j = 0; j < s; j++)
+                {
+                    carry += bits[index + i + j];
+                    ulong uv = ui * v.bits[v.index + j];
+                    ulong mn = m * n.bits[n.index + j];
+                    ulong lo = (ulong)(uint)carry + (uint)uv + (uint)mn;
+                    bits[index + i + j] = (uint)lo;
+                    carry = (carry >> 32) + (uv >> 32) + (mn >> 32) + (lo >> 32);
+                }
+                carry += bits[left];
+                bits[left] = (uint)carry;
+                carry >>= 32;
+                bits[left + 1] += (uint)carry;
+                carry >>= 32;
+                Debug.Assert(carry == 0);
             }
             for (int i = 0; i < s; i++)
             {
