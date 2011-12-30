@@ -15,9 +15,9 @@ namespace Decompose
             //BarrettReductionTest2();
             //Radix32Test1();
             //FactorTest1();
-            //FactorTest2();
+            FactorTest2();
             //FactorTest3();
-            FactorTest4();
+            //FactorTest4();
         }
 
         static void FindPrimeTest1()
@@ -156,19 +156,20 @@ namespace Decompose
         {
             var n = BigInteger.Parse("10023859281455311421");
             int threads = 4;
+            bool debug = false;
 
-            //FactorTest(25, n, new PollardRhoBrent(threads));
-            //FactorTest(25, n, new PollardRhoReduction(threads, new BigIntegerReduction()));
-            //FactorTest(25, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
-            //FactorTest(25, n, new PollardRhoReduction(threads, new BarrettReduction()));
-            //FactorTest(25, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+            //FactorTest(debug, 25, n, new PollardRhoBrent(threads));
+            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, new BigIntegerReduction()));
+            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
+            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, new BarrettReduction()));
+            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
 
-            //FactorTest(25, n, new PollardRhoBrent(threads));
-            FactorTest(500, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
-            //FactorTest(25, n, new PollardRhoReduction(threads, new BarrettReduction()));
-            //FactorTest(25, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+            //FactorTest(debug, 25, n, new PollardRhoBrent(threads));
+            FactorTest(debug, 500, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
+            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, new BarrettReduction()));
+            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
 
-            //FactorTest(500, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+            //FactorTest(debug, 500, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
         }
 
         static void FactorTest2()
@@ -177,17 +178,19 @@ namespace Decompose
             var q = BigInteger.Parse("7660450463");
             var n = p * q;
             int threads = 4;
-            FactorTest(25, n, new PollardRhoBrent(threads));
-            FactorTest(25, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
-            FactorTest(25, n, new PollardRhoReduction(threads, new BarrettReduction()));
-            FactorTest(25, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+            bool debug = false;
+            FactorTest(debug, 25, n, new PollardRhoBrent(threads));
+            FactorTest(debug, 25, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
+            FactorTest(debug, 25, n, new PollardRhoReduction(threads, new BarrettReduction()));
+            FactorTest(debug, 25, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
         }
 
         static void FactorTest3()
         {
             for (int i = 214; i <= 214; i++)
             {
-                var n = (BigInteger.One << i) + 1;
+                var plus = true;
+                var n = (BigInteger.One << i) + (plus ? 1 : -1);
                 Console.WriteLine("i = {0}, n = {1}", i, n);
                 if (BigIntegerUtils.IsPrime(n))
                     continue;
@@ -195,7 +198,7 @@ namespace Decompose
                 var factors = null as BigInteger[];
                 //factors = FactorTest(1, n, new PollardRho(threads));
                 //factors = FactorTest(1, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
-                factors = FactorTest(1, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+                factors = FactorTest(true, 10, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
                 foreach (var factor in factors)
                     Console.WriteLine("{0}", factor);
             }
@@ -214,9 +217,9 @@ namespace Decompose
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
                 int threads = 4;
                 var factors = null as BigInteger[];
-                //factors = FactorTest(1, n, new PollardRho(threads));
-                //factors = FactorTest(1, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
-                factors = FactorTest(10, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+                //factors = FactorTest(true, 1, n, new PollardRho(threads));
+                //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
+                factors = FactorTest(true, 10, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
             }
         }
 
@@ -241,7 +244,7 @@ namespace Decompose
             return i;
         }
 
-        static BigInteger[] FactorTest(int iterations, BigInteger n, IFactorizationAlgorithm<BigInteger> algorithm)
+        static BigInteger[] FactorTest(bool debug, int iterations, BigInteger n, IFactorizationAlgorithm<BigInteger> algorithm)
         {
             var elapsed = new double[iterations];
             var factors = null as BigInteger[];
@@ -259,7 +262,8 @@ namespace Decompose
                 if (n != product)
                     throw new InvalidOperationException("validation failure");
                 elapsed[i] = timer.ElapsedMilliseconds;
-                Console.WriteLine("elapsed = {0}", elapsed[i]);
+                if (debug)
+                    Console.WriteLine("elapsed = {0}", elapsed[i]);
             }
             var total = elapsed.Aggregate((sofar, current) => sofar + current);
             Console.WriteLine("{0} iterations in {1} msec, {2} msec/iteration", iterations, total, total / iterations);

@@ -59,9 +59,7 @@ namespace Decompose.Numerics
 
                 public IResidue Add(IResidue x)
                 {
-                    r.Add(((Residue)x).r);
-                    if (r >= reducer.pRep)
-                        r.Subtract(reducer.pRep);
+                    r.AddModulo(((Residue)x).r, reducer.pRep);
                     return this;
                 }
 
