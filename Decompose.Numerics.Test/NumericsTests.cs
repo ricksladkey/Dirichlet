@@ -87,33 +87,33 @@ namespace Decompose.Numerics.Test
         public void TestBigIntegerReduction()
         {
             var p = BigInteger.Parse("10023859281455311421");
-            TestReduction(new BigIntegerReduction().GetReducer(p));
+            TestReduction(p, new BigIntegerReduction());
         }
 
         [TestMethod]
         public void TestRadix32IntegerReduction()
         {
             var p = BigInteger.Parse("10023859281455311421");
-            TestReduction(new Radix32IntegerReduction().GetReducer(p));
+            TestReduction(p, new Radix32IntegerReduction());
         }
 
         [TestMethod]
         public void TestMontgomeryReduction()
         {
             var p = BigInteger.Parse("10023859281455311421");
-            TestReduction(new MontgomeryReduction().GetReducer(p));
+            TestReduction(p, new MontgomeryReduction());
         }
 
         [TestMethod]
         public void TestBarrettReduction()
         {
             var p = BigInteger.Parse("10023859281455311421");
-            TestReduction(new BarrettReduction().GetReducer(p));
+            TestReduction(p, new BarrettReduction());
         }
 
-        private void TestReduction(IReducer reducer)
+        private void TestReduction(BigInteger p, IReductionAlgorithm reduction)
         {
-            var p = reducer.Modulus;
+            var reducer = reduction.GetReducer(p);
             var xPrime = reducer.ToResidue(0);
             var yPrime = reducer.ToResidue(0);
             var zPrime = reducer.ToResidue(0);

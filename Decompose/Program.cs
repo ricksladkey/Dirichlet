@@ -196,9 +196,10 @@ namespace Decompose
                     continue;
                 int threads = 4;
                 var factors = null as BigInteger[];
-                //factors = FactorTest(1, n, new PollardRho(threads));
-                //factors = FactorTest(1, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
-                factors = FactorTest(true, 10, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+                //factors = FactorTest(true, 1, n, new PollardRho(threads));
+                factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
+                //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, new BarrettReduction()));
+                //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
                 foreach (var factor in factors)
                     Console.WriteLine("{0}", factor);
             }

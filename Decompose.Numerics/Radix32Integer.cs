@@ -107,6 +107,7 @@ namespace Decompose.Numerics
         {
             CheckValid();
             Debug.Assert(length == a.length);
+            Debug.Assert(!object.ReferenceEquals(this, a));
             fixed (uint* wbits = &bits[index], abits = &a.bits[a.index])
             {
                 int alast = a.last;
@@ -242,23 +243,32 @@ namespace Decompose.Numerics
             return 0;
         }
 
-        public Radix32Integer Mask(int n)
+        public unsafe Radix32Integer Mask(int n)
         {
             CheckValid();
             int i = n / 32;
             int j = n - 32 * i;
-            if (j == 0)
+            fixed (uint* wbits = &bits[index])
             {
-                for (int k = last; k >= i; k--)
-                    bits[index + k] = 0;
+                if (j == 0)
+                {
+                    for (int k = last; k >= i; k--)
+                        wbits[k] = 0;
+                    if (i > 0)
+                        --i;
+                }
+                else
+                {
+                    for (int k = last; k > i; k--)
+                        wbits[k] = 0;
+                    wbits[i] &= (1u << j) - 1;
+                }
+                while (i > 0 && wbits[i] == 0)
+                    --i;
+                last = i;
             }
-            else
-            {
-                for (int k = last; k > i; k--)
-                    bits[index + k] = 0;
-                bits[index + i] &= (1u << j) - 1;
-            }
-            return SetLast(i - 1);
+            CheckValid();
+            return this;
         }
 
         public Radix32Integer LeftShift(int n)
@@ -454,12 +464,17 @@ namespace Decompose.Numerics
         public Radix32Integer Multiply(Radix32Integer a, Radix32Integer reg1)
         {
             reg1.Set(this);
-            if (this == a)
+            if (object.ReferenceEquals(this, a))
                 return SetSquare(reg1);
             return SetProduct(reg1, a);
         }
 
-        public unsafe Radix32Integer SetSquare(Radix32Integer a)
+        public Radix32Integer SetSquare(Radix32Integer a)
+        {
+            return SetProduct(a, a);
+        }
+
+        public unsafe Radix32Integer SetSquareSlow(Radix32Integer a)
         {
             // Use operand scanning algorithm.
             CheckValid();
@@ -686,7 +701,7 @@ namespace Decompose.Numerics
                 uint v2 = vbits[v.last - 1];
                 if (d != 0)
                 {
-                    uint v3 = n == 2 ? vbits[v.last - 2] : 0;
+                    uint v3 = n >= 2 ? vbits[v.last - 2] : 0;
                     v1 = v1 << d | v2 >> dneg;
                     v2 = v2 << d | v3 >> dneg;
                 }
@@ -1358,7 +1373,7 @@ namespace Decompose.Numerics
         public Radix32Integer Multiply(Radix32Integer a, Radix32Integer reg1)
         {
             reg1.Set(this);
-            if (this == a)
+            if (object.ReferenceEquals(this, a))
                 return SetSquare(reg1);
             return SetProduct(reg1, a);
         }

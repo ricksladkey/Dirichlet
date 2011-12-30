@@ -56,11 +56,13 @@ namespace Decompose.Numerics
                 public IResidue Multiply(IResidue x)
                 {
 #if false
+                    // Use SOS for everything.
                     r.Multiply(((Residue)x).r, reducer.reg3);
                     reducer.Reduce(r);
                     return this;
 #endif
 #if false
+                    // Use SOS for squaring and CIOS otherwise.
                     if (this == x)
                     {
                         r.Multiply(r, reducer.reg3);
@@ -75,6 +77,7 @@ namespace Decompose.Numerics
                     }
 #endif
 #if true
+                    // Use CIOS for everything.
                     reducer.reg3.Set(r);
                     if (this == x)
                         reducer.Reduce(r, reducer.reg3, reducer.reg3);
