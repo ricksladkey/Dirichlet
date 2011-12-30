@@ -46,7 +46,13 @@ namespace Decompose.Numerics
             var sqrtn = BigIntegerUtils.Sqrt(n);
             var factorBaseCandidates = new List<int> { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37 };
             var factorBase = factorBaseCandidates.Where(factor => BigIntegerUtils.JacobiSymbol(n, factor) == 1).ToList();
-                return BigInteger.Zero;
+            foreach (var p in factorBase)
+            {
+                var r1 = BigIntegerUtils.ModularSquareRoot(n, p);
+                var r2 = p - r1;
+                Console.WriteLine("MSR({0}, {1}) = ({2}, {3})", n, p, r1, r2);
+            }
+            return BigInteger.Zero;
         }
     }
 }

@@ -45,7 +45,7 @@ namespace Decompose.Numerics
             return millerRabin.IsPrime(n);
         }
 
-        private static BigInteger limit = (BigInteger)int.MaxValue;
+        private static BigInteger limit = (BigInteger)uint.MaxValue;
         private static BigInteger four = (BigInteger)4;
         private static BigInteger eight = (BigInteger)8;
 
@@ -56,12 +56,12 @@ namespace Decompose.Numerics
             {
                 m = m % n;
                 if (n <= limit)
-                    return result * JacobiSymbol((int)m, (int)n);
+                    return result * JacobiSymbol((uint)m, (uint)n);
                 if (m.IsZero)
                     return 0;
                 if (m.IsEven)
                 {
-                    var k = (int)(n % eight);
+                    uint k = (uint)(n % eight);
                     var toggle = k == 1 || k == 7 ? 1 : -1;
                     do
                     {
@@ -73,7 +73,7 @@ namespace Decompose.Numerics
                     return result;
                 if (!n.IsEven)
                 {
-                    if ((int)(m % four) == 3 && (int)(n % four) == 3)
+                    if ((uint)(m % four) == 3 && (uint)(n % four) == 3)
                         result *= -1;
                     var tmp = m;
                     m = n;
@@ -82,7 +82,7 @@ namespace Decompose.Numerics
             }
         }
 
-        public static int JacobiSymbol(int m, int n)
+        public static int JacobiSymbol(uint m, uint n)
         {
             int result = 1;
             while (true)
@@ -92,7 +92,7 @@ namespace Decompose.Numerics
                     return 0;
                 if ((m & 1) == 0)
                 {
-                    int k = n & 7;
+                    uint k = n & 7;
                     int toggle = k == 1 || k == 7 ? 1 : -1;
                     do
                     {
@@ -111,6 +111,53 @@ namespace Decompose.Numerics
                     n = tmp;
                 }
             }
+        }
+
+        public static BigInteger ModularSquareRoot(BigInteger n, BigInteger p)
+        {
+            var r = ModularSquareRootCore(n, p);
+            if (r > p / BigIntegerUtils.Two)
+                return p - r;
+            return r;
+        }
+
+        private static BigInteger ModularSquareRootCore(BigInteger n, BigInteger p)
+        {
+            if (p == 2)
+                return BigInteger.One;
+            var q = p - 1;
+            var s = 0;
+            while (q.IsEven)
+            {
+                q >>= 1;
+                ++s;
+            }
+            if (s == 1)
+                return BigInteger.ModPow(n, (p + 1) / 4, p);
+            var z = BigIntegerUtils.Two;
+            while (JacobiSymbol(z, p) != -1)
+                ++z;
+            var c = BigInteger.ModPow(z, q, p);
+            var r = BigInteger.ModPow(n, (q + 1) / 2, p);
+            var t = BigInteger.ModPow(n, q, p);
+            var m = s;
+            while (!t.IsOne)
+            {
+                int i = 0;
+                var k = t;
+                while (!k.IsOne)
+                {
+                    k = k * k % p;
+                    ++i;
+                }
+                var b = BigInteger.ModPow(c, BigInteger.Pow(BigIntegerUtils.Two, m - i - 1), p);
+                r = r * b % p;
+                var b2 = b * b % p;
+                t = t * b2 % p;
+                c = b2;
+                m = i;
+            }
+            return r;
         }
     }
 }
