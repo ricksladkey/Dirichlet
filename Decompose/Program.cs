@@ -14,10 +14,11 @@ namespace Decompose
             //BarrettReductionTest1();
             //BarrettReductionTest2();
             //Radix32Test1();
-            FactorTest1();
+            //FactorTest1();
             //FactorTest2();
             //FactorTest3();
             //FactorTest4();
+            FactorTest5();
         }
 
         static void FindPrimeTest1()
@@ -197,9 +198,9 @@ namespace Decompose
                 int threads = 4;
                 var factors = null as BigInteger[];
                 //factors = FactorTest(true, 1, n, new PollardRho(threads));
-                factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
+                factors = FactorTest(true, 5, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
                 //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, new BarrettReduction()));
-                //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+                //factors = FactorTest(true, 5, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
                 foreach (var factor in factors)
                     Console.WriteLine("{0}", factor);
             }
@@ -222,6 +223,15 @@ namespace Decompose
                 //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
                 factors = FactorTest(true, 10, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
             }
+        }
+
+        static void FactorTest5()
+        {
+            var n = BigInteger.Parse("87463");
+            int threads = 1;
+            bool debug = false;
+
+            FactorTest(debug, 1, n, new QuadraticSieve(threads));
         }
 
         static BigInteger NextPrime(MersenneTwister32 random, BigInteger limit)

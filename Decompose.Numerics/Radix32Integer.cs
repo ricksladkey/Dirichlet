@@ -825,23 +825,26 @@ namespace Decompose.Numerics
             return this;
         }
 
-        private static void DivMod(Radix32Integer u, uint v, Radix32Integer q)
+        private static unsafe void DivMod(Radix32Integer u, uint v, Radix32Integer q)
         {
             if (v == 0)
                 throw new InvalidOperationException("division by zero");
             int m = u.last;
-            for (int j = 0; j <= m; j++)
+            fixed (uint* ubits = &u.bits[u.index])
             {
-                int left = u.index + 1 + m - j;
-                uint u0 = u.bits[left];
-                uint u1 = u.bits[left - 1];
-                ulong u0u1 = (ulong)u0 << 32 | u1;
-                ulong qhat = u0 == v ? (1ul << 32) - 1 : u0u1 / v;
-                ulong borrow = u0u1 - qhat * v;
-                u.bits[left - 1] = (uint)borrow;
-                u.bits[left] = 0;
-                if (q != null)
-                    q.bits[q.index + m - j] = (uint)qhat;
+                for (int j = 0; j <= m; j++)
+                {
+                    int left = 1 + m - j;
+                    uint u0 = ubits[left];
+                    uint u1 = ubits[left - 1];
+                    ulong u0u1 = (ulong)u0 << 32 | u1;
+                    ulong qhat = u0 == v ? (1ul << 32) - 1 : u0u1 / v;
+                    ulong borrow = u0u1 - qhat * v;
+                    ubits[left - 1] = (uint)borrow;
+                    ubits[left] = 0;
+                    if (q != null)
+                        q.bits[q.index + m - j] = (uint)qhat;
+                }
             }
             if (q != null)
             {
@@ -876,6 +879,46 @@ namespace Decompose.Numerics
                 }
             }
             return this;
+        }
+
+        public unsafe Radix32Integer BarrettReduction(Radix32Integer z, Radix32Integer mu, int k)
+        {
+            // Use product scanning algorithm.
+            CheckValid();
+            Clear();
+            fixed (uint* wbits = &bits[index], abits = &z.bits[z.index], mubits = &mu.bits[mu.index])
+            {
+                ulong r0 = 0;
+                ulong r1 = 0;
+                ulong r2 = 0;
+                ulong eps = 0;
+                var clast = z.last + mu.last + 1;
+                uint* zbits = wbits + k - 1;
+                for (int ij = k - 2; ij < clast; ij++)
+                {
+                    var min = Math.Max(ij - mu.last, 0);
+                    var max = Math.Min(ij, z.last - (k - 1));
+                    for (int i = min; i <= max; i++)
+                    {
+                        int j = ij - i;
+                        ulong uv = (ulong)zbits[i] * mubits[j];
+                        r0 += (uint)uv;
+                        eps = r0 >> 32;
+                        r0 = (uint)r0;
+                        r1 += (uv >> 32) + eps;
+                        eps = r1 >> 32;
+                        r1 = (uint)r1;
+                        r2 += eps;
+                    }
+                    if (ij >= k - 1)
+                        wbits[ij - k - 1] = (uint)r0;
+                    r0 = r1;
+                    r1 = r2;
+                    r2 = 0;
+                }
+                wbits[clast - (k - 1)] = (uint)r0;
+                return SetLast(clast - (k - 1));
+            }
         }
 
         public unsafe Radix32Integer MontgomerySOS(Radix32Integer n, uint k0)

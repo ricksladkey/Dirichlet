@@ -18,23 +18,23 @@ namespace Decompose.Numerics
 
         public IEnumerable<BigInteger> Factor(BigInteger n)
         {
-            var factors = new ConcurrentQueue<BigInteger>();
-            FactorInternal(n, factors);
+            var factors = new List<BigInteger>();
+            FactorCore(n, factors);
             return factors;
         }
 
-        private void FactorInternal(BigInteger n, ConcurrentQueue<BigInteger> factors)
+        private void FactorCore(BigInteger n, List<BigInteger> factors)
         {
             if (n == 1)
                 return;
             if (BigIntegerUtils.IsPrime(n))
             {
-                factors.Enqueue(n);
+                factors.Add(n);
                 return;
             }
             var divisor = RhoParallel(n);
-            FactorInternal(divisor, factors);
-            FactorInternal(n / divisor, factors);
+            FactorCore(divisor, factors);
+            FactorCore(n / divisor, factors);
         }
 
         private BigInteger RhoParallel(BigInteger n)

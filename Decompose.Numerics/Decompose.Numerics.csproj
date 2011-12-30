@@ -61,6 +61,7 @@
     <Compile Include="PollardRhoBrent.cs" />
     <Compile Include="PollardRhoReduction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QuadraticSieve.cs" />
     <Compile Include="Radix32Integer.cs" />
     <Compile Include="IResidue.cs" />
     <Compile Include="Radix32IntegerReduction.cs" />
