@@ -8,6 +8,8 @@ namespace Decompose.Numerics
 {
     public class Radix32Integer : IComparable<Radix32Integer>, IEquatable<Radix32Integer>
     {
+        private const int wordLength = 32;
+
         private uint[] bits;
         private int index;
         private int length;
@@ -50,6 +52,16 @@ namespace Decompose.Numerics
         public bool IsEven
         {
             get { return (bits[index] & 1) == 0; }
+        }
+
+        public int LengthInWords
+        {
+            get { return last + 1; }
+        }
+
+        public int WordLength
+        {
+            get { return wordLength; }
         }
 
         public Radix32Integer(int length)
@@ -285,7 +297,9 @@ namespace Decompose.Numerics
                     bits[index + k + i] = bits[index + k];
                 for (int k = 0; k < i; k++)
                     bits[index + k] = 0;
-                return SetLast(last + i);
+                last += i;
+                CheckValid();
+                return this;
             }
             else
             {
@@ -520,17 +534,26 @@ namespace Decompose.Numerics
             // Use operand scanning algorithm.
             CheckValid();
             Debug.Assert(a.GetBitLength() + b.GetBitLength() <= 32 * length);
+            Debug.Assert(!object.ReferenceEquals(this, a) && !object.ReferenceEquals(this, b));
+
             fixed (uint* wbits = &bits[index], abits = &a.bits[a.index], bbits = &b.bits[b.index])
             {
                 int wlast = last;
                 int alast = a.last;
                 int blast = b.last;
-                for (int i = 0; i <= wlast; i++)
-                    wbits[i] = 0;
-                for (int i = 0; i <= alast; i++)
+                ulong ai = abits[0];
+                ulong carry = 0;
+                for (int j = 0; j <= blast; j++)
                 {
-                    ulong ai = abits[i];
-                    ulong carry = 0;
+                    carry += ai * bbits[j];
+                    wbits[j] = (uint)carry;
+                    carry >>= 32;
+                }
+                wbits[blast + 1] = (uint)carry;
+                for (int i = 1; i <= alast; i++)
+                {
+                    ai = abits[i];
+                    carry = 0;
                     for (int j = 0; j <= blast; j++)
                     {
                         carry += (ulong)wbits[i + j] + ai * bbits[j];
@@ -540,10 +563,13 @@ namespace Decompose.Numerics
                     wbits[i + blast + 1] = (uint)carry;
                 }
                 wlast = alast + blast + 1;
+                for (int i = wlast + 1; i <= last; i++)
+                    wbits[i] = 0;
                 while (wlast > 0 && wbits[wlast] == 0)
                     --wlast;
                 last = wlast;
             }
+
             CheckValid();
             return this;
         }

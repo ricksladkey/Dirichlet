@@ -14,8 +14,8 @@ namespace Decompose
             //BarrettReductionTest1();
             //BarrettReductionTest2();
             //Radix32Test1();
-            //FactorTest1();
-            FactorTest2();
+            FactorTest1();
+            //FactorTest2();
             //FactorTest3();
             //FactorTest4();
         }
@@ -164,10 +164,10 @@ namespace Decompose
             //FactorTest(debug, 25, n, new PollardRhoReduction(threads, new BarrettReduction()));
             //FactorTest(debug, 25, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
 
-            //FactorTest(debug, 25, n, new PollardRhoBrent(threads));
-            FactorTest(debug, 500, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
-            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, new BarrettReduction()));
-            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+            FactorTest(debug, 100, n, new PollardRhoBrent(threads));
+            FactorTest(debug, 100, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
+            FactorTest(debug, 100, n, new PollardRhoReduction(threads, new BarrettReduction()));
+            FactorTest(debug, 100, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
 
             //FactorTest(debug, 500, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
         }
