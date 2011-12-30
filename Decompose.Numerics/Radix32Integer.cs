@@ -500,12 +500,11 @@ namespace Decompose.Numerics
                         carry >>= 32;
                         carry += eps << 32;
                     }
-                    int k = index + i + alast + 1;
-                    carry += bits[k];
-                    bits[k] = (uint)carry;
+                    int k = i + alast + 1;
+                    carry += wbits[k];
+                    wbits[k] = (uint)carry;
                     carry >>= 32;
-                    if (carry != 0)
-                        bits[k + 1] = (uint)carry;
+                    wbits[k + 1] = (uint)carry;
                 }
                 int limit = 2 * alast + 1;
                 while (limit > 0 && wbits[limit] == 0)
