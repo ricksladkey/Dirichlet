@@ -47,12 +47,6 @@ namespace Decompose.Numerics
             var sqrtn = BigIntegerUtils.Sqrt(n);
             var factorBaseCandidates = new[] { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37 };
             var factorBase = factorBaseCandidates.Where(factor => BigIntegerUtils.JacobiSymbol(n, factor) == 1).ToArray();
-            foreach (var p in factorBase)
-            {
-                var r1 = BigIntegerUtils.ModularSquareRoot(n, p);
-                var r2 = p - r1;
-                Console.WriteLine("MSR({0}, {1}) = ({2}, {3})", n, p, r1, r2);
-            }
             int found = 0;
             int factorBaseSize = factorBase.Length;
             int desired = factorBase.Length + 1;
@@ -91,10 +85,31 @@ namespace Decompose.Numerics
                         break;
                 }
             }
-            for (int i = 0; i < matrix.Count; i++)
-                Console.WriteLine(string.Join(" ", matrix[i].ToArray()));
-            int rows = matrix.Count;
-            int cols = found;
+            foreach (var v in Solve(matrix))
+            {
+                Console.WriteLine("v = {0}", string.Join(" ", v.ToArray()));
+                var xSet = candidates
+                    .Zip(v, (x, exponent) => new { X = x, Exponent = exponent })
+                    .Where(pair => pair.Exponent == 1)
+                    .Select(pair => pair.X)
+                    .ToArray();
+                var xPrime = xSet.Aggregate((sofar, current) => sofar * current) % n;
+                var yPrime = BigIntegerUtils.Sqrt(xSet
+                    .Aggregate(BigInteger.One, (sofar, current) => sofar * (current * current - n))) % n;
+                var factor = BigInteger.GreatestCommonDivisor(xPrime + yPrime, n);
+                if (!factor.IsOne || factor == n)
+                    return factor;
+            }
+            return BigInteger.Zero;
+        }
+
+        private IEnumerable<List<int>> Solve(List<List<int>> matrix)
+        {
+#if DEBUG
+            PrintMatrix("initial:", matrix);
+#endif
+            int rows = Math.Min(matrix.Count, matrix[0].Count);
+            int cols = matrix[0].Count;
             var c = new List<int>();
             for (int i = 0; i < cols; i++)
                 c.Add(-1);
@@ -119,7 +134,6 @@ namespace Decompose.Numerics
                             matrix[i][l] ^= matrix[j][l];
                     }
                     c[j] = k;
-                    Console.WriteLine("c[{0}] = {1}", j, c[j]);
                 }
                 else
                 {
@@ -144,37 +158,39 @@ namespace Decompose.Numerics
                         else
                             v[jj] = 0;
                     }
-                    Console.WriteLine("v = {0}", string.Join(" ", v.ToArray()));
-                    var xSet = candidates
-                        .Zip(v, (x, exponent) => new { X = x, Exponent = exponent })
-                        .Where(pair => pair.Exponent == 1)
-                        .Select(pair => pair.X)
-                        .ToArray();
-                    var xPrime = xSet.Aggregate((sofar, current) => sofar * current) % n;
-                    var yPrime = BigIntegerUtils.Sqrt(xSet
-                        .Aggregate(BigInteger.One, (sofar, current) => sofar * (current * current - n))) % n;
-                    var factor = BigInteger.GreatestCommonDivisor(xPrime + yPrime, n);
-                    if (!factor.IsOne || factor == n)
-                        return factor;
+                    if (VerifySolution(matrix, v))
+                        yield return v;
                 }
-                for (int i = 0; i < matrix.Count; i++)
-                    Console.WriteLine(string.Join(" ", matrix[i].ToArray()));
-                Console.WriteLine();
-                var solution0 = new[] { 1, 1, 1, 0, 1, 0 };
-                for (int ii = 0; ii < rows; ii++)
+#if DEBUG
+                PrintMatrix(string.Format("k = {0}", k), matrix);
+#endif
+            }
+        }
+
+        private bool VerifySolution(List<List<int>> matrix, List<int> solution)
+        {
+            int rows = matrix.Count;
+            int cols = matrix[0].Count;
+            for (int ii = 0; ii < rows; ii++)
+            {
+                int row = 0;
+                for (int jj = 0; jj < cols; jj++)
                 {
-                    int row = 0;
-                    for (int jj = 0; jj < cols; jj++)
-                    {
-                        row ^= solution0[jj] * matrix[ii][jj];
-                    }
-                    if (row != 0)
-                    {
-                        Debugger.Break();
-                    }
+                    row ^= solution[jj] * matrix[ii][jj];
+                }
+                if (row != 0)
+                {
+                    return false;
                 }
             }
-            return BigInteger.Zero;
+            return true;
+        }
+
+        private void PrintMatrix(string label, List<List<int>> matrix)
+        {
+            Console.WriteLine(label);
+            for (int i = 0; i < matrix.Count; i++)
+                Console.WriteLine(string.Join(" ", matrix[i].ToArray()));
         }
     }
 }

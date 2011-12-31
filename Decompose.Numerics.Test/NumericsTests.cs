@@ -206,6 +206,25 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
+        public void ModularSquareRootTest1()
+        {
+            var random = new MersenneTwister32(0);
+            var limit = BigInteger.Parse("10023859281455311421");
+            for (int i = 0; i < 100; i++)
+            {
+                var p = BigIntegerUtils.NextPrime(random.Next(limit));
+                var n = random.Next(p);
+                if (BigIntegerUtils.JacobiSymbol(n, p) == 1)
+                {
+                    var r1 = BigIntegerUtils.ModularSquareRoot(n, p);
+                    var r2 = p - r1;
+                    Assert.AreEqual(n, r1 * r1 % p);
+                    Assert.AreEqual(n, r2 * r2 % p);
+                }
+            }
+        }
+
+        [TestMethod]
         public void DivModTest1()
         {
             // Triggers "borrow != 0" special case.

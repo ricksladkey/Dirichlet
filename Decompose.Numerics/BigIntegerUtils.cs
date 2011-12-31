@@ -45,6 +45,13 @@ namespace Decompose.Numerics
             return millerRabin.IsPrime(n);
         }
 
+        public static BigInteger NextPrime(BigInteger n)
+        {
+            while (!IsPrime(n))
+                ++n;
+            return n;
+        }
+
         private static BigInteger limit = (BigInteger)uint.MaxValue;
         private static BigInteger four = (BigInteger)4;
         private static BigInteger eight = (BigInteger)8;
