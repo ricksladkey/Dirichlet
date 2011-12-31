@@ -245,8 +245,8 @@ namespace Decompose.Numerics.Test
             var sieve = new SieveOfErostothones();
             int n = 0;
             int i = 0;
-            int iterations = 1000000;
-            foreach (int p in sieve.Sieve())
+            int iterations = 1000;
+            foreach (int p in sieve)
             {
                 while (n < p)
                 {
@@ -258,6 +258,7 @@ namespace Decompose.Numerics.Test
                 if (++i >= iterations)
                     break;
             }
+            Assert.AreEqual(i, iterations);
         }
     }
 }

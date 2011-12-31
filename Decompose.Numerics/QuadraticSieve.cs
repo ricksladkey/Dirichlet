@@ -40,15 +40,23 @@ namespace Decompose.Numerics
             }
         }
 
+        private bool IsQuadraticResidue(BigInteger n, int p)
+        {
+            var result = BigIntegerUtils.JacobiSymbol(n, p) == 1;
+            return result;
+        }
+
         private BigInteger GetDivisor(BigInteger n)
         {
             if (n.IsEven)
                 return BigIntegerUtils.Two;
             var sqrtn = BigIntegerUtils.Sqrt(n);
-            var factorBaseCandidates = new[] { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37 };
-            var factorBase = factorBaseCandidates.Where(factor => BigIntegerUtils.JacobiSymbol(n, factor) == 1).ToArray();
+            int factorBaseSize = 6;
+            var factorBase = new SieveOfErostothones()
+                .Where(p => IsQuadraticResidue(n, p))
+                .Take(factorBaseSize)
+                .ToArray();
             int found = 0;
-            int factorBaseSize = factorBase.Length;
             int desired = factorBase.Length + 1;
             int interval = 30 * 2;
             int interval2 = interval / 2;
