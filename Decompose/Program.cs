@@ -227,7 +227,8 @@ namespace Decompose
 
         static void FactorTest5()
         {
-            var n = BigInteger.Parse("87463");
+            //var n = BigInteger.Parse("87463");
+            var n = BigInteger.Parse("10023859281455311421");
             int threads = 1;
             bool debug = false;
 

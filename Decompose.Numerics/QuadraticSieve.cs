@@ -51,51 +51,57 @@ namespace Decompose.Numerics
             if (n.IsEven)
                 return BigIntegerUtils.Two;
             var sqrtn = BigIntegerUtils.Sqrt(n);
-            int factorBaseSize = 6;
+            var digits = BigInteger.Log(n) / Math.Log(10);
+            int factorBaseSize = (int)Math.Ceiling((digits - 5) * 5 + digits) + 1;
             var factorBase = new SieveOfErostothones()
                 .Where(p => IsQuadraticResidue(n, p))
                 .Take(factorBaseSize)
                 .ToArray();
             int found = 0;
-            int desired = factorBase.Length + 1;
-            int interval = 30 * 2;
-            int interval2 = interval / 2;
+            int desired = factorBase.Length + 1 + (int)Math.Ceiling(digits);
             var matrix = new List<List<int>>();
             for (int i = 0; i <= factorBaseSize; i++)
                 matrix.Add(new List<int>());
             var candidates = new List<BigInteger>();
-            for (int k = -interval2; k <= interval2; k++)
+            for (int k = 0; k < sqrtn; k++)
             {
-                var x = sqrtn + k;
-                var y = x * x - n;
-                var exponents = new int[factorBaseSize + 1];
-                if (y < 0)
+                for (int sign = -1; sign <= 1; sign += 2)
                 {
-                    exponents[0] = 1;
-                    y = -y;
-                }
-                for (int i = 0; i < factorBaseSize; i++)
-                {
-                    var p = factorBase[i];
-                    while (y % p == 0)
+                    var x = sqrtn + k * sign;
+                    var y = x * x - n;
+                    var exponents = new int[factorBaseSize + 1];
+                    if (y < 0)
                     {
-                        ++exponents[i + 1];
-                        y /= p;
+                        exponents[0] = 1;
+                        y = -y;
+                    }
+                    for (int i = 0; i < factorBaseSize; i++)
+                    {
+                        var p = factorBase[i];
+                        while (y % p == 0)
+                        {
+                            ++exponents[i + 1];
+                            y /= p;
+                        }
+                    }
+                    if (y.IsOne)
+                    {
+                        candidates.Add(x);
+                        for (int i = 0; i < exponents.Length; i++)
+                            matrix[i].Add(exponents[i] % 2);
+                        ++found;
+                        if (found == desired)
+                            break;
                     }
                 }
-                if (y.IsOne)
-                {
-                    candidates.Add(x);
-                    for (int i = 0; i < exponents.Length; i++)
-                        matrix[i].Add(exponents[i] % 2);
-                    ++found;
-                    if (found == desired)
-                        break;
-                }
+                if (found == desired)
+                    break;
             }
             foreach (var v in Solve(matrix))
             {
+#if false
                 Console.WriteLine("v = {0}", string.Join(" ", v.ToArray()));
+#endif
                 var xSet = candidates
                     .Zip(v, (x, exponent) => new { X = x, Exponent = exponent })
                     .Where(pair => pair.Exponent == 1)
@@ -105,7 +111,7 @@ namespace Decompose.Numerics
                 var yPrime = BigIntegerUtils.Sqrt(xSet
                     .Aggregate(BigInteger.One, (sofar, current) => sofar * (current * current - n))) % n;
                 var factor = BigInteger.GreatestCommonDivisor(xPrime + yPrime, n);
-                if (!factor.IsOne || factor == n)
+                if (!factor.IsOne && factor != n)
                     return factor;
             }
             return BigInteger.Zero;
@@ -113,7 +119,7 @@ namespace Decompose.Numerics
 
         private IEnumerable<List<int>> Solve(List<List<int>> matrix)
         {
-#if DEBUG
+#if false
             PrintMatrix("initial:", matrix);
 #endif
             int rows = Math.Min(matrix.Count, matrix[0].Count);
@@ -169,7 +175,7 @@ namespace Decompose.Numerics
                     if (VerifySolution(matrix, v))
                         yield return v;
                 }
-#if DEBUG
+#if false
                 PrintMatrix(string.Format("k = {0}", k), matrix);
 #endif
             }
