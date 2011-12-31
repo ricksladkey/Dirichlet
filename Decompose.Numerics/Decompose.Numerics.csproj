@@ -66,6 +66,7 @@
     <Compile Include="IResidue.cs" />
     <Compile Include="Radix32IntegerReduction.cs" />
     <Compile Include="Radix32Store.cs" />
+    <Compile Include="SieveOfErostothones.cs" />
     <Compile Include="SqrtBinarySearch.cs" />
     <Compile Include="SqrtNewtonsMethod.cs" />
     <Compile Include="Unused.cs" />

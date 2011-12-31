@@ -238,5 +238,26 @@ namespace Decompose.Numerics.Test
             x.SetRemainder(a, b);
             Assert.AreEqual(a.ToBigInteger() % b.ToBigInteger(), x.ToBigInteger());
         }
+
+        [TestMethod]
+        public void SieveOfErostothonesTest1()
+        {
+            var sieve = new SieveOfErostothones();
+            int n = 0;
+            int i = 0;
+            int iterations = 1000000;
+            foreach (int p in sieve.Sieve())
+            {
+                while (n < p)
+                {
+                    Assert.IsFalse(BigIntegerUtils.IsPrime(n));
+                    ++n;
+                }
+                Assert.IsTrue(BigIntegerUtils.IsPrime(p));
+                n = p + 1;
+                if (++i >= iterations)
+                    break;
+            }
+        }
     }
 }
