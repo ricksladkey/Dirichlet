@@ -231,7 +231,9 @@ namespace Decompose
             int threads = 1;
             bool debug = false;
 
-            FactorTest(debug, 1, n, new QuadraticSieve(threads));
+            var factors = FactorTest(debug, 1, n, new QuadraticSieve(threads));
+            foreach (var factor in factors)
+                Console.WriteLine("{0}", factor);
         }
 
         static BigInteger NextPrime(MersenneTwister32 random, BigInteger limit)

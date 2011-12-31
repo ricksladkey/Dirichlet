@@ -55,7 +55,7 @@ namespace Decompose.Numerics
             }
             int found = 0;
             int factorBaseSize = factorBase.Length;
-            int desired = factorBase.Length;
+            int desired = factorBase.Length + 1;
             int interval = 30 * 2;
             int interval2 = interval / 2;
             var matrix = new List<List<int>>();
@@ -87,14 +87,14 @@ namespace Decompose.Numerics
                     for (int i = 0; i < exponents.Length; i++)
                         matrix[i].Add(exponents[i] % 2);
                     ++found;
+                    if (found == desired)
+                        break;
                 }
             }
             for (int i = 0; i < matrix.Count; i++)
                 Console.WriteLine(string.Join(" ", matrix[i].ToArray()));
-            matrix.RemoveAt(matrix.Count - 1);
             int rows = matrix.Count;
             int cols = found;
-#if true
             var c = new List<int>();
             for (int i = 0; i < cols; i++)
                 c.Add(-1);
@@ -145,6 +145,17 @@ namespace Decompose.Numerics
                             v[jj] = 0;
                     }
                     Console.WriteLine("v = {0}", string.Join(" ", v.ToArray()));
+                    var xSet = candidates
+                        .Zip(v, (x, exponent) => new { X = x, Exponent = exponent })
+                        .Where(pair => pair.Exponent == 1)
+                        .Select(pair => pair.X)
+                        .ToArray();
+                    var xPrime = xSet.Aggregate((sofar, current) => sofar * current) % n;
+                    var yPrime = BigIntegerUtils.Sqrt(xSet
+                        .Aggregate(BigInteger.One, (sofar, current) => sofar * (current * current - n))) % n;
+                    var factor = BigInteger.GreatestCommonDivisor(xPrime + yPrime, n);
+                    if (!factor.IsOne || factor == n)
+                        return factor;
                 }
                 for (int i = 0; i < matrix.Count; i++)
                     Console.WriteLine(string.Join(" ", matrix[i].ToArray()));
@@ -163,69 +174,7 @@ namespace Decompose.Numerics
                     }
                 }
             }
-#else
-            int independent = rows;
-            for (int i = 0; i < cols; i++)
-            {
-                // Ensure diagonal is non-zero.
-                if (matrix[i][i] == 0)
-                {
-                    int m = -1;
-                    for (int k = i + 1; k < rows; k++)
-                    {
-                        if (matrix[k][i] != 0)
-                        {
-                            m = k;
-                            break;
-                        }
-                    }
-                    if (m == -1)
-                    {
-                        independent = i;
-                        break;
-                    }
-                    for (int j = i; j < cols; j++)
-                        matrix[i][j] ^= matrix[m][j];
-                }
-                for (int k = i + 1; k < rows; k++)
-                {
-                    if (matrix[k][i] == 0)
-                        continue;
-                    for (int j = i; j < cols; j++)
-                        matrix[k][j] ^= matrix[i][j];
-                }
-                Console.WriteLine("i = {0}", i);
-                for (int k = 0; k < matrix.Count; k++)
-                    Console.WriteLine(string.Join(" ", matrix[k].ToArray()));
-                Console.WriteLine();
-            }
-            for (int i = independent - 1; i >= 1; i--)
-            {
-                for (int k = i - 1; k >= 0; k--)
-                {
-                    if (matrix[k][i] != 0)
-                    {
-                        for (int j = i; j < cols; j++)
-                            matrix[k][j] ^= matrix[i][j];
-                    }
-                }
-                Console.WriteLine("i = {0}", i);
-                for (int k = 0; k < matrix.Count; k++)
-                    Console.WriteLine(string.Join(" ", matrix[k].ToArray()));
-                Console.WriteLine();
-            }
-#endif
-
-            var solution = new[] { 1, 1, 1, 0, 1, 0 };
-            var xSet = candidates
-                .Zip(solution, (x, exponent) => new { X = x, Exponent = exponent })
-                .Where(pair => pair.Exponent == 1)
-                .Select(pair => pair.X)
-                .ToArray();
-            var xPrime = xSet.Aggregate((sofar, current) => sofar * current) % n;
-            var yPrime = BigIntegerUtils.Sqrt(xSet
-                .Aggregate(BigInteger.One, (sofar, current) => sofar * (current * current - n))) % n;
-            return BigInteger.GreatestCommonDivisor(xPrime + yPrime, n);
+            return BigInteger.Zero;
         }
     }
 }
