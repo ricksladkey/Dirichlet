@@ -113,6 +113,11 @@ namespace Decompose.Numerics
             }
         }
 
+        public static bool IsQuadraticResidue(BigInteger n, BigInteger p)
+        {
+            return BigInteger.ModPow(n, (p - 1) / 2, p).IsOne;
+        }
+
         public static BigInteger ModularSquareRoot(BigInteger n, BigInteger p)
         {
             var r = ModularSquareRootCore(n, p);
