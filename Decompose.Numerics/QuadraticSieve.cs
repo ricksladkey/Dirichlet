@@ -6,6 +6,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
@@ -61,23 +62,41 @@ namespace Decompose.Numerics
         }
 
         private BigInteger n;
-        private BigInteger sqrtn;
+        private int logN;
+        private BigInteger sqrtN;
         private int[] factorBase;
+        private int[] logFactorBase;
+        private Tuple<int, int>[] roots;
 
         private BigInteger GetDivisor(BigInteger n)
         {
             if (n.IsEven)
                 return BigIntegerUtils.Two;
             this.n = n;
-            sqrtn = BigIntegerUtils.Sqrt(n);
+            logN = LogScale(n);
+            sqrtN = BigIntegerUtils.Sqrt(n);
             var digits = BigInteger.Log(n) / Math.Log(10);
             int factorBaseSize = (int)Math.Ceiling((digits - 5) * 5 + digits) + 1;
             factorBase = new SieveOfErostothones()
                 .Where(p => BigIntegerUtils.JacobiSymbol(n, p) == 1)
                 .Take(factorBaseSize)
                 .ToArray();
+            logFactorBase = factorBase
+                .Select(factor => LogScale(factor))
+                .ToArray();
+            roots = factorBase
+                .Select(factor =>
+                    {
+                        var root = (int)BigIntegerUtils.ModularSquareRoot(n, factor);
+                        return Tuple.Create(root, factor - root);
+                    })
+                .ToArray();
             int desired = factorBase.Length + 1 + (int)Math.Ceiling(digits);
-            var candidates = Sieve(desired);
+#if false
+            var candidates = Sieve(desired, SieveTrialDivision);
+#else
+            var candidates = Sieve(desired, SieveQuadraticResidue);
+#endif
             var matrix = new List<BitArray>();
             for (int i = 0; i <= factorBaseSize; i++)
                 matrix.Add(new BitArray(candidates.Count));
@@ -89,10 +108,10 @@ namespace Decompose.Numerics
             }
             foreach (var v in Solve(matrix))
             {
-#if false
-                Console.WriteLine("v = {0}", string.Join(" ", v.ToArray()));
-#endif
                 var vbool = v.Cast<bool>();
+#if false
+                Console.WriteLine("v = {0}", string.Join("", vbool.Select(bit => bit ? 1 : 0).ToArray()));
+#endif
                 var xSet = candidates
                     .Zip(vbool, (candidate, selected) => new { X = candidate.X, Selected = selected })
                     .Where(pair => pair.Selected)
@@ -108,7 +127,12 @@ namespace Decompose.Numerics
             return BigInteger.Zero;
         }
 
-        private List<Candidate> Sieve(int desired)
+        private int LogScale(BigInteger n)
+        {
+            return (int)Math.Floor(1000 * BigInteger.Log(BigInteger.Abs(n)));
+        }
+
+        private List<Candidate> Sieve(int desired, Func<Range, IEnumerable<Candidate>> sieveCore)
         {
             var candidates = new List<Candidate>();
             if (threads == 1)
@@ -116,9 +140,12 @@ namespace Decompose.Numerics
                 foreach (var range in Ranges)
                 {
                     var left = desired - candidates.Count;
-                    candidates.AddRange(SieveTrialDivision(range.Min, range.Max).Take(left));
+                    candidates.AddRange(sieveCore(range).Take(left));
                     if (candidates.Count == desired)
                         break;
+#if false
+                    Console.WriteLine("desired = {0}, found = {1}", desired, candidates.Count);
+#endif
                 }
             }
             else
@@ -130,8 +157,7 @@ namespace Decompose.Numerics
                 for (int i = 0; i < threads; i++)
                 {
                     ranges.MoveNext();
-                    var range = ranges.Current;
-                    tasks[i] = Task.Factory.StartNew(() => SieveParallel(range, collection, cancellationTokenSource.Token));
+                    tasks[i] = StartNew(ranges.Current, collection, cancellationTokenSource.Token, sieveCore);
                 }
                 tasks[threads] = Task.Factory.StartNew(() => ReadQueue(candidates, collection, desired));
                 while (true)
@@ -143,11 +169,15 @@ namespace Decompose.Numerics
                         break;
                     }
                     ranges.MoveNext();
-                    var range = ranges.Current;
-                    tasks[index] = Task.Factory.StartNew(() => SieveParallel(range, collection, cancellationTokenSource.Token));
+                    tasks[index] = StartNew(ranges.Current, collection, cancellationTokenSource.Token, sieveCore);
                 }
             }
             return candidates;
+        }
+
+        private Task StartNew(Range range, BlockingCollection<Candidate> collection, CancellationToken cancellationToken, Func<Range, IEnumerable<Candidate>> sieveCore)
+        {
+            return Task.Factory.StartNew(() => SieveParallel(range, collection, cancellationToken, sieveCore));
         }
 
         private void ReadQueue(List<Candidate> list, BlockingCollection<Candidate> queue, int desired)
@@ -160,9 +190,9 @@ namespace Decompose.Numerics
             }
         }
 
-        private void SieveParallel(Range range, BlockingCollection<Candidate> candidates, CancellationToken cancellationToken)
+        private void SieveParallel(Range range, BlockingCollection<Candidate> candidates, CancellationToken cancellationToken, Func<Range, IEnumerable<Candidate>> sieveCore)
         {
-            foreach (var candidate in SieveTrialDivision(range.Min, range.Max))
+            foreach (var candidate in sieveCore(range))
             {
                 candidates.Add(candidate);
                 if (cancellationToken.IsCancellationRequested)
@@ -175,41 +205,24 @@ namespace Decompose.Numerics
             get
             {
                 var k = BigInteger.Zero;
-                var window = BigIntegerUtils.Min(sqrtn, windowSize);
+                var window = BigIntegerUtils.Min(sqrtN, windowSize);
                 while (true)
                 {
-                    yield return new Range { Min = k, Max = k + window };
                     yield return new Range { Min = -k - window, Max = -k };
+                    yield return new Range { Min = k, Max = k + window };
                     k += window;
                 }
             }
         }
 
-        private IEnumerable<Candidate> SieveTrialDivision(BigInteger kmin, BigInteger kmax)
+        private IEnumerable<Candidate> SieveTrialDivision(Range range)
         {
             int factorBaseSize = factorBase.Length;
             var exponents = new int[factorBaseSize + 1];
-            for (var k = kmin; k < kmax; k++)
+            for (var k = range.Min; k < range.Max; k++)
             {
-                for (int i = 0; i <= factorBaseSize; i++)
-                    exponents[i] = 0;
-                var x = sqrtn + k;
-                var y = x * x - n;
-                if (y < 0)
-                {
-                    exponents[0] = 1;
-                    y = -y;
-                }
-                for (int i = 0; i < factorBaseSize; i++)
-                {
-                    var p = factorBase[i];
-                    while ((y % p).IsZero)
-                    {
-                        ++exponents[i + 1];
-                        y /= p;
-                    }
-                }
-                if (y.IsOne)
+                var x = sqrtN + k;
+                if (ValueIsSmooth(x, exponents))
                 {
                     yield return new Candidate
                     {
@@ -218,6 +231,83 @@ namespace Decompose.Numerics
                     };
                 }
             }
+        }
+
+        private IEnumerable<Candidate> SieveQuadraticResidue(Range range)
+        {
+            int factorBaseSize = factorBase.Length;
+            var exponents = new int[factorBaseSize + 1];
+            int length = (int)(range.Max - range.Min);
+            var counts = new int[length];
+            var x0 = sqrtN + range.Min;
+            var y0 = x0 * x0 - n;
+            for (int i = 0; i < factorBaseSize; i++)
+            {
+                var p = factorBase[i];
+                var start = ((int)((roots[i].Item1 - x0) % p) + p) % p;
+                for (int e = 1; e <= 1; e++)
+                {
+                    var j0 = start;
+                    for (int root = 0; root < 2; root++)
+                    {
+                        if (root == 1 && p == 2)
+                            continue;
+                        for (int j = j0; j < length; j += p)
+                        {
+                            Debug.Assert((BigInteger.Pow(x0 + j, 2) - n) % p == 0);
+                            counts[j] += logFactorBase[i];
+                        }
+                        j0 += roots[i].Item2 - roots[i].Item1;
+                    }
+                    p *= p;
+                }
+            }
+            int limit = LogScale(y0) * 99 / 100;
+            for (int j = 0; j < length; j++)
+            {
+                if (counts[j] >= limit)
+                {
+                    var x = x0 + j;
+                    if (ValueIsSmooth(x, exponents))
+                    {
+                        yield return new Candidate
+                        {
+                            X = x,
+                            Exponents = (int[])exponents.Clone(),
+                        };
+                    }
+#if DEBUG
+                    else
+                        Debugger.Break();
+#endif
+                }
+#if false
+                Debug.Assert(!ValueIsSmooth(x0 + j, exponents));
+#endif
+            }
+        }
+
+        private bool ValueIsSmooth(BigInteger x, int[] exponents)
+        {
+            int factorBaseSize = factorBase.Length;
+            var y = x * x - n;
+            for (int i = 0; i <= factorBaseSize; i++)
+                exponents[i] = 0;
+            if (y < 0)
+            {
+                exponents[0] = 1;
+                y = -y;
+            }
+            for (int i = 0; i < factorBaseSize; i++)
+            {
+                var p = factorBase[i];
+                while ((y % p).IsZero)
+                {
+                    ++exponents[i + 1];
+                    y /= p;
+                }
+            }
+            return y.IsOne;
         }
 
         private IEnumerable<BitArray> Solve(List<BitArray> matrix)
