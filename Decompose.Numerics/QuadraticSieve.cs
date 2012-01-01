@@ -12,7 +12,7 @@ namespace Decompose.Numerics
 {
     public class QuadraticSieve : IFactorizationAlgorithm<BigInteger>
     {
-        private const int windowSize = 20000;
+        private const int windowSize = 100000;
 
         private class Candidate
         {
@@ -151,51 +151,51 @@ namespace Decompose.Numerics
             else
             {
                 var collection = new BlockingCollection<Candidate>();
-                var cancellationTokenSource = new CancellationTokenSource();
+                var tokenSource = new CancellationTokenSource();
                 var tasks = new Task[threads + 1];
                 var ranges = Ranges.GetEnumerator();
                 for (int i = 0; i < threads; i++)
                 {
                     ranges.MoveNext();
-                    tasks[i] = StartNew(ranges.Current, collection, cancellationTokenSource.Token, sieveCore);
+                    tasks[i] = StartNew(ranges.Current, collection, tokenSource.Token, sieveCore);
                 }
-                tasks[threads] = Task.Factory.StartNew(() => ReadQueue(candidates, collection, desired));
+                tasks[threads] = Task.Factory.StartNew(() => ReadCandidates(candidates, collection, desired));
                 while (true)
                 {
                     var index = Task.WaitAny(tasks);
                     if (index == threads)
                     {
-                        cancellationTokenSource.Cancel();
+                        tokenSource.Cancel();
                         break;
                     }
                     ranges.MoveNext();
-                    tasks[index] = StartNew(ranges.Current, collection, cancellationTokenSource.Token, sieveCore);
+                    tasks[index] = StartNew(ranges.Current, collection, tokenSource.Token, sieveCore);
                 }
             }
             return candidates;
         }
 
-        private Task StartNew(Range range, BlockingCollection<Candidate> collection, CancellationToken cancellationToken, Func<Range, IEnumerable<Candidate>> sieveCore)
+        private Task StartNew(Range range, BlockingCollection<Candidate> collection, CancellationToken token, Func<Range, IEnumerable<Candidate>> sieveCore)
         {
-            return Task.Factory.StartNew(() => SieveParallel(range, collection, cancellationToken, sieveCore));
+            return Task.Factory.StartNew(() => SieveParallel(range, collection, token, sieveCore));
         }
 
-        private void ReadQueue(List<Candidate> list, BlockingCollection<Candidate> queue, int desired)
+        private void ReadCandidates(List<Candidate> list, BlockingCollection<Candidate> collection, int desired)
         {
             while (list.Count < desired)
             {
                 var candidate = null as Candidate;
-                queue.TryTake(out candidate, Timeout.Infinite);
+                collection.TryTake(out candidate, Timeout.Infinite);
                 list.Add(candidate);
             }
         }
 
-        private void SieveParallel(Range range, BlockingCollection<Candidate> candidates, CancellationToken cancellationToken, Func<Range, IEnumerable<Candidate>> sieveCore)
+        private void SieveParallel(Range range, BlockingCollection<Candidate> candidates, CancellationToken token, Func<Range, IEnumerable<Candidate>> sieveCore)
         {
             foreach (var candidate in sieveCore(range))
             {
                 candidates.Add(candidate);
-                if (cancellationToken.IsCancellationRequested)
+                if (token.IsCancellationRequested)
                     return;
             }
         }
@@ -262,7 +262,7 @@ namespace Decompose.Numerics
                     p *= p;
                 }
             }
-            int limit = LogScale(y0) * 99 / 100;
+            int limit = LogScale(y0) * 90 / 100;
             for (int j = 0; j < length; j++)
             {
                 if (counts[j] >= limit)

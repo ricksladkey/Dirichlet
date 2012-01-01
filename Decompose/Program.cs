@@ -229,12 +229,13 @@ namespace Decompose
         {
             //var n = BigInteger.Parse("87463");
             var n = BigInteger.Parse("10023859281455311421");
-            int threads = 8;
+            const int pollardThreads = 4;
+            const int quadraticSieveThreads = 8;
             bool debug = false;
             var factors = null as BigInteger[];
 
-            //factors = FactorTest(debug, 25, n, new PollardRho(4));
-            factors = FactorTest(debug, 100, n, new QuadraticSieve(threads));
+            factors = FactorTest(debug, 500, n, new PollardRhoReduction(pollardThreads, new MontgomeryReduction()));
+            factors = FactorTest(debug, 500, n, new QuadraticSieve(quadraticSieveThreads));
             foreach (var factor in factors)
                 Console.WriteLine("{0}", factor);
         }

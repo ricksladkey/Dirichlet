@@ -8,7 +8,7 @@ namespace Decompose.Numerics
         {
             if (n < BigIntegerUtils.Two)
                 return n;
-            var x0 = n;
+            var x0 = BigInteger.One << (n.GetBitLength() / 2 + 1);
             var x1 = x0;
             do
             {
