@@ -3,12 +3,18 @@ using System.Linq;
 using System.Numerics;
 using System;
 using System.Diagnostics;
+using System.Collections.Concurrent;
 
 namespace Decompose.Numerics
 {
     public class QuadraticSieve : IFactorizationAlgorithm<BigInteger>
     {
-        protected MersenneTwister32 random = new MersenneTwister32(0);
+        private class Candidate
+        {
+            public BigInteger X { get; set; }
+            public int[] Exponents { get; set; }
+        }
+
         protected int threads;
 
         public QuadraticSieve(int threads)
@@ -40,62 +46,32 @@ namespace Decompose.Numerics
             }
         }
 
-        private bool IsQuadraticResidue(BigInteger n, int p)
-        {
-            var result = BigIntegerUtils.JacobiSymbol(n, p) == 1;
-            return result;
-        }
+        private BigInteger n;
+        private BigInteger sqrtn;
+        private int[] factorBase;
 
         private BigInteger GetDivisor(BigInteger n)
         {
             if (n.IsEven)
                 return BigIntegerUtils.Two;
-            var sqrtn = BigIntegerUtils.Sqrt(n);
+            this.n = n;
+            sqrtn = BigIntegerUtils.Sqrt(n);
             var digits = BigInteger.Log(n) / Math.Log(10);
             int factorBaseSize = (int)Math.Ceiling((digits - 5) * 5 + digits) + 1;
-            var factorBase = new SieveOfErostothones()
-                .Where(p => IsQuadraticResidue(n, p))
+            factorBase = new SieveOfErostothones()
+                .Where(p => BigIntegerUtils.JacobiSymbol(n, p) == 1)
                 .Take(factorBaseSize)
                 .ToArray();
-            int found = 0;
             int desired = factorBase.Length + 1 + (int)Math.Ceiling(digits);
+            var candidates = Sieve(desired);
             var matrix = new List<List<int>>();
             for (int i = 0; i <= factorBaseSize; i++)
                 matrix.Add(new List<int>());
-            var candidates = new List<BigInteger>();
-            for (int k = 0; k < sqrtn; k++)
+            foreach (var candidate in candidates)
             {
-                for (int sign = -1; sign <= 1; sign += 2)
-                {
-                    var x = sqrtn + k * sign;
-                    var y = x * x - n;
-                    var exponents = new int[factorBaseSize + 1];
-                    if (y < 0)
-                    {
-                        exponents[0] = 1;
-                        y = -y;
-                    }
-                    for (int i = 0; i < factorBaseSize; i++)
-                    {
-                        var p = factorBase[i];
-                        while (y % p == 0)
-                        {
-                            ++exponents[i + 1];
-                            y /= p;
-                        }
-                    }
-                    if (y.IsOne)
-                    {
-                        candidates.Add(x);
-                        for (int i = 0; i < exponents.Length; i++)
-                            matrix[i].Add(exponents[i] % 2);
-                        ++found;
-                        if (found == desired)
-                            break;
-                    }
-                }
-                if (found == desired)
-                    break;
+                var exponents = candidate.Exponents;
+                for (int i = 0; i < exponents.Length; i++)
+                    matrix[i].Add(exponents[i] % 2);
             }
             foreach (var v in Solve(matrix))
             {
@@ -103,8 +79,8 @@ namespace Decompose.Numerics
                 Console.WriteLine("v = {0}", string.Join(" ", v.ToArray()));
 #endif
                 var xSet = candidates
-                    .Zip(v, (x, exponent) => new { X = x, Exponent = exponent })
-                    .Where(pair => pair.Exponent == 1)
+                    .Zip(v, (candidate, selected) => new { X = candidate.X, Selected = selected })
+                    .Where(pair => pair.Selected == 1)
                     .Select(pair => pair.X)
                     .ToArray();
                 var xPrime = xSet.Aggregate((sofar, current) => sofar * current) % n;
@@ -115,6 +91,72 @@ namespace Decompose.Numerics
                     return factor;
             }
             return BigInteger.Zero;
+        }
+
+        private List<Candidate> Sieve(int desired)
+        {
+            var candidates = new List<Candidate>();
+            if (threads == 1)
+            {
+                var k = BigInteger.Zero;
+                var window = BigIntegerUtils.Min(sqrtn, 1000);
+                while (true)
+                {
+                    foreach (var candidate in SieveTrialDivision(k, k + window))
+                    {
+                        candidates.Add(candidate);
+                        if (candidates.Count == desired)
+                            break;
+                    }
+                    if (candidates.Count == desired)
+                        break;
+                    foreach (var candidate in SieveTrialDivision(-k - window, -k))
+                    {
+                        candidates.Add(candidate);
+                        if (candidates.Count == desired)
+                            break;
+                    }
+                    if (candidates.Count == desired)
+                        break;
+                    k += window;
+                }
+            }
+            return candidates;
+        }
+
+        private IEnumerable<Candidate> SieveTrialDivision(BigInteger kmin, BigInteger kmax)
+        {
+            int factorBaseSize = factorBase.Length;
+            var exponents = new int[factorBaseSize + 1];
+            for (var k = kmin; k < kmax; k++)
+            {
+                for (int i = 0; i <= factorBaseSize; i++)
+                    exponents[i] = 0;
+                var x = sqrtn + k;
+                var y = x * x - n;
+                if (y < 0)
+                {
+                    exponents[0] = 1;
+                    y = -y;
+                }
+                for (int i = 0; i < factorBaseSize; i++)
+                {
+                    var p = factorBase[i];
+                    while ((y % p).IsZero)
+                    {
+                        ++exponents[i + 1];
+                        y /= p;
+                    }
+                }
+                if (y.IsOne)
+                {
+                    yield return new Candidate
+                    {
+                        X = x,
+                        Exponents = (int[])exponents.Clone(),
+                    };
+                }
+            }
         }
 
         private IEnumerable<List<int>> Solve(List<List<int>> matrix)

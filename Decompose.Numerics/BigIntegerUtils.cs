@@ -7,6 +7,16 @@ namespace Decompose.Numerics
     {
         public static BigInteger Two = (BigInteger)2;
 
+        public static BigInteger Min(BigInteger a, BigInteger b)
+        {
+            return a < b ? a : b;
+        }
+
+        public static BigInteger Max(BigInteger a, BigInteger b)
+        {
+            return a > b ? a : b;
+        }
+
         public static void ExtendedGreatestCommonDivisor(BigInteger a, BigInteger b, out BigInteger c, out BigInteger d)
         {
             var x = BigInteger.Zero;
@@ -171,5 +181,5 @@ namespace Decompose.Numerics
             }
             return r;
         }
-    }
+        }
 }

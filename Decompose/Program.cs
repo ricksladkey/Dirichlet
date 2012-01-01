@@ -232,6 +232,7 @@ namespace Decompose
             int threads = 1;
             bool debug = false;
 
+            //var factors = FactorTest(debug, 1, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
             var factors = FactorTest(debug, 1, n, new QuadraticSieve(threads));
             foreach (var factor in factors)
                 Console.WriteLine("{0}", factor);
