@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System;
-using System.Diagnostics;
-using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Decompose.Numerics
 {
@@ -13,6 +14,12 @@ namespace Decompose.Numerics
         {
             public BigInteger X { get; set; }
             public int[] Exponents { get; set; }
+        }
+
+        private struct Range
+        {
+            public BigInteger Min { get; set; }
+            public BigInteger Max { get; set; }
         }
 
         protected int threads;
@@ -98,30 +105,66 @@ namespace Decompose.Numerics
             var candidates = new List<Candidate>();
             if (threads == 1)
             {
+                foreach (var range in Ranges)
+                {
+                    var left = desired - candidates.Count;
+                    candidates.AddRange(SieveTrialDivision(range.Min, range.Max).Take(left));
+                    if (candidates.Count == desired)
+                        break;
+                }
+            }
+            else
+            {
+                var queue = new ConcurrentQueue<Candidate>();
+                var cancellationTokenSource = new CancellationTokenSource();
+                var tasks = new Task[threads];
+                var ranges = Ranges.GetEnumerator();
+                for (int i = 0; i < threads; i++)
+                {
+                    ranges.MoveNext();
+                    tasks[i] = Task.Factory.StartNew(() => SieveParallel(ranges.Current, queue, cancellationTokenSource.Token));
+                }
+                while (true)
+                {
+                    var index = Task.WaitAny(tasks);
+                    var candidate = null as Candidate;
+                    while (candidates.Count < desired && queue.TryDequeue(out candidate))
+                        candidates.Add(candidate);
+                    if (candidates.Count == desired)
+                    {
+                        cancellationTokenSource.Cancel();
+                        break;
+                    }
+                    ranges.MoveNext();
+                    tasks[index] = Task.Factory.StartNew(() => SieveParallel(ranges.Current, queue, cancellationTokenSource.Token));
+                }
+            }
+            return candidates;
+        }
+
+        private void SieveParallel(Range range, ConcurrentQueue<Candidate> candidates, CancellationToken cancellationToken)
+        {
+            foreach (var candidate in SieveTrialDivision(range.Min, range.Max))
+            {
+                candidates.Enqueue(candidate);
+                if (cancellationToken.IsCancellationRequested)
+                    return;
+            }
+        }
+
+        private IEnumerable<Range> Ranges
+        {
+            get
+            {
                 var k = BigInteger.Zero;
                 var window = BigIntegerUtils.Min(sqrtn, 1000);
                 while (true)
                 {
-                    foreach (var candidate in SieveTrialDivision(k, k + window))
-                    {
-                        candidates.Add(candidate);
-                        if (candidates.Count == desired)
-                            break;
-                    }
-                    if (candidates.Count == desired)
-                        break;
-                    foreach (var candidate in SieveTrialDivision(-k - window, -k))
-                    {
-                        candidates.Add(candidate);
-                        if (candidates.Count == desired)
-                            break;
-                    }
-                    if (candidates.Count == desired)
-                        break;
+                    yield return new Range { Min = k, Max = k + window };
+                    yield return new Range { Min = -k - window, Max = -k };
                     k += window;
                 }
             }
-            return candidates;
         }
 
         private IEnumerable<Candidate> SieveTrialDivision(BigInteger kmin, BigInteger kmax)

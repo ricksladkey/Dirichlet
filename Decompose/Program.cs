@@ -229,7 +229,7 @@ namespace Decompose
         {
             //var n = BigInteger.Parse("87463");
             var n = BigInteger.Parse("10023859281455311421");
-            int threads = 1;
+            int threads = 4;
             bool debug = false;
 
             //var factors = FactorTest(debug, 1, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
