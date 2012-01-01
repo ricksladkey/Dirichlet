@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics;
+using System.Numerics;
 
 namespace Decompose.Numerics
 {
@@ -15,6 +16,7 @@ namespace Decompose.Numerics
                 x0 = x1;
                 x1 = (x0 + n / x0) >> 1;
             } while (x1 < x0);
+            Debug.Assert(x0 * x0 <= n && (x0 + 1) * (x0 + 1) > n);
             return x0;
         }
     }

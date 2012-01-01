@@ -17,8 +17,8 @@ namespace Decompose
             //FactorTest1();
             //FactorTest2();
             //FactorTest3();
-            //FactorTest4();
-            FactorTest5();
+            FactorTest4();
+            //FactorTest5();
         }
 
         static void FindPrimeTest1()
@@ -210,18 +210,19 @@ namespace Decompose
         static void FactorTest4()
         {
             var random = new MersenneTwister32(0);
-            for (int i = 15; i <= 15; i++)
+            for (int i = 5; i <= 20; i++)
             {
                 var limit = BigInteger.Pow(new BigInteger(10), i);
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
                 var n = p * q;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                int threads = 4;
+                int threads = 8;
                 var factors = null as BigInteger[];
                 //factors = FactorTest(true, 1, n, new PollardRho(threads));
                 //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
-                factors = FactorTest(true, 10, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+                //factors = FactorTest(true, 10, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+                factors = FactorTest(true, 1, n, new QuadraticSieve(threads));
             }
         }
 

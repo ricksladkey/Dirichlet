@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics;
+using System.Numerics;
 
 namespace Decompose.Numerics
 {
@@ -29,6 +30,7 @@ namespace Decompose.Numerics
                     n0 = n1;
                 }
             }
+            Debug.Assert(m0 * m0 <= n && (m0 + 1) * (m0 + 1) > n);
             return m0;
         }
 
