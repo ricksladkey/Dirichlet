@@ -12,7 +12,7 @@ namespace Decompose.Numerics
 {
     public class QuadraticSieve : IFactorizationAlgorithm<BigInteger>
     {
-        private const int windowSize = 2000;
+        private const int windowSize = 20000;
 
         private class Candidate
         {

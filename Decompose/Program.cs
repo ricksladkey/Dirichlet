@@ -233,8 +233,8 @@ namespace Decompose
             bool debug = false;
             var factors = null as BigInteger[];
 
-            factors = FactorTest(debug, 25, n, new PollardRho(4));
-            factors = FactorTest(debug, 25, n, new QuadraticSieve(threads));
+            //factors = FactorTest(debug, 25, n, new PollardRho(4));
+            factors = FactorTest(debug, 100, n, new QuadraticSieve(threads));
             foreach (var factor in factors)
                 Console.WriteLine("{0}", factor);
         }
