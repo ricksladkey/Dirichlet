@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,23 +78,24 @@ namespace Decompose.Numerics
                 .ToArray();
             int desired = factorBase.Length + 1 + (int)Math.Ceiling(digits);
             var candidates = Sieve(desired);
-            var matrix = new List<List<int>>();
+            var matrix = new List<BitArray>();
             for (int i = 0; i <= factorBaseSize; i++)
-                matrix.Add(new List<int>());
-            foreach (var candidate in candidates)
+                matrix.Add(new BitArray(candidates.Count));
+            for (int j = 0; j < candidates.Count; j++)
             {
-                var exponents = candidate.Exponents;
+                var exponents = candidates[j].Exponents;
                 for (int i = 0; i < exponents.Length; i++)
-                    matrix[i].Add(exponents[i] % 2);
+                    matrix[i][j] = exponents[i] % 2 != 0;
             }
             foreach (var v in Solve(matrix))
             {
 #if false
                 Console.WriteLine("v = {0}", string.Join(" ", v.ToArray()));
 #endif
+                var vbool = v.Cast<bool>();
                 var xSet = candidates
-                    .Zip(v, (candidate, selected) => new { X = candidate.X, Selected = selected })
-                    .Where(pair => pair.Selected == 1)
+                    .Zip(vbool, (candidate, selected) => new { X = candidate.X, Selected = selected })
+                    .Where(pair => pair.Selected)
                     .Select(pair => pair.X)
                     .ToArray();
                 var xPrime = xSet.Aggregate((sofar, current) => sofar * current) % n;
@@ -218,7 +220,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private IEnumerable<List<int>> Solve(List<List<int>> matrix)
+        private IEnumerable<BitArray> Solve(List<BitArray> matrix)
         {
 #if false
             PrintMatrix("initial:", matrix);
@@ -233,7 +235,7 @@ namespace Decompose.Numerics
                 int j = -1;
                 for (int i = 0; i < rows; i++)
                 {
-                    if (matrix[i][k] != 0 && c[i] < 0)
+                    if (matrix[i][k] && c[i] < 0)
                     {
                         j = i;
                         break;
@@ -243,18 +245,15 @@ namespace Decompose.Numerics
                 {
                     for (int i = 0; i < rows; i++)
                     {
-                        if (i == j || matrix[i][k] == 0)
+                        if (i == j || !matrix[i][k])
                             continue;
-                        for (int l = 0; l < cols; l++)
-                            matrix[i][l] ^= matrix[j][l];
+                        matrix[i].Xor(matrix[j]);
                     }
                     c[j] = k;
                 }
                 else
                 {
-                    var v = new List<int>();
-                    for (int i = 0; i < c.Count; i++)
-                        v.Add(0);
+                    var v = new BitArray(c.Count);
                     for (int jj = 0; jj < c.Count; jj++)
                     {
                         int js = -1;
@@ -269,9 +268,9 @@ namespace Decompose.Numerics
                         if (js != -1)
                             v[jj] = matrix[js][k];
                         else if (jj == k)
-                            v[jj] = 1;
+                            v[jj] = true;
                         else
-                            v[jj] = 0;
+                            v[jj] = false;
                     }
                     if (VerifySolution(matrix, v))
                         yield return v;
@@ -282,18 +281,18 @@ namespace Decompose.Numerics
             }
         }
 
-        private bool VerifySolution(List<List<int>> matrix, List<int> solution)
+        private bool VerifySolution(List<BitArray> matrix, BitArray solution)
         {
             int rows = matrix.Count;
             int cols = matrix[0].Count;
-            for (int ii = 0; ii < rows; ii++)
+            for (int i = 0; i < rows; i++)
             {
-                int row = 0;
-                for (int jj = 0; jj < cols; jj++)
+                bool row = false;
+                for (int j = 0; j < cols; j++)
                 {
-                    row ^= solution[jj] * matrix[ii][jj];
+                    row ^= solution[j] & matrix[i][j];
                 }
-                if (row != 0)
+                if (row)
                 {
                     return false;
                 }

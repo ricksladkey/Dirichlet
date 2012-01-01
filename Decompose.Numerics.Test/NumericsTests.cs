@@ -70,6 +70,18 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
+        public void TestQuadraticSieve1()
+        {
+            var expected = new[] { BigInteger.Parse("274177"), BigInteger.Parse("67280421310721") };
+            var n = BigInteger.Parse("18446744073709551617");
+            var algorithm = new QuadraticSieve(8);
+            var factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
+            var product = factors.Aggregate((sofar, current) => sofar * current);
+            Assert.AreEqual(n, product);
+            Assert.IsTrue(((IStructuralEquatable)factors).Equals(expected, EqualityComparer<BigInteger>.Default));
+        }
+
+        [TestMethod]
         public void TestExtendedGreatestCommonDivisor()
         {
             var a = (BigInteger)120;
@@ -242,11 +254,10 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void SieveOfErostothonesTest1()
         {
-            var sieve = new SieveOfErostothones();
             int n = 0;
             int i = 0;
             int iterations = 1000;
-            foreach (int p in sieve)
+            foreach (int p in new SieveOfErostothones())
             {
                 while (n < p)
                 {
