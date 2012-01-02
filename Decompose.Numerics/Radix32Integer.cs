@@ -59,7 +59,7 @@ namespace Decompose.Numerics
             get { return last + 1; }
         }
 
-        public int WordLength
+        public static int WordLength
         {
             get { return wordLength; }
         }
