@@ -362,7 +362,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private unsafe void SieveQuadraticResidue(Interval interval, Action<Candidate> candidateCallback)
+        private void SieveQuadraticResidue(Interval interval, Action<Candidate> candidateCallback)
         {
             var x0 = interval.X;
             var y0 = x0 * x0 - n;
@@ -373,49 +373,47 @@ namespace Decompose.Numerics
             var exponents = interval.Exponents;
             if (interval.Counts == null)
                 interval.Counts = new int[size];
-            fixed (int* counts = interval.Counts)
+            var counts = interval.Counts;
+            for (int i = 0; i < factorBaseSize; i++)
             {
-                for (int i = 0; i < factorBaseSize; i++)
+                var p = factorBase[i];
+                var logP = logFactorBase[i];
+                var k0 = offsets[i];
+                for (int root = 0; root < 2; root++)
                 {
-                    var p = factorBase[i];
-                    var logP = logFactorBase[i];
-                    var k0 = offsets[i];
-                    for (int root = 0; root < 2; root++)
+                    if (root == 1 && p == 2)
+                        continue;
+                    for (int k = k0; k < size; k += p)
                     {
-                        if (root == 1 && p == 2)
-                            continue;
-                        for (int k = k0; k < size; k += p)
-                        {
-                            Debug.Assert((BigInteger.Pow(x0 + k, 2) - n) % p == 0);
-                            counts[k] += logP;
-                        }
-                        k0 += roots[i].Item2 - roots[i].Item1;
+                        Debug.Assert((BigInteger.Pow(x0 + k, 2) - n) % p == 0);
+                        counts[k] += logP;
                     }
-                    if (token.IsCancellationRequested)
-                        return;
+                    k0 += roots[i].Item2 - roots[i].Item1;
                 }
                 if (token.IsCancellationRequested)
                     return;
-                int limit = CalculateLowerBound(y0);
-                for (int k = 0; k < size; k++)
+            }
+            if (token.IsCancellationRequested)
+                return;
+            int limit = CalculateLowerBound(y0);
+            for (int k = 0; k < size; k++)
+            {
+                if (counts[k] >= limit)
                 {
-                    if (counts[k] >= limit)
+                    var x = x0 + k;
+                    if (ValueIsSmooth(k, interval))
                     {
-                        var x = x0 + k;
-                        if (ValueIsSmooth(k, interval))
+                        var candidate = new Candidate
                         {
-                            var candidate = new Candidate
-                            {
-                                X = x,
-                                Exponents = (int[])exponents.Clone(),
-                            };
-                            candidateCallback(candidate);
-                            if (token.IsCancellationRequested)
-                                return;
-                        }
+                            X = x,
+                            Exponents = (int[])exponents.Clone(),
+                        };
+                        candidateCallback(candidate);
+                        if (token.IsCancellationRequested)
+                            return;
                     }
-                    counts[k] = 0;
                 }
+                counts[k] = 0;
             }
         }
 
@@ -523,7 +521,11 @@ namespace Decompose.Numerics
                         else
                             v[jj] = false;
                     }
-                    if (VerifySolution(matrix, v))
+#if DEBUG
+                    Debug.Assert(VerifySolution(matrix, 0, matrix.Count, v));
+
+#endif
+                    if (VerifySolution(matrix, rows, matrix.Count, v))
                         yield return v;
                 }
 #if false
@@ -532,11 +534,10 @@ namespace Decompose.Numerics
             }
         }
 
-        private bool VerifySolution(List<BitArray> matrix, BitArray solution)
+        private bool VerifySolution(List<BitArray> matrix, int rowMin, int rowMax, BitArray solution)
         {
-            int rows = matrix.Count;
             int cols = matrix[0].Count;
-            for (int i = 0; i < rows; i++)
+            for (int i = rowMin; i < rowMax; i++)
             {
                 bool row = false;
                 for (int j = 0; j < cols; j++)
