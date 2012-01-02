@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using Decompose.Numerics;
-using System.Diagnostics;
 
 namespace Decompose
 {
@@ -259,7 +260,7 @@ namespace Decompose
                     for (int percent = 85; percent <= 85; percent += 1)
                     {
                         Console.WriteLine("percent = {0}", percent);
-                        FactorTest(false, 20, n, new QuadraticSieve(threads, size, percent));
+                        FactorTest(false, 1000, n, new QuadraticSieve(threads, size, percent));
                     }
                 }
             }
@@ -288,15 +289,15 @@ namespace Decompose
 
         static BigInteger[] FactorTest(bool debug, int iterations, BigInteger n, IFactorizationAlgorithm<BigInteger> algorithm)
         {
-            var elapsed = new double[iterations];
-            var factors = null as BigInteger[];
+            var results = new List<BigInteger[]>();
+            GC.Collect();
+            var timer = new Stopwatch();
+            timer.Start();
             for (int i = 0; i < iterations; i++)
+                results.Add(algorithm.Factor(n).OrderBy(factor => factor).ToArray());
+            var elapsed = (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000;
+            foreach (var factors in results)
             {
-                GC.Collect();
-                var timer = new Stopwatch();
-                timer.Start();
-                factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
-                elapsed[i] = timer.ElapsedMilliseconds;
                 var product = factors.Aggregate((sofar, current) => sofar * current);
                 if (factors.Any(factor => factor == BigInteger.One || factor == n || !IntegerMath.IsPrime(factor)))
                     throw new InvalidOperationException("invalid factor");
@@ -304,12 +305,9 @@ namespace Decompose
                     throw new InvalidOperationException("too few factors");
                 if (n != product)
                     throw new InvalidOperationException("validation failure");
-                if (debug)
-                    Console.WriteLine("elapsed = {0}", elapsed[i]);
             }
-            var total = elapsed.Aggregate((sofar, current) => sofar + current);
-            Console.WriteLine("{0} iterations in {1} msec, {2} msec/iteration", iterations, total, total / iterations);
-            return factors;
+            Console.WriteLine("{0} iterations in {1:F0} msec, {2:F3} msec/iteration", iterations, elapsed, elapsed / iterations);
+            return results[0];
         }
     }
 }

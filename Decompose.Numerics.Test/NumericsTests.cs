@@ -285,6 +285,7 @@ namespace Decompose.Numerics.Test
                 var product = factors.Aggregate((sofar, current) => sofar * current);
                 Assert.AreEqual(n, product);
                 Assert.IsTrue(factors.All(factor => IntegerMath.IsPrime(factor)));
+                Assert.AreEqual(IntegerMath.IsPrime((BigInteger)n), algorithm.IsPrime(n));
             }
         }
     }

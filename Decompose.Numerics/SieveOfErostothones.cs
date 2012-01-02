@@ -7,15 +7,28 @@ namespace Decompose.Numerics
 {
     public class SieveOfErostothones : IEnumerable<int>
     {
-        private const int initialSize = 10;
+        private const int initialSize = ushort.MaxValue;
         private BitArray bits;
 
         private IEnumerable<int> Sieve()
         {
             int m = 0;
-            bits = new BitArray(initialSize);
-            bits[0] = true;
-            bits[1] = true;
+            if (bits == null)
+            {
+                bits = new BitArray(initialSize);
+                bits[0] = true;
+                bits[1] = true;
+            }
+            else
+            {
+                for (int i = 0; i < bits.Length; i++)
+                {
+                    if (!bits[i])
+                        yield return i;
+                }
+                m = bits.Length;
+                bits.Length = m * 2;
+            }
             while (true)
             {
                 int n = bits.Length;

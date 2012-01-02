@@ -12,9 +12,6 @@ namespace Decompose.Numerics
 {
     public class QuadraticSieve : IFactorizationAlgorithm<BigInteger>
     {
-        private const int windowSize = 100000;
-        private const int lowerBoundPercentDefault = 85;
-
         private class Candidate
         {
             public BigInteger X { get; set; }
@@ -31,19 +28,29 @@ namespace Decompose.Numerics
             }
         }
 
-        protected int threadsOverride;
-        protected int factorBaseSizeOverride;
-        protected int lowerBoundPercentOverride;
+        private const int windowSize = 100000;
+        private const int lowerBoundPercentDefault = 85;
+        private readonly BigInteger smallFactorCutoff = (BigInteger)int.MaxValue;
+
+        private int threadsOverride;
+        private int factorBaseSizeOverride;
+        private int lowerBoundPercentOverride;
+        private IFactorizationAlgorithm<int> smallFactorer;
+        private IEnumerable<int> primes;
 
         public QuadraticSieve(int threads, int factorBaseSize, int lowerBoundPercent)
         {
-            this.threadsOverride = threads;
-            this.factorBaseSizeOverride = factorBaseSize;
-            this.lowerBoundPercentOverride = lowerBoundPercent;
+            threadsOverride = threads;
+            factorBaseSizeOverride = factorBaseSize;
+            lowerBoundPercentOverride = lowerBoundPercent;
+            smallFactorer = new TrialDivision();
+            primes = new SieveOfErostothones();
         }
 
         public IEnumerable<BigInteger> Factor(BigInteger n)
         {
+            if (n <= smallFactorCutoff)
+                return smallFactorer.Factor((int)n).Select(factor => (BigInteger)factor);
             var factors = new List<BigInteger>();
             FactorCore(n, factors);
             return factors;
@@ -102,7 +109,7 @@ namespace Decompose.Numerics
             this.n = n;
             sqrtN = IntegerMath.Sqrt(n);
             factorBaseSize = CalculateFactorBaseSize(n);
-            factorBase = new SieveOfErostothones()
+            factorBase = primes
                 .Where(p => IntegerMath.JacobiSymbol(n, p) == 1)
                 .Take(factorBaseSize)
                 .ToArray();
