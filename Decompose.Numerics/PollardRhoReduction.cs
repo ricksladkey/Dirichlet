@@ -19,7 +19,7 @@ namespace Decompose.Numerics
         protected override BigInteger Rho(BigInteger n, BigInteger xInit, BigInteger c, CancellationToken cancellationToken)
         {
             if (n.IsEven)
-                return BigIntegerUtils.Two;
+                return BigIntegers.Two;
 
             var reducer = reduction.GetReducer(n);
             var x = reducer.ToResidue(xInit);

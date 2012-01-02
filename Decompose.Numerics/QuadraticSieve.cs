@@ -13,6 +13,7 @@ namespace Decompose.Numerics
     public class QuadraticSieve : IFactorizationAlgorithm<BigInteger>
     {
         private const int windowSize = 100000;
+        private const int lowerBoundPercentDefault = 85;
 
         private class Candidate
         {
@@ -30,11 +31,15 @@ namespace Decompose.Numerics
             }
         }
 
-        protected int threads;
+        protected int threadsOverride;
+        protected int factorBaseSizeOverride;
+        protected int lowerBoundPercentOverride;
 
-        public QuadraticSieve(int threads)
+        public QuadraticSieve(int threads, int factorBaseSize, int lowerBoundPercent)
         {
-            this.threads = threads;
+            this.threadsOverride = threads;
+            this.factorBaseSizeOverride = factorBaseSize;
+            this.lowerBoundPercentOverride = lowerBoundPercent;
         }
 
         public IEnumerable<BigInteger> Factor(BigInteger n)
@@ -48,7 +53,7 @@ namespace Decompose.Numerics
         {
             if (n == 1)
                 return;
-            if (BigIntegerUtils.IsPrime(n))
+            if (IntegerMath.IsPrime(n))
             {
                 factors.Add(n);
                 return;
@@ -62,23 +67,43 @@ namespace Decompose.Numerics
         }
 
         private BigInteger n;
-        private int logN;
         private BigInteger sqrtN;
+        private int factorBaseSize;
         private int[] factorBase;
         private int[] logFactorBase;
         private Tuple<int, int>[] roots;
 
+        private int CalculateNumberOfThreads()
+        {
+            int threads = threadsOverride != 0 ? threadsOverride : 1;
+            if (n <= BigInteger.Pow(10, 10))
+                return 1;
+            return threads;
+        }
+
+        private int CalculateFactorBaseSize(BigInteger n)
+        {
+            if (factorBaseSizeOverride != 0)
+                return factorBaseSizeOverride;
+            var digits = BigInteger.Log(n) / Math.Log(10);
+            return (int)Math.Ceiling((digits - 5) * 5 + digits) + 1;
+        }
+
+        private int CalculateLowerBound(BigInteger y)
+        {
+            int percent = lowerBoundPercentOverride != 0 ? lowerBoundPercentOverride : lowerBoundPercentDefault;
+            return LogScale(y) * percent / 100;
+        }
+
         private BigInteger GetDivisor(BigInteger n)
         {
             if (n.IsEven)
-                return BigIntegerUtils.Two;
+                return BigIntegers.Two;
             this.n = n;
-            logN = LogScale(n);
-            sqrtN = BigIntegerUtils.Sqrt(n);
-            var digits = BigInteger.Log(n) / Math.Log(10);
-            int factorBaseSize = (int)Math.Ceiling((digits - 5) * 5 + digits) + 1;
+            sqrtN = IntegerMath.Sqrt(n);
+            factorBaseSize = CalculateFactorBaseSize(n);
             factorBase = new SieveOfErostothones()
-                .Where(p => BigIntegerUtils.JacobiSymbol(n, p) == 1)
+                .Where(p => IntegerMath.JacobiSymbol(n, p) == 1)
                 .Take(factorBaseSize)
                 .ToArray();
             logFactorBase = factorBase
@@ -87,11 +112,11 @@ namespace Decompose.Numerics
             roots = factorBase
                 .Select(factor =>
                     {
-                        var root = (int)BigIntegerUtils.ModularSquareRoot(n, factor);
+                        var root = (int)IntegerMath.ModularSquareRoot(n, factor);
                         return Tuple.Create(root, factor - root);
                     })
                 .ToArray();
-            int desired = factorBase.Length + 1 + (int)Math.Ceiling(digits);
+            int desired = factorBase.Length + 10;
 #if false
             var candidates = Sieve(desired, SieveTrialDivision);
 #else
@@ -118,7 +143,7 @@ namespace Decompose.Numerics
                     .Select(pair => pair.X)
                     .ToArray();
                 var xPrime = xSet.Aggregate((sofar, current) => sofar * current) % n;
-                var yPrime = BigIntegerUtils.Sqrt(xSet
+                var yPrime = IntegerMath.Sqrt(xSet
                     .Aggregate(BigInteger.One, (sofar, current) => sofar * (current * current - n))) % n;
                 var factor = BigInteger.GreatestCommonDivisor(xPrime + yPrime, n);
                 if (!factor.IsOne && factor != n)
@@ -127,7 +152,7 @@ namespace Decompose.Numerics
             return BigInteger.Zero;
         }
 
-        private int LogScale(BigInteger n)
+        private static int LogScale(BigInteger n)
         {
             return (int)Math.Floor(1000 * BigInteger.Log(BigInteger.Abs(n)));
         }
@@ -135,6 +160,7 @@ namespace Decompose.Numerics
         private List<Candidate> Sieve(int desired, Func<Range, IEnumerable<Candidate>> sieveCore)
         {
             var candidates = new List<Candidate>();
+            var threads = CalculateNumberOfThreads();
             if (threads == 1)
             {
                 foreach (var range in Ranges)
@@ -143,9 +169,6 @@ namespace Decompose.Numerics
                     candidates.AddRange(sieveCore(range).Take(left));
                     if (candidates.Count == desired)
                         break;
-#if false
-                    Console.WriteLine("desired = {0}, found = {1}", desired, candidates.Count);
-#endif
                 }
             }
             else
@@ -205,7 +228,8 @@ namespace Decompose.Numerics
             get
             {
                 var k = BigInteger.Zero;
-                var window = BigIntegerUtils.Min(sqrtN, windowSize);
+                int threads = CalculateNumberOfThreads();
+                var window = IntegerMath.Max(IntegerMath.Min(sqrtN / threads, windowSize), 1);
                 while (true)
                 {
                     yield return new Range { Min = -k - window, Max = -k };
@@ -217,7 +241,6 @@ namespace Decompose.Numerics
 
         private IEnumerable<Candidate> SieveTrialDivision(Range range)
         {
-            int factorBaseSize = factorBase.Length;
             var exponents = new int[factorBaseSize + 1];
             for (var k = range.Min; k < range.Max; k++)
             {
@@ -235,7 +258,6 @@ namespace Decompose.Numerics
 
         private IEnumerable<Candidate> SieveQuadraticResidue(Range range)
         {
-            int factorBaseSize = factorBase.Length;
             var exponents = new int[factorBaseSize + 1];
             int length = (int)(range.Max - range.Min);
             var counts = new int[length];
@@ -262,7 +284,7 @@ namespace Decompose.Numerics
                     p *= p;
                 }
             }
-            int limit = LogScale(y0) * 90 / 100;
+            int limit = CalculateLowerBound(y0);
             for (int j = 0; j < length; j++)
             {
                 if (counts[j] >= limit)
@@ -276,20 +298,12 @@ namespace Decompose.Numerics
                             Exponents = (int[])exponents.Clone(),
                         };
                     }
-#if DEBUG
-                    else
-                        Debugger.Break();
-#endif
                 }
-#if false
-                Debug.Assert(!ValueIsSmooth(x0 + j, exponents));
-#endif
             }
         }
 
         private bool ValueIsSmooth(BigInteger x, int[] exponents)
         {
-            int factorBaseSize = factorBase.Length;
             var y = x * x - n;
             for (int i = 0; i <= factorBaseSize; i++)
                 exponents[i] = 0;

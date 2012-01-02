@@ -391,6 +391,47 @@ namespace Decompose.Numerics
             return this;
         }
 
+        public Radix32Integer Increment()
+        {
+            return SetSum(this, 1);
+        }
+
+        public Radix32Integer Add(uint a)
+        {
+            return SetSum(this, a);
+        }
+
+        public unsafe Radix32Integer SetSum(Radix32Integer a, uint b)
+        {
+            CheckValid();
+            Debug.Assert(length == a.length);
+            fixed (uint* wbits = &bits[index], abits = &a.bits[a.index])
+            {
+                int alast = a.last;
+                int wlast = last;
+                ulong carry = (ulong)abits[0] + b;
+                wbits[0] = (uint)carry;
+                carry >>= 32;
+                for (int i = 1; i <= alast; i++)
+                {
+                    carry += abits[i];
+                    wbits[i] = (uint)carry;
+                    carry >>= 32;
+                }
+                if (carry != 0)
+                {
+                    Debug.Assert(alast + 1 < length);
+                    ++alast;
+                    wbits[alast] = (uint)carry;
+                }
+                for (int i = alast + 1; i <= wlast; i++)
+                    wbits[i] = 0;
+                last = alast;
+            }
+            CheckValid();
+            return this;
+        }
+
         public unsafe Radix32Integer AddModulo(Radix32Integer a, Radix32Integer n)
         {
             CheckValid();

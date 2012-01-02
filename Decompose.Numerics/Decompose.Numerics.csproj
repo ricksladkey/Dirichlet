@@ -44,12 +44,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BarrettReduction.cs" />
+    <Compile Include="BigIntegers.cs" />
     <Compile Include="IFactorizationAlgorithm.cs" />
     <Compile Include="IPrimalityAlgorithm.cs" />
     <Compile Include="IReducer.cs" />
     <Compile Include="IReductionAlgorithm.cs" />
     <Compile Include="ModuloInteger.cs" />
-    <Compile Include="BigIntegerUtils.cs" />
+    <Compile Include="IntegerMath.cs" />
     <Compile Include="ISqrtAlgorithm.cs" />
     <Compile Include="MersenneTwister.cs" />
     <Compile Include="MillerRabin.cs" />
@@ -69,6 +70,7 @@
     <Compile Include="SieveOfErostothones.cs" />
     <Compile Include="SqrtBinarySearch.cs" />
     <Compile Include="SqrtNewtonsMethod.cs" />
+    <Compile Include="TrialDivision.cs" />
     <Compile Include="Unused.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

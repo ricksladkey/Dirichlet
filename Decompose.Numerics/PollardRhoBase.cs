@@ -27,7 +27,7 @@ namespace Decompose.Numerics
         {
             if (n == 1)
                 return;
-            if (BigIntegerUtils.IsPrime(n))
+            if (IntegerMath.IsPrime(n))
             {
                 factors.Add(n);
                 return;

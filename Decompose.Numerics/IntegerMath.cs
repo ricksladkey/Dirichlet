@@ -1,12 +1,10 @@
-﻿using System.Diagnostics;
+﻿using System;
 using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public static class BigIntegerUtils
+    public static class IntegerMath
     {
-        public static BigInteger Two = (BigInteger)2;
-
         public static BigInteger Min(BigInteger a, BigInteger b)
         {
             return a < b ? a : b;
@@ -48,6 +46,11 @@ namespace Decompose.Numerics
             return sqrt.Sqrt(n);
         }
 
+        public static int Sqrt(int n)
+        {
+            return (int)Math.Floor(Math.Sqrt(n));
+        }
+
         private static IPrimalityAlgorithm<BigInteger> millerRabin = new MillerRabin(16);
 
         public static bool IsPrime(BigInteger n)
@@ -62,7 +65,7 @@ namespace Decompose.Numerics
             return n;
         }
 
-        private static BigInteger limit = (BigInteger)uint.MaxValue;
+        private static BigInteger limit = (BigInteger)int.MaxValue;
         private static BigInteger four = (BigInteger)4;
         private static BigInteger eight = (BigInteger)8;
 
@@ -73,12 +76,12 @@ namespace Decompose.Numerics
             {
                 m = m % n;
                 if (n <= limit)
-                    return result * JacobiSymbol((uint)m, (uint)n);
+                    return result * JacobiSymbol((int)m, (int)n);
                 if (m.IsZero)
                     return 0;
                 if (m.IsEven)
                 {
-                    uint k = (uint)(n % eight);
+                    int k = (int)(n % eight);
                     var toggle = k == 1 || k == 7 ? 1 : -1;
                     do
                     {
@@ -90,7 +93,7 @@ namespace Decompose.Numerics
                     return result;
                 if (!n.IsEven)
                 {
-                    if ((uint)(m % four) == 3 && (uint)(n % four) == 3)
+                    if ((int)(m % four) == 3 && (int)(n % four) == 3)
                         result *= -1;
                     var tmp = m;
                     m = n;
@@ -99,7 +102,7 @@ namespace Decompose.Numerics
             }
         }
 
-        public static int JacobiSymbol(uint m, uint n)
+        public static int JacobiSymbol(int m, int n)
         {
             int result = 1;
             while (true)
@@ -109,7 +112,7 @@ namespace Decompose.Numerics
                     return 0;
                 if ((m & 1) == 0)
                 {
-                    uint k = n & 7;
+                    int k = n & 7;
                     int toggle = k == 1 || k == 7 ? 1 : -1;
                     do
                     {
@@ -138,7 +141,7 @@ namespace Decompose.Numerics
         public static BigInteger ModularSquareRoot(BigInteger n, BigInteger p)
         {
             var r = ModularSquareRootCore(n, p);
-            if (r > p / BigIntegerUtils.Two)
+            if (r > p / BigIntegers.Two)
                 return p - r;
             return r;
         }
@@ -156,7 +159,7 @@ namespace Decompose.Numerics
             }
             if (s == 1)
                 return BigInteger.ModPow(n, (p + 1) / 4, p);
-            var z = BigIntegerUtils.Two;
+            var z = BigIntegers.Two;
             while (JacobiSymbol(z, p) != -1)
                 ++z;
             var c = BigInteger.ModPow(z, q, p);
@@ -172,7 +175,7 @@ namespace Decompose.Numerics
                     k = k * k % p;
                     ++i;
                 }
-                var b = BigInteger.ModPow(c, BigInteger.Pow(BigIntegerUtils.Two, m - i - 1), p);
+                var b = BigInteger.ModPow(c, BigInteger.Pow(BigIntegers.Two, m - i - 1), p);
                 r = r * b % p;
                 var b2 = b * b % p;
                 t = t * b2 % p;

@@ -14,8 +14,8 @@ namespace Decompose.Numerics
 
         protected override BigInteger Rho(BigInteger n, BigInteger xInit, BigInteger c, CancellationToken cancellationToken)
         {
-            if (n % BigIntegerUtils.Two == 0)
-                return BigIntegerUtils.Two;
+            if (n % BigIntegers.Two == 0)
+                return BigIntegers.Two;
 
             var x = xInit;
             var y = xInit;

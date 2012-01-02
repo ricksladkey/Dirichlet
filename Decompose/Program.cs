@@ -17,8 +17,9 @@ namespace Decompose
             //FactorTest1();
             //FactorTest2();
             //FactorTest3();
-            FactorTest4();
+            //FactorTest4();
             //FactorTest5();
+            FactorTest6();
         }
 
         static void FindPrimeTest1()
@@ -26,7 +27,7 @@ namespace Decompose
             var random = new MersenneTwister32(0);
             var limit = BigInteger.One << (32 * 4);
             var x = random.Next(limit);
-            while (!BigIntegerUtils.IsPrime(x))
+            while (!IntegerMath.IsPrime(x))
                 ++x;
             Console.WriteLine("x = {0}", x);
         }
@@ -193,7 +194,7 @@ namespace Decompose
                 var plus = true;
                 var n = (BigInteger.One << i) + (plus ? 1 : -1);
                 Console.WriteLine("i = {0}, n = {1}", i, n);
-                if (BigIntegerUtils.IsPrime(n))
+                if (IntegerMath.IsPrime(n))
                     continue;
                 int threads = 4;
                 var factors = null as BigInteger[];
@@ -210,7 +211,7 @@ namespace Decompose
         static void FactorTest4()
         {
             var random = new MersenneTwister32(0);
-            for (int i = 5; i <= 20; i++)
+            for (int i = 16; i <= 16; i++)
             {
                 var limit = BigInteger.Pow(new BigInteger(10), i);
                 var p = NextPrime(random, limit);
@@ -222,7 +223,7 @@ namespace Decompose
                 //factors = FactorTest(true, 1, n, new PollardRho(threads));
                 //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
                 //factors = FactorTest(true, 10, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
-                factors = FactorTest(true, 1, n, new QuadraticSieve(threads));
+                factors = FactorTest(true, 1, n, new QuadraticSieve(threads, 0, 0));
             }
         }
 
@@ -236,9 +237,32 @@ namespace Decompose
             var factors = null as BigInteger[];
 
             factors = FactorTest(debug, 500, n, new PollardRhoReduction(pollardThreads, new MontgomeryReduction()));
-            factors = FactorTest(debug, 500, n, new QuadraticSieve(quadraticSieveThreads));
+            factors = FactorTest(debug, 500, n, new QuadraticSieve(quadraticSieveThreads, 0, 0));
             foreach (var factor in factors)
                 Console.WriteLine("{0}", factor);
+        }
+
+        static void FactorTest6()
+        {
+            var random = new MersenneTwister32(0);
+            int threads = 8;
+            for (int i = 5; i <= 5; i++)
+            {
+                var limit = BigInteger.Pow(10, i);
+                var p = NextPrime(random, limit);
+                var q = NextPrime(random, limit);
+                var n = p * q;
+                Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
+                for (int size = 10; size <= 60; size += 5)
+                {
+                    Console.WriteLine("size = {0}", size);
+                    for (int percent = 85; percent <= 85; percent += 1)
+                    {
+                        Console.WriteLine("percent = {0}", percent);
+                        FactorTest(false, 20, n, new QuadraticSieve(threads, size, percent));
+                    }
+                }
+            }
         }
 
         static BigInteger NextPrime(MersenneTwister32 random, BigInteger limit)
@@ -246,7 +270,7 @@ namespace Decompose
             var n = random.Next(limit);
             while (GetDigitLength(n, 10) < GetDigitLength(limit - 1, 10))
                 n = random.Next(limit);
-            while (!BigIntegerUtils.IsPrime(n))
+            while (!IntegerMath.IsPrime(n))
                 ++n;
             return n;
         }
@@ -272,14 +296,14 @@ namespace Decompose
                 var timer = new Stopwatch();
                 timer.Start();
                 factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
+                elapsed[i] = timer.ElapsedMilliseconds;
                 var product = factors.Aggregate((sofar, current) => sofar * current);
-                if (factors.Any(factor => factor == BigInteger.One || factor == n || !BigIntegerUtils.IsPrime(factor)))
+                if (factors.Any(factor => factor == BigInteger.One || factor == n || !IntegerMath.IsPrime(factor)))
                     throw new InvalidOperationException("invalid factor");
                 if (factors.Length < 2)
                     throw new InvalidOperationException("too few factors");
                 if (n != product)
                     throw new InvalidOperationException("validation failure");
-                elapsed[i] = timer.ElapsedMilliseconds;
                 if (debug)
                     Console.WriteLine("elapsed = {0}", elapsed[i]);
             }

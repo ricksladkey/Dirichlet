@@ -7,7 +7,7 @@ namespace Decompose.Numerics
     {
         public BigInteger Sqrt(BigInteger n)
         {
-            if (n < BigIntegerUtils.Two)
+            if (n < BigIntegers.Two)
                 return n;
             var x0 = BigInteger.One << (n.GetBitLength() / 2 + 1);
             var x1 = x0;

@@ -16,22 +16,22 @@ namespace Decompose.Numerics.Test
         {
             var p = BigInteger.Parse("12345678901234567890");
             var n = p * p;
-            var p2 = BigIntegerUtils.Sqrt(n);
+            var p2 = IntegerMath.Sqrt(n);
             Assert.AreEqual(p, p2);
         }
 
         [TestMethod]
         public void TestSqrt2()
         {
-            Assert.AreEqual(0, (int)BigIntegerUtils.Sqrt(0));
-            Assert.AreEqual(1, (int)BigIntegerUtils.Sqrt(1));
-            Assert.AreEqual(1, (int)BigIntegerUtils.Sqrt(2));
-            Assert.AreEqual(1, (int)BigIntegerUtils.Sqrt(3));
-            Assert.AreEqual(2, (int)BigIntegerUtils.Sqrt(4));
-            Assert.AreEqual(2, (int)BigIntegerUtils.Sqrt(5));
-            Assert.AreEqual(2, (int)BigIntegerUtils.Sqrt(8));
-            Assert.AreEqual(3, (int)BigIntegerUtils.Sqrt(9));
-            Assert.AreEqual(3, (int)BigIntegerUtils.Sqrt(10));        
+            Assert.AreEqual(0, (int)IntegerMath.Sqrt(0));
+            Assert.AreEqual(1, (int)IntegerMath.Sqrt(1));
+            Assert.AreEqual(1, (int)IntegerMath.Sqrt(2));
+            Assert.AreEqual(1, (int)IntegerMath.Sqrt(3));
+            Assert.AreEqual(2, (int)IntegerMath.Sqrt(4));
+            Assert.AreEqual(2, (int)IntegerMath.Sqrt(5));
+            Assert.AreEqual(2, (int)IntegerMath.Sqrt(8));
+            Assert.AreEqual(3, (int)IntegerMath.Sqrt(9));
+            Assert.AreEqual(3, (int)IntegerMath.Sqrt(10));        
         }
 
         [TestMethod]
@@ -74,7 +74,7 @@ namespace Decompose.Numerics.Test
         {
             var expected = new[] { BigInteger.Parse("274177"), BigInteger.Parse("67280421310721") };
             var n = BigInteger.Parse("18446744073709551617");
-            var algorithm = new QuadraticSieve(8);
+            var algorithm = new QuadraticSieve(8, 0, 0);
             var factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
             var product = factors.Aggregate((sofar, current) => sofar * current);
             Assert.AreEqual(n, product);
@@ -90,7 +90,7 @@ namespace Decompose.Numerics.Test
             var dExpected = (BigInteger)47;
             BigInteger c;
             BigInteger d;
-            BigIntegerUtils.ExtendedGreatestCommonDivisor(a, b, out c, out d);
+            IntegerMath.ExtendedGreatestCommonDivisor(a, b, out c, out d);
             Assert.AreEqual(cExpected, c);
             Assert.AreEqual(dExpected, d);
         }
@@ -177,6 +177,9 @@ namespace Decompose.Numerics.Test
                 x.SetSum(a, b);
                 Assert.AreEqual(aPrime + bPrime, x.ToBigInteger());
 
+                x.SetSum(a, c);
+                Assert.AreEqual(aPrime + c, x.ToBigInteger());
+
                 x.SetProduct(a, b);
                 Assert.AreEqual(aPrime * bPrime, x.ToBigInteger());
 
@@ -224,11 +227,11 @@ namespace Decompose.Numerics.Test
             var limit = BigInteger.Parse("10023859281455311421");
             for (int i = 0; i < 100; i++)
             {
-                var p = BigIntegerUtils.NextPrime(random.Next(limit));
+                var p = IntegerMath.NextPrime(random.Next(limit));
                 var n = random.Next(p);
-                if (BigIntegerUtils.JacobiSymbol(n, p) == 1)
+                if (IntegerMath.JacobiSymbol(n, p) == 1)
                 {
-                    var r1 = BigIntegerUtils.ModularSquareRoot(n, p);
+                    var r1 = IntegerMath.ModularSquareRoot(n, p);
                     var r2 = p - r1;
                     Assert.AreEqual(n, r1 * r1 % p);
                     Assert.AreEqual(n, r2 * r2 % p);
@@ -261,15 +264,28 @@ namespace Decompose.Numerics.Test
             {
                 while (n < p)
                 {
-                    Assert.IsFalse(BigIntegerUtils.IsPrime(n));
+                    Assert.IsFalse(IntegerMath.IsPrime(n));
                     ++n;
                 }
-                Assert.IsTrue(BigIntegerUtils.IsPrime(p));
+                Assert.IsTrue(IntegerMath.IsPrime(p));
                 n = p + 1;
                 if (++i >= iterations)
                     break;
             }
             Assert.AreEqual(i, iterations);
+        }
+
+        [TestMethod]
+        public void TrialDivisionTest1()
+        {
+            var algorithm = new TrialDivision();
+            for (int n = 2; n < 10000; n++)
+            {
+                var factors = algorithm.Factor(n).ToArray();
+                var product = factors.Aggregate((sofar, current) => sofar * current);
+                Assert.AreEqual(n, product);
+                Assert.IsTrue(factors.All(factor => IntegerMath.IsPrime(factor)));
+            }
         }
     }
 }
