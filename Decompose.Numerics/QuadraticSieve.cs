@@ -192,35 +192,40 @@ namespace Decompose.Numerics
             return (int)Math.Floor(1000 * BigInteger.Log(BigInteger.Abs(n)));
         }
 
+        private CancellationToken token;
         private BlockingCollection<Candidate> candidateBuffer;
         private BlockingCollection<Interval> intervalBuffer;
 
-        private List<Candidate> Sieve(int desired, Func<Interval, IEnumerable<Candidate>> sieveCore)
+        private List<Candidate> Sieve(int desired, Action<Interval, Action<Candidate>> sieveCore)
         {
+            candidateBuffer = new BlockingCollection<Candidate>();
+            intervalBuffer = new BlockingCollection<Interval>();
             var candidates = new List<Candidate>();
             var threads = CalculateNumberOfThreads();
             if (threads == 1)
             {
-                foreach (var interval in GetRanges())
+                token = CancellationToken.None;
+                foreach (var interval in GetIntervals())
                 {
                     var left = desired - candidates.Count;
-                    candidates.AddRange(sieveCore(interval).Take(left));
-                    if (candidates.Count == desired)
+                    sieveCore(interval, candidate => candidates.Add(candidate));
+                    if (candidates.Count >= desired)
+                    {
+                        candidates.RemoveRange(desired, desired - candidates.Count);
                         break;
-                    intervalBuffer.Add(interval);
+                    }
                 }
             }
             else
             {
-                candidateBuffer = new BlockingCollection<Candidate>();
-                intervalBuffer = new BlockingCollection<Interval>();
                 var tokenSource = new CancellationTokenSource();
+                token = tokenSource.Token;
                 var tasks = new Task[threads + 1];
-                var ranges = GetRanges().GetEnumerator();
+                var ranges = GetIntervals().GetEnumerator();
                 for (int i = 0; i < threads; i++)
                 {
                     ranges.MoveNext();
-                    tasks[i] = StartNew(ranges.Current, tokenSource.Token, sieveCore);
+                    tasks[i] = StartNew(ranges.Current, sieveCore);
                 }
                 tasks[threads] = Task.Factory.StartNew(() => ReadCandidates(candidates, desired));
                 while (true)
@@ -232,15 +237,15 @@ namespace Decompose.Numerics
                         break;
                     }
                     ranges.MoveNext();
-                    tasks[index] = StartNew(ranges.Current, tokenSource.Token, sieveCore);
+                    tasks[index] = StartNew(ranges.Current, sieveCore);
                 }
             }
             return candidates;
         }
 
-        private Task StartNew(Interval interval, CancellationToken token, Func<Interval, IEnumerable<Candidate>> sieveCore)
+        private Task StartNew(Interval interval, Action<Interval, Action<Candidate>> sieveCore)
         {
-            return Task.Factory.StartNew(() => SieveParallel(interval, token, sieveCore));
+            return Task.Factory.StartNew(() => sieveCore(interval, ParallelCallback));
         }
 
         private void ReadCandidates(List<Candidate> list, int desired)
@@ -253,18 +258,12 @@ namespace Decompose.Numerics
             }
         }
 
-        private void SieveParallel(Interval interval, CancellationToken token, Func<Interval, IEnumerable<Candidate>> sieveCore)
+        private void ParallelCallback(Candidate candidate)
         {
-            foreach (var candidate in sieveCore(interval))
-            {
-                candidateBuffer.Add(candidate);
-                if (token.IsCancellationRequested)
-                    return;
-            }
-            intervalBuffer.Add(interval);
+            candidateBuffer.Add(candidate);
         }
 
-        private IEnumerable<Interval> GetRanges()
+        private IEnumerable<Interval> GetIntervals()
         {
             var xPos = sqrtN;
             int threads = CalculateNumberOfThreads();
@@ -312,7 +311,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private IEnumerable<Candidate> SieveTrialDivision(Interval interval)
+        private void SieveTrialDivision(Interval interval, Action<Candidate> candidateCallback)
         {
             var exponents = new int[factorBaseSize + 1];
             for (var k = interval.X; k < interval.Max; k++)
@@ -320,16 +319,20 @@ namespace Decompose.Numerics
                 var x = sqrtN + k;
                 if (ValueIsSmooth(x, exponents))
                 {
-                    yield return new Candidate
+                    var candidate = new Candidate
                     {
                         X = x,
                         Exponents = (int[])exponents.Clone(),
                     };
+                    candidateCallback(candidate);
+                    if (token.IsCancellationRequested)
+                        break;
                 }
             }
+            intervalBuffer.Add(interval);
         }
 
-        private IEnumerable<Candidate> SieveQuadraticResidue(Interval interval)
+        private void SieveQuadraticResidue(Interval interval, Action<Candidate> candidateCallback)
         {
             var x0 = interval.X;
             var y0 = x0 * x0 - n;
@@ -367,15 +370,19 @@ namespace Decompose.Numerics
                     var x = x0 + j;
                     if (ValueIsSmooth(x, exponents))
                     {
-                        yield return new Candidate
+                        var candidate = new Candidate
                         {
                             X = x,
                             Exponents = (int[])exponents.Clone(),
                         };
+                        candidateCallback(candidate);
+                        if (token.IsCancellationRequested)
+                            break;
                     }
                 }
                 counts[j] = 0;
             }
+            intervalBuffer.Add(interval);
         }
 
         private bool ValueIsSmooth(BigInteger x, int[] exponents)
