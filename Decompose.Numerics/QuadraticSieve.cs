@@ -38,6 +38,17 @@ namespace Decompose.Numerics
         private IFactorizationAlgorithm<int> smallFactorer;
         private IEnumerable<int> primes;
 
+        private Tuple<int, int>[] sizePairs =
+        {
+            Tuple.Create(1, 2),
+            Tuple.Create(6, 5),
+            Tuple.Create(10, 30),
+            Tuple.Create(20, 60),
+            Tuple.Create(30, 500),
+            Tuple.Create(40, 1200),
+            Tuple.Create(100, 80000), // http://www.mersenneforum.org/showthread.php?t=4013
+        };
+
         public QuadraticSieve(int threads, int factorBaseSize, int lowerBoundPercent)
         {
             threadsOverride = threads;
@@ -92,8 +103,20 @@ namespace Decompose.Numerics
         {
             if (factorBaseSizeOverride != 0)
                 return factorBaseSizeOverride;
-            var digits = BigInteger.Log(n) / Math.Log(10);
-            return (int)Math.Ceiling((digits - 5) * 5 + digits) + 1;
+            int digits = (int)Math.Ceiling(BigInteger.Log(n) / Math.Log(10));
+            for (int i = 0; i < sizePairs.Length - 1; i++)
+            {
+                var pair = sizePairs[i];
+                if (digits >= sizePairs[i].Item1 && digits <= sizePairs[i + 1].Item1)
+                {
+                    double x0 = sizePairs[i].Item1;
+                    double x1 = sizePairs[i + 1].Item1;
+                    double y0 = sizePairs[i].Item2;
+                    double y1 = sizePairs[i + 1].Item2;
+                    return (int)Math.Ceiling(y0 + (digits - x0) * (y1 - y0) / (x1 - x0));
+                }
+            }
+            return (digits - 5) * 5 + digits + 1;
         }
 
         private int CalculateLowerBound(BigInteger y)

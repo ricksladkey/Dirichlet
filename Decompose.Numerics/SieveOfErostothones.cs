@@ -7,7 +7,7 @@ namespace Decompose.Numerics
 {
     public class SieveOfErostothones : IEnumerable<int>
     {
-        private const int initialSize = ushort.MaxValue;
+        private const int initialSize = 1024;
         private BitArray bits;
 
         private IEnumerable<int> Sieve()
@@ -37,6 +37,15 @@ namespace Decompose.Numerics
                 {
                     if (p >= m)
                         yield return p;
+                    if (2 * p >= n)
+                    {
+                        for (p++; p < n; p++)
+                        {
+                            if (!bits[p])
+                                yield return p;
+                        }
+                        break;
+                    }
                     int q = Math.Max(m + (p - m % p) % p, 2 * p);
                     Debug.Assert(q % p == 0);
                     for (int i = q; i < n; i += p)

@@ -235,15 +235,27 @@ namespace Decompose
             const int pollardThreads = 4;
             const int quadraticSieveThreads = 8;
             bool debug = false;
-            var factors = null as BigInteger[];
 
-            factors = FactorTest(debug, 500, n, new PollardRhoReduction(pollardThreads, new MontgomeryReduction()));
-            factors = FactorTest(debug, 500, n, new QuadraticSieve(quadraticSieveThreads, 0, 0));
-            foreach (var factor in factors)
-                Console.WriteLine("{0}", factor);
+            FactorTest(debug, 500, n, new PollardRhoReduction(pollardThreads, new MontgomeryReduction()));
+            FactorTest(debug, 500, n, new QuadraticSieve(quadraticSieveThreads, 0, 0));
         }
 
         static void FactorTest6()
+        {
+            var random = new MersenneTwister32(0);
+            int threads = 8;
+            for (int i = 10; i <= 20; i++)
+            {
+                var limit = BigInteger.Pow(10, i);
+                var p = NextPrime(random, limit);
+                var q = NextPrime(random, limit);
+                var n = p * q;
+                Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
+                FactorTest(false, 10, n, new QuadraticSieve(threads, 0, 0));
+            }
+        }
+
+        static void FactorTest7()
         {
             var random = new MersenneTwister32(0);
             int threads = 8;
