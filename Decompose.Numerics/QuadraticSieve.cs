@@ -22,6 +22,7 @@ namespace Decompose.Numerics
         {
             public BigInteger X { get; set; }
             public int Size { get; set; }
+            public int[] Exponents { get; set; }
             public int[] Counts { get; set; }
             public int[] Offsets { get; set; }
             public BigInteger Max { get { return X + Size; } }
@@ -191,6 +192,9 @@ namespace Decompose.Numerics
             return (int)Math.Floor(1000 * BigInteger.Log(BigInteger.Abs(n)));
         }
 
+        private BlockingCollection<Candidate> candidateBuffer;
+        private BlockingCollection<Interval> intervalBuffer;
+
         private List<Candidate> Sieve(int desired, Func<Interval, IEnumerable<Candidate>> sieveCore)
         {
             var candidates = new List<Candidate>();
@@ -203,20 +207,22 @@ namespace Decompose.Numerics
                     candidates.AddRange(sieveCore(interval).Take(left));
                     if (candidates.Count == desired)
                         break;
+                    intervalBuffer.Add(interval);
                 }
             }
             else
             {
-                var collection = new BlockingCollection<Candidate>();
+                candidateBuffer = new BlockingCollection<Candidate>();
+                intervalBuffer = new BlockingCollection<Interval>();
                 var tokenSource = new CancellationTokenSource();
                 var tasks = new Task[threads + 1];
                 var ranges = GetRanges().GetEnumerator();
                 for (int i = 0; i < threads; i++)
                 {
                     ranges.MoveNext();
-                    tasks[i] = StartNew(ranges.Current, collection, tokenSource.Token, sieveCore);
+                    tasks[i] = StartNew(ranges.Current, tokenSource.Token, sieveCore);
                 }
-                tasks[threads] = Task.Factory.StartNew(() => ReadCandidates(candidates, collection, desired));
+                tasks[threads] = Task.Factory.StartNew(() => ReadCandidates(candidates, desired));
                 while (true)
                 {
                     var index = Task.WaitAny(tasks);
@@ -226,42 +232,43 @@ namespace Decompose.Numerics
                         break;
                     }
                     ranges.MoveNext();
-                    tasks[index] = StartNew(ranges.Current, collection, tokenSource.Token, sieveCore);
+                    tasks[index] = StartNew(ranges.Current, tokenSource.Token, sieveCore);
                 }
             }
             return candidates;
         }
 
-        private Task StartNew(Interval interval, BlockingCollection<Candidate> collection, CancellationToken token, Func<Interval, IEnumerable<Candidate>> sieveCore)
+        private Task StartNew(Interval interval, CancellationToken token, Func<Interval, IEnumerable<Candidate>> sieveCore)
         {
-            return Task.Factory.StartNew(() => SieveParallel(interval, collection, token, sieveCore));
+            return Task.Factory.StartNew(() => SieveParallel(interval, token, sieveCore));
         }
 
-        private void ReadCandidates(List<Candidate> list, BlockingCollection<Candidate> collection, int desired)
+        private void ReadCandidates(List<Candidate> list, int desired)
         {
             while (list.Count < desired)
             {
                 var candidate = null as Candidate;
-                collection.TryTake(out candidate, Timeout.Infinite);
+                candidateBuffer.TryTake(out candidate, Timeout.Infinite);
                 list.Add(candidate);
             }
         }
 
-        private void SieveParallel(Interval interval, BlockingCollection<Candidate> candidates, CancellationToken token, Func<Interval, IEnumerable<Candidate>> sieveCore)
+        private void SieveParallel(Interval interval, CancellationToken token, Func<Interval, IEnumerable<Candidate>> sieveCore)
         {
             foreach (var candidate in sieveCore(interval))
             {
-                candidates.Add(candidate);
+                candidateBuffer.Add(candidate);
                 if (token.IsCancellationRequested)
                     return;
             }
+            intervalBuffer.Add(interval);
         }
 
         private IEnumerable<Interval> GetRanges()
         {
             var xPos = sqrtN;
             int threads = CalculateNumberOfThreads();
-            var window = Math.Max((int)IntegerMath.Min(sqrtN / threads, windowSize), 1);
+            var size = Math.Max((int)IntegerMath.Min(sqrtN / threads, windowSize), 1);
             var offsetsPos = new int[factorBaseSize];
             for (int i = 0; i < factorBaseSize; i++)
             {
@@ -269,18 +276,31 @@ namespace Decompose.Numerics
                 var offset = ((int)((roots[i].Item1 - xPos) % p) + p) % p;
                 offsetsPos[i] = offset;
             }
-            var xNeg = xPos - window;
+            var xNeg = xPos - size;
             var offsetsNeg = (int[])offsetsPos.Clone();
-            ShiftOffsets(offsetsNeg, -window);
+            ShiftOffsets(offsetsNeg, -size);
             while (true)
             {
-                yield return new Interval { X = xNeg, Size = window, Offsets = (int[])offsetsNeg.Clone() };
-                ShiftOffsets(offsetsNeg, -window);
-                xNeg -= window;
-                yield return new Interval { X = xPos, Size = window, Offsets = (int[])offsetsPos.Clone() };
-                ShiftOffsets(offsetsPos, window);
-                xPos += window;
+                yield return RecycleInterval(xNeg, size, offsetsNeg);
+                ShiftOffsets(offsetsNeg, -size);
+                xNeg -= size;
+                yield return RecycleInterval(xPos, size, offsetsPos);
+                ShiftOffsets(offsetsPos, size);
+                xPos += size;
             }
+        }
+
+        private Interval RecycleInterval(BigInteger x, int size, int[] offsets)
+        {
+            var interval = null as Interval;
+            if (!intervalBuffer.TryTake(out interval))
+                interval = new Interval();
+            interval.X = x;
+            interval.Size = size;
+            if (interval.Offsets == null)
+                interval.Offsets = new int[factorBaseSize];
+            offsets.CopyTo(interval.Offsets, 0);
+            return interval;
         }
 
         private void ShiftOffsets(int[] offsets, int window)
@@ -315,8 +335,12 @@ namespace Decompose.Numerics
             var y0 = x0 * x0 - n;
             int size = interval.Size;
             var offsets = interval.Offsets;
-            var exponents = new int[factorBaseSize + 1];
-            var counts = new int[size];
+            if (interval.Exponents == null)
+                interval.Exponents = new int[factorBaseSize + 1];
+            var exponents = interval.Exponents;
+            if (interval.Counts == null)
+                interval.Counts = new int[size];
+            var counts = interval.Counts;
             for (int i = 0; i < factorBaseSize; i++)
             {
                 var p = factorBase[i];
@@ -350,6 +374,7 @@ namespace Decompose.Numerics
                         };
                     }
                 }
+                counts[j] = 0;
             }
         }
 
