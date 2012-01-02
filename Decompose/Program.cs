@@ -21,6 +21,7 @@ namespace Decompose
             //FactorTest4();
             //FactorTest5();
             FactorTest6();
+            //FactorTest7();
         }
 
         static void FindPrimeTest1()
@@ -236,8 +237,8 @@ namespace Decompose
             const int quadraticSieveThreads = 8;
             bool debug = false;
 
-            FactorTest(debug, 500, n, new PollardRhoReduction(pollardThreads, new MontgomeryReduction()));
-            FactorTest(debug, 500, n, new QuadraticSieve(quadraticSieveThreads, 0, 0));
+            //FactorTest(debug, 500, n, new PollardRhoReduction(pollardThreads, new MontgomeryReduction()));
+            FactorTest(debug, 1, n, new QuadraticSieve(quadraticSieveThreads, 0, 0));
         }
 
         static void FactorTest6()
@@ -249,6 +250,10 @@ namespace Decompose
                 var limit = BigInteger.Pow(10, i);
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
+#if true
+                if (i < 18)
+                    continue;
+#endif
                 var n = p * q;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
                 FactorTest(false, 10, n, new QuadraticSieve(threads, 0, 0));
