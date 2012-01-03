@@ -1,15 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Word = System.Int32;
 
 namespace Decompose.Numerics
 {
     public class Word32BitArray : IBitArray
     {
-        private const int wordLength = 32;
+        private const int wordShift = 5;
+        private const int wordLength = 1 << wordShift;
+        private const int wordMask = wordLength - 1;
 
         private int length;
         private int words;
-        private int[] bits;
+        private Word[] bits;
 
         public int Length
         {
@@ -18,7 +21,7 @@ namespace Decompose.Numerics
             {
                 length = value;
                 words = (length + wordLength - 1) / wordLength;
-                bits = new int[words];
+                bits = new Word[words];
             }
         }
 
@@ -35,14 +38,14 @@ namespace Decompose.Numerics
         {
             get
             {
-                return (bits[j / wordLength] & 1 << j % wordLength) != 0;
+                return (bits[j >> wordShift] & (Word)1 << (j & wordMask)) != 0;
             }
             set
             {
                 if (value)
-                    bits[j / wordLength] |= 1 << j % wordLength;
+                    bits[j >> wordShift] |= (Word)1 << (j & wordMask);
                 else
-                    bits[j / wordLength] &= ~(1 << j % wordLength);
+                    bits[j >> wordShift] &= ~((Word)1 << (j & wordMask));
             }
         }
 

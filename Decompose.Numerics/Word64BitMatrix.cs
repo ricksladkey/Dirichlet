@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Word = System.Int64;
 
 namespace Decompose.Numerics
@@ -13,7 +14,7 @@ namespace Decompose.Numerics
         private int rows;
         private int cols;
         private int words;
-        private Word[][] bits;
+        private Word[] bits;
 
         public int Rows
         {
@@ -30,40 +31,38 @@ namespace Decompose.Numerics
             this.rows = rows;
             this.cols = cols;
             words = (cols + wordLength - 1) / wordLength;
-            bits = new Word[rows][];
-            for (int i = 0; i < rows; i++)
-                bits[i] = new Word[words];
+            bits = new Word[rows * words];
         }
 
         public bool this[int i, int j]
         {
             get
             {
-                return (bits[i][j >> wordShift] & (Word)1 << (j & wordMask)) != 0;
+                return (bits[i * words + (j >> wordShift)] & (Word)1 << (j & wordMask)) != 0;
             }
             set
             {
                 if (value)
-                    bits[i][j >> wordShift] |= (Word)1 << (j & wordMask);
+                    bits[i * words + (j >> wordShift)] |= (Word)1 << (j & wordMask);
                 else
-                    bits[i][j >> wordShift] &= ~((Word)1 << (j & wordMask));
+                    bits[i * words + (j >> wordShift)] &= ~((Word)1 << (j & wordMask));
             }
         }
 
         public void XorRows(int dst, int src)
         {
-            var dstRow = bits[dst];
-            var srcRow = bits[src];
+            var dstRow = dst * words;
+            var srcRow = src * words;
             for (int j = 0; j < words; j++)
-                dstRow[j] ^= srcRow[j];
+                bits[dstRow + j] ^= bits[srcRow + j];
         }
 
         public bool IsRowEmpty(int i)
         {
-            var row = bits[i];
+            var row = i * words;
             for (int j = 0; j < words; j++)
             {
-                if (row[j] != 0)
+                if (bits[row] != 0)
                     return false;
             }
             return true;

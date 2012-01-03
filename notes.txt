@@ -1,3 +1,5 @@
 - file Connect bug: shift with computed lhs miscalculated
 - allow unequal sized numbers, e.g. when adding
 - add allocator to radix32-integer
+- process both roots during a single pass
+- combine small factors when sieving into a single pattern
