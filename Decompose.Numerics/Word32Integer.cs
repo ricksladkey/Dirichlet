@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class Radix32Integer : IComparable<Radix32Integer>, IEquatable<Radix32Integer>
+    public class Word32Integer : IComparable<Word32Integer>, IEquatable<Word32Integer>
     {
         private const int wordLength = 32;
 
@@ -64,12 +64,12 @@ namespace Decompose.Numerics
             get { return wordLength; }
         }
 
-        public Radix32Integer(int length)
+        public Word32Integer(int length)
             : this(new uint[length], 0, length)
         {
         }
 
-        public Radix32Integer(uint[] bits, int index, int length)
+        public Word32Integer(uint[] bits, int index, int length)
         {
             this.bits = bits;
             this.index = index;
@@ -77,7 +77,7 @@ namespace Decompose.Numerics
             SetLast(length - 1);
         }
 
-        public unsafe Radix32Integer Clear()
+        public unsafe Word32Integer Clear()
         {
             CheckValid();
             fixed (uint* wbits = &bits[index])
@@ -91,7 +91,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer Set(uint a)
+        public Word32Integer Set(uint a)
         {
             CheckValid();
             bits[index] = a;
@@ -102,7 +102,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer Set(BigInteger a)
+        public Word32Integer Set(BigInteger a)
         {
             CheckValid();
             Debug.Assert(a.GetBitLength() <= 32 * length);
@@ -115,7 +115,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public unsafe Radix32Integer Set(Radix32Integer a)
+        public unsafe Word32Integer Set(Word32Integer a)
         {
             CheckValid();
             Debug.Assert(length == a.length);
@@ -134,7 +134,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer SetMasked(Radix32Integer a, int n)
+        public Word32Integer SetMasked(Word32Integer a, int n)
         {
             CheckValid();
             Debug.Assert(length == a.length);
@@ -148,12 +148,12 @@ namespace Decompose.Numerics
             return SetLast(alast);
         }
 
-        public Radix32Integer Copy()
+        public Word32Integer Copy()
         {
             CheckValid();
             var newBits = new uint[length];
             Array.Copy(bits, index, newBits, 0, last + 1);
-            return new Radix32Integer(newBits, 0, length);
+            return new Word32Integer(newBits, 0, length);
         }
 
         public uint ToInteger()
@@ -177,7 +177,7 @@ namespace Decompose.Numerics
             return ToBigInteger().ToString();
         }
 
-        public bool Equals(Radix32Integer other)
+        public bool Equals(Word32Integer other)
         {
             if ((object)other == null)
                 return false;
@@ -186,12 +186,12 @@ namespace Decompose.Numerics
 
         public override bool Equals(object obj)
         {
-            if (!(obj is Radix32Integer))
+            if (!(obj is Word32Integer))
                 return false;
-            return Equals((Radix32Integer)obj);
+            return Equals((Word32Integer)obj);
         }
 
-        public static bool operator ==(Radix32Integer a, Radix32Integer b)
+        public static bool operator ==(Word32Integer a, Word32Integer b)
         {
             if ((object)a == (object)b)
                 return true;
@@ -200,27 +200,27 @@ namespace Decompose.Numerics
             return a.CompareTo(b) == 0;
         }
 
-        public static bool operator !=(Radix32Integer a, Radix32Integer b)
+        public static bool operator !=(Word32Integer a, Word32Integer b)
         {
             return !(a == b);
         }
 
-        public static bool operator <(Radix32Integer a, Radix32Integer b)
+        public static bool operator <(Word32Integer a, Word32Integer b)
         {
             return a.CompareTo(b) < 0;
         }
 
-        public static bool operator <=(Radix32Integer a, Radix32Integer b)
+        public static bool operator <=(Word32Integer a, Word32Integer b)
         {
             return a.CompareTo(b) <= 0;
         }
 
-        public static bool operator >(Radix32Integer a, Radix32Integer b)
+        public static bool operator >(Word32Integer a, Word32Integer b)
         {
             return a.CompareTo(b) > 0;
         }
 
-        public static bool operator >=(Radix32Integer a, Radix32Integer b)
+        public static bool operator >=(Word32Integer a, Word32Integer b)
         {
             return a.CompareTo(b) >= 0;
         }
@@ -233,7 +233,7 @@ namespace Decompose.Numerics
             return hash;
         }
 
-        public unsafe int CompareTo(Radix32Integer other)
+        public unsafe int CompareTo(Word32Integer other)
         {
             CheckValid();
             Debug.Assert(length == other.length);
@@ -255,7 +255,7 @@ namespace Decompose.Numerics
             return 0;
         }
 
-        public unsafe Radix32Integer Mask(int n)
+        public unsafe Word32Integer Mask(int n)
         {
             CheckValid();
             int i = n / 32;
@@ -283,7 +283,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer LeftShift(int n)
+        public Word32Integer LeftShift(int n)
         {
             CheckValid();
             Debug.Assert(GetBitLength() + n <= 32 * length);
@@ -314,7 +314,7 @@ namespace Decompose.Numerics
             }
         }
 
-        public Radix32Integer RightShift(int n)
+        public Word32Integer RightShift(int n)
         {
             CheckValid();
             int i = n / 32;
@@ -344,7 +344,7 @@ namespace Decompose.Numerics
             return SetLast(limit);
         }
 
-        public Radix32Integer AddPowerOfTwo(int n)
+        public Word32Integer AddPowerOfTwo(int n)
         {
             CheckValid();
             Debug.Assert(n % 32 == 0);
@@ -357,12 +357,12 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer Add(Radix32Integer a)
+        public Word32Integer Add(Word32Integer a)
         {
             return SetSum(this, a);
         }
 
-        public unsafe Radix32Integer SetSum(Radix32Integer a, Radix32Integer b)
+        public unsafe Word32Integer SetSum(Word32Integer a, Word32Integer b)
         {
             CheckValid();
             Debug.Assert(length == a.length && length == b.length);
@@ -391,17 +391,17 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer Increment()
+        public Word32Integer Increment()
         {
             return SetSum(this, 1);
         }
 
-        public Radix32Integer Add(uint a)
+        public Word32Integer Add(uint a)
         {
             return SetSum(this, a);
         }
 
-        public unsafe Radix32Integer SetSum(Radix32Integer a, uint b)
+        public unsafe Word32Integer SetSum(Word32Integer a, uint b)
         {
             CheckValid();
             Debug.Assert(length == a.length);
@@ -432,7 +432,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public unsafe Radix32Integer AddModulo(Radix32Integer a, Radix32Integer n)
+        public unsafe Word32Integer AddModulo(Word32Integer a, Word32Integer n)
         {
             CheckValid();
             Debug.Assert(length == a.length && length == n.length);
@@ -460,12 +460,12 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer Subtract(Radix32Integer a)
+        public Word32Integer Subtract(Word32Integer a)
         {
             return SetDifference(this, a);
         }
 
-        public unsafe Radix32Integer SetDifference(Radix32Integer a, Radix32Integer b)
+        public unsafe Word32Integer SetDifference(Word32Integer a, Word32Integer b)
         {
             CheckValid();
             Debug.Assert(length == a.length && length == b.length);
@@ -490,7 +490,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public unsafe Radix32Integer SubtractModulo(Radix32Integer a, Radix32Integer n)
+        public unsafe Word32Integer SubtractModulo(Word32Integer a, Word32Integer n)
         {
             CheckValid();
             Debug.Assert(length == a.length && length == n.length);
@@ -516,7 +516,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer Multiply(Radix32Integer a, Radix32Integer reg1)
+        public Word32Integer Multiply(Word32Integer a, Word32Integer reg1)
         {
             reg1.Set(this);
             if (object.ReferenceEquals(this, a))
@@ -524,12 +524,12 @@ namespace Decompose.Numerics
             return SetProduct(reg1, a);
         }
 
-        public Radix32Integer SetSquare(Radix32Integer a)
+        public Word32Integer SetSquare(Word32Integer a)
         {
             return SetProduct(a, a);
         }
 
-        public unsafe Radix32Integer SetSquareSlow(Radix32Integer a)
+        public unsafe Word32Integer SetSquareSlow(Word32Integer a)
         {
             // Use operand scanning algorithm.
             CheckValid();
@@ -570,7 +570,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public unsafe Radix32Integer SetProduct(Radix32Integer a, Radix32Integer b)
+        public unsafe Word32Integer SetProduct(Word32Integer a, Word32Integer b)
         {
             // Use operand scanning algorithm.
             CheckValid();
@@ -615,12 +615,12 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Radix32Integer Multiply(uint a)
+        public Word32Integer Multiply(uint a)
         {
             return SetProduct(this, a);
         }
 
-        public Radix32Integer SetProduct(Radix32Integer a, uint b)
+        public Word32Integer SetProduct(Word32Integer a, uint b)
         {
             // Use operand scanning algorithm.
             CheckValid();
@@ -638,7 +638,7 @@ namespace Decompose.Numerics
             return SetLast(a.last + 1);
         }
 
-        public Radix32Integer SetProductMasked(Radix32Integer a, Radix32Integer b, int n)
+        public Word32Integer SetProductMasked(Word32Integer a, Word32Integer b, int n)
         {
             CheckValid();
             Debug.Assert(n % 32 == 0);
@@ -672,7 +672,7 @@ namespace Decompose.Numerics
         /// Note: the result may be less than the result of separate multiplication
         /// and shifting operations by at most one.
         /// </remarks>
-        public Radix32Integer SetProductShifted(Radix32Integer a, Radix32Integer b, int n)
+        public Word32Integer SetProductShifted(Word32Integer a, Word32Integer b, int n)
         {
             // Use product scanning algorithm.
             CheckValid();
@@ -710,27 +710,27 @@ namespace Decompose.Numerics
             return SetLast(clast - shifted);
         }
 
-        public Radix32Integer Divide(Radix32Integer a, Radix32Integer reg1)
+        public Word32Integer Divide(Word32Integer a, Word32Integer reg1)
         {
             reg1.Set(this);
             DivMod(reg1, a, this);
             return this;
         }
 
-        public Radix32Integer Modulo(Radix32Integer a)
+        public Word32Integer Modulo(Word32Integer a)
         {
             DivMod(this, a, null);
             return this;
         }
 
-        public Radix32Integer SetQuotient(Radix32Integer a, Radix32Integer b, Radix32Integer reg1)
+        public Word32Integer SetQuotient(Word32Integer a, Word32Integer b, Word32Integer reg1)
         {
             reg1.Set(a);
             DivMod(reg1, b, this);
             return this;
         }
 
-        public Radix32Integer SetRemainder(Radix32Integer a, Radix32Integer b)
+        public Word32Integer SetRemainder(Word32Integer a, Word32Integer b)
         {
             if (this != a)
                 Set(a);
@@ -738,7 +738,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        private static unsafe void DivMod(Radix32Integer u, Radix32Integer v, Radix32Integer q)
+        private static unsafe void DivMod(Word32Integer u, Word32Integer v, Word32Integer q)
         {
 #if DEBUG
             var quotient = u.Copy().Set(u.ToBigInteger() / v.ToBigInteger());
@@ -838,27 +838,27 @@ namespace Decompose.Numerics
 #endif
         }
 
-        public Radix32Integer Divide(uint a, Radix32Integer reg1)
+        public Word32Integer Divide(uint a, Word32Integer reg1)
         {
             reg1.Set(this);
             DivMod(reg1, a, this);
             return this;
         }
 
-        public Radix32Integer Modulo(uint a)
+        public Word32Integer Modulo(uint a)
         {
             DivMod(this, a, null);
             return this;
         }
 
-        public Radix32Integer SetQuotient(Radix32Integer a, uint b, Radix32Integer reg1)
+        public Word32Integer SetQuotient(Word32Integer a, uint b, Word32Integer reg1)
         {
             reg1.Set(a);
             DivMod(reg1, b, this);
             return this;
         }
 
-        public Radix32Integer SetRemainder(Radix32Integer a, uint b)
+        public Word32Integer SetRemainder(Word32Integer a, uint b)
         {
             if (this != a)
                 Set(a);
@@ -866,7 +866,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        private static unsafe void DivMod(Radix32Integer u, uint v, Radix32Integer q)
+        private static unsafe void DivMod(Word32Integer u, uint v, Word32Integer q)
         {
             if (v == 0)
                 throw new InvalidOperationException("division by zero");
@@ -896,7 +896,7 @@ namespace Decompose.Numerics
             u.SetLast(0);
         }
 
-        public Radix32Integer SetGreatestCommonDivisor(Radix32Integer a, Radix32Integer b, Radix32Integer reg1)
+        public Word32Integer SetGreatestCommonDivisor(Word32Integer a, Word32Integer b, Word32Integer reg1)
         {
             if (a.IsZero)
                 Set(b);
@@ -922,7 +922,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public unsafe Radix32Integer BarrettReduction(Radix32Integer z, Radix32Integer mu, int k)
+        public unsafe Word32Integer BarrettReduction(Word32Integer z, Word32Integer mu, int k)
         {
             // Use product scanning algorithm.
             CheckValid();
@@ -962,7 +962,7 @@ namespace Decompose.Numerics
             }
         }
 
-        public unsafe Radix32Integer MontgomerySOS(Radix32Integer n, uint k0)
+        public unsafe Word32Integer MontgomerySOS(Word32Integer n, uint k0)
         {
             // SOS Method - Separated Operand Scanning
             CheckValid();
@@ -998,7 +998,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public unsafe Radix32Integer MontgomeryCIOS(Radix32Integer u, Radix32Integer v, Radix32Integer n, uint k0)
+        public unsafe Word32Integer MontgomeryCIOS(Word32Integer u, Word32Integer v, Word32Integer n, uint k0)
         {
             // CIOS Method - Coarsely Integrated Operand Scanning
             CheckValid();
@@ -1043,7 +1043,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        private unsafe Radix32Integer SetLast(int n)
+        private unsafe Word32Integer SetLast(int n)
         {
             if (n < 0)
                 last = 0;
@@ -1089,7 +1089,7 @@ namespace Decompose.Numerics
         }
 
         [Conditional("DEBUG")]
-        private static void CheckValid(Radix32Integer x)
+        private static void CheckValid(Word32Integer x)
         {
             if (x.last == 0 && x.bits[x.index] == 0)
                 return;

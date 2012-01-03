@@ -5,14 +5,14 @@ using System.Text;
 
 namespace Decompose.Numerics
 {
-    public class Radix32Store
+    public class Word32IntegerStore
     {
         private uint[] bits;
         private int length;
         private int size;
         private int allocated;
 
-        public Radix32Store(int length)
+        public Word32IntegerStore(int length)
         {
             this.length = length;
             size = (length + 3) / 4 * 4;
@@ -20,9 +20,9 @@ namespace Decompose.Numerics
             allocated = 0;
         }
 
-        public Radix32Integer Create()
+        public Word32Integer Create()
         {
-            var result = new Radix32Integer(bits, allocated, length);
+            var result = new Word32Integer(bits, allocated, length);
             allocated += size;
             return result;
         }

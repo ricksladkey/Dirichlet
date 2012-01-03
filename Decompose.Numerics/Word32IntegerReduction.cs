@@ -3,14 +3,14 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class Radix32IntegerReduction : IReductionAlgorithm
+    public class Word32IntegerReduction : IReductionAlgorithm
     {
         private class Reducer : IReducer
         {
             private class Residue : IResidue
             {
                 private Reducer reducer;
-                private Radix32Integer r;
+                private Word32Integer r;
 
                 public bool IsZero { get { return r.IsZero; } }
 
@@ -95,12 +95,12 @@ namespace Decompose.Numerics
 
             private BigInteger n;
             private int length;
-            private Radix32Store store;
+            private Word32IntegerStore store;
 
-            private Radix32Integer nRep;
-            private Radix32Integer reg1;
-            private Radix32Integer reg2;
-            private Radix32Integer reg3;
+            private Word32Integer nRep;
+            private Word32Integer reg1;
+            private Word32Integer reg2;
+            private Word32Integer reg3;
 
             public BigInteger Modulus
             {
@@ -111,7 +111,7 @@ namespace Decompose.Numerics
             {
                 this.n = n;
                 length = (n.GetBitLength() + 31) / 32 * 2 + 1;
-                store = new Radix32Store(length);
+                store = new Word32IntegerStore(length);
                 nRep = store.Create();
                 reg1 = store.Create();
                 reg2 = store.Create();
@@ -124,12 +124,12 @@ namespace Decompose.Numerics
                 return new Residue(this, x);
             }
 
-            private Radix32Integer CreateRep()
+            private Word32Integer CreateRep()
             {
                 return store.Create();
             }
 
-            private void Reduce(Radix32Integer r)
+            private void Reduce(Word32Integer r)
             {
                 r.Modulo(nRep);
             }

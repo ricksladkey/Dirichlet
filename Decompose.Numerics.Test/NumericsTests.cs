@@ -106,7 +106,7 @@ namespace Decompose.Numerics.Test
         public void TestRadix32IntegerReduction()
         {
             var p = BigInteger.Parse("10023859281455311421");
-            TestReduction(p, new Radix32IntegerReduction());
+            TestReduction(p, new Word32IntegerReduction());
         }
 
         [TestMethod]
@@ -151,7 +151,7 @@ namespace Decompose.Numerics.Test
             var n = BigInteger.Parse("10023859281455311421");
             var random = new MersenneTwister32(0);
             var length = (n.GetBitLength() * 2 + 31) / 32 + 3;
-            var store = new Radix32Store(length);
+            var store = new Word32IntegerStore(length);
             var a = store.Create();
             var b = store.Create();
             var x = store.Create();
@@ -243,7 +243,7 @@ namespace Decompose.Numerics.Test
         public void DivModTest1()
         {
             // Triggers "borrow != 0" special case.
-            Radix32Store store = new Radix32Store(20);
+            Word32IntegerStore store = new Word32IntegerStore(20);
             var a = store.Create();
             var b = store.Create();
             var c = store.Create();

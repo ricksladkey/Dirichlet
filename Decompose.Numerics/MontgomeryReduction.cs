@@ -11,9 +11,9 @@ namespace Decompose.Numerics
             private class Residue : IResidue
             {
                 private Reducer reducer;
-                private Radix32Integer r;
+                private Word32Integer r;
 
-                public Radix32Integer Rep { get { return r; } }
+                public Word32Integer Rep { get { return r; } }
 
                 public bool IsZero { get { return r == reducer.zeroRep; } }
 
@@ -127,16 +127,16 @@ namespace Decompose.Numerics
             private int length;
             private BigInteger k;
             private uint k0;
-            private Radix32Store store;
+            private Word32IntegerStore store;
 
-            private Radix32Integer nRep;
-            private Radix32Integer rSquaredModNRep;
-            private Radix32Integer kRep;
-            private Radix32Integer reg1;
-            private Radix32Integer reg2;
-            private Radix32Integer reg3;
-            private Radix32Integer zeroRep;
-            private Radix32Integer oneRep;
+            private Word32Integer nRep;
+            private Word32Integer rSquaredModNRep;
+            private Word32Integer kRep;
+            private Word32Integer reg1;
+            private Word32Integer reg2;
+            private Word32Integer reg3;
+            private Word32Integer zeroRep;
+            private Word32Integer oneRep;
 
             public BigInteger Modulus
             {
@@ -165,7 +165,7 @@ namespace Decompose.Numerics
                 var w = BigInteger.One << 32;
                 k0 = (uint)(k % w);
 
-                store = new Radix32Store(length);
+                store = new Word32IntegerStore(length);
                 nRep = store.Create();
                 rSquaredModNRep = store.Create();
                 kRep = store.Create();
@@ -187,12 +187,12 @@ namespace Decompose.Numerics
                 return new Residue(this, x);
             }
 
-            private Radix32Integer CreateRep()
+            private Word32Integer CreateRep()
             {
-                return new Radix32Integer(length);
+                return new Word32Integer(length);
             }
 
-            private void Reduce(Radix32Integer t, Radix32Integer u, Radix32Integer v)
+            private void Reduce(Word32Integer t, Word32Integer u, Word32Integer v)
             {
                 t.MontgomeryCIOS(u, v, nRep, k0);
                 if (t >= nRep)
@@ -200,7 +200,7 @@ namespace Decompose.Numerics
                 Debug.Assert(t < nRep);
             }
 
-            private void Reduce(Radix32Integer t)
+            private void Reduce(Word32Integer t)
             {
                 t.MontgomerySOS(nRep, k0);
                 if (t >= nRep)
@@ -208,7 +208,7 @@ namespace Decompose.Numerics
                 Debug.Assert(t < nRep);
             }
 
-            private void BasicReduce(Radix32Integer t)
+            private void BasicReduce(Word32Integer t)
             {
                 reg1.SetMasked(t, rLength);
                 reg2.SetProductMasked(reg1, kRep, rLength);

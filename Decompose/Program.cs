@@ -22,6 +22,7 @@ namespace Decompose
             //FactorTest5();
             FactorTest6();
             //FactorTest7();
+            //GaussianEliminationTest();
         }
 
         static void FindPrimeTest1()
@@ -114,7 +115,7 @@ namespace Decompose
         }
 
         static void Radix32Test1(string label,
-            Action<Radix32Integer, Radix32Integer, Radix32Integer> operation1,
+            Action<Word32Integer, Word32Integer, Word32Integer> operation1,
             Func<BigInteger, BigInteger, BigInteger> operation2)
         {
             var n = BigInteger.Parse("10023859281455311421");
@@ -129,7 +130,7 @@ namespace Decompose
             timer1.Start();
             for (int i = 0; i < iterations1; i++)
             {
-                var store = new Radix32Store(length);
+                var store = new Word32IntegerStore(length);
                 var a = store.Create();
                 var b = store.Create();
                 var c = store.Create();
@@ -169,7 +170,7 @@ namespace Decompose
             //FactorTest(debug, 25, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
 
             FactorTest(debug, 100, n, new PollardRhoBrent(threads));
-            FactorTest(debug, 100, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
+            FactorTest(debug, 100, n, new PollardRhoReduction(threads, new Word32IntegerReduction()));
             FactorTest(debug, 100, n, new PollardRhoReduction(threads, new BarrettReduction()));
             FactorTest(debug, 100, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
 
@@ -184,7 +185,7 @@ namespace Decompose
             int threads = 4;
             bool debug = false;
             FactorTest(debug, 25, n, new PollardRhoBrent(threads));
-            FactorTest(debug, 25, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
+            FactorTest(debug, 25, n, new PollardRhoReduction(threads, new Word32IntegerReduction()));
             FactorTest(debug, 25, n, new PollardRhoReduction(threads, new BarrettReduction()));
             FactorTest(debug, 25, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
         }
@@ -201,7 +202,7 @@ namespace Decompose
                 int threads = 4;
                 var factors = null as BigInteger[];
                 //factors = FactorTest(true, 1, n, new PollardRho(threads));
-                factors = FactorTest(true, 5, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
+                factors = FactorTest(true, 5, n, new PollardRhoReduction(threads, new Word32IntegerReduction()));
                 //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, new BarrettReduction()));
                 //factors = FactorTest(true, 5, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
                 foreach (var factor in factors)
@@ -245,14 +246,14 @@ namespace Decompose
         {
             var random = new MersenneTwister32(0);
             int threads = 8;
-            for (int i = 10; i <= 20; i++)
+            for (int i = 10; i <= 25; i++)
             {
                 var limit = BigInteger.Pow(10, i);
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
                 var n = p * q;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                FactorTest(false, 10, n, new QuadraticSieve(threads, 0, 0));
+                FactorTest(false, 1, n, new QuadraticSieve(threads, 0, 0));
             }
         }
 
@@ -277,6 +278,18 @@ namespace Decompose
                     }
                 }
             }
+        }
+
+        static void GaussianEliminationTest()
+        {
+            var random = new MersenneTwister32(0);
+            int threads = 8;
+            int digits = 25;
+            var limit = BigInteger.Pow(10, digits);
+            var p = NextPrime(random, limit);
+            var q = NextPrime(random, limit);
+            var n = p * q;
+            FactorTest(false, 1, n, new QuadraticSieve(threads, 10000, 0));
         }
 
         static BigInteger NextPrime(MersenneTwister32 random, BigInteger limit)

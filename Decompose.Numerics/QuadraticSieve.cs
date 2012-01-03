@@ -25,10 +25,10 @@ namespace Decompose.Numerics
             public int[] Exponents { get; set; }
             public ushort[] Counts { get; set; }
             public int[] Offsets { get; set; }
-            public Radix32Integer XRep { get; set; }
-            public Radix32Integer Reg1 { get; set; }
-            public Radix32Integer Reg2 { get; set; }
-            public Radix32Integer Reg3 { get; set; }
+            public Word32Integer XRep { get; set; }
+            public Word32Integer Reg1 { get; set; }
+            public Word32Integer Reg2 { get; set; }
+            public Word32Integer Reg3 { get; set; }
             public override string ToString()
             {
                 return string.Format("X = {0}, Size = {1}", X, Size);
@@ -43,8 +43,9 @@ namespace Decompose.Numerics
         private int threadsOverride;
         private int factorBaseSizeOverride;
         private int lowerBoundPercentOverride;
-        private IFactorizationAlgorithm<int> smallFactorer;
+        private IFactorizationAlgorithm<int> smallFactorizationAlgorithm;
         private IEnumerable<int> primes;
+        private INullSpaceAlgorithm<Word32BitArray, Word32BitMatrix> nullSpaceAlgorithm;
 
         private Tuple<int, int>[] sizePairs =
         {
@@ -63,14 +64,15 @@ namespace Decompose.Numerics
             threadsOverride = threads;
             factorBaseSizeOverride = factorBaseSize;
             lowerBoundPercentOverride = lowerBoundPercent;
-            smallFactorer = new TrialDivision();
+            smallFactorizationAlgorithm = new TrialDivision();
             primes = new SieveOfErostothones();
+            nullSpaceAlgorithm = new GaussianElimination(threads);
         }
 
         public IEnumerable<BigInteger> Factor(BigInteger n)
         {
             if (n <= smallFactorCutoff)
-                return smallFactorer.Factor((int)n).Select(factor => (BigInteger)factor);
+                return smallFactorizationAlgorithm.Factor((int)n).Select(factor => (BigInteger)factor);
             var factors = new List<BigInteger>();
             FactorCore(n, factors);
             return factors;
@@ -99,7 +101,7 @@ namespace Decompose.Numerics
         private int[] factorBase;
         private ushort[] logFactorBase;
         private Tuple<int, int>[] roots;
-        private Radix32Integer nRep;
+        private Word32Integer nRep;
 
         private int threads;
         private CancellationToken token;
@@ -107,7 +109,7 @@ namespace Decompose.Numerics
         private BlockingCollection<Interval> newIntervalBuffer;
         private BlockingCollection<Interval> oldIntervalBuffer;
         private List<Candidate> candidates;
-        private List<BitArray> matrix;
+        private Word32BitMatrix matrix;
         private int matrixColumn;
 
         private void CalculateNumberOfThreads()
@@ -149,7 +151,7 @@ namespace Decompose.Numerics
             if (n.IsEven)
                 return BigIntegers.Two;
             this.n = n;
-            nRep = new Radix32Integer(n.GetBitLength() / Radix32Integer.WordLength * 2 + 1);
+            nRep = new Word32Integer(n.GetBitLength() / Word32Integer.WordLength * 2 + 1);
             nRep.Set(n);
             sqrtN = IntegerMath.Sqrt(n);
             factorBaseSize = CalculateFactorBaseSize(n);
@@ -169,11 +171,11 @@ namespace Decompose.Numerics
                 .ToArray();
             int desired = factorBase.Length + surplusCandidates;
 #if false
-            var matrix = Sieve(desired, SieveTrialDivision);
+            Sieve(desired, SieveTrialDivision);
 #else
-            var matrix = Sieve(desired, SieveQuadraticResidue);
+            Sieve(desired, SieveQuadraticResidue);
 #endif
-            foreach (var v in Solve(matrix))
+            foreach (var v in nullSpaceAlgorithm.Solve(matrix))
             {
                 var factor = ComputeFactor(candidates, v);
                 if (!factor.IsZero)
@@ -182,24 +184,22 @@ namespace Decompose.Numerics
             return BigInteger.Zero;
         }
 
-        private BigInteger ComputeFactor(List<Candidate> candidates, BitArray v)
+        private BigInteger ComputeFactor(List<Candidate> candidates, Word32BitArray v)
         {
-            var vbool = v.Cast<bool>();
-#if false
-            Console.WriteLine("v = {0}", string.Join(", ", vbool
+            var indices = v
                 .Select((selected, index) => new { Index = index, Selected = selected })
                 .Where(pair => pair.Selected)
                 .Select(pair => pair.Index)
-                .ToArray()));
-#endif
-            var xSet = candidates
-                .Zip(vbool, (candidate, selected) => new { X = candidate.X, Selected = selected })
-                .Where(pair => pair.Selected)
-                .Select(pair => pair.X)
                 .ToArray();
-            var xPrime = xSet.Aggregate((sofar, current) => sofar * current) % n;
-            var yPrime = IntegerMath.Sqrt(xSet
-                .Aggregate(BigInteger.One, (sofar, current) => sofar * (current * current - n))) % n;
+#if false
+            Console.WriteLine("v = {0}", string.Join(", ", indices));
+#endif
+            var xSet = indices.Select(index => candidates[index].X).ToArray();
+            var xPrime = xSet
+                .Aggregate((sofar, current) => sofar * current) % n;
+            var yPrimeSquared = xSet
+                .Aggregate(BigInteger.One, (sofar, current) => sofar * (current * current - n));
+            var yPrime = IntegerMath.Sqrt(yPrimeSquared) % n;
             var factor = BigInteger.GreatestCommonDivisor(xPrime + yPrime, n);
             if (!factor.IsOne && factor != n)
                 return factor;
@@ -211,7 +211,7 @@ namespace Decompose.Numerics
             return (ushort)Math.Ceiling(10 * BigInteger.Log(BigInteger.Abs(n)));
         }
 
-        private List<BitArray> Sieve(int desired, Action<Interval, Action<Candidate>> sieveCore)
+        private void Sieve(int desired, Action<Interval, Action<Candidate>> sieveCore)
         {
             CalculateNumberOfThreads();
             candidateBuffer = new BlockingCollection<Candidate>();
@@ -249,7 +249,6 @@ namespace Decompose.Numerics
                 tokenSource.Cancel();
             }
             ProcessCandidates();
-            return matrix;
         }
 
         private void ProduceIntervals()
@@ -261,11 +260,9 @@ namespace Decompose.Numerics
             }
         }
 
-        private List<BitArray> CreateMatrix(int columns)
+        private Word32BitMatrix CreateMatrix(int columns)
         {
-            var matrix = new List<BitArray>();
-            for (int i = 0; i <= factorBaseSize; i++)
-                matrix.Add(new BitArray(columns));
+            var matrix = new Word32BitMatrix(factorBaseSize + 1, columns);
             matrixColumn = 0;
             return matrix;
         }
@@ -277,14 +274,12 @@ namespace Decompose.Numerics
             for (int i = 0; i < candidates.Count; i++)
                 ProcessCandidate(candidates[i]);
 #else
-            int rows = matrix.Count;
-            int cols = matrix[0].Length;
-            var bits = new bool[cols];
+            int rows = matrix.Rows;
+            int cols = matrix.Cols;
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
-                    bits[j] = candidates[j].Exponents[i] % 2 != 0;
-                matrix[i] = new BitArray(bits);
+                    matrix[i, j] = candidates[j].Exponents[i] % 2 != 0;
             }
 #endif
         }
@@ -295,7 +290,7 @@ namespace Decompose.Numerics
             int j = matrixColumn++;
             var exponents = candidate.Exponents;
             for (int i = 0; i < exponents.Length; i++)
-                matrix[i][j] = exponents[i] % 2 != 0;
+                matrix[i, j] = exponents[i] % 2 != 0;
         }
 
         private void SieveParallel(Action<Interval, Action<Candidate>> sieveCore)
@@ -513,118 +508,6 @@ namespace Decompose.Numerics
                 }
             }
             return y.IsOne;
-        }
-
-        private IEnumerable<BitArray> Solve(List<BitArray> matrix)
-        {
-#if false
-            PrintMatrix("initial:", matrix);
-#endif
-            int rows = Math.Min(matrix.Count, matrix[0].Count);
-            int cols = matrix[0].Count;
-            var c = new List<int>();
-            var cInv = new List<int>();
-            for (int i = 0; i < cols; i++)
-            {
-                c.Add(-1);
-                cInv.Add(-1);
-            }
-            for (int k = 0; k < cols; k++)
-            {
-                int j = -1;
-                for (int i = 0; i < rows; i++)
-                {
-                    if (matrix[i][k] && c[i] < 0)
-                    {
-                        j = i;
-                        break;
-                    }
-                }
-                if (j != -1)
-                {
-                    ZeroColumn(matrix, rows, j, k);
-                    c[j] = k;
-                    cInv[k] = j;
-                }
-                else
-                {
-                    var v = new BitArray(c.Count);
-                    int ones = 0;
-                    for (int jj = 0; jj < c.Count; jj++)
-                    {
-                        int s = cInv[jj];
-                        bool value;
-                        if (s != -1)
-                            value = matrix[s][k];
-                        else if (jj == k)
-                            value = true;
-                        else
-                            value = false;
-                        v[jj] = value;
-                        if (value)
-                            ++ones;
-                    }
-#if DEBUG
-                    Debug.Assert(VerifySolution(matrix, 0, matrix.Count, v));
-
-#endif
-                    if (VerifySolution(matrix, rows, matrix.Count, v))
-                        yield return v;
-                }
-#if false
-                PrintMatrix(string.Format("k = {0}", k), matrix);
-#endif
-            }
-        }
-
-        private void ZeroColumn(List<BitArray> matrix, int rows, int j, int k)
-        {
-            if (rows < 256)
-            {
-                for (int i = 0; i < rows; i++)
-                {
-                    if (i == j || !matrix[i][k])
-                        continue;
-                    matrix[i].Xor(matrix[j]);
-                }
-            }
-            else
-            {
-                int range = (rows + threads - 1) / threads;
-                Parallel.For(0, threads, thread =>
-                {
-                    int beg = thread * range;
-                    int end = Math.Min(beg + range, rows);
-                    for (int i = beg; i < end; i++)
-                    {
-                        if (i != j && matrix[i][k])
-                            matrix[i].Xor(matrix[j]);
-                    }
-                });
-            }
-        }
-
-        private bool VerifySolution(List<BitArray> matrix, int rowMin, int rowMax, BitArray solution)
-        {
-            int cols = matrix[0].Count;
-            for (int i = rowMin; i < rowMax; i++)
-            {
-                bool row = false;
-                for (int j = 0; j < cols; j++)
-                {
-                    row ^= solution[j] & matrix[i][j];
-                }
-                if (row)
-                    return false;
-            }
-            return true;
-        }
-
-        private void PrintMatrix(string label, List<List<int>> matrix)
-        {
-            Console.WriteLine(label);
-            for (int i = 0; i < matrix.Count; i++)
-                Console.WriteLine(string.Join(" ", matrix[i].ToArray()));
         }
     }
 }

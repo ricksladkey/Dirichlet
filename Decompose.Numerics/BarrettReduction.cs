@@ -11,7 +11,7 @@ namespace Decompose.Numerics
             private class Residue : IResidue
             {
                 private Reducer reducer;
-                private Radix32Integer r;
+                private Word32Integer r;
 
                 public bool IsZero { get { return r.IsZero; } }
 
@@ -99,13 +99,13 @@ namespace Decompose.Numerics
             private int length;
             private int bToTheKMinusOneLength;
             private int bToTheKPlusOneLength;
-            private Radix32Store store;
+            private Word32IntegerStore store;
 
-            private Radix32Integer muRep;
-            private Radix32Integer pRep;
-            private Radix32Integer reg2;
-            private Radix32Integer reg1;
-            private Radix32Integer reg3;
+            private Word32Integer muRep;
+            private Word32Integer pRep;
+            private Word32Integer reg2;
+            private Word32Integer reg1;
+            private Word32Integer reg3;
 
             public BigInteger Modulus
             {
@@ -123,7 +123,7 @@ namespace Decompose.Numerics
 
                 var muLength = mu.GetBitLength();
                 length = (pLength + 31) / 32 * 2 + (muLength + 31) / 32;
-                store = new Radix32Store(length);
+                store = new Word32IntegerStore(length);
                 muRep = store.Create();
                 pRep = store.Create();
                 reg1 = store.Create();
@@ -140,12 +140,12 @@ namespace Decompose.Numerics
                 return new Residue(this, x);
             }
 
-            private Radix32Integer CreateRep()
+            private Word32Integer CreateRep()
             {
-                return new Radix32Integer(length);
+                return new Word32Integer(length);
             }
 
-            private void Reduce(Radix32Integer z)
+            private void Reduce(Word32Integer z)
             {
                 // var qhat = (z >> (bLength * (k - 1))) * mu >> (bLength * (k + 1));
                 reg1.Set(z);

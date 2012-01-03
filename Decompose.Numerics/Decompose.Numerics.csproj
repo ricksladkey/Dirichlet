@@ -45,11 +45,15 @@
   <ItemGroup>
     <Compile Include="BarrettReduction.cs" />
     <Compile Include="BigIntegers.cs" />
+    <Compile Include="BitArrayBitMatrix.cs" />
+    <Compile Include="GaussianElimination.cs" />
+    <Compile Include="INullSpaceAlgorithm.cs" />
+    <Compile Include="Word32BitArray.cs" />
+    <Compile Include="Word32BitMatrix.cs" />
     <Compile Include="IFactorizationAlgorithm.cs" />
     <Compile Include="IPrimalityAlgorithm.cs" />
     <Compile Include="IReducer.cs" />
     <Compile Include="IReductionAlgorithm.cs" />
-    <Compile Include="ModuloInteger.cs" />
     <Compile Include="IntegerMath.cs" />
     <Compile Include="ISqrtAlgorithm.cs" />
     <Compile Include="MersenneTwister.cs" />
@@ -63,10 +67,10 @@
     <Compile Include="PollardRhoReduction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QuadraticSieve.cs" />
-    <Compile Include="Radix32Integer.cs" />
+    <Compile Include="Word32Integer.cs" />
     <Compile Include="IResidue.cs" />
-    <Compile Include="Radix32IntegerReduction.cs" />
-    <Compile Include="Radix32Store.cs" />
+    <Compile Include="Word32IntegerReduction.cs" />
+    <Compile Include="Word32IntegerStore.cs" />
     <Compile Include="SieveOfErostothones.cs" />
     <Compile Include="SqrtBinarySearch.cs" />
     <Compile Include="SqrtNewtonsMethod.cs" />
