@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Decompose.Numerics
 {
-    public class GaussianElimination : INullSpaceAlgorithm<Word32BitArray, Word32BitMatrix>
+    public class GaussianElimination<TArray> : INullSpaceAlgorithm<IBitArray, IBitMatrix> where TArray : IBitArray, new()
     {
         private int threads;
 
@@ -14,7 +14,7 @@ namespace Decompose.Numerics
             this.threads = threads;
         }
 
-        public IEnumerable<Word32BitArray> Solve(Word32BitMatrix matrix)
+        public IEnumerable<IBitArray> Solve(IBitMatrix matrix)
         {
 #if false
             PrintMatrix("initial:", matrix);
@@ -59,7 +59,8 @@ namespace Decompose.Numerics
                 }
                 else
                 {
-                    var v = new Word32BitArray(cols);
+                    var v = new TArray();
+                    v.Length = cols;
                     int ones = 0;
                     for (int jj = 0; jj < rows; jj++)
                     {
@@ -88,7 +89,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private void ZeroColumn(Word32BitMatrix matrix, int rows, int j, int k)
+        private void ZeroColumn(IBitMatrix matrix, int rows, int j, int k)
         {
             if (rows < 256)
             {
@@ -115,7 +116,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private bool VerifySolution(Word32BitMatrix matrix, int rowMin, int rowMax, Word32BitArray solution)
+        private bool VerifySolution(IBitMatrix matrix, int rowMin, int rowMax, IBitArray solution)
         {
             int cols = matrix.Cols;
             for (int i = rowMin; i < rowMax; i++)

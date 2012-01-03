@@ -49,7 +49,7 @@ namespace Decompose.Numerics
         private int lowerBoundPercentOverride;
         private IFactorizationAlgorithm<int> smallFactorizationAlgorithm;
         private IEnumerable<int> primes;
-        private INullSpaceAlgorithm<Word32BitArray, Word32BitMatrix> nullSpaceAlgorithm;
+        private INullSpaceAlgorithm<IBitArray, IBitMatrix> nullSpaceAlgorithm;
 
         private Tuple<int, int>[] sizePairs =
         {
@@ -60,6 +60,7 @@ namespace Decompose.Numerics
             Tuple.Create(30, 500),
             Tuple.Create(40, 1200),
             Tuple.Create(50, 5000),
+            Tuple.Create(60, 12000),
             Tuple.Create(90, 60000), // http://www.mersenneforum.org/showthread.php?t=4013
         };
 
@@ -70,7 +71,7 @@ namespace Decompose.Numerics
             lowerBoundPercentOverride = lowerBoundPercent;
             smallFactorizationAlgorithm = new TrialDivision();
             primes = new SieveOfErostothones();
-            nullSpaceAlgorithm = new GaussianElimination(threads);
+            nullSpaceAlgorithm = new GaussianElimination<Word32BitArray>(threads);
         }
 
         public IEnumerable<BigInteger> Factor(BigInteger n)
@@ -113,7 +114,7 @@ namespace Decompose.Numerics
         private BlockingCollection<Interval> newIntervalBuffer;
         private BlockingCollection<Interval> oldIntervalBuffer;
         private List<Candidate> candidates;
-        private Word32BitMatrix matrix;
+        private IBitMatrix matrix;
         private int matrixColumn;
 
         private void CalculateNumberOfThreads()
@@ -138,7 +139,8 @@ namespace Decompose.Numerics
                     double x1 = sizePairs[i + 1].Item1;
                     double y0 = sizePairs[i].Item2;
                     double y1 = sizePairs[i + 1].Item2;
-                    return (int)Math.Ceiling(y0 + (digits - x0) * (y1 - y0) / (x1 - x0));
+                    double x = y0 + (digits - x0) * (y1 - y0) / (x1 - x0);
+                    return (int)Math.Ceiling(x);
                 }
             }
             return (digits - 5) * 5 + digits + 1;
@@ -188,7 +190,7 @@ namespace Decompose.Numerics
             return BigInteger.Zero;
         }
 
-        private BigInteger ComputeFactor(List<Candidate> candidates, Word32BitArray v)
+        private BigInteger ComputeFactor(List<Candidate> candidates, IBitArray v)
         {
             var indices = v
                 .Select((selected, index) => new { Index = index, Selected = selected })
@@ -264,9 +266,9 @@ namespace Decompose.Numerics
             }
         }
 
-        private Word32BitMatrix CreateMatrix(int columns)
+        private IBitMatrix CreateMatrix(int columns)
         {
-            var matrix = new Word32BitMatrix(factorBaseSize + 1, columns);
+            var matrix = new Word64BitMatrix(factorBaseSize + 1, columns);
             matrixColumn = 0;
             return matrix;
         }

@@ -20,9 +20,10 @@ namespace Decompose
             //FactorTest3();
             //FactorTest4();
             //FactorTest5();
-            FactorTest6();
+            //FactorTest6();
             //FactorTest7();
-            //GaussianEliminationTest();
+            //CunnihamTest();
+            GaussianEliminationTest();
         }
 
         static void FindPrimeTest1()
@@ -163,18 +164,18 @@ namespace Decompose
             int threads = 4;
             bool debug = false;
 
-            //FactorTest(debug, 25, n, new PollardRhoBrent(threads));
-            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, new BigIntegerReduction()));
-            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
-            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, new BarrettReduction()));
-            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+            //FactorTest(debug, 25, n, new PollardRhoBrent(threads, 0));
+            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new BigIntegerReduction()));
+            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new Radix32IntegerReduction()));
+            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new BarrettReduction()));
+            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
 
-            FactorTest(debug, 100, n, new PollardRhoBrent(threads));
-            FactorTest(debug, 100, n, new PollardRhoReduction(threads, new Word32IntegerReduction()));
-            FactorTest(debug, 100, n, new PollardRhoReduction(threads, new BarrettReduction()));
-            FactorTest(debug, 100, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+            FactorTest(debug, 100, n, new PollardRhoBrent(threads, 0));
+            FactorTest(debug, 100, n, new PollardRhoReduction(threads, 0, new Word32IntegerReduction()));
+            FactorTest(debug, 100, n, new PollardRhoReduction(threads, 0, new BarrettReduction()));
+            FactorTest(debug, 100, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
 
-            //FactorTest(debug, 500, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+            //FactorTest(debug, 500, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
         }
 
         static void FactorTest2()
@@ -184,10 +185,10 @@ namespace Decompose
             var n = p * q;
             int threads = 4;
             bool debug = false;
-            FactorTest(debug, 25, n, new PollardRhoBrent(threads));
-            FactorTest(debug, 25, n, new PollardRhoReduction(threads, new Word32IntegerReduction()));
-            FactorTest(debug, 25, n, new PollardRhoReduction(threads, new BarrettReduction()));
-            FactorTest(debug, 25, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+            FactorTest(debug, 25, n, new PollardRhoBrent(threads, 0));
+            FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new Word32IntegerReduction()));
+            FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new BarrettReduction()));
+            FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
         }
 
         static void FactorTest3()
@@ -201,10 +202,10 @@ namespace Decompose
                     continue;
                 int threads = 4;
                 var factors = null as BigInteger[];
-                //factors = FactorTest(true, 1, n, new PollardRho(threads));
-                factors = FactorTest(true, 5, n, new PollardRhoReduction(threads, new Word32IntegerReduction()));
-                //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, new BarrettReduction()));
-                //factors = FactorTest(true, 5, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+                //factors = FactorTest(true, 1, n, new PollardRho(threads, 0));
+                factors = FactorTest(true, 5, n, new PollardRhoReduction(threads, 0, new Word32IntegerReduction()));
+                //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, 0, new BarrettReduction()));
+                //factors = FactorTest(true, 5, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
                 foreach (var factor in factors)
                     Console.WriteLine("{0}", factor);
             }
@@ -223,9 +224,9 @@ namespace Decompose
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
                 int threads = 8;
                 var factors = null as BigInteger[];
-                //factors = FactorTest(true, 1, n, new PollardRho(threads));
-                //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, new Radix32IntegerReduction()));
-                //factors = FactorTest(true, 10, n, new PollardRhoReduction(threads, new MontgomeryReduction()));
+                //factors = FactorTest(true, 1, n, new PollardRho(threads, 0));
+                //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, 0, new Radix32IntegerReduction()));
+                //factors = FactorTest(true, 10, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
                 factors = FactorTest(true, 1, n, new QuadraticSieve(threads, 0, 0));
             }
         }
@@ -261,14 +262,16 @@ namespace Decompose
         {
             var random = new MersenneTwister32(0);
             int threads = 8;
-            for (int i = 25; i <= 25; i++)
+            for (int i = 10; i <= 30; i++)
             {
                 var limit = BigInteger.Pow(10, i);
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
                 var n = p * q;
+                if (i < 30)
+                    continue;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                for (int size = 10000; size >= 2000; size -= 1000)
+                for (int size = 10000; size < 20000; size += 1000)
                 {
                     Console.WriteLine("size = {0}", size);
                     for (int percent = 85; percent <= 85; percent += 1)
@@ -278,6 +281,22 @@ namespace Decompose
                     }
                 }
             }
+        }
+
+        static void CunnihamTest()
+        {
+            var n = BigInteger.Pow(3, 225) - 1;
+            Console.WriteLine("n = {0}", n);
+            var pollard = new PollardRhoReduction(4, 1000000, new MontgomeryReduction());
+            var smallFactors = pollard.Factor(n);
+            foreach (var factor in smallFactors)
+                Console.WriteLine("{0}", factor);
+            var c = n / smallFactors.Aggregate((sofar, factor) => sofar * factor);
+            Console.WriteLine("c = {0}", c);
+            var qr = new QuadraticSieve(8, 0, 0);
+            var factors = qr.Factor(c);
+            foreach (var factor in factors)
+                Console.WriteLine("{0}", factor);
         }
 
         static void GaussianEliminationTest()

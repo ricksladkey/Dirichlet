@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Decompose.Numerics
 {
-    public class Word32BitArray : IEnumerable<bool>
+    public class Word32BitArray : IBitArray
     {
         private const int wordLength = 32;
 
@@ -14,13 +14,21 @@ namespace Decompose.Numerics
         public int Length
         {
             get { return length; }
+            set
+            {
+                length = value;
+                words = (length + wordLength - 1) / wordLength;
+                bits = new int[words];
+            }
+        }
+
+        public Word32BitArray()
+        {
         }
 
         public Word32BitArray(int length)
         {
-            this.length = length;
-            words = (length + wordLength - 1) / wordLength;
-            bits = new int[words];
+            Length = length;
         }
 
         public bool this[int j]

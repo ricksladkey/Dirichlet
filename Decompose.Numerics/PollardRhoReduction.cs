@@ -7,11 +7,11 @@ namespace Decompose.Numerics
 {
     public class PollardRhoReduction : PollardRhoBase
     {
-        const int iterations = 100;
+        const int batchSize = 100;
         IReductionAlgorithm reduction;
 
-        public PollardRhoReduction(int threads, IReductionAlgorithm reduction)
-            : base(threads)
+        public PollardRhoReduction(int threads, int iterations, IReductionAlgorithm reduction)
+            : base(threads, iterations)
         {
             this.reduction = reduction;
         }
@@ -26,12 +26,13 @@ namespace Decompose.Numerics
             var y = x.Copy();
             var ys = x.Copy();
             var r = 1;
-            var m = iterations;
+            var m = batchSize;
             var cPrime = reducer.ToResidue(c);
             var one = reducer.ToResidue(BigInteger.One);
             var diff = one.Copy();
             var q = one.Copy();
             var g = BigInteger.One;
+            int count = 0;
 
             do
             {
@@ -48,6 +49,8 @@ namespace Decompose.Numerics
                     {
                         if (cancellationToken.IsCancellationRequested)
                             return BigInteger.Zero;
+                        if (++count >= iterations)
+                            return BigInteger.One;
                         AdvanceF(y, cPrime);
                         q.Multiply(AbsDiff(diff, x, y));
                     }

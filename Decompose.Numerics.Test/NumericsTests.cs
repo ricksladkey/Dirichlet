@@ -50,7 +50,7 @@ namespace Decompose.Numerics.Test
         {
             var expected = new[] { BigInteger.Parse("274177"), BigInteger.Parse("67280421310721") };
             var n = BigInteger.Parse("18446744073709551617");
-            var algorithm = new PollardRho(1);
+            var algorithm = new PollardRho(1, 0);
             var factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
             var product = factors.Aggregate((sofar, current) => sofar * current);
             Assert.AreEqual(n, product);
@@ -62,7 +62,7 @@ namespace Decompose.Numerics.Test
         {
             var expected = new[] { BigInteger.Parse("91739369"), BigInteger.Parse("266981831") };
             var n = expected.Aggregate(BigInteger.One, (sofar, factor) => sofar * factor);
-            var algorithm = new PollardRho(1);
+            var algorithm = new PollardRho(1, 0);
             var factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
             var product = factors.Aggregate((sofar, current) => sofar * current);
             Assert.AreEqual(n, product);

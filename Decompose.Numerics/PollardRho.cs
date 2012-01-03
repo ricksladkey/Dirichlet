@@ -5,10 +5,10 @@ namespace Decompose.Numerics
 {
     public class PollardRho : PollardRhoBase
     {
-        const int iterations = 100;
+        const int batchSize = 100;
 
-        public PollardRho(int threads)
-            : base(threads)
+        public PollardRho(int threads, int iterations)
+            : base(threads, iterations)
         {
         }
 
@@ -28,7 +28,7 @@ namespace Decompose.Numerics
                 var z = BigInteger.One;
                 x0 = x;
                 y0 = y;
-                for (int i = 0; i < iterations; i++)
+                for (int i = 0; i < batchSize; i++)
                 {
                     if (cancellationToken.IsCancellationRequested)
                         return BigInteger.Zero;

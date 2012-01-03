@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading;
@@ -10,10 +11,12 @@ namespace Decompose.Numerics
     {
         protected MersenneTwister32 random = new MersenneTwister32(0);
         protected int threads;
+        protected int iterations;
 
-        protected PollardRhoBase(int threads)
+        protected PollardRhoBase(int threads, int iterations)
         {
             this.threads = threads;
+            this.iterations = iterations;
         }
 
         public IEnumerable<BigInteger> Factor(BigInteger n)
@@ -33,6 +36,8 @@ namespace Decompose.Numerics
                 return;
             }
             var divisor = RhoParallel(n);
+            if (divisor.IsZero || divisor.IsOne)
+                return;
             FactorCore(divisor, factors);
             FactorCore(n / divisor, factors);
         }

@@ -1,12 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Word = System.Int32;
+using Word = System.Int64;
 
 namespace Decompose.Numerics
 {
-    public class Word32BitMatrix : IBitMatrix
+    public class Word64BitMatrix : IBitMatrix
     {
-        private const int wordShift = 5;
+        private const int wordShift = 6;
         private const int wordLength = 1 << wordShift;
         private const int wordMask = wordLength - 1;
 
@@ -25,7 +25,7 @@ namespace Decompose.Numerics
             get { return cols; }
         }
 
-        public Word32BitMatrix(int rows, int cols)
+        public Word64BitMatrix(int rows, int cols)
         {
             this.rows = rows;
             this.cols = cols;

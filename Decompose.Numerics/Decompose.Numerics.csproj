@@ -46,7 +46,13 @@
     <Compile Include="BarrettReduction.cs" />
     <Compile Include="BigIntegers.cs" />
     <Compile Include="BitArrayBitMatrix.cs" />
+    <Compile Include="BoolBitArray.cs" />
+    <Compile Include="BoolBitMatrix.cs" />
     <Compile Include="GaussianElimination.cs" />
+    <Compile Include="IArray.cs" />
+    <Compile Include="IBitArray.cs" />
+    <Compile Include="IBitMatrix.cs" />
+    <Compile Include="IMatrix.cs" />
     <Compile Include="INullSpaceAlgorithm.cs" />
     <Compile Include="Word32BitArray.cs" />
     <Compile Include="Word32BitMatrix.cs" />
@@ -76,6 +82,7 @@
     <Compile Include="SqrtNewtonsMethod.cs" />
     <Compile Include="TrialDivision.cs" />
     <Compile Include="Unused.cs" />
+    <Compile Include="Word64BitMatrix.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

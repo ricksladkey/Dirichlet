@@ -6,10 +6,10 @@ namespace Decompose.Numerics
 {
     public class PollardRhoBrent : PollardRhoBase
     {
-        const int iterations = 100;
+        const int batchSize = 100;
 
-        public PollardRhoBrent(int threads)
-            : base(threads)
+        public PollardRhoBrent(int threads, int iterations)
+            : base(threads, iterations)
         {
         }
 
@@ -22,7 +22,7 @@ namespace Decompose.Numerics
             var y = xInit;
             var ys = y;
             var r = 1;
-            var m = iterations;
+            var m = batchSize;
             var g = BigInteger.One;
 
             do
