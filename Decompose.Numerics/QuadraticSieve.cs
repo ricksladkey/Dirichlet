@@ -23,7 +23,7 @@ namespace Decompose.Numerics
             public BigInteger X { get; set; }
             public int Size { get; set; }
             public int[] Exponents { get; set; }
-            public int[] Counts { get; set; }
+            public ushort[] Counts { get; set; }
             public int[] Offsets { get; set; }
             public Radix32Integer XRep { get; set; }
             public Radix32Integer Reg1 { get; set; }
@@ -35,7 +35,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private const int intervalSize = 100000;
+        private const int intervalSize = 200000;
         private const int lowerBoundPercentDefault = 85;
         private const int surplusCandidates = 10;
         private readonly BigInteger smallFactorCutoff = (BigInteger)int.MaxValue;
@@ -97,7 +97,7 @@ namespace Decompose.Numerics
         private BigInteger sqrtN;
         private int factorBaseSize;
         private int[] factorBase;
-        private int[] logFactorBase;
+        private ushort[] logFactorBase;
         private Tuple<int, int>[] roots;
         private Radix32Integer nRep;
 
@@ -138,10 +138,10 @@ namespace Decompose.Numerics
             return (digits - 5) * 5 + digits + 1;
         }
 
-        private int CalculateLowerBound(BigInteger y)
+        private ushort CalculateLowerBound(BigInteger y)
         {
             int percent = lowerBoundPercentOverride != 0 ? lowerBoundPercentOverride : lowerBoundPercentDefault;
-            return LogScale(y) * percent / 100;
+            return (ushort)(LogScale(y) * percent / 100);
         }
 
         private BigInteger GetDivisor(BigInteger n)
@@ -162,10 +162,10 @@ namespace Decompose.Numerics
                 .ToArray();
             roots = factorBase
                 .Select(factor =>
-                    {
-                        var root = (int)IntegerMath.ModularSquareRoot(n, factor);
-                        return Tuple.Create(root, factor - root);
-                    })
+                {
+                    var root = (int)IntegerMath.ModularSquareRoot(n, factor);
+                    return Tuple.Create(root, factor - root);
+                })
                 .ToArray();
             int desired = factorBase.Length + surplusCandidates;
 #if false
@@ -186,11 +186,11 @@ namespace Decompose.Numerics
         {
             var vbool = v.Cast<bool>();
 #if false
-                Console.WriteLine("v = {0}", string.Join(", ", vbool
-                    .Select((selected, index) => new { Index = index, Selected = selected })
-                    .Where(pair => pair.Selected)
-                    .Select(pair => pair.Index)
-                    .ToArray()));
+            Console.WriteLine("v = {0}", string.Join(", ", vbool
+                .Select((selected, index) => new { Index = index, Selected = selected })
+                .Where(pair => pair.Selected)
+                .Select(pair => pair.Index)
+                .ToArray()));
 #endif
             var xSet = candidates
                 .Zip(vbool, (candidate, selected) => new { X = candidate.X, Selected = selected })
@@ -206,9 +206,9 @@ namespace Decompose.Numerics
             return BigInteger.Zero;
         }
 
-        private static int LogScale(BigInteger n)
+        private static ushort LogScale(BigInteger n)
         {
-            return (int)Math.Floor(1000 * BigInteger.Log(BigInteger.Abs(n)));
+            return (ushort)Math.Ceiling(10 * BigInteger.Log(BigInteger.Abs(n)));
         }
 
         private List<BitArray> Sieve(int desired, Action<Interval, Action<Candidate>> sieveCore)
@@ -272,6 +272,7 @@ namespace Decompose.Numerics
 
         private void ProcessCandidates()
         {
+            Debug.Assert(candidates.GroupBy(candidate => candidate.X).Count() == candidates.Count);
 #if false
             for (int i = 0; i < candidates.Count; i++)
                 ProcessCandidate(candidates[i]);
@@ -318,7 +319,7 @@ namespace Decompose.Numerics
         private BigInteger xNeg;
         private int[] offsetsPos;
         private int[] offsetsNeg;
-        private int nextInterval = -1;
+        private int nextInterval;
         private int size;
 
         private void SetupIntervals()
@@ -331,10 +332,11 @@ namespace Decompose.Numerics
                 var offset = ((int)((roots[i].Item1 - xPos) % p) + p) % p;
                 offsetsPos[i] = offset;
             }
+            nextInterval = -1;
+            size = (int)IntegerMath.Min((sqrtN + threads - 1) / threads, intervalSize);
             xNeg = xPos - size;
             offsetsNeg = (int[])offsetsPos.Clone();
             ShiftOffsets(offsetsNeg, -size);
-            size = (int)IntegerMath.Min((sqrtN + threads - 1) / threads, intervalSize);
         }
 
         private Interval GetInterval(Interval interval)
@@ -415,7 +417,7 @@ namespace Decompose.Numerics
                 interval.Exponents = new int[factorBaseSize + 1];
             var exponents = interval.Exponents;
             if (interval.Counts == null)
-                interval.Counts = new int[size];
+                interval.Counts = new ushort[size];
             var counts = interval.Counts;
             for (int i = 0; i < factorBaseSize; i++)
             {
@@ -438,7 +440,7 @@ namespace Decompose.Numerics
             }
             if (token.IsCancellationRequested)
                 return;
-            int limit = CalculateLowerBound(y0);
+            ushort limit = CalculateLowerBound(y0);
             for (int k = 0; k < size; k++)
             {
                 if (counts[k] >= limit)
@@ -626,4 +628,3 @@ namespace Decompose.Numerics
         }
     }
 }
-
