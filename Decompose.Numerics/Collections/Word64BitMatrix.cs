@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Word = System.Int64;
@@ -68,11 +69,37 @@ namespace Decompose.Numerics
             return true;
         }
 
-        public void RemoveRow(int i)
+        public void Clear()
         {
-            for (int row = i + 1; row < rows; row++)
-                bits[row - 1] = bits[row];
-            --rows;
+            int size = rows * words;
+            for (int i = 0; i < size; i++)
+                bits[i] = 0;
+        }
+
+        public void CopySubMatrix(IBitMatrix other, int row, int col)
+        {
+            if (other is Word64BitMatrix)
+            {
+                CopySubMatrix((Word64BitMatrix)other, row, col);
+                return;
+            }
+            for (int i = 0; i < other.Rows; i++)
+            {
+                for (int j = 0; j < other.Cols; j++)
+                    this[row + i, col + j] = other[i, j];
+            }
+        }
+
+        public void CopySubMatrix(Word64BitMatrix other, int row, int col)
+        {
+            int dstOffset = row * words + (col >> wordShift);
+            for (int i = 0; i < other.rows; i++)
+            {
+                int dstRow = i * words + dstOffset;
+                int srcRow = i * other.words;
+                for (int j = 0; j < other.words; j++)
+                    bits[dstRow + j] = other.bits[srcRow + j];
+            }
         }
     }
 }

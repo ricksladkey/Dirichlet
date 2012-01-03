@@ -48,5 +48,14 @@ namespace Decompose.Numerics
             }
             return true;
         }
+
+        public void CopySubMatrix(IBitMatrix other, int row, int col)
+        {
+            for (int i = 0; i < other.Rows; i++)
+            {
+                for (int j = 0; j < other.Cols; j++)
+                    this[row + i, col + j] = other[i, j];
+            }
+        }
     }
 }

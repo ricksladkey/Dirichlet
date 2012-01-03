@@ -115,7 +115,6 @@ namespace Decompose.Numerics
         private BlockingCollection<Interval> oldIntervalBuffer;
         private List<Candidate> candidates;
         private IBitMatrix matrix;
-        private int matrixColumn;
 
         private void CalculateNumberOfThreads()
         {
@@ -224,7 +223,7 @@ namespace Decompose.Numerics
             newIntervalBuffer = new BlockingCollection<Interval>();
             oldIntervalBuffer = new BlockingCollection<Interval>();
             candidates = new List<Candidate>();
-            matrix = CreateMatrix(desired);
+            matrix = new Word64BitMatrix(factorBaseSize + 1, desired);
             SetupIntervals();
 
             if (threads == 1)
@@ -266,20 +265,34 @@ namespace Decompose.Numerics
             }
         }
 
-        private IBitMatrix CreateMatrix(int columns)
-        {
-            var matrix = new Word64BitMatrix(factorBaseSize + 1, columns);
-            matrixColumn = 0;
-            return matrix;
-        }
-
         private void ProcessCandidates()
         {
             Debug.Assert(candidates.GroupBy(candidate => candidate.X).Count() == candidates.Count);
+#if true
+            const int cacheSize = 64;
+            var cache = new Word64BitMatrix(matrix.Rows, cacheSize);
+            for (int j = 0; j < candidates.Count; j += cacheSize)
+            {
+                int limit = Math.Min(cacheSize, candidates.Count - j);
+                for (int k = 0; k < limit; k++)
+                {
+                    var exponents = candidates[j + k].Exponents;
+                    for (int i = 0; i < exponents.Length; i++)
+                        cache[i, k] = exponents[i] % 2 != 0;
+                }
+                matrix.CopySubMatrix(cache, 0, j);
+                cache.Clear();
+            }
+#endif
 #if false
-            for (int i = 0; i < candidates.Count; i++)
-                ProcessCandidate(candidates[i]);
-#else
+            for (int j = 0; j < candidates.Count; j++)
+            {
+                var exponents = candidates[j].Exponents;
+                for (int i = 0; i < exponents.Length; i++)
+                    matrix[i, j] = exponents[i] % 2 != 0;
+            }
+#endif
+#if false
             int rows = matrix.Rows;
             int cols = matrix.Cols;
             for (int i = 0; i < rows; i++)
@@ -288,15 +301,6 @@ namespace Decompose.Numerics
                     matrix[i, j] = candidates[j].Exponents[i] % 2 != 0;
             }
 #endif
-        }
-
-        private void ProcessCandidate(Candidate candidate)
-        {
-            // Doing this in parallel with sieving interferes with the cache.
-            int j = matrixColumn++;
-            var exponents = candidate.Exponents;
-            for (int i = 0; i < exponents.Length; i++)
-                matrix[i, j] = exponents[i] % 2 != 0;
         }
 
         private void SieveParallel(Action<Interval, Action<Candidate>> sieveCore)
