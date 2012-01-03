@@ -54,7 +54,8 @@ namespace Decompose.Numerics
             Tuple.Create(20, 60),
             Tuple.Create(30, 500),
             Tuple.Create(40, 1200),
-            Tuple.Create(100, 80000), // http://www.mersenneforum.org/showthread.php?t=4013
+            Tuple.Create(50, 5000),
+            Tuple.Create(90, 60000), // http://www.mersenneforum.org/showthread.php?t=4013
         };
 
         public QuadraticSieve(int threads, int factorBaseSize, int lowerBoundPercent)

@@ -264,20 +264,20 @@ namespace Decompose
         {
             var random = new MersenneTwister32(0);
             int threads = 8;
-            for (int i = 5; i <= 5; i++)
+            for (int i = 25; i <= 25; i++)
             {
                 var limit = BigInteger.Pow(10, i);
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
                 var n = p * q;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                for (int size = 10; size <= 60; size += 5)
+                for (int size = 10000; size >= 2000; size -= 1000)
                 {
                     Console.WriteLine("size = {0}", size);
                     for (int percent = 85; percent <= 85; percent += 1)
                     {
                         Console.WriteLine("percent = {0}", percent);
-                        FactorTest(false, 1000, n, new QuadraticSieve(threads, size, percent));
+                        FactorTest(false, 1, n, new QuadraticSieve(threads, size, percent));
                     }
                 }
             }
