@@ -37,7 +37,7 @@ namespace Decompose.Numerics
 
         private const int intervalSize = 100000;
         private const int lowerBoundPercentDefault = 85;
-        private const int surplusCandidates = 20;
+        private const int surplusCandidates = 10;
         private readonly BigInteger smallFactorCutoff = (BigInteger)int.MaxValue;
 
         private int threadsOverride;
@@ -104,7 +104,8 @@ namespace Decompose.Numerics
         private int threads;
         private CancellationToken token;
         private BlockingCollection<Candidate> candidateBuffer;
-        private BlockingCollection<Interval> intervalBuffer;
+        private BlockingCollection<Interval> newIntervalBuffer;
+        private BlockingCollection<Interval> oldIntervalBuffer;
         private List<Candidate> candidates;
         private List<BitArray> matrix;
         private int matrixColumn;
@@ -126,7 +127,7 @@ namespace Decompose.Numerics
                 var pair = sizePairs[i];
                 if (digits >= sizePairs[i].Item1 && digits <= sizePairs[i + 1].Item1)
                 {
-                    // Interopolate.
+                    // Interpolate.
                     double x0 = sizePairs[i].Item1;
                     double x1 = sizePairs[i + 1].Item1;
                     double y0 = sizePairs[i].Item2;
@@ -214,7 +215,8 @@ namespace Decompose.Numerics
         {
             CalculateNumberOfThreads();
             candidateBuffer = new BlockingCollection<Candidate>();
-            intervalBuffer = new BlockingCollection<Interval>();
+            newIntervalBuffer = new BlockingCollection<Interval>();
+            oldIntervalBuffer = new BlockingCollection<Interval>();
             candidates = new List<Candidate>();
             matrix = CreateMatrix(desired);
             SetupIntervals();
@@ -225,27 +227,38 @@ namespace Decompose.Numerics
                 while (candidates.Count < desired)
                 {
                     var left = desired - candidates.Count;
-                    var interval = GetInterval();
+                    var interval = newIntervalBuffer.Take();
                     sieveCore(interval, candidate => candidates.Add(candidate));
-                    intervalBuffer.Add(interval);
+                    oldIntervalBuffer.Add(interval);
                 }
             }
             else
             {
                 var tokenSource = new CancellationTokenSource();
+                for (int i = 0; i <= threads; i++)
+                    oldIntervalBuffer.Add(new Interval());
                 token = tokenSource.Token;
+                Task.Factory.StartNew(ProduceIntervals);
                 for (int i = 0; i < threads; i++)
                     Task.Factory.StartNew(() => SieveParallel(sieveCore));
                 while (candidates.Count < desired)
                 {
-                    var candidate = null as Candidate;
-                    candidateBuffer.TryTake(out candidate, Timeout.Infinite);
+                    var candidate = candidateBuffer.Take();
                     candidates.Add(candidate);
                 }
                 tokenSource.Cancel();
             }
             ProcessCandidates();
             return matrix;
+        }
+
+        private void ProduceIntervals()
+        {
+            while (!token.IsCancellationRequested)
+            {
+                var interval = oldIntervalBuffer.Take();
+                newIntervalBuffer.Add(GetInterval(interval));
+            }
         }
 
         private List<BitArray> CreateMatrix(int columns)
@@ -289,9 +302,9 @@ namespace Decompose.Numerics
             var callback = new Action<Candidate>(ParallelCallback);
             while (!token.IsCancellationRequested)
             {
-                var interval = GetInterval();
+                var interval = newIntervalBuffer.Take();
                 sieveCore(interval, callback);
-                intervalBuffer.Add(interval);
+                oldIntervalBuffer.Add(interval);
             }
         }
 
@@ -321,37 +334,31 @@ namespace Decompose.Numerics
             xNeg = xPos - size;
             offsetsNeg = (int[])offsetsPos.Clone();
             ShiftOffsets(offsetsNeg, -size);
-            size = (int)IntegerMath.Min((sqrtN + threads) / threads, intervalSize);
+            size = (int)IntegerMath.Min((sqrtN + threads - 1) / threads, intervalSize);
         }
 
-        private Interval GetInterval()
+        private Interval GetInterval(Interval interval)
         {
-            lock (intervalSync)
+            if (nextInterval == 1)
             {
-                if (nextInterval == 1)
-                {
-                    var interval = RecycleInterval(xPos, size, offsetsPos);
-                    ShiftOffsets(offsetsPos, size);
-                    xPos += size;
-                    nextInterval = -nextInterval;
-                    return interval;
-                }
-                else
-                {
-                    var interval = RecycleInterval(xNeg, size, offsetsNeg);
-                    ShiftOffsets(offsetsNeg, -size);
-                    xNeg -= size;
-                    nextInterval = -nextInterval;
-                    return interval;
-                }
+                SetupInterval(interval, xPos, size, offsetsPos);
+                ShiftOffsets(offsetsPos, size);
+                xPos += size;
+                nextInterval = -nextInterval;
+                return interval;
+            }
+            else
+            {
+                SetupInterval(interval, xNeg, size, offsetsNeg);
+                ShiftOffsets(offsetsNeg, -size);
+                xNeg -= size;
+                nextInterval = -nextInterval;
+                return interval;
             }
         }
 
-        private Interval RecycleInterval(BigInteger x, int size, int[] offsets)
+        private Interval SetupInterval(Interval interval, BigInteger x, int size, int[] offsets)
         {
-            var interval = null as Interval;
-            if (!intervalBuffer.TryTake(out interval))
-                interval = new Interval();
             interval.X = x;
             interval.Size = size;
             if (interval.Offsets == null)
@@ -455,7 +462,6 @@ namespace Decompose.Numerics
 
         private bool ValueIsSmooth(int k, Interval interval)
         {
-#if true
             var exponents = interval.Exponents;
             for (int i = 0; i <= factorBaseSize; i++)
                 exponents[i] = 0;
@@ -481,7 +487,10 @@ namespace Decompose.Numerics
                 }
             }
             return yRep.IsOne;
-#else
+        }
+
+        private bool ValueIsSmoothBigInteger(int k, Interval interval)
+        {
             var exponents = interval.Exponents;
             var x = interval.X + k;
             var y = x * x - n;
@@ -502,7 +511,6 @@ namespace Decompose.Numerics
                 }
             }
             return y.IsOne;
-#endif
         }
 
         private IEnumerable<BitArray> Solve(List<BitArray> matrix)
@@ -539,15 +547,20 @@ namespace Decompose.Numerics
                 else
                 {
                     var v = new BitArray(c.Count);
+                    int ones = 0;
                     for (int jj = 0; jj < c.Count; jj++)
                     {
                         int s = cInv[jj];
+                        bool value;
                         if (s != -1)
-                            v[jj] = matrix[s][k];
+                            value = matrix[s][k];
                         else if (jj == k)
-                            v[jj] = true;
+                            value = true;
                         else
-                            v[jj] = false;
+                            value = false;
+                        v[jj] = value;
+                        if (value)
+                            ++ones;
                     }
 #if DEBUG
                     Debug.Assert(VerifySolution(matrix, 0, matrix.Count, v));
