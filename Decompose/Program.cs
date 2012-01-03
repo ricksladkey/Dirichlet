@@ -245,7 +245,7 @@ namespace Decompose
         {
             var random = new MersenneTwister32(0);
             int threads = 8;
-            for (int i = 10; i <= 20; i++)
+            for (int i = 25; i <= 25; i++)
             {
                 var limit = BigInteger.Pow(10, i);
                 var p = NextPrime(random, limit);
@@ -256,7 +256,7 @@ namespace Decompose
 #endif
                 var n = p * q;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                FactorTest(false, 10, n, new QuadraticSieve(threads, 0, 0));
+                FactorTest(false, 1, n, new QuadraticSieve(threads, 0, 0));
             }
         }
 

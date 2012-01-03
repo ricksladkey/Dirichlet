@@ -100,12 +100,19 @@ namespace Decompose.Numerics
         private Tuple<int, int>[] roots;
         private Radix32Integer nRep;
 
-        private int CalculateNumberOfThreads()
+        private int threads;
+        private CancellationToken token;
+        private BlockingCollection<Candidate> candidateBuffer;
+        private BlockingCollection<Interval> intervalBuffer;
+        private List<Candidate> candidates;
+        private List<BitArray> matrix;
+        private int matrixColumn;
+
+        private void CalculateNumberOfThreads()
         {
-            int threads = threadsOverride != 0 ? threadsOverride : 1;
+            threads = threadsOverride != 0 ? threadsOverride : 1;
             if (n <= BigInteger.Pow(10, 10))
-                return 1;
-            return threads;
+                threads = 1;
         }
 
         private int CalculateFactorBaseSize(BigInteger n)
@@ -160,22 +167,22 @@ namespace Decompose.Numerics
                 .ToArray();
             int desired = factorBase.Length + surplusCandidates;
 #if false
-            var candidates = Sieve(desired, SieveTrialDivision);
+            var matrix = Sieve(desired, SieveTrialDivision);
 #else
-            var candidates = Sieve(desired, SieveQuadraticResidue);
+            var matrix = Sieve(desired, SieveQuadraticResidue);
 #endif
-            var matrix = new List<BitArray>();
-            for (int i = 0; i <= factorBaseSize; i++)
-                matrix.Add(new BitArray(candidates.Count));
-            for (int j = 0; j < candidates.Count; j++)
-            {
-                var exponents = candidates[j].Exponents;
-                for (int i = 0; i < exponents.Length; i++)
-                    matrix[i][j] = exponents[i] % 2 != 0;
-            }
             foreach (var v in Solve(matrix))
             {
-                var vbool = v.Cast<bool>();
+                var factor = ComputeFactor(candidates, v);
+                if (!factor.IsZero)
+                    return factor;
+            }
+            return BigInteger.Zero;
+        }
+
+        private BigInteger ComputeFactor(List<Candidate> candidates, BitArray v)
+        {
+            var vbool = v.Cast<bool>();
 #if false
                 Console.WriteLine("v = {0}", string.Join(", ", vbool
                     .Select((selected, index) => new { Index = index, Selected = selected })
@@ -183,18 +190,17 @@ namespace Decompose.Numerics
                     .Select(pair => pair.Index)
                     .ToArray()));
 #endif
-                var xSet = candidates
-                    .Zip(vbool, (candidate, selected) => new { X = candidate.X, Selected = selected })
-                    .Where(pair => pair.Selected)
-                    .Select(pair => pair.X)
-                    .ToArray();
-                var xPrime = xSet.Aggregate((sofar, current) => sofar * current) % n;
-                var yPrime = IntegerMath.Sqrt(xSet
-                    .Aggregate(BigInteger.One, (sofar, current) => sofar * (current * current - n))) % n;
-                var factor = BigInteger.GreatestCommonDivisor(xPrime + yPrime, n);
-                if (!factor.IsOne && factor != n)
-                    return factor;
-            }
+            var xSet = candidates
+                .Zip(vbool, (candidate, selected) => new { X = candidate.X, Selected = selected })
+                .Where(pair => pair.Selected)
+                .Select(pair => pair.X)
+                .ToArray();
+            var xPrime = xSet.Aggregate((sofar, current) => sofar * current) % n;
+            var yPrime = IntegerMath.Sqrt(xSet
+                .Aggregate(BigInteger.One, (sofar, current) => sofar * (current * current - n))) % n;
+            var factor = BigInteger.GreatestCommonDivisor(xPrime + yPrime, n);
+            if (!factor.IsOne && factor != n)
+                return factor;
             return BigInteger.Zero;
         }
 
@@ -203,30 +209,23 @@ namespace Decompose.Numerics
             return (int)Math.Floor(1000 * BigInteger.Log(BigInteger.Abs(n)));
         }
 
-        private CancellationToken token;
-        private BlockingCollection<Candidate> candidateBuffer;
-        private BlockingCollection<Interval> intervalBuffer;
-
-        private List<Candidate> Sieve(int desired, Action<Interval, Action<Candidate>> sieveCore)
+        private List<BitArray> Sieve(int desired, Action<Interval, Action<Candidate>> sieveCore)
         {
+            CalculateNumberOfThreads();
             candidateBuffer = new BlockingCollection<Candidate>();
             intervalBuffer = new BlockingCollection<Interval>();
-            var candidates = new List<Candidate>();
+            candidates = new List<Candidate>();
+            matrix = CreateMatrix(desired);
             SetupIntervals();
-            var threads = CalculateNumberOfThreads();
+
             if (threads == 1)
             {
                 token = CancellationToken.None;
-                while (true)
+                while (candidates.Count < desired)
                 {
                     var left = desired - candidates.Count;
                     var interval = GetInterval();
                     sieveCore(interval, candidate => candidates.Add(candidate));
-                    if (candidates.Count >= desired)
-                    {
-                        candidates.RemoveRange(desired, candidates.Count - desired);
-                        break;
-                    }
                     intervalBuffer.Add(interval);
                 }
             }
@@ -244,7 +243,44 @@ namespace Decompose.Numerics
                 }
                 tokenSource.Cancel();
             }
-            return candidates;
+            ProcessCandidates();
+            return matrix;
+        }
+
+        private List<BitArray> CreateMatrix(int columns)
+        {
+            var matrix = new List<BitArray>();
+            for (int i = 0; i <= factorBaseSize; i++)
+                matrix.Add(new BitArray(columns));
+            matrixColumn = 0;
+            return matrix;
+        }
+
+        private void ProcessCandidates()
+        {
+#if false
+            for (int i = 0; i < candidates.Count; i++)
+                ProcessCandidate(candidates[i]);
+#else
+            int rows = matrix.Count;
+            int cols = matrix[0].Length;
+            var bits = new bool[cols];
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                    bits[j] = candidates[j].Exponents[i] % 2 != 0;
+                matrix[i] = new BitArray(bits);
+            }
+#endif
+        }
+
+        private void ProcessCandidate(Candidate candidate)
+        {
+            // Doing this in parallel with sieving interferes with the cache.
+            int j = matrixColumn++;
+            var exponents = candidate.Exponents;
+            for (int i = 0; i < exponents.Length; i++)
+                matrix[i][j] = exponents[i] % 2 != 0;
         }
 
         private void SieveParallel(Action<Interval, Action<Candidate>> sieveCore)
@@ -273,7 +309,6 @@ namespace Decompose.Numerics
 
         private void SetupIntervals()
         {
-            int threads = CalculateNumberOfThreads();
             xPos = sqrtN;
             offsetsPos = new int[factorBaseSize];
             for (int i = 0; i < factorBaseSize; i++)
@@ -285,7 +320,7 @@ namespace Decompose.Numerics
             xNeg = xPos - size;
             offsetsNeg = (int[])offsetsPos.Clone();
             ShiftOffsets(offsetsNeg, -size);
-            size = Math.Max((int)IntegerMath.Min(sqrtN / threads, intervalSize), 1);
+            size = (int)IntegerMath.Min((sqrtN + threads) / threads, intervalSize);
         }
 
         private Interval GetInterval()
@@ -477,8 +512,12 @@ namespace Decompose.Numerics
             int rows = Math.Min(matrix.Count, matrix[0].Count);
             int cols = matrix[0].Count;
             var c = new List<int>();
+            var cInv = new List<int>();
             for (int i = 0; i < cols; i++)
+            {
                 c.Add(-1);
+                cInv.Add(-1);
+            }
             for (int k = 0; k < cols; k++)
             {
                 int j = -1;
@@ -492,30 +531,18 @@ namespace Decompose.Numerics
                 }
                 if (j != -1)
                 {
-                    for (int i = 0; i < rows; i++)
-                    {
-                        if (i == j || !matrix[i][k])
-                            continue;
-                        matrix[i].Xor(matrix[j]);
-                    }
+                    ZeroColumn(matrix, rows, j, k);
                     c[j] = k;
+                    cInv[k] = j;
                 }
                 else
                 {
                     var v = new BitArray(c.Count);
                     for (int jj = 0; jj < c.Count; jj++)
                     {
-                        int js = -1;
-                        for (int s = 0; s < c.Count; s++)
-                        {
-                            if (c[s] == jj)
-                            {
-                                js = s;
-                                break;
-                            }
-                        }
-                        if (js != -1)
-                            v[jj] = matrix[js][k];
+                        int s = cInv[jj];
+                        if (s != -1)
+                            v[jj] = matrix[s][k];
                         else if (jj == k)
                             v[jj] = true;
                         else
@@ -531,6 +558,33 @@ namespace Decompose.Numerics
 #if false
                 PrintMatrix(string.Format("k = {0}", k), matrix);
 #endif
+            }
+        }
+
+        private void ZeroColumn(List<BitArray> matrix, int rows, int j, int k)
+        {
+            if (rows < 256)
+            {
+                for (int i = 0; i < rows; i++)
+                {
+                    if (i == j || !matrix[i][k])
+                        continue;
+                    matrix[i].Xor(matrix[j]);
+                }
+            }
+            else
+            {
+                int range = (rows + threads - 1) / threads;
+                Parallel.For(0, threads, thread =>
+                {
+                    int beg = thread * range;
+                    int end = Math.Min(beg + range, rows);
+                    for (int i = beg; i < end; i++)
+                    {
+                        if (i != j && matrix[i][k])
+                            matrix[i].Xor(matrix[j]);
+                    }
+                });
             }
         }
 
