@@ -16,6 +16,10 @@ namespace Decompose.Numerics
         {
             public BigInteger X { get; set; }
             public int[] Exponents { get; set; }
+            public override string ToString()
+            {
+                return string.Format("X = {0}", X);
+            }
         }
 
         private class Interval
