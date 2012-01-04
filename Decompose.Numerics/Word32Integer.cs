@@ -730,6 +730,13 @@ namespace Decompose.Numerics
             return this;
         }
 
+        public bool SetQuotientIfDivisible(Word32Integer a, Word32Integer b, Word32Integer reg1)
+        {
+            reg1.Set(a);
+            DivMod(reg1, b, this);
+            return reg1.IsZero;
+        }
+
         public Word32Integer SetRemainder(Word32Integer a, Word32Integer b)
         {
             if (this != a)
@@ -856,6 +863,13 @@ namespace Decompose.Numerics
             reg1.Set(a);
             DivMod(reg1, b, this);
             return this;
+        }
+
+        public bool SetQuotientIfDivisible(Word32Integer a, uint b, Word32Integer reg1)
+        {
+            reg1.Set(a);
+            DivMod(reg1, b, this);
+            return reg1.IsZero;
         }
 
         public Word32Integer SetRemainder(Word32Integer a, uint b)

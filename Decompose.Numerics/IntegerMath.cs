@@ -5,14 +5,64 @@ namespace Decompose.Numerics
 {
     public static class IntegerMath
     {
+        public static int Min(int a, int b)
+        {
+            return a < b ? a : b;
+        }
+
         public static BigInteger Min(BigInteger a, BigInteger b)
         {
             return a < b ? a : b;
         }
 
+        public static int Max(int a, int b)
+        {
+            return a > b ? a : b;
+        }
+
         public static BigInteger Max(BigInteger a, BigInteger b)
         {
             return a > b ? a : b;
+        }
+
+        public static int QuotientCeiling(int a, int b)
+        {
+            return (a + b - 1) / b;
+        }
+
+        public static BigInteger QuotientCeiling(BigInteger a, BigInteger b)
+        {
+            return (a + b - 1) / b;
+        }
+
+        public static int MultipleOfCeiling(int a, int b)
+        {
+            return (a + b - 1) / b * b;
+        }
+
+        public static BigInteger MultipleOfCeiling(BigInteger a, BigInteger b)
+        {
+            return (a + b - 1) / b * b;
+        }
+
+        public static int QuotientFloor(int a, int b)
+        {
+            return a / b;
+        }
+
+        public static BigInteger QuotientFloor(BigInteger a, BigInteger b)
+        {
+            return a / b;
+        }
+
+        public static int MultipleOfFloor(int a, int b)
+        {
+            return a / b * b;
+        }
+
+        public static BigInteger MultipleOfFloor(BigInteger a, BigInteger b)
+        {
+            return a * b;
         }
 
         public static void ExtendedGreatestCommonDivisor(BigInteger a, BigInteger b, out BigInteger c, out BigInteger d)
@@ -39,6 +89,11 @@ namespace Decompose.Numerics
             d = lasty;
         }
 
+        public static int Sqrt(int n)
+        {
+            return (int)Math.Floor(Math.Sqrt(n));
+        }
+
         private static ISqrtAlgorithm<BigInteger> sqrt = new SqrtNewtonsMethod();
 
         public static BigInteger Sqrt(BigInteger n)
@@ -46,9 +101,11 @@ namespace Decompose.Numerics
             return sqrt.Sqrt(n);
         }
 
-        public static int Sqrt(int n)
+        private static IPrimalityAlgorithm<int> trialDivision = new TrialDivision();
+
+        public static bool IsPrime(int n)
         {
-            return (int)Math.Floor(Math.Sqrt(n));
+            return trialDivision.IsPrime(n);
         }
 
         private static IPrimalityAlgorithm<BigInteger> millerRabin = new MillerRabin(16);

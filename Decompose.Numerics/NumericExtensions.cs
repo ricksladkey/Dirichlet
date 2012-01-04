@@ -69,7 +69,7 @@ namespace Decompose.Numerics
                 return i + 2;
             if ((x & 0x1) != 0)
                 return i + 1;
-            return i;
+            return 0;
         }
 
         public static int GetBitLength(this BigInteger n)
