@@ -107,7 +107,9 @@ namespace Decompose.Numerics
         private int factorBaseSize;
         private int[] factorBase;
         private ushort[] logFactorBase;
-        private Tuple<int, int>[] roots;
+        private int[] root1;
+        private int[] root2;
+        private int[] rootDiff;
         private Word32Integer nRep;
 
         private int threads;
@@ -169,13 +171,11 @@ namespace Decompose.Numerics
             logFactorBase = factorBase
                 .Select(factor => LogScale(factor))
                 .ToArray();
-            roots = factorBase
-                .Select(factor =>
-                {
-                    var root = (int)IntegerMath.ModularSquareRoot(n, factor);
-                    return Tuple.Create(root, factor - root);
-                })
+            root1 = factorBase
+                .Select(root => (int)IntegerMath.ModularSquareRoot(n, root))
                 .ToArray();
+            root2 = factorBase.Zip(root1, (p, root) => p - root).ToArray();
+            rootDiff = root1.Zip(root2, (r1, r2) => r2 - r1).ToArray();
             int desired = factorBaseSize + 1 + surplusCandidates;
 #if false
             Sieve(desired, SieveTrialDivision);
@@ -368,7 +368,7 @@ namespace Decompose.Numerics
             for (int i = 0; i < factorBaseSize; i++)
             {
                 var p = factorBase[i];
-                var offset = ((int)((roots[i].Item1 - xPos) % p) + p) % p;
+                var offset = ((int)((root1[i] - xPos) % p) + p) % p;
                 offsetsPos[i] = offset;
             }
             nextInterval = -1;
@@ -474,8 +474,13 @@ namespace Decompose.Numerics
                 else
                 {
                     int k = k0;
-                    int p1 = roots[i].Item2 - roots[i].Item1;
+                    int p1 = rootDiff[i];
                     int p2 = p - p1;
+                    if (k0 >= p2 && k0 - p2 < size)
+                    {
+                        Debug.Assert((BigInteger.Pow(x0 + k0 - p, 2) - n) % p == 0);
+                        counts[k0 - p2] += logP;
+                    }
                     while (true)
                     {
                         if (k >= size)
