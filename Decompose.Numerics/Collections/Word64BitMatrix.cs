@@ -106,5 +106,11 @@ namespace Decompose.Numerics
                     bits[dstRow + j] = other.bits[srcRow + j];
             }
         }
+
+        public IEnumerable<bool> GetRow(int row)
+        {
+            for (int j = 0; j < cols; j++)
+                yield return this[row, j];
+        }
     }
 }

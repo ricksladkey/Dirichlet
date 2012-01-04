@@ -20,11 +20,11 @@ namespace Decompose
             //FactorTest3();
             //FactorTest4();
             //FactorTest5();
-            //FactorTest6();
-            QuadraticSieveParametersTest();
+            FactorTest6();
+            //QuadraticSieveParametersTest();
             //QuadraticSieveDigitsTest();
             //CunnihamTest();
-            //GaussianEliminationTest();
+            //GaussianEliminationTest1();
         }
 
         static void FindPrimeTest1()
@@ -236,7 +236,6 @@ namespace Decompose
         {
             //var n = BigInteger.Parse("87463");
             var n = BigInteger.Parse("10023859281455311421");
-            const int pollardThreads = 4;
             const int quadraticSieveThreads = 8;
             bool debug = false;
 
@@ -246,17 +245,9 @@ namespace Decompose
 
         static void FactorTest6()
         {
-            var random = new MersenneTwister32(0);
-            int threads = 8;
-            for (int i = 10; i <= 30; i++)
-            {
-                var limit = BigInteger.Pow(10, i);
-                var p = NextPrime(random, limit);
-                var q = NextPrime(random, limit);
-                var n = p * q;
-                Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                FactorTest(false, 1, n, new QuadraticSieve(threads, 0, 0));
-            }
+            var n = BigInteger.Parse("18446744073709551617");
+            //var n = BigInteger.Parse("12345678901");
+            FactorTest(false, 100, n, new QuadraticSieve(8, 0, 0));
         }
 
         static void QuadraticSieveParametersTest()
@@ -272,7 +263,7 @@ namespace Decompose
                 if (i < 30)
                     continue;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                for (int size = 10000; size < 20000; size += 1000)
+                for (int size = 10000; size <= 20000; size += 1000)
                 {
                     Console.WriteLine("size = {0}", size);
                     for (int percent = 85; percent <= 85; percent += 1)
@@ -315,7 +306,7 @@ namespace Decompose
                 Console.WriteLine("{0}", factor);
         }
 
-        static void GaussianEliminationTest()
+        static void GaussianEliminationTest1()
         {
             var random = new MersenneTwister32(0);
             int threads = 8;

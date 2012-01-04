@@ -29,6 +29,16 @@ namespace Decompose.Numerics
                 this.Add(new bool[cols]);
         }
 
+        public BoolBitMatrix(IBitMatrix other)
+            : this(other.Rows, other.Cols)
+        {
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                    this[i, j] = other[i, j];
+            }
+        }
+
         public bool this[int i, int j]
         {
             get { return this[i][j]; }
@@ -54,6 +64,15 @@ namespace Decompose.Numerics
             return true;
         }
 
+        public new void Clear()
+        {
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                    this[i][j] = false;
+            }
+        }
+
         public void CopySubMatrix(IBitMatrix other, int row, int col)
         {
             for (int i = 0; i < other.Rows; i++)
@@ -61,6 +80,12 @@ namespace Decompose.Numerics
                 for (int j = 0; j < other.Cols; j++)
                     this[row + i, col + j] = other[i, j];
             }
+        }
+
+        public IEnumerable<bool> GetRow(int row)
+        {
+            for (int j = 0; j < cols; j++)
+                yield return this[row, j];
         }
     }
 }

@@ -1,9 +1,41 @@
-﻿using System.Numerics;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
 
 namespace Decompose.Numerics
 {
     public static class NumericExtensions
     {
+        public static BigInteger Sum(this IEnumerable<BigInteger> source)
+        {
+            return source.Aggregate((sofar, current) => sofar + current);
+        }
+
+        public static BigInteger Sum(this IEnumerable<BigInteger> source, BigInteger n)
+        {
+            return source.Aggregate((sofar, current) => sofar + current) % n;
+        }
+
+        public static BigInteger Product(this IEnumerable<BigInteger> source)
+        {
+            return source.Aggregate((sofar, current) => sofar * current);
+        }
+
+        public static BigInteger Product(this IEnumerable<BigInteger> source, BigInteger n)
+        {
+            var product = BigInteger.One;
+            foreach (var factor in source)
+            {
+                var f = factor;
+                if (f >= n)
+                    f %= n;
+                product *= f;
+                if (product >= n)
+                    product %= n;
+            }
+            return product;
+        }
+
         public static int GetBitLength(this uint x)
         {
             int i = 0;

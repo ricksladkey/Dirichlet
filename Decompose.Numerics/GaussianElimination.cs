@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Decompose.Numerics
@@ -56,36 +57,40 @@ namespace Decompose.Numerics
                     ZeroColumn(matrix, rows, j, k);
                     c[j] = k;
                     cInv[k] = j;
+#if false
+                    Console.WriteLine("c[{0}] = {1}", j, k);
+                    PrintMatrix(string.Format("k = {0}", k), matrix);
+#endif
                 }
                 else
                 {
                     var v = new TArray();
                     v.Length = cols;
                     int ones = 0;
-                    for (int jj = 0; jj < rows; jj++)
+                    for (int jj = 0; jj < cols; jj++)
                     {
                         int s = cInv[jj];
-                        bool value;
+                        bool bit;
                         if (s != -1)
-                            value = matrix[s, k];
+                            bit = matrix[s, k];
                         else if (jj == k)
-                            value = true;
+                            bit = true;
                         else
-                            value = false;
-                        v[jj] = value;
-                        if (value)
+                            bit = false;
+                        v[jj] = bit;
+                        if (bit)
                             ++ones;
                     }
+#if false
+                    Console.WriteLine("k = {0}, v:\n{1}", k, string.Concat(v.Select(bit => bit ? 1 : 0).ToArray()));
+#endif
 #if DEBUG
-                    Debug.Assert(VerifySolution(matrix, 0, matrix.Rows, v));
+                    Debug.Assert(IsSolutionValid(matrix, 0, matrix.Rows, v));
 
 #endif
-                    if (VerifySolution(matrix, rows, matrix.Rows, v))
+                    if (IsSolutionValid(matrix, rows, matrix.Rows, v))
                         yield return v;
                 }
-#if false
-                PrintMatrix(string.Format("k = {0}", k), matrix);
-#endif
             }
         }
 
@@ -116,27 +121,30 @@ namespace Decompose.Numerics
             }
         }
 
-        private bool VerifySolution(IBitMatrix matrix, int rowMin, int rowMax, IBitArray solution)
+        public bool IsSolutionValid(IBitMatrix matrix, IBitArray solution)
+        {
+            return IsSolutionValid(matrix, 0, matrix.Rows, solution);
+        }
+
+        private bool IsSolutionValid(IBitMatrix matrix, int rowMin, int rowMax, IBitArray solution)
         {
             int cols = matrix.Cols;
             for (int i = rowMin; i < rowMax; i++)
             {
                 bool row = false;
                 for (int j = 0; j < cols; j++)
-                {
                     row ^= solution[j] & matrix[i, j];
-                }
                 if (row)
                     return false;
             }
             return true;
         }
 
-        private void PrintMatrix(string label, List<List<int>> matrix)
+        private void PrintMatrix(string label, IBitMatrix matrix)
         {
             Console.WriteLine(label);
-            for (int i = 0; i < matrix.Count; i++)
-                Console.WriteLine(string.Join(" ", matrix[i].ToArray()));
+            for (int i = 0; i < matrix.Rows; i++)
+                Console.WriteLine(string.Concat(matrix.GetRow(i).Select(bit => bit ? 1 : 0).ToArray()));
         }
     }
 }

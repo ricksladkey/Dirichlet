@@ -67,5 +67,11 @@ namespace Decompose.Numerics
                     this[row + i, col + j] = other[i, j];
             }
         }
+
+        public IEnumerable<bool> GetRow(int row)
+        {
+            for (int j = 0; j < cols; j++)
+                yield return this[row, j];
+        }
     }
 }

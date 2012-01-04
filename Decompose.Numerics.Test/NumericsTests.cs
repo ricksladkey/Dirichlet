@@ -76,6 +76,7 @@ namespace Decompose.Numerics.Test
             var n = BigInteger.Parse("18446744073709551617");
             var algorithm = new QuadraticSieve(8, 0, 0);
             var factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
+            Assert.IsTrue(factors.Length == 2);
             var product = factors.Aggregate((sofar, current) => sofar * current);
             Assert.AreEqual(n, product);
             Assert.IsTrue(((IStructuralEquatable)factors).Equals(expected, EqualityComparer<BigInteger>.Default));
@@ -287,6 +288,82 @@ namespace Decompose.Numerics.Test
                 Assert.IsTrue(factors.All(factor => IntegerMath.IsPrime(factor)));
                 Assert.AreEqual(IntegerMath.IsPrime((BigInteger)n), algorithm.IsPrime(n));
             }
+        }
+
+        const string matrix1 = @"
+            1111111
+            0000000
+            0000011
+            0011000
+            ";
+
+        const string matrix2 = @"
+            11111111111111111000000000000000000000000000
+            00000000000000000000000000000000000000000000
+            00000111011100011001000010111100011100001110
+            00110000010110101010011001110001101101000001
+            00101001000000100000001100000100010000011100
+            00000100100010000000100000000001000000101100
+            01000000101000110000000000000010101011000010
+            01010000000001000011000001100100001000010010
+            00001000110000010010010010000001001000100010
+            00000001100001000000101000000110000000100000
+            10001000000000000000000000100000000001000000
+            10100100000001000000000000001010000000000000
+            00100001101000000100000000000010000000000000
+            01010001001100001100000100000000100000000000
+            00001000011100000001000100000000000000000000
+            00000000000000000000000101000000000100001000
+            00000100000000100000000001000000000000000001
+            10000000000000000000000000000000000000000000
+            10000000000000001001000000001000000100000000
+            00000000000010010010000000000000000000000000
+            01000001000011000000001000000000000000000000
+            00010000000010000000000000000000000000000000
+            00000010000000000000000000000000000000000010
+            00000100000000001000000000000000000001000000
+            00000000000000100000000000000000000100000000
+            00000010000000000000000000100000000000010000
+            00100010000000000000000000000000010000000000
+            00010000000000000000000000010000000000100000
+            00000000000000000000000000010000000000000000
+            00000000010000000000000000001000000000000000
+            00000000000000000000000000000001000000000000
+            00000000000000010000000000000000000000001000
+            00000000000000000000000000000000000000000000
+            00000000000100000000100000000000100000000000
+            ";
+
+        [TestMethod]
+        public void GaussianEliminationTest()
+        {
+            var solver = new GaussianElimination<BoolBitArray>(1);
+            foreach (var text in new[] { matrix1, matrix2 })
+            {
+                var origMatrix = GetBitMatrix(text);
+                var matrix = new BoolBitMatrix(origMatrix);
+                foreach (var v in solver.Solve(matrix))
+                {
+                    Assert.IsTrue(solver.IsSolutionValid(origMatrix, v));
+                    Assert.IsTrue(solver.IsSolutionValid(matrix, v));
+                }
+                Console.WriteLine();
+            }
+        }
+
+        private IBitMatrix GetBitMatrix(string text)
+        {
+            var lines = text.Split('\n').Select(row => row.Trim()).Where(row => row != "").ToArray();
+            int rows = lines.Length;
+            int cols = lines[0].Length;
+            var matrix = new BoolBitMatrix(rows, cols);
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i];
+                for (int j = 0; j < line.Length; j++)
+                    matrix[i, j] = line[j] == '1';
+            }
+            return matrix;
         }
     }
 }

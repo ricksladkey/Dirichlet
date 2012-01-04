@@ -7,6 +7,8 @@ using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using BitArray = Decompose.Numerics.BoolBitArray;
+using BitMatrix = Decompose.Numerics.BoolBitMatrix;
 
 namespace Decompose.Numerics
 {
@@ -71,7 +73,7 @@ namespace Decompose.Numerics
             lowerBoundPercentOverride = lowerBoundPercent;
             smallFactorizationAlgorithm = new TrialDivision();
             primes = new SieveOfErostothones();
-            nullSpaceAlgorithm = new GaussianElimination<Word64BitArray>(threads);
+            nullSpaceAlgorithm = new GaussianElimination<BitArray>(threads);
         }
 
         public IEnumerable<BigInteger> Factor(BigInteger n)
@@ -174,7 +176,7 @@ namespace Decompose.Numerics
                     return Tuple.Create(root, factor - root);
                 })
                 .ToArray();
-            int desired = factorBase.Length + surplusCandidates;
+            int desired = factorBaseSize + 1 + surplusCandidates;
 #if false
             Sieve(desired, SieveTrialDivision);
 #else
@@ -182,14 +184,14 @@ namespace Decompose.Numerics
 #endif
             foreach (var v in nullSpaceAlgorithm.Solve(matrix))
             {
-                var factor = ComputeFactor(candidates, v);
+                var factor = ComputeFactor(v);
                 if (!factor.IsZero)
                     return factor;
             }
             return BigInteger.Zero;
         }
 
-        private BigInteger ComputeFactor(List<Candidate> candidates, IBitArray v)
+        private BigInteger ComputeFactor(IBitArray v)
         {
             var indices = v
                 .Select((selected, index) => new { Index = index, Selected = selected })
@@ -199,6 +201,24 @@ namespace Decompose.Numerics
 #if false
             Console.WriteLine("v = {0}", string.Join(", ", indices));
 #endif
+            var factor = ComputeFactorWithExponents(indices);
+            return factor;
+        }
+
+        private BigInteger ComputeFactorWithExponents(IEnumerable<int> indices)
+        {
+            var xPrime = indices.Select(index => candidates[index].X).Product(n);
+            var exponents = SumExponents(indices);
+            var yPrime = new[] { -1 }.Concat(factorBase).Zip(exponents,
+                (p, exponent) => BigInteger.Pow(p, exponent / 2)).Product(n);
+            var factor = BigInteger.GreatestCommonDivisor(xPrime + yPrime, n);
+            if (!factor.IsOne && factor != n)
+                return factor;
+            return BigInteger.Zero;
+        }
+
+        private BigInteger ComputeFactorWithoutExponents(IEnumerable<int> indices)
+        {
             var xSet = indices.Select(index => candidates[index].X).ToArray();
             var xPrime = xSet
                 .Aggregate((sofar, current) => sofar * current) % n;
@@ -211,6 +231,18 @@ namespace Decompose.Numerics
             return BigInteger.Zero;
         }
 
+        private int[] SumExponents(IEnumerable<int> indices)
+        {
+            var results = new int[factorBaseSize + 1];
+            foreach (int index in indices)
+            {
+                var exponents = candidates[index].Exponents;
+                for (int i = 0; i <= factorBaseSize; i++)
+                    results[i] += exponents[i];
+            }
+            return results;
+        }
+
         private static ushort LogScale(BigInteger n)
         {
             return (ushort)Math.Ceiling(10 * BigInteger.Log(BigInteger.Abs(n)));
@@ -219,39 +251,41 @@ namespace Decompose.Numerics
         private void Sieve(int desired, Action<Interval, Action<Candidate>> sieveCore)
         {
             CalculateNumberOfThreads();
-            candidateBuffer = new BlockingCollection<Candidate>();
-            newIntervalBuffer = new BlockingCollection<Interval>();
-            oldIntervalBuffer = new BlockingCollection<Interval>();
             candidates = new List<Candidate>();
-            matrix = new Word64BitMatrix(factorBaseSize + 1, desired);
+            matrix = new BitMatrix(factorBaseSize + 1, desired);
             SetupIntervals();
 
             if (threads == 1)
             {
                 token = CancellationToken.None;
+                var interval = new Interval();
                 while (candidates.Count < desired)
-                {
-                    var left = desired - candidates.Count;
-                    var interval = newIntervalBuffer.Take();
-                    sieveCore(interval, candidate => candidates.Add(candidate));
-                    oldIntervalBuffer.Add(interval);
-                }
+                    sieveCore(GetInterval(interval), candidate => candidates.Add(candidate));
+                candidates.RemoveRange(desired, candidates.Count - desired);
             }
             else
             {
+                candidateBuffer = new BlockingCollection<Candidate>();
+                newIntervalBuffer = new BlockingCollection<Interval>();
+                oldIntervalBuffer = new BlockingCollection<Interval>();
                 var tokenSource = new CancellationTokenSource();
                 for (int i = 0; i <= threads; i++)
                     oldIntervalBuffer.Add(new Interval());
                 token = tokenSource.Token;
-                Task.Factory.StartNew(ProduceIntervals);
+                var tasks = new Task[threads];
+                var producer = Task.Factory.StartNew(ProduceIntervals);
                 for (int i = 0; i < threads; i++)
-                    Task.Factory.StartNew(() => SieveParallel(sieveCore));
+                    tasks[i] = Task.Factory.StartNew(() => SieveParallel(sieveCore));
                 while (candidates.Count < desired)
                 {
                     var candidate = candidateBuffer.Take();
                     candidates.Add(candidate);
                 }
                 tokenSource.Cancel();
+                producer.Wait();
+                for (int i = 0; i <= threads; i++)
+                    newIntervalBuffer.Add(null);
+                Task.WaitAll(tasks);
             }
             ProcessCandidates();
         }
@@ -259,18 +293,16 @@ namespace Decompose.Numerics
         private void ProduceIntervals()
         {
             while (!token.IsCancellationRequested)
-            {
-                var interval = oldIntervalBuffer.Take();
-                newIntervalBuffer.Add(GetInterval(interval));
-            }
+                newIntervalBuffer.Add(GetInterval(oldIntervalBuffer.Take()));
         }
 
         private void ProcessCandidates()
         {
             Debug.Assert(candidates.GroupBy(candidate => candidate.X).Count() == candidates.Count);
+            candidates = candidates.OrderBy(candidate => candidate.X).ToList();
 #if true
             int cacheSize = matrix.WordLength;
-            var cache = new Word64BitMatrix(matrix.Rows, cacheSize);
+            var cache = new BitMatrix(matrix.Rows, cacheSize);
             for (int j = 0; j < candidates.Count; j += cacheSize)
             {
                 int limit = Math.Min(cacheSize, candidates.Count - j);
@@ -309,6 +341,8 @@ namespace Decompose.Numerics
             while (!token.IsCancellationRequested)
             {
                 var interval = newIntervalBuffer.Take();
+                if (interval == null)
+                    break;
                 sieveCore(interval, callback);
                 oldIntervalBuffer.Add(interval);
             }
