@@ -48,6 +48,7 @@
     <Compile Include="Collections\BitArrayBitMatrix.cs" />
     <Compile Include="Collections\BoolBitArray.cs" />
     <Compile Include="Collections\BoolBitMatrix.cs" />
+    <Compile Include="Collections\Word64BitArray.cs" />
     <Compile Include="GaussianElimination.cs" />
     <Compile Include="Collections\IArray.cs" />
     <Compile Include="Collections\IBitArray.cs" />

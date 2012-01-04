@@ -2,6 +2,7 @@
 {
     public interface IBitMatrix : IMatrix<bool>
     {
+        int WordLength { get; }
         void XorRows(int dst, int src);
         bool IsRowEmpty(int i);
         void Clear();

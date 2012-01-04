@@ -17,6 +17,11 @@ namespace Decompose.Numerics
         private int words;
         private Word[] bits;
 
+        public int WordLength
+        {
+            get { return wordLength; }
+        }
+
         public int Rows
         {
             get { return rows; }

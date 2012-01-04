@@ -21,9 +21,10 @@ namespace Decompose
             //FactorTest4();
             //FactorTest5();
             //FactorTest6();
-            //FactorTest7();
+            QuadraticSieveParametersTest();
+            //QuadraticSieveDigitsTest();
             //CunnihamTest();
-            GaussianEliminationTest();
+            //GaussianEliminationTest();
         }
 
         static void FindPrimeTest1()
@@ -258,7 +259,7 @@ namespace Decompose
             }
         }
 
-        static void FactorTest7()
+        static void QuadraticSieveParametersTest()
         {
             var random = new MersenneTwister32(0);
             int threads = 8;
@@ -280,6 +281,21 @@ namespace Decompose
                         FactorTest(false, 1, n, new QuadraticSieve(threads, size, percent));
                     }
                 }
+            }
+        }
+
+        static void QuadraticSieveDigitsTest()
+        {
+            var random = new MersenneTwister32(0);
+            int threads = 8;
+            for (int i = 10; i <= 30; i++)
+            {
+                var limit = BigInteger.Pow(10, i);
+                var p = NextPrime(random, limit);
+                var q = NextPrime(random, limit);
+                var n = p * q;
+                Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
+                FactorTest(false, 1, n, new QuadraticSieve(threads, 0, 0));
             }
         }
 

@@ -6,6 +6,11 @@ namespace Decompose.Numerics
         private int rows;
         private int cols;
 
+        public int WordLength
+        {
+            get { return 1; }
+        }
+
         public int Rows
         {
             get { return rows; }

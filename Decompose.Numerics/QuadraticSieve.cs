@@ -71,7 +71,7 @@ namespace Decompose.Numerics
             lowerBoundPercentOverride = lowerBoundPercent;
             smallFactorizationAlgorithm = new TrialDivision();
             primes = new SieveOfErostothones();
-            nullSpaceAlgorithm = new GaussianElimination<Word32BitArray>(threads);
+            nullSpaceAlgorithm = new GaussianElimination<Word64BitArray>(threads);
         }
 
         public IEnumerable<BigInteger> Factor(BigInteger n)
@@ -269,7 +269,7 @@ namespace Decompose.Numerics
         {
             Debug.Assert(candidates.GroupBy(candidate => candidate.X).Count() == candidates.Count);
 #if true
-            const int cacheSize = 64;
+            int cacheSize = matrix.WordLength;
             var cache = new Word64BitMatrix(matrix.Rows, cacheSize);
             for (int j = 0; j < candidates.Count; j += cacheSize)
             {
