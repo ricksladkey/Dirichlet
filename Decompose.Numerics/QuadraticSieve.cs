@@ -463,16 +463,32 @@ namespace Decompose.Numerics
                 var p = factorBase[i];
                 var logP = logFactorBase[i];
                 var k0 = offsets[i];
-                for (int root = 0; root < 2; root++)
+                if (p == 2)
                 {
-                    if (root == 1 && p == 2)
-                        continue;
                     for (int k = k0; k < size; k += p)
                     {
                         Debug.Assert((BigInteger.Pow(x0 + k, 2) - n) % p == 0);
                         counts[k] += logP;
                     }
-                    k0 += roots[i].Item2 - roots[i].Item1;
+                }
+                else
+                {
+                    int k = k0;
+                    int p1 = roots[i].Item2 - roots[i].Item1;
+                    int p2 = p - p1;
+                    while (true)
+                    {
+                        if (k >= size)
+                            break;
+                        Debug.Assert((BigInteger.Pow(x0 + k, 2) - n) % p == 0);
+                        counts[k] += logP;
+                        k += p1;
+                        if (k >= size)
+                            break;
+                        Debug.Assert((BigInteger.Pow(x0 + k, 2) - n) % p == 0);
+                        counts[k] += logP;
+                        k += p2;
+                    }
                 }
                 if (token.IsCancellationRequested)
                     return;

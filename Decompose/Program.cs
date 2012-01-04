@@ -234,13 +234,16 @@ namespace Decompose
 
         static void FactorTest5()
         {
-            //var n = BigInteger.Parse("87463");
-            var n = BigInteger.Parse("10023859281455311421");
+            var n = BigInteger.Parse("87463");
+            //var n = BigInteger.Parse("10023859281455311421");
+            //var n = BigInteger.Parse("5382000000735683358022919837657883000000078236999000000000000063"); // https://sites.google.com/site/shouthillgc/Home/gc1p8qn/factorizing-tool
             const int quadraticSieveThreads = 8;
             bool debug = false;
 
             //FactorTest(debug, 500, n, new PollardRhoReduction(pollardThreads, new MontgomeryReduction()));
-            FactorTest(debug, 1, n, new QuadraticSieve(quadraticSieveThreads, 0, 0));
+            var factors = FactorTest(debug, 1, n, new QuadraticSieve(quadraticSieveThreads, 0, 0));
+            foreach (var factor in factors)
+                Console.WriteLine("{0}", factor);
         }
 
         static void FactorTest6()
