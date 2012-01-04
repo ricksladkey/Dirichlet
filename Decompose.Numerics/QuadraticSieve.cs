@@ -7,8 +7,8 @@ using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
-using BitArray = Decompose.Numerics.BoolBitArray;
-using BitMatrix = Decompose.Numerics.BoolBitMatrix;
+using BitArray = Decompose.Numerics.Word64BitArray;
+using BitMatrix = Decompose.Numerics.Word64BitMatrix;
 
 namespace Decompose.Numerics
 {
