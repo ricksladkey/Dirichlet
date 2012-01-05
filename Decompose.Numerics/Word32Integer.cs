@@ -109,7 +109,7 @@ namespace Decompose.Numerics
             bits[index + 1] = (uint)(a >> 32);
             for (int i = 2; i <= last; i++)
                 bits[index + i] = 0;
-            last = bits[index + 1] != 0 ? 2 : 1;
+            last = bits[index + 1] != 0 ? 1 : 0;
             CheckValid();
             return this;
         }
