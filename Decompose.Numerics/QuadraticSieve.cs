@@ -318,7 +318,7 @@ namespace Decompose.Numerics
             var exponents = interval.Exponents;
             for (int k = 0; k < interval.Size; k++)
             {
-                if (IsSmooth(interval, k))
+                if (IsSmooth(interval, k, 0))
                 {
                     var candidate = new Candidate
                     {
@@ -344,7 +344,8 @@ namespace Decompose.Numerics
 
             int count = 0;
             int intervalSize = interval.Size;
-            ushort countLimit = CalculateLowerBound(EvaluatePolynomial(interval.X));
+            var min = interval.X > 0 ? interval.X : interval.X + interval.Size;
+            ushort countLimit = CalculateLowerBound(EvaluatePolynomial(min));
             for (int k0 = 0; k0 < intervalSize; k0 += subIntervalSize)
             {
                 int size = Math.Min(subIntervalSize, intervalSize - k0);
@@ -405,7 +406,7 @@ namespace Decompose.Numerics
             {
                 if (counts[k] >= countLimit)
                 {
-                    if (IsSmooth(interval, k0 + k))
+                    if (IsSmooth(interval, k0 + k, countLimit))
                     {
                         var candidate = new Candidate
                         {
@@ -422,7 +423,12 @@ namespace Decompose.Numerics
             return count;
         }
 
-        private bool IsSmooth(Interval interval, int k)
+        private bool IsSmooth(Interval interval, int k, ushort countLimit)
+        {
+            return IsSmoothWord32Integer(interval, k, countLimit);
+        }
+
+        private bool IsSmoothWord32Integer(Interval interval, int k, int countLimit)
         {
             var exponents = interval.Exponents;
             for (int i = 0; i <= factorBaseSize; i++)
@@ -445,10 +451,11 @@ namespace Decompose.Numerics
             return yRep.IsOne;
         }
 
-        private bool IsSmoothBigInteger(Interval interval, int k)
+        private bool IsSmoothBigInteger(Interval interval, int k, int countLimit)
         {
             var exponents = interval.Exponents;
             var y = EvaluatePolynomial(interval.X + k);
+            Debug.Assert(LogScale(y) <= countLimit);
             for (int i = 0; i <= factorBaseSize; i++)
                 exponents[i] = 0;
             if (y < 0)
@@ -465,6 +472,10 @@ namespace Decompose.Numerics
                     y /= p;
                 }
             }
+#if false
+            if (!y.IsOne && y < BigInteger.Pow(factorBase[factorBaseSize - 1], 2))
+                Console.WriteLine("large prime = {0}", y);
+#endif
             return y.IsOne;
         }
 

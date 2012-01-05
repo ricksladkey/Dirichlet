@@ -288,11 +288,8 @@ namespace Decompose
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
                 var n = p * q;
-                if (i < 27)
-                    continue;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
                 FactorTest(false, 1, n, new QuadraticSieve(threads, 0, 0));
-                break;
             }
         }
 
