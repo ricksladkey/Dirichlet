@@ -45,21 +45,23 @@ namespace Decompose.Numerics
 
         private class Interval
         {
-            public long K0 { get; set; }
+            public long Min { get; set; }
             public int Size { get; set; }
             public int[] Exponents { get; set; }
             public ushort[] Counts { get; set; }
+            public int[] Offsets { get; set; }
             public Word32Integer XRep { get; set; }
             public Word32Integer Reg1 { get; set; }
             public Word32Integer Reg2 { get; set; }
             public Word32Integer Reg3 { get; set; }
             public override string ToString()
             {
-                return string.Format("K = {0}, Size = {1}", K0, Size);
+                return string.Format("K = {0}, Size = {1}", Min, Size);
             }
         }
 
-        private const int maximumIntervalSize = 200000;
+        private const int maximumIntervalSize = 1000000;
+        private const int subIntervalSize = 200000;
         private const int lowerBoundPercentDefault = 85;
         private const int surplusCandidates = 10;
         private readonly BigInteger smallFactorCutoff = (BigInteger)int.MaxValue;
@@ -127,7 +129,6 @@ namespace Decompose.Numerics
             if (n.IsEven)
                 return BigIntegers.Two;
             this.n = n;
-            var words = IntegerMath.QuotientCeiling(n.GetBitLength(), Word32Integer.WordLength);
             sqrtN = IntegerMath.Sqrt(n);
             factorBaseSize = CalculateFactorBaseSize(n);
             factorBase = primes
@@ -143,8 +144,11 @@ namespace Decompose.Numerics
             rootsDiff = factorBase.Zip(roots, (p, root) => p - 2 * root).ToArray();
             sqrtNOffsets = factorBase.Zip(roots, (p, root) => ((int)((root - sqrtN) % p) + p) % p).ToArray();
             int desired = factorBaseSize + 1 + surplusCandidates;
+
+            var words = IntegerMath.QuotientCeiling(n.GetBitLength(), Word32Integer.WordLength);
             nRep = new Word32Integer(words * 2 + 1).Set(n);
             sqrtNRep = nRep.Copy().Set(sqrtN);
+
 #if false
             Sieve(desired, SieveTrialDivision);
 #else
@@ -286,6 +290,7 @@ namespace Decompose.Numerics
         private void SieveThread(Func<Interval, int> sieveCore)
         {
             int count = 0;
+            int intervals = 0;
             var interval = new Interval();
             while (candidateBuffer.Count < candidateBuffer.BoundedCapacity)
             {
@@ -312,7 +317,7 @@ namespace Decompose.Numerics
         {
             int intervalId = Interlocked.Increment(ref nextIntervalId) - 1;
             int intervalNumber = intervalId % 2 == 0 ? intervalId / 2 : -(intervalId + 1) / 2;
-            interval.K0 = (long)intervalNumber * intervalSize;
+            interval.Min = (long)intervalNumber * intervalSize;
             interval.Size = intervalSize;
             if (interval.XRep == null)
             {
@@ -331,13 +336,13 @@ namespace Decompose.Numerics
             if (interval.Exponents == null)
                 interval.Exponents = new int[factorBaseSize + 1];
             var exponents = interval.Exponents;
-            for (int i = 0; i < interval.Size; i++)
+            for (int k = 0; k < interval.Size; k++)
             {
-                if (ValueIsSmooth(i, interval))
+                if (ValueIsSmooth(k, interval))
                 {
                     var candidate = new Candidate
                     {
-                        X = sqrtN + interval.K0 + i,
+                        X = sqrtN + interval.Min + k,
                         Exponents = (int[])exponents.Clone(),
                     };
                     ++count;
@@ -350,68 +355,96 @@ namespace Decompose.Numerics
 
         private int SieveQuadraticResidue(Interval interval)
         {
-            int count = 0;
-            long k0 = interval.K0;
-            var x0 = sqrtN + interval.K0;
-            var y0 = x0 * x0 - n;
-            int size = interval.Size;
             if (interval.Exponents == null)
+            {
                 interval.Exponents = new int[factorBaseSize + 1];
-            var exponents = interval.Exponents;
-            if (interval.Counts == null)
-                interval.Counts = new ushort[size];
+                interval.Counts = new ushort[subIntervalSize];
+                interval.Offsets = new int[factorBaseSize];
+            }
+
+            var x0 = sqrtN + interval.Min;
+            var y0 = x0 * x0 - n;
+            var offsets = interval.Offsets;
+            var counts = interval.Counts;
+            ushort countLimit = CalculateLowerBound(y0);
+            int count = 0;
+
+            for (int i = 0; i < factorBaseSize; i++)
+            {
+                int p = factorBase[i];
+                offsets[i] = ((int)((sqrtNOffsets[i] - interval.Min) % p) + p) % p;
+            }
+
+            int intervalSize = interval.Size;
+            for (int k0 = 0; k0 < intervalSize; k0 += subIntervalSize)
+            {
+                int size = Math.Min(subIntervalSize, intervalSize - k0);
+                SieveInterval(interval, k0, size);
+                count += CheckForSmooth(interval, k0, size, countLimit);
+            }
+            return count;
+        }
+
+        private void SieveInterval(Interval interval, int k0, int size)
+        {
+            var offsets = interval.Offsets;
             var counts = interval.Counts;
             int i0 = 0;
             if (factorBase[0] == 2)
             {
-                var p = factorBase[0];
+                int k1;
                 var logP = logFactorBase[0];
-                int start = ((int)((sqrtNOffsets[0] - k0) % p) + p) % p;
-                for (int k = start; k < size; k += p)
+                for (k1 = offsets[0]; k1 < size; k1 += 2)
                 {
-                    Debug.Assert((BigInteger.Pow(x0 + k, 2) - n) % p == 0);
-                    counts[k] += logP;
+                    Debug.Assert((BigInteger.Pow(sqrtN + interval.Min + k0 + k1, 2) - n) % 2 == 0);
+                    counts[k1] += logP;
                 }
+                offsets[0] = k1 - size;
                 ++i0;
             }
             for (int i = i0; i < factorBaseSize; i++)
             {
                 var p = factorBase[i];
                 var logP = logFactorBase[i];
-                int k = ((int)((sqrtNOffsets[i] - k0) % p) + p) % p;
+                int k = offsets[i];
                 int p1 = rootsDiff[i];
                 int p2 = p - p1;
                 if (k >= p2 && k - p2 < size)
                 {
-                    Debug.Assert((BigInteger.Pow(x0 + k - p2, 2) - n) % p == 0);
+                    Debug.Assert((BigInteger.Pow(sqrtN + interval.Min + k0 + k - p2, 2) - n) % p == 0);
                     counts[k - p2] += logP;
                 }
-                while (true)
+                while (k < size)
                 {
-                    if (k >= size)
-                        break;
-                    Debug.Assert((BigInteger.Pow(x0 + k, 2) - n) % p == 0);
+                    Debug.Assert((BigInteger.Pow(sqrtN + interval.Min + k0 + k, 2) - n) % p == 0);
                     counts[k] += logP;
                     k += p1;
-                    if (k >= size)
-                        break;
-                    Debug.Assert((BigInteger.Pow(x0 + k, 2) - n) % p == 0);
-                    counts[k] += logP;
+                    if (k < size)
+                    {
+                        Debug.Assert((BigInteger.Pow(sqrtN + interval.Min + k0 + k, 2) - n) % p == 0);
+                        counts[k] += logP;
+                    }
                     k += p2;
                 }
+                offsets[i] = k - size;
+
             }
-            ushort limit = CalculateLowerBound(y0);
+        }
+
+        private int CheckForSmooth(Interval interval, int k0, int size, ushort countLimit)
+        {
+            int count = 0;
+            var counts = interval.Counts;
             for (int k = 0; k < size; k++)
             {
-                if (counts[k] >= limit)
+                if (counts[k] >= countLimit)
                 {
-                    var x = x0 + k;
-                    if (ValueIsSmooth(k, interval))
+                    if (ValueIsSmooth(k0 + k, interval))
                     {
                         var candidate = new Candidate
                         {
-                            X = x,
-                            Exponents = (int[])exponents.Clone(),
+                            X = sqrtN + interval.Min + k0 + k,
+                            Exponents = (int[])interval.Exponents.Clone(),
                         };
                         ++count;
                         if (!candidateBuffer.TryAdd(candidate))
@@ -431,10 +464,10 @@ namespace Decompose.Numerics
             if (interval.XRep.IsZero)
             {
                 interval.XRep.Set(sqrtNRep);
-                if (interval.K0 < 0)
-                    interval.XRep.Subtract(interval.Reg3.Set((ulong)-interval.K0));
+                if (interval.Min < 0)
+                    interval.XRep.Subtract(interval.Reg3.Set((ulong)-interval.Min));
                 else
-                    interval.XRep.Add(interval.Reg3.Set((ulong)interval.K0));
+                    interval.XRep.Add(interval.Reg3.Set((ulong)interval.Min));
             }
             var xRep = interval.Reg1.SetSum(interval.XRep, (uint)k);
             var yRep = interval.Reg2.SetSquare(xRep);
@@ -461,7 +494,7 @@ namespace Decompose.Numerics
         private bool ValueIsSmoothBigInteger(int k, Interval interval)
         {
             var exponents = interval.Exponents;
-            var x = sqrtN + interval.K0 + k;
+            var x = sqrtN + interval.Min + k;
             var y = x * x - n;
             for (int i = 0; i <= factorBaseSize; i++)
                 exponents[i] = 0;
