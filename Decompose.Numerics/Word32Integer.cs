@@ -102,6 +102,18 @@ namespace Decompose.Numerics
             return this;
         }
 
+        public Word32Integer Set(ulong a)
+        {
+            CheckValid();
+            bits[index] = (uint)a;
+            bits[index + 1] = (uint)(a >> 32);
+            for (int i = 2; i <= last; i++)
+                bits[index + i] = 0;
+            last = bits[index + 1] != 0 ? 2 : 1;
+            CheckValid();
+            return this;
+        }
+
         public Word32Integer Set(BigInteger a)
         {
             CheckValid();

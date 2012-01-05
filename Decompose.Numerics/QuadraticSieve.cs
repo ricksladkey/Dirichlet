@@ -45,7 +45,7 @@ namespace Decompose.Numerics
 
         private class Interval
         {
-            public BigInteger X { get; set; }
+            public long K0 { get; set; }
             public int Size { get; set; }
             public int[] Exponents { get; set; }
             public ushort[] Counts { get; set; }
@@ -56,7 +56,7 @@ namespace Decompose.Numerics
             public Word32Integer Reg3 { get; set; }
             public override string ToString()
             {
-                return string.Format("X = {0}, Size = {1}", X, Size);
+                return string.Format("K = {0}, Size = {1}", K0, Size);
             }
         }
 
@@ -72,8 +72,8 @@ namespace Decompose.Numerics
         private IEnumerable<int> primes;
         private INullSpaceAlgorithm<IBitArray, IBitMatrix> nullSpaceAlgorithm;
 
-        private BigInteger xPos;
-        private BigInteger xNeg;
+        private long kPos;
+        private long kNeg;
         private int[] offsetsPos;
         private int[] offsetsNeg;
         private int nextInterval;
@@ -101,6 +101,7 @@ namespace Decompose.Numerics
         private int[] root2;
         private int[] rootDiff;
         private Word32Integer nRep;
+        private Word32Integer sqrtNRep;
 
         private int threads;
         private CancellationToken token;
@@ -110,7 +111,6 @@ namespace Decompose.Numerics
         private List<Candidate> candidates;
         private IBitMatrix matrix;
 
-        private int intervalsProduced;
         private int intervalsProcessed;
 
         private void FactorCore(BigInteger n, List<BigInteger> factors)
@@ -137,6 +137,7 @@ namespace Decompose.Numerics
             this.n = n;
             var words = IntegerMath.QuotientCeiling(n.GetBitLength(), Word32Integer.WordLength);
             nRep = new Word32Integer(words * 2 + 1).Set(n);
+            sqrtNRep = nRep.Copy().Set(sqrtN);
             sqrtN = IntegerMath.Sqrt(n);
             factorBaseSize = CalculateFactorBaseSize(n);
             factorBase = primes
@@ -258,7 +259,7 @@ namespace Decompose.Numerics
             return (ushort)Math.Ceiling(10 * BigInteger.Log(BigInteger.Abs(n)));
         }
 
-        private void Sieve(int desired, Action<Interval, Func<Candidate, bool>> sieveCore)
+        private void Sieve(int desired, Func<Interval, Func<Candidate, bool>, int> sieveCore)
         {
             CalculateNumberOfThreads();
             SetupIntervals();
@@ -289,24 +290,24 @@ namespace Decompose.Numerics
                 newIntervalBuffer = new BlockingCollection<Interval>();
                 oldIntervalBuffer = new BlockingCollection<Interval>();
                 var tokenSource = new CancellationTokenSource();
-                for (int i = 0; i <= threads; i++)
-                    oldIntervalBuffer.Add(new Interval());
                 token = tokenSource.Token;
                 var producer = Task.Factory.StartNew(ProduceIntervals);
-                var tasks = new Task[threads];
-                for (int i = 0; i < threads; i++)
+                int sieveThreads = threads;
+                for (int i = 0; i <= sieveThreads; i++)
+                    oldIntervalBuffer.Add(new Interval());
+                var tasks = new Task[sieveThreads];
+                for (int i = 0; i < sieveThreads; i++)
                     tasks[i] = Task.Factory.StartNew(() => SieveParallel(sieveCore));
                 producer.Wait();
                 candidates = candidateBuffer.ToList();
                 tokenSource.Cancel();
-                for (int i = 0; i <= threads; i++)
+                for (int i = 0; i <= sieveThreads; i++)
                     newIntervalBuffer.Add(null);
                 Task.WaitAll(tasks);
             }
             ProcessCandidates();
 #if true
             Console.WriteLine("desired = {0}", desired);
-            Console.WriteLine("intervals produced = {0}", intervalsProduced);
             Console.WriteLine("intervals processed = {0}", intervalsProcessed);
 #endif
         }
@@ -317,18 +318,28 @@ namespace Decompose.Numerics
                 newIntervalBuffer.Add(GetInterval(oldIntervalBuffer.Take()));
         }
 
-        private void SieveParallel(Action<Interval, Func<Candidate, bool>> sieveCore)
+        private void SieveParallel(Func<Interval, Func<Candidate, bool>, int> sieveCore)
         {
+            int count = 0;
+            int intervals = 0;
             var callback = new Func<Candidate, bool>(ParallelCallback);
             while (candidateBuffer.Count < candidateBuffer.BoundedCapacity)
             {
                 var interval = newIntervalBuffer.Take();
                 if (interval == null)
                     break;
-                sieveCore(interval, callback);
+                count += sieveCore(interval, callback);
+#if true
+                if (++intervals % 500 == 0)
+                {
+                    Console.WriteLine("count = {0}", count);
+                    count = 0;
+                }
+#endif
                 oldIntervalBuffer.Add(interval);
                 Interlocked.Increment(ref intervalsProcessed);
             }
+            Console.WriteLine("intervals = {0}", intervals);
         }
 
         private bool ParallelCallback(Candidate candidate)
@@ -338,47 +349,45 @@ namespace Decompose.Numerics
 
         private void SetupIntervals()
         {
-            intervalsProduced = 0;
             intervalsProcessed = 0;
-            xPos = sqrtN;
+            kPos = 0;
             offsetsPos = new int[factorBaseSize];
             for (int i = 0; i < factorBaseSize; i++)
             {
                 var p = factorBase[i];
-                var offset = ((int)((root1[i] - xPos) % p) + p) % p;
+                var offset = ((int)((root1[i] - sqrtN) % p) + p) % p;
                 offsetsPos[i] = offset;
             }
             nextInterval = -1;
             intervalSize = (int)IntegerMath.Min((sqrtN + threads - 1) / threads, maximumIntervalSize);
-            xNeg = xPos - intervalSize;
+            kNeg = kPos - intervalSize;
             offsetsNeg = (int[])offsetsPos.Clone();
             ShiftOffsets(offsetsNeg, -intervalSize);
         }
 
         private Interval GetInterval(Interval interval)
         {
-            ++intervalsProduced;
             if (nextInterval == 1)
             {
-                SetupInterval(interval, xPos, intervalSize, offsetsPos);
+                SetupInterval(interval, kPos, intervalSize, offsetsPos);
                 ShiftOffsets(offsetsPos, intervalSize);
-                xPos += intervalSize;
+                kPos += intervalSize;
                 nextInterval = -nextInterval;
                 return interval;
             }
             else
             {
-                SetupInterval(interval, xNeg, intervalSize, offsetsNeg);
+                SetupInterval(interval, kNeg, intervalSize, offsetsNeg);
                 ShiftOffsets(offsetsNeg, -intervalSize);
-                xNeg -= intervalSize;
+                kNeg -= intervalSize;
                 nextInterval = -nextInterval;
                 return interval;
             }
         }
 
-        private Interval SetupInterval(Interval interval, BigInteger x, int size, int[] offsets)
+        private Interval SetupInterval(Interval interval, long k0, int size, int[] offsets)
         {
-            interval.X = x;
+            interval.K0 = k0;
             interval.Size = size;
             if (interval.Offsets == null)
                 interval.Offsets = new int[factorBaseSize];
@@ -403,8 +412,9 @@ namespace Decompose.Numerics
             }
         }
 
-        private void SieveTrialDivision(Interval interval, Func<Candidate, bool> candidateCallback)
+        private int SieveTrialDivision(Interval interval, Func<Candidate, bool> candidateCallback)
         {
+            int count = 0;
             if (interval.Exponents == null)
                 interval.Exponents = new int[factorBaseSize + 1];
             var exponents = interval.Exponents;
@@ -414,18 +424,21 @@ namespace Decompose.Numerics
                 {
                     var candidate = new Candidate
                     {
-                        X = interval.X + i,
+                        X = sqrtN + interval.K0 + i,
                         Exponents = (int[])exponents.Clone(),
                     };
+                    ++count;
                     if (!candidateCallback(candidate))
                         break;
                 }
             }
+            return count;
         }
 
-        private void SieveQuadraticResidue(Interval interval, Func<Candidate, bool> candidateCallback)
+        private int SieveQuadraticResidue(Interval interval, Func<Candidate, bool> candidateCallback)
         {
-            var x0 = interval.X;
+            int count = 0;
+            var x0 = sqrtN + interval.K0;
             var y0 = x0 * x0 - n;
             int size = interval.Size;
             var offsets = interval.Offsets;
@@ -472,8 +485,6 @@ namespace Decompose.Numerics
                     counts[k] += logP;
                     k += p2;
                 }
-                if (token.IsCancellationRequested)
-                    return;
             }
             ushort limit = CalculateLowerBound(y0);
             for (int k = 0; k < size; k++)
@@ -488,12 +499,14 @@ namespace Decompose.Numerics
                             X = x,
                             Exponents = (int[])exponents.Clone(),
                         };
+                        ++count;
                         if (!candidateCallback(candidate))
-                            return;
+                            return count;
                     }
                 }
                 counts[k] = 0;
             }
+            return count;
         }
 
         private bool ValueIsSmooth(int k, Interval interval)
@@ -502,7 +515,13 @@ namespace Decompose.Numerics
             for (int i = 0; i <= factorBaseSize; i++)
                 exponents[i] = 0;
             if (interval.XRep.IsZero)
-                interval.XRep.Set(interval.X);
+            {
+                interval.XRep.Set(sqrtN);
+                if (interval.K0 < 0)
+                    interval.XRep.Subtract(interval.Reg3.Set((ulong)-interval.K0));
+                else
+                    interval.XRep.Add(interval.Reg3.Set((ulong)interval.K0));
+            }
             var xRep = interval.Reg1.SetSum(interval.XRep, (uint)k);
             var yRep = interval.Reg2.SetSquare(xRep);
             var zRep = interval.Reg3;
@@ -528,7 +547,7 @@ namespace Decompose.Numerics
         private bool ValueIsSmoothBigInteger(int k, Interval interval)
         {
             var exponents = interval.Exponents;
-            var x = interval.X + k;
+            var x = sqrtN + interval.K0 + k;
             var y = x * x - n;
             for (int i = 0; i <= factorBaseSize; i++)
                 exponents[i] = 0;
