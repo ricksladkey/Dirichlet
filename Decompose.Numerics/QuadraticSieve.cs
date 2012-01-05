@@ -45,18 +45,16 @@ namespace Decompose.Numerics
 
         private class Interval
         {
-            public long Min { get; set; }
+            public long X { get; set; }
             public int Size { get; set; }
             public int[] Exponents { get; set; }
             public ushort[] Counts { get; set; }
             public int[] Offsets { get; set; }
-            public Word32Integer XRep { get; set; }
             public Word32Integer Reg1 { get; set; }
             public Word32Integer Reg2 { get; set; }
-            public Word32Integer Reg3 { get; set; }
             public override string ToString()
             {
-                return string.Format("K = {0}, Size = {1}", Min, Size);
+                return string.Format("K = {0}, Size = {1}", X, Size);
             }
         }
 
@@ -189,7 +187,7 @@ namespace Decompose.Numerics
                     return (int)Math.Ceiling(x);
                 }
             }
-            return (digits - 5) * 5 + digits + 1;
+            throw new InvalidOperationException("table entry not found");
         }
 
         private ushort CalculateLowerBound(BigInteger y)
@@ -208,29 +206,10 @@ namespace Decompose.Numerics
 #if false
             Console.WriteLine("v = {0}", string.Join(", ", indices));
 #endif
-            return ComputeFactorWithExponents(indices);
-        }
-
-        private BigInteger ComputeFactorWithExponents(IEnumerable<int> indices)
-        {
             var xPrime = indices.Select(index => candidates[index].X).Product(n);
             var exponents = SumExponents(indices);
             var yPrime = new[] { -1 }.Concat(factorBase).Zip(exponents,
                 (p, exponent) => BigInteger.Pow(p, exponent / 2)).Product(n);
-            var factor = BigInteger.GreatestCommonDivisor(xPrime + yPrime, n);
-            if (!factor.IsOne && factor != n)
-                return factor;
-            return BigInteger.Zero;
-        }
-
-        private BigInteger ComputeFactorWithoutExponents(IEnumerable<int> indices)
-        {
-            var xSet = indices.Select(index => candidates[index].X).ToArray();
-            var xPrime = xSet
-                .Aggregate((sofar, current) => sofar * current) % n;
-            var yPrimeSquared = xSet
-                .Aggregate(BigInteger.One, (sofar, current) => sofar * (current * current - n));
-            var yPrime = IntegerMath.Sqrt(yPrimeSquared) % n;
             var factor = BigInteger.GreatestCommonDivisor(xPrime + yPrime, n);
             if (!factor.IsOne && factor != n)
                 return factor;
@@ -317,16 +296,8 @@ namespace Decompose.Numerics
         {
             int intervalId = Interlocked.Increment(ref nextIntervalId) - 1;
             int intervalNumber = intervalId % 2 == 0 ? intervalId / 2 : -(intervalId + 1) / 2;
-            interval.Min = (long)intervalNumber * intervalSize;
+            interval.X = (long)intervalNumber * intervalSize;
             interval.Size = intervalSize;
-            if (interval.XRep == null)
-            {
-                interval.XRep = nRep.Copy();
-                interval.Reg1 = nRep.Copy();
-                interval.Reg2 = nRep.Copy();
-                interval.Reg3 = nRep.Copy();
-            }
-            interval.XRep.Clear();
             return interval;
         }
 
@@ -338,11 +309,11 @@ namespace Decompose.Numerics
             var exponents = interval.Exponents;
             for (int k = 0; k < interval.Size; k++)
             {
-                if (ValueIsSmooth(k, interval))
+                if (IsSmooth(interval, k))
                 {
                     var candidate = new Candidate
                     {
-                        X = sqrtN + interval.Min + k,
+                        X = sqrtN + interval.X + k,
                         Exponents = (int[])exponents.Clone(),
                     };
                     ++count;
@@ -358,12 +329,11 @@ namespace Decompose.Numerics
             if (interval.Exponents == null)
             {
                 interval.Exponents = new int[factorBaseSize + 1];
-                interval.Counts = new ushort[subIntervalSize];
+                interval.Counts = new ushort[subIntervalSize + factorBase[factorBaseSize - 1]];
                 interval.Offsets = new int[factorBaseSize];
             }
 
-            var x0 = sqrtN + interval.Min;
-            var y0 = x0 * x0 - n;
+            var y0 = EvaluatePolynomial(interval.X);
             var offsets = interval.Offsets;
             var counts = interval.Counts;
             ushort countLimit = CalculateLowerBound(y0);
@@ -372,7 +342,7 @@ namespace Decompose.Numerics
             for (int i = 0; i < factorBaseSize; i++)
             {
                 int p = factorBase[i];
-                offsets[i] = ((int)((sqrtNOffsets[i] - interval.Min) % p) + p) % p;
+                offsets[i] = ((int)((sqrtNOffsets[i] - interval.X) % p) + p) % p;
             }
 
             int intervalSize = interval.Size;
@@ -392,38 +362,35 @@ namespace Decompose.Numerics
             int i0 = 0;
             if (factorBase[0] == 2)
             {
-                int k1;
                 var logP = logFactorBase[0];
-                for (k1 = offsets[0]; k1 < size; k1 += 2)
+                int k;
+                for (k = offsets[0]; k < size; k += 2)
                 {
-                    Debug.Assert((BigInteger.Pow(sqrtN + interval.Min + k0 + k1, 2) - n) % 2 == 0);
-                    counts[k1] += logP;
+                    Debug.Assert(EvaluatePolynomial(interval.X + k0 + k) % 2 == 0);
+                    counts[k] += logP;
                 }
-                offsets[0] = k1 - size;
+                offsets[0] = k - size;
                 ++i0;
             }
             for (int i = i0; i < factorBaseSize; i++)
             {
                 var p = factorBase[i];
                 var logP = logFactorBase[i];
-                int k = offsets[i];
                 int p1 = rootsDiff[i];
                 int p2 = p - p1;
+                int k = offsets[i];
                 if (k >= p2 && k - p2 < size)
                 {
-                    Debug.Assert((BigInteger.Pow(sqrtN + interval.Min + k0 + k - p2, 2) - n) % p == 0);
+                    Debug.Assert(EvaluatePolynomial(interval.X + k0 + k - p2) % p == 0);
                     counts[k - p2] += logP;
                 }
                 while (k < size)
                 {
-                    Debug.Assert((BigInteger.Pow(sqrtN + interval.Min + k0 + k, 2) - n) % p == 0);
+                    Debug.Assert(EvaluatePolynomial(interval.X + k0 + k) % p == 0);
                     counts[k] += logP;
                     k += p1;
-                    if (k < size)
-                    {
-                        Debug.Assert((BigInteger.Pow(sqrtN + interval.Min + k0 + k, 2) - n) % p == 0);
-                        counts[k] += logP;
-                    }
+                    Debug.Assert(EvaluatePolynomial(interval.X + k0 + k) % p == 0);
+                    counts[k] += logP;
                     k += p2;
                 }
                 offsets[i] = k - size;
@@ -439,11 +406,11 @@ namespace Decompose.Numerics
             {
                 if (counts[k] >= countLimit)
                 {
-                    if (ValueIsSmooth(k0 + k, interval))
+                    if (IsSmooth(interval, k0 + k))
                     {
                         var candidate = new Candidate
                         {
-                            X = sqrtN + interval.Min + k0 + k,
+                            X = sqrtN + interval.X + k0 + k,
                             Exponents = (int[])interval.Exponents.Clone(),
                         };
                         ++count;
@@ -456,29 +423,22 @@ namespace Decompose.Numerics
             return count;
         }
 
-        private bool ValueIsSmooth(int k, Interval interval)
+        private bool IsSmooth(Interval interval, int k)
         {
+            if (interval.Reg1 == null)
+            {
+                interval.Reg1 = nRep.Copy();
+                interval.Reg2 = nRep.Copy();
+            }
             var exponents = interval.Exponents;
             for (int i = 0; i <= factorBaseSize; i++)
                 exponents[i] = 0;
-            if (interval.XRep.IsZero)
-            {
-                interval.XRep.Set(sqrtNRep);
-                if (interval.Min < 0)
-                    interval.XRep.Subtract(interval.Reg3.Set((ulong)-interval.Min));
-                else
-                    interval.XRep.Add(interval.Reg3.Set((ulong)interval.Min));
-            }
-            var xRep = interval.Reg1.SetSum(interval.XRep, (uint)k);
-            var yRep = interval.Reg2.SetSquare(xRep);
-            var zRep = interval.Reg3;
-            if (yRep < nRep)
-            {
-                yRep.SetDifference(nRep, yRep);
+            bool negative;
+            var yRep = interval.Reg1;
+            var zRep = interval.Reg2;
+            EvaluatePolynomial(interval.X + k, yRep, zRep, out negative);
+            if (negative)
                 exponents[0] = 1;
-            }
-            else
-                yRep.Subtract(nRep);
             for (int i = 0; i < factorBaseSize; i++)
             {
                 var p = factorBase[i];
@@ -491,11 +451,10 @@ namespace Decompose.Numerics
             return yRep.IsOne;
         }
 
-        private bool ValueIsSmoothBigInteger(int k, Interval interval)
+        private bool IsSmoothBigInteger(Interval interval, int k)
         {
             var exponents = interval.Exponents;
-            var x = sqrtN + interval.Min + k;
-            var y = x * x - n;
+            var y = EvaluatePolynomial(interval.X + k);
             for (int i = 0; i <= factorBaseSize; i++)
                 exponents[i] = 0;
             if (y < 0)
@@ -545,6 +504,33 @@ namespace Decompose.Numerics
                 for (int i = 0; i < exponents.Length; i++)
                     matrix[i, j] = exponents[i] % 2 != 0;
             }
+        }
+
+        private BigInteger EvaluatePolynomial(long x)
+        {
+            var xPrime = sqrtN + x;
+            return xPrime * xPrime - n;
+        }
+
+        private Word32Integer EvaluatePolynomial(long x, Word32Integer y, Word32Integer reg1, out bool negative)
+        {
+            reg1.Set(sqrtNRep);
+            if (x < 0)
+                reg1.Subtract(y.Set((ulong)-x));
+            else
+                reg1.Add(y.Set((ulong)x));
+            y.SetSquare(reg1);
+            if (y < nRep)
+            {
+                y.SetDifference(nRep, y);
+                negative = true;
+            }
+            else
+            {
+                y.Subtract(nRep);
+                negative = false;
+            }
+            return y;
         }
     }
 }
