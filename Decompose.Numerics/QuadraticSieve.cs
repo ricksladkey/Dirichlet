@@ -54,7 +54,7 @@ namespace Decompose.Numerics
             public Word32Integer Reg2 { get; set; }
             public override string ToString()
             {
-                return string.Format("K = {0}, Size = {1}", X, Size);
+                return string.Format("X = {0}, Size = {1}", X, Size);
             }
         }
 
@@ -243,7 +243,7 @@ namespace Decompose.Numerics
             if (threads == 1)
             {
                 candidates = new List<Candidate>();
-                var interval = new Interval();
+                var interval = CreateInterval();
                 while (candidates.Count < desired)
                 {
                     sieveCore(GetNextInterval(interval));
@@ -270,7 +270,7 @@ namespace Decompose.Numerics
         {
             int count = 0;
             int intervals = 0;
-            var interval = new Interval();
+            var interval = CreateInterval();
             while (candidateBuffer.Count < candidateBuffer.BoundedCapacity)
             {
                 count += sieveCore(GetNextInterval(interval));
@@ -283,6 +283,17 @@ namespace Decompose.Numerics
 #endif
                 Interlocked.Increment(ref intervalsProcessed);
             }
+        }
+
+        private Interval CreateInterval()
+        {
+            var interval = new Interval();
+            interval.Exponents = new int[factorBaseSize + 1];
+            interval.Counts = new ushort[subIntervalSize + factorBase[factorBaseSize - 1]];
+            interval.Offsets = new int[factorBaseSize];
+            interval.Reg1 = nRep.Copy();
+            interval.Reg2 = nRep.Copy();
+            return interval;
         }
 
         private void SetupIntervals()
@@ -304,8 +315,6 @@ namespace Decompose.Numerics
         private int SieveTrialDivision(Interval interval)
         {
             int count = 0;
-            if (interval.Exponents == null)
-                interval.Exponents = new int[factorBaseSize + 1];
             var exponents = interval.Exponents;
             for (int k = 0; k < interval.Size; k++)
             {
@@ -326,26 +335,16 @@ namespace Decompose.Numerics
 
         private int SieveQuadraticResidue(Interval interval)
         {
-            if (interval.Exponents == null)
-            {
-                interval.Exponents = new int[factorBaseSize + 1];
-                interval.Counts = new ushort[subIntervalSize + factorBase[factorBaseSize - 1]];
-                interval.Offsets = new int[factorBaseSize];
-            }
-
-            var y0 = EvaluatePolynomial(interval.X);
             var offsets = interval.Offsets;
-            var counts = interval.Counts;
-            ushort countLimit = CalculateLowerBound(y0);
-            int count = 0;
-
             for (int i = 0; i < factorBaseSize; i++)
             {
                 int p = factorBase[i];
                 offsets[i] = ((int)((sqrtNOffsets[i] - interval.X) % p) + p) % p;
             }
 
+            int count = 0;
             int intervalSize = interval.Size;
+            ushort countLimit = CalculateLowerBound(EvaluatePolynomial(interval.X));
             for (int k0 = 0; k0 < intervalSize; k0 += subIntervalSize)
             {
                 int size = Math.Min(subIntervalSize, intervalSize - k0);
@@ -425,11 +424,6 @@ namespace Decompose.Numerics
 
         private bool IsSmooth(Interval interval, int k)
         {
-            if (interval.Reg1 == null)
-            {
-                interval.Reg1 = nRep.Copy();
-                interval.Reg2 = nRep.Copy();
-            }
             var exponents = interval.Exponents;
             for (int i = 0; i <= factorBaseSize; i++)
                 exponents[i] = 0;
