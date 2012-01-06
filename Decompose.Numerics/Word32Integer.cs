@@ -902,11 +902,11 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public bool SetQuotientIfDivisible(Word32Integer a, Word32Integer b, Word32Integer reg1)
+        public Word32Integer SetQuotientWithRemainder(Word32Integer a, Word32Integer b, Word32Integer remainder)
         {
-            reg1.Set(a);
-            DivMod(reg1, b, this);
-            return reg1.IsZero;
+            remainder.Set(a);
+            DivMod(remainder, b, this);
+            return this;
         }
 
         public Word32Integer SetRemainder(Word32Integer a, Word32Integer b)
@@ -919,10 +919,6 @@ namespace Decompose.Numerics
 
         private static unsafe void DivMod(Word32Integer u, Word32Integer v, Word32Integer q)
         {
-#if DEBUG
-            var quotient = u.Copy().Set(u.ToBigInteger() / v.ToBigInteger());
-            var remainder = u.Copy().Set(u.ToBigInteger() % v.ToBigInteger());
-#endif
             if (u.CompareTo(v) < 0)
             {
                 if (q != null)
@@ -1000,9 +996,6 @@ namespace Decompose.Numerics
                     }
                     if (q != null)
                         q.bits[q.index + m - j] = (uint)qhat;
-#if DEBUG
-                    Debug.Assert(qhat == quotient.bits[quotient.index + m - j]);
-#endif
                 }
             }
             if (q != null)
@@ -1012,9 +1005,6 @@ namespace Decompose.Numerics
                 q.SetLast(m);
             }
             u.SetLast(n - 1);
-#if DEBUG
-            Debug.Assert(u == remainder);
-#endif
         }
 
         public Word32Integer Divide(uint a, Word32Integer reg1)
@@ -1037,11 +1027,11 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public bool SetQuotientIfDivisible(Word32Integer a, uint b, Word32Integer reg1)
+        public Word32Integer SetQuotientWithRemainder(Word32Integer a, uint b, Word32Integer remainder)
         {
-            reg1.Set(a);
-            DivMod(reg1, b, this);
-            return reg1.IsZero;
+            remainder.Set(a);
+            DivMod(remainder, b, this);
+            return this;
         }
 
         public Word32Integer SetRemainder(Word32Integer a, uint b)

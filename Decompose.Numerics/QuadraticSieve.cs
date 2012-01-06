@@ -17,7 +17,7 @@ namespace Decompose.Numerics
     {
         public QuadraticSieve(int threads, int factorBaseSize, int lowerBoundPercent)
         {
-            diag = Diag.None;
+            diag = Diag.Summary | Diag.Sieve;
             threadsOverride = threads;
             factorBaseSizeOverride = factorBaseSize;
             lowerBoundPercentOverride = lowerBoundPercent;
@@ -117,7 +117,7 @@ namespace Decompose.Numerics
         private int threads;
         private BlockingCollection<Candidate> candidateBuffer;
         private List<Candidate> candidates;
-        private Dictionary<long, Candidate> relations;
+        private Dictionary<long, long> relations;
         private IBitMatrix matrix;
 
         private int intervalsProcessed;
@@ -281,7 +281,7 @@ namespace Decompose.Numerics
             CalculateNumberOfThreads();
             SetupIntervals();
             candidateBuffer = new BlockingCollection<Candidate>(desired);
-            relations = new Dictionary<long, Candidate>();
+            relations = new Dictionary<long, long>();
 
             if (threads == 1)
             {
@@ -302,6 +302,8 @@ namespace Decompose.Numerics
             }
 
             candidates = candidateBuffer.ToList();
+            candidateBuffer = null;
+            relations = null;
             ProcessCandidates();
         }
 
@@ -469,13 +471,21 @@ namespace Decompose.Numerics
 
         private bool IsSmoothWord32Integer(Interval interval, int k)
         {
+            long y = FactorOverBase(interval, interval.X + k);
+            if (detectPrimeCofactors && y != 1 && y < maximumDivisorSquared)
+                ProcessRelation(interval, k, y);
+            return y == 1;
+        }
+
+        private long FactorOverBase(Interval interval, long x)
+        {
             var exponents = interval.Exponents;
+            var y = interval.Reg1;
+            var z = interval.Reg2;
             for (int i = 0; i <= factorBaseSize; i++)
                 exponents[i] = 0;
             bool negative;
-            var y = interval.Reg1;
-            var z = interval.Reg2;
-            EvaluatePolynomial(interval.X + k, y, z, out negative);
+            EvaluatePolynomial(x, y, z, out negative);
             if (negative)
                 exponents[0] = 1;
             for (int i = 0; i < factorBaseSize; i++)
@@ -487,17 +497,7 @@ namespace Decompose.Numerics
                     y.Divide((uint)p, z);
                 }
             }
-            if (detectPrimeCofactors && !y.IsOne && y < (ulong)maximumDivisorSquared)
-            {
-                var relation = new Candidate
-                {
-                    X = sqrtN + interval.X + k,
-                    Exponents = (int[])exponents.Clone(),
-                    Cofactor = (long)(ulong)y,
-                };
-                ProcessRelation(relation);
-            }
-            return y.IsOne;
+            return y < (ulong)long.MaxValue ? (long)(ulong)y : 0;
         }
 
         private bool IsSmoothBigInteger(Interval interval, int k)
@@ -521,36 +521,33 @@ namespace Decompose.Numerics
                 }
             }
             if (detectPrimeCofactors && !y.IsOne && y < maximumDivisorSquared)
-            {
-                var relation = new Candidate
-                {
-                    X = sqrtN + interval.X + k,
-                    Exponents = (int[])exponents.Clone(),
-                    Cofactor = (long)y,
-                };
-                ProcessRelation(relation);
-            }
+                ProcessRelation(interval, k, (long)y);
             return y.IsOne;
         }
 
-        private bool ProcessRelation(Candidate relation)
+        private bool ProcessRelation(Interval interval, int k, long cofactor)
         {
-            var cofactor = relation.Cofactor;
-            var other = null as Candidate;
+            long other;
             lock (relations)
             {
                 if (relations.TryGetValue(cofactor, out other))
                     relations.Remove(cofactor);
                 else
-                    relations.Add(cofactor, relation);
+                    relations.Add(cofactor, interval.X + k);
             }
-            if (other != null)
+            if (other != 0)
             {
+                var candidate = new Candidate
+                {
+                    X = (sqrtN + interval.X + k) * (sqrtN + other),
+                    Exponents = (int[])interval.Exponents.Clone(),
+                    Cofactor = cofactor,
+                };
                 ++relationsConverted;
-                relation.X *= other.X;
+                var y = FactorOverBase(interval, other);
                 for (int i = 0; i <= factorBaseSize; i++)
-                    relation.Exponents[i] += other.Exponents[i];
-                return candidateBuffer.TryAdd(relation);
+                    candidate.Exponents[i] += interval.Exponents[i];
+                return candidateBuffer.TryAdd(candidate);
             }
             return true;
         }
