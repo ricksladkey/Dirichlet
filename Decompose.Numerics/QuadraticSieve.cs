@@ -116,11 +116,13 @@ namespace Decompose.Numerics
 
         private int threads;
         private BlockingCollection<Candidate> candidateBuffer;
-        private BlockingCollection<Candidate> relationBuffer;
         private List<Candidate> candidates;
+        private Dictionary<long, Candidate> relations;
         private IBitMatrix matrix;
 
         private int intervalsProcessed;
+        private int relationsProcessed;
+        private int relationsConverted;
 
         private void FactorCore(BigInteger n, List<BigInteger> factors)
         {
@@ -168,6 +170,10 @@ namespace Decompose.Numerics
             nRep = new Word32Integer(words * 2 + 1).Set(n);
             sqrtNRep = nRep.Copy().Set(sqrtN);
 
+            intervalsProcessed = 0;
+            relationsProcessed = 0;
+            relationsConverted = 0;
+
             Sieve(desired, SieveQuadraticResidue);
             var result = nullSpaceAlgorithm.Solve(matrix)
                 .Select(v => ComputeFactor(v))
@@ -177,8 +183,10 @@ namespace Decompose.Numerics
 
             if ((diag & Diag.Summary) != 0)
             {
-                Console.WriteLine("desired = {0}", desired);
+                Console.WriteLine("threads = {0}, lowerBound = {1}", threadsOverride, lowerBoundPercentOverride);
+                Console.WriteLine("digits = {0}, factorBaseSize = {1}, desired = {2}", digits, factorBaseSize, desired);
                 Console.WriteLine("intervals processed = {0}", intervalsProcessed);
+                Console.WriteLine("relations processed = {0}, converted = {1}", relationsProcessed, relationsConverted);
             }
 
             return result;
@@ -273,7 +281,7 @@ namespace Decompose.Numerics
             CalculateNumberOfThreads();
             SetupIntervals();
             candidateBuffer = new BlockingCollection<Candidate>(desired);
-            relationBuffer = new BlockingCollection<Candidate>();
+            relations = new Dictionary<long, Candidate>();
 
             if (threads == 1)
             {
@@ -290,43 +298,11 @@ namespace Decompose.Numerics
                 var tasks = new Task[threads];
                 for (int i = 0; i < threads; i++)
                     tasks[i] = Task.Factory.StartNew(() => SieveThread(sieveCore));
-                if (detectPrimeCofactors)
-                {
-                    var relationTask = Task.Factory.StartNew(ProcessRelations);
-                    Task.WaitAll(tasks);
-                    relationBuffer.Add(null);
-                    relationTask.Wait();
-                }
-                else
-                    Task.WaitAll(tasks);
+                Task.WaitAll(tasks);
             }
 
             candidates = candidateBuffer.ToList();
             ProcessCandidates();
-        }
-
-        private void ProcessRelations()
-        {
-            var relations = new Dictionary<long, Candidate>();
-            while (candidateBuffer.Count < candidateBuffer.BoundedCapacity)
-            {
-                var relation = relationBuffer.Take();
-                if (relation == null)
-                    break;
-                var cofactor = relation.Cofactor;
-                if (relations.ContainsKey(cofactor))
-                {
-                    var other = relations[cofactor];
-                    relations.Remove(cofactor);
-                    relation.X *= other.X;
-                    for (int i = 0; i <= factorBaseSize; i++)
-                        relation.Exponents[i] += other.Exponents[i];
-                    if (!candidateBuffer.TryAdd(relation))
-                        break;
-                }
-                else
-                    relations.Add(cofactor, relation);
-            }
         }
 
         private void SieveThread(Func<Interval, int> sieveCore)
@@ -364,7 +340,6 @@ namespace Decompose.Numerics
         {
             intervalSize = (int)IntegerMath.Min((sqrtN + threads - 1) / threads, maximumIntervalSize);
             nextIntervalId = 0;
-            intervalsProcessed = 0;
         }
 
         private Interval GetNextInterval(Interval interval)
@@ -506,7 +481,7 @@ namespace Decompose.Numerics
             for (int i = 0; i < factorBaseSize; i++)
             {
                 var p = factorBase[i];
-                while (z.SetRemainder(y, (uint)p).IsZero)
+                while (y.GetRemainder((uint)p) == 0)
                 {
                     ++exponents[i + 1];
                     y.Divide((uint)p, z);
@@ -520,7 +495,7 @@ namespace Decompose.Numerics
                     Exponents = (int[])exponents.Clone(),
                     Cofactor = (long)(ulong)y,
                 };
-                relationBuffer.Add(relation);
+                ProcessRelation(relation);
             }
             return y.IsOne;
         }
@@ -553,9 +528,31 @@ namespace Decompose.Numerics
                     Exponents = (int[])exponents.Clone(),
                     Cofactor = (long)y,
                 };
-                relationBuffer.Add(relation);
+                ProcessRelation(relation);
             }
             return y.IsOne;
+        }
+
+        private bool ProcessRelation(Candidate relation)
+        {
+            var cofactor = relation.Cofactor;
+            var other = null as Candidate;
+            lock (relations)
+            {
+                if (relations.TryGetValue(cofactor, out other))
+                    relations.Remove(cofactor);
+                else
+                    relations.Add(cofactor, relation);
+            }
+            if (other != null)
+            {
+                ++relationsConverted;
+                relation.X *= other.X;
+                for (int i = 0; i <= factorBaseSize; i++)
+                    relation.Exponents[i] += other.Exponents[i];
+                return candidateBuffer.TryAdd(relation);
+            }
+            return true;
         }
 
         private void ProcessCandidates()
