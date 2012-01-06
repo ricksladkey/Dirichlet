@@ -74,7 +74,7 @@ namespace Decompose.Numerics.Test
         {
             var expected = new[] { BigInteger.Parse("274177"), BigInteger.Parse("67280421310721") };
             var n = BigInteger.Parse("18446744073709551617");
-            var algorithm = new QuadraticSieve(8, 0, 0);
+            var algorithm = new QuadraticSieve(8, 0, 0, null);
             var factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
             Assert.IsTrue(factors.Length == 2);
             var product = factors.Aggregate((sofar, current) => sofar * current);

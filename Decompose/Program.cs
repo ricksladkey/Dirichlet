@@ -11,20 +11,27 @@ namespace Decompose
     {
         static void Main(string[] args)
         {
-            //FindPrimeTest1();
-            //BarrettReductionTest1();
-            //BarrettReductionTest2();
-            //Radix32Test1();
-            //FactorTest1();
-            //FactorTest2();
-            //FactorTest3();
-            //FactorTest4();
-            //FactorTest5();
-            //FactorTest6();
-            //QuadraticSieveParametersTest();
-            QuadraticSieveDigitsTest();
-            //CunnihamTest();
-            //GaussianEliminationTest1();
+            try
+            {
+                //FindPrimeTest1();
+                //BarrettReductionTest1();
+                //BarrettReductionTest2();
+                //Radix32Test1();
+                //FactorTest1();
+                //FactorTest2();
+                //FactorTest3();
+                //FactorTest4();
+                //FactorTest5();
+                //FactorTest6();
+                //QuadraticSieveParametersTest();
+                QuadraticSieveDigitsTest();
+                //CunnihamTest();
+                //GaussianEliminationTest1();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception: {0}", ex.Message);
+            }
         }
 
         static void FindPrimeTest1()
@@ -228,7 +235,7 @@ namespace Decompose
                 //factors = FactorTest(true, 1, n, new PollardRho(threads, 0));
                 //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, 0, new Radix32IntegerReduction()));
                 //factors = FactorTest(true, 10, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
-                factors = FactorTest(true, 1, n, new QuadraticSieve(threads, 0, 0));
+                factors = FactorTest(true, 1, n, new QuadraticSieve(threads, 0, 0, null));
             }
         }
 
@@ -240,8 +247,9 @@ namespace Decompose
             const int quadraticSieveThreads = 8;
             bool debug = false;
 
+            Console.WriteLine("n = {0}", n);
             //FactorTest(debug, 500, n, new PollardRhoReduction(pollardThreads, new MontgomeryReduction()));
-            var factors = FactorTest(debug, 1, n, new QuadraticSieve(quadraticSieveThreads, 0, 0));
+            var factors = FactorTest(debug, 1, n, new QuadraticSieve(quadraticSieveThreads, 0, 0, null));
             foreach (var factor in factors)
                 Console.WriteLine("{0}", factor);
         }
@@ -250,7 +258,7 @@ namespace Decompose
         {
             var n = BigInteger.Parse("18446744073709551617");
             //var n = BigInteger.Parse("12345678901");
-            FactorTest(false, 100, n, new QuadraticSieve(8, 0, 0));
+            FactorTest(false, 100, n, new QuadraticSieve(8, 0, 0, null));
         }
 
         static void QuadraticSieveParametersTest()
@@ -272,7 +280,7 @@ namespace Decompose
                     for (int percent = 65; percent <= 75; percent += 1)
                     {
                         Console.WriteLine("percent = {0}", percent);
-                        FactorTest(false, 1, n, new QuadraticSieve(threads, size, percent));
+                        FactorTest(false, 1, n, new QuadraticSieve(threads, size, percent, null));
                     }
                 }
             }
@@ -288,11 +296,8 @@ namespace Decompose
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
                 var n = p * q;
-                if (i < 27)
-                    continue;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                FactorTest(false, 1, n, new QuadraticSieve(threads, 0, 0));
-                break;
+                FactorTest(false, 1, n, new QuadraticSieve(threads, 0, 0, null));
             }
         }
 
@@ -306,7 +311,7 @@ namespace Decompose
                 Console.WriteLine("{0}", factor);
             var c = n / smallFactors.Aggregate((sofar, factor) => sofar * factor);
             Console.WriteLine("c = {0}", c);
-            var qr = new QuadraticSieve(8, 0, 0);
+            var qr = new QuadraticSieve(8, 0, 0, null);
             var factors = qr.Factor(c);
             foreach (var factor in factors)
                 Console.WriteLine("{0}", factor);
@@ -321,7 +326,7 @@ namespace Decompose
             var p = NextPrime(random, limit);
             var q = NextPrime(random, limit);
             var n = p * q;
-            FactorTest(false, 1, n, new QuadraticSieve(threads, 10000, 0));
+            FactorTest(false, 1, n, new QuadraticSieve(threads, 10000, 0, null));
         }
 
         static BigInteger NextPrime(MersenneTwister32 random, BigInteger limit)
