@@ -11,7 +11,7 @@ namespace Decompose.Numerics
             return source.Aggregate((sofar, current) => sofar + current);
         }
 
-        public static BigInteger Sum(this IEnumerable<BigInteger> source, BigInteger n)
+        public static BigInteger SumModulo(this IEnumerable<BigInteger> source, BigInteger n)
         {
             return source.Aggregate((sofar, current) => sofar + current) % n;
         }
@@ -21,7 +21,7 @@ namespace Decompose.Numerics
             return source.Aggregate((sofar, current) => sofar * current);
         }
 
-        public static BigInteger Product(this IEnumerable<BigInteger> source, BigInteger n)
+        public static BigInteger ProductModulo(this IEnumerable<BigInteger> source, BigInteger n)
         {
             var product = BigInteger.One;
             foreach (var factor in source)
