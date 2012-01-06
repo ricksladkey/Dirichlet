@@ -3,3 +3,5 @@
 - add allocator to radix32-integer
 - process both roots during a single pass
 - combine small factors when sieving into a single pattern
+
+- try log(2 * x * sqrt(n)) as the cutoff: http://www.crypto-world.com/documents/contini_siqs.pdf

@@ -44,7 +44,7 @@ namespace Decompose.Numerics
             for (int k = 0; k < cols; k++)
             {
                 int j = -1;
-                for (int i = 0; i < rows; i++)
+                for (int i = rows - 1; i >= 0; i--)
                 {
                     if (matrix[i, k] && c[i] < 0)
                     {
