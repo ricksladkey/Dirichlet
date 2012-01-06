@@ -17,6 +17,7 @@ namespace Decompose.Numerics
     {
         public QuadraticSieve(int threads, int factorBaseSize, int lowerBoundPercent)
         {
+            diag = Diag.None;
             threadsOverride = threads;
             factorBaseSizeOverride = factorBaseSize;
             lowerBoundPercentOverride = lowerBoundPercent;
@@ -32,6 +33,15 @@ namespace Decompose.Numerics
             var factors = new List<BigInteger>();
             FactorCore(n, factors);
             return factors;
+        }
+
+        [Flags]
+        private enum Diag
+        {
+            None = 0,
+            Summary = 1,
+            Solutions = 2,
+            Sieve = 4,
         }
 
         private class Candidate
@@ -62,21 +72,11 @@ namespace Decompose.Numerics
 
         private const int maximumIntervalSize = 1000000;
         private const int subIntervalSize = 200000;
-        private const int lowerBoundPercentDefault = 95;
+        private const int lowerBoundPercentDefaultNoCofactors = 85;
+        private const int lowerBoundPercentDefaultCofactors = 95;
         private const int surplusCandidates = 10;
         private readonly BigInteger smallFactorCutoff = (BigInteger)int.MaxValue;
-
-        private int threadsOverride;
-        private int factorBaseSizeOverride;
-        private int lowerBoundPercentOverride;
-        private IFactorizationAlgorithm<int> smallFactorizationAlgorithm;
-        private IEnumerable<int> primes;
-        private INullSpaceAlgorithm<IBitArray, IBitMatrix> nullSpaceAlgorithm;
-
-        private int intervalSize;
-        private int nextIntervalId;
-
-        private Tuple<int, int>[] sizePairs =
+        private readonly Tuple<int, int>[] sizePairs =
         {
             Tuple.Create(1, 2),
             Tuple.Create(6, 5),
@@ -89,6 +89,17 @@ namespace Decompose.Numerics
             Tuple.Create(90, 60000), // http://www.mersenneforum.org/showthread.php?t=4013
         };
 
+        private int threadsOverride;
+        private int factorBaseSizeOverride;
+        private int lowerBoundPercentOverride;
+        private IFactorizationAlgorithm<int> smallFactorizationAlgorithm;
+        private IEnumerable<int> primes;
+        private INullSpaceAlgorithm<IBitArray, IBitMatrix> nullSpaceAlgorithm;
+
+        private int intervalSize;
+        private int nextIntervalId;
+
+        private Diag diag;
         private BigInteger n;
         private BigInteger sqrtN;
         private int factorBaseSize;
@@ -101,6 +112,7 @@ namespace Decompose.Numerics
         private CountInt logMaximumDivisorSquared;
         private Word32Integer nRep;
         private Word32Integer sqrtNRep;
+        private bool detectPrimeCofactors;
 
         private int threads;
         private BlockingCollection<Candidate> candidateBuffer;
@@ -150,23 +162,26 @@ namespace Decompose.Numerics
             long maximumDivisor = factorBase[factorBaseSize - 1];
             maximumDivisorSquared = maximumDivisor * maximumDivisor;
             logMaximumDivisorSquared = LogScale(maximumDivisorSquared);
-
+            int digits = (int)Math.Ceiling(BigInteger.Log(n, 10));
+            detectPrimeCofactors = digits > 50;
             var words = IntegerMath.QuotientCeiling(n.GetBitLength(), Word32Integer.WordLength);
             nRep = new Word32Integer(words * 2 + 1).Set(n);
             sqrtNRep = nRep.Copy().Set(sqrtN);
 
-#if false
-            Sieve(desired, SieveTrialDivision);
-#else
             Sieve(desired, SieveQuadraticResidue);
-#endif
-            foreach (var v in nullSpaceAlgorithm.Solve(matrix))
+            var result = nullSpaceAlgorithm.Solve(matrix)
+                .Select(v => ComputeFactor(v))
+                .Where(factor => !factor.IsZero)
+                .Take(1)
+                .FirstOrDefault();
+
+            if ((diag & Diag.Summary) != 0)
             {
-                var factor = ComputeFactor(v);
-                if (!factor.IsZero)
-                    return factor;
+                Console.WriteLine("desired = {0}", desired);
+                Console.WriteLine("intervals processed = {0}", intervalsProcessed);
             }
-            return BigInteger.Zero;
+
+            return result;
         }
 
         private void CalculateNumberOfThreads()
@@ -200,13 +215,16 @@ namespace Decompose.Numerics
 
         private CountInt CalculateLowerBound(BigInteger y)
         {
-#if false
-            int percent = lowerBoundPercentOverride != 0 ? lowerBoundPercentOverride : lowerBoundPercentDefault;
-            return (CountInt)(LogScale(y) * percent / 100);
-#else
-            int percent = lowerBoundPercentOverride != 0 ? lowerBoundPercentOverride : lowerBoundPercentDefault;
-            return (CountInt)((LogScale(y) - logMaximumDivisorSquared / 2) * percent / 100);
-#endif
+            if (detectPrimeCofactors)
+            {
+                int percent = lowerBoundPercentOverride != 0 ? lowerBoundPercentOverride : lowerBoundPercentDefaultCofactors;
+                return (CountInt)((LogScale(y) - logMaximumDivisorSquared / 2) * percent / 100);
+            }
+            else
+            {
+                int percent = lowerBoundPercentOverride != 0 ? lowerBoundPercentOverride : lowerBoundPercentDefaultNoCofactors;
+                return (CountInt)(LogScale(y) * percent / 100);
+            }
         }
 
         private BigInteger ComputeFactor(IBitArray v)
@@ -216,9 +234,8 @@ namespace Decompose.Numerics
                 .Where(pair => pair.Selected)
                 .Select(pair => pair.Index)
                 .ToArray();
-#if false
-            Console.WriteLine("v = {0}", string.Join(", ", indices));
-#endif
+            if ((diag & Diag.Solutions) != 0)
+                Console.WriteLine("v = {0}", string.Join(", ", indices));
             var xPrime = indices.Select(index => candidates[index].X).ProductModulo(n);
             var exponents = SumExponents(indices);
             var yFactorBase = new[] { -1 }.Concat(factorBase).Zip(exponents,
@@ -273,18 +290,19 @@ namespace Decompose.Numerics
                 var tasks = new Task[threads];
                 for (int i = 0; i < threads; i++)
                     tasks[i] = Task.Factory.StartNew(() => SieveThread(sieveCore));
-                var relationTask = Task.Factory.StartNew(ProcessRelations);
-                Task.WaitAll(tasks);
-                relationBuffer.Add(null);
-                relationTask.Wait();
+                if (detectPrimeCofactors)
+                {
+                    var relationTask = Task.Factory.StartNew(ProcessRelations);
+                    Task.WaitAll(tasks);
+                    relationBuffer.Add(null);
+                    relationTask.Wait();
+                }
+                else
+                    Task.WaitAll(tasks);
             }
 
             candidates = candidateBuffer.ToList();
             ProcessCandidates();
-#if false
-            Console.WriteLine("desired = {0}", desired);
-            Console.WriteLine("intervals processed = {0}", intervalsProcessed);
-#endif
         }
 
         private void ProcessRelations()
@@ -319,13 +337,14 @@ namespace Decompose.Numerics
             while (candidateBuffer.Count < candidateBuffer.BoundedCapacity)
             {
                 count += sieveCore(GetNextInterval(interval));
-#if false
-                if (++intervals % 500 == 0)
+                if ((diag & Diag.Sieve) != 0)
                 {
-                    Console.WriteLine("count = {0}", count);
-                    count = 0;
+                    if (++intervals % 500 == 0)
+                    {
+                        Console.WriteLine("count = {0}", count);
+                        count = 0;
+                    }
                 }
-#endif
                 Interlocked.Increment(ref intervalsProcessed);
             }
         }
@@ -470,7 +489,7 @@ namespace Decompose.Numerics
 
         private bool IsSmooth(Interval interval, int k)
         {
-            return IsSmoothBigInteger(interval, k);
+            return IsSmoothWord32Integer(interval, k);
         }
 
         private bool IsSmoothWord32Integer(Interval interval, int k)
@@ -479,21 +498,31 @@ namespace Decompose.Numerics
             for (int i = 0; i <= factorBaseSize; i++)
                 exponents[i] = 0;
             bool negative;
-            var yRep = interval.Reg1;
-            var zRep = interval.Reg2;
-            EvaluatePolynomial(interval.X + k, yRep, zRep, out negative);
+            var y = interval.Reg1;
+            var z = interval.Reg2;
+            EvaluatePolynomial(interval.X + k, y, z, out negative);
             if (negative)
                 exponents[0] = 1;
             for (int i = 0; i < factorBaseSize; i++)
             {
                 var p = factorBase[i];
-                while (zRep.SetRemainder(yRep, (uint)p).IsZero)
+                while (z.SetRemainder(y, (uint)p).IsZero)
                 {
                     ++exponents[i + 1];
-                    yRep.Divide((uint)p, zRep);
+                    y.Divide((uint)p, z);
                 }
             }
-            return yRep.IsOne;
+            if (detectPrimeCofactors && !y.IsOne && y < (ulong)maximumDivisorSquared)
+            {
+                var relation = new Candidate
+                {
+                    X = sqrtN + interval.X + k,
+                    Exponents = (int[])exponents.Clone(),
+                    Cofactor = (long)(ulong)y,
+                };
+                relationBuffer.Add(relation);
+            }
+            return y.IsOne;
         }
 
         private bool IsSmoothBigInteger(Interval interval, int k)
@@ -516,8 +545,7 @@ namespace Decompose.Numerics
                     y /= p;
                 }
             }
-#if true
-            if (!y.IsOne && y < maximumDivisorSquared)
+            if (detectPrimeCofactors && !y.IsOne && y < maximumDivisorSquared)
             {
                 var relation = new Candidate
                 {
@@ -527,7 +555,6 @@ namespace Decompose.Numerics
                 };
                 relationBuffer.Add(relation);
             }
-#endif
             return y.IsOne;
         }
 

@@ -168,11 +168,18 @@ namespace Decompose.Numerics
             return new Word32Integer(newBits, 0, length);
         }
 
-        public uint ToInteger()
+        public uint ToUInt32()
         {
             CheckValid();
             Debug.Assert(last == 0);
             return bits[index];
+        }
+
+        public ulong ToUInt64()
+        {
+            CheckValid();
+            Debug.Assert(last < 2);
+            return last == 0 ? bits[index] : (ulong)bits[index + 1] << 32 | bits[index];
         }
 
         public BigInteger ToBigInteger()
@@ -212,7 +219,55 @@ namespace Decompose.Numerics
             return a.CompareTo(b) == 0;
         }
 
+        public static bool operator ==(Word32Integer a, uint b)
+        {
+            if ((object)a == null)
+                return false;
+            return a.CompareTo(b) == 0;
+        }
+
+        public static bool operator ==(Word32Integer a, ulong b)
+        {
+            if ((object)a == null)
+                return false;
+            return a.CompareTo(b) == 0;
+        }
+
+        public static bool operator ==(uint a, Word32Integer b)
+        {
+            if ((object)b == null)
+                return false;
+            return b.CompareTo(a) == 0;
+        }
+
+        public static bool operator ==(ulong a, Word32Integer b)
+        {
+            if ((object)b == null)
+                return false;
+            return b.CompareTo(a) == 0;
+        }
+
         public static bool operator !=(Word32Integer a, Word32Integer b)
+        {
+            return !(a == b);
+        }
+
+        public static bool operator !=(Word32Integer a, uint b)
+        {
+            return !(a == b);
+        }
+
+        public static bool operator !=(Word32Integer a, ulong b)
+        {
+            return !(a == b);
+        }
+
+        public static bool operator !=(uint a, Word32Integer b)
+        {
+            return !(a == b);
+        }
+
+        public static bool operator !=(ulong a, Word32Integer b)
         {
             return !(a == b);
         }
@@ -222,9 +277,49 @@ namespace Decompose.Numerics
             return a.CompareTo(b) < 0;
         }
 
+        public static bool operator <(Word32Integer a, uint b)
+        {
+            return a.CompareTo(b) < 0;
+        }
+
+        public static bool operator <(Word32Integer a, ulong b)
+        {
+            return a.CompareTo(b) < 0;
+        }
+
+        public static bool operator <(uint a, Word32Integer b)
+        {
+            return b.CompareTo(a) > 0;
+        }
+
+        public static bool operator <(ulong a, Word32Integer b)
+        {
+            return b.CompareTo(a) > 0;
+        }
+
         public static bool operator <=(Word32Integer a, Word32Integer b)
         {
             return a.CompareTo(b) <= 0;
+        }
+
+        public static bool operator <=(Word32Integer a, uint b)
+        {
+            return a.CompareTo(b) <= 0;
+        }
+
+        public static bool operator <=(Word32Integer a, ulong b)
+        {
+            return a.CompareTo(b) <= 0;
+        }
+
+        public static bool operator <=(uint a, Word32Integer b)
+        {
+            return b.CompareTo(a) >= 0;
+        }
+
+        public static bool operator <=(ulong a, Word32Integer b)
+        {
+            return b.CompareTo(a) >= 0;
         }
 
         public static bool operator >(Word32Integer a, Word32Integer b)
@@ -232,9 +327,59 @@ namespace Decompose.Numerics
             return a.CompareTo(b) > 0;
         }
 
+        public static bool operator >(Word32Integer a, uint b)
+        {
+            return a.CompareTo(b) > 0;
+        }
+
+        public static bool operator >(Word32Integer a, ulong b)
+        {
+            return a.CompareTo(b) > 0;
+        }
+
+        public static bool operator >(uint a, Word32Integer b)
+        {
+            return b.CompareTo(a) < 0;
+        }
+
+        public static bool operator >(ulong a, Word32Integer b)
+        {
+            return b.CompareTo(a) < 0;
+        }
+
         public static bool operator >=(Word32Integer a, Word32Integer b)
         {
             return a.CompareTo(b) >= 0;
+        }
+
+        public static bool operator >=(Word32Integer a, uint b)
+        {
+            return a.CompareTo(b) >= 0;
+        }
+
+        public static bool operator >=(Word32Integer a, ulong b)
+        {
+            return a.CompareTo(b) >= 0;
+        }
+
+        public static bool operator >=(uint a, Word32Integer b)
+        {
+            return b.CompareTo(a) <= 0;
+        }
+
+        public static bool operator >=(ulong a, Word32Integer b)
+        {
+            return b.CompareTo(a) <= 0;
+        }
+
+        public static explicit operator uint(Word32Integer a)
+        {
+            return a.ToUInt32();
+        }
+
+        public static explicit operator ulong(Word32Integer a)
+        {
+            return a.ToUInt64();
         }
 
         public override int GetHashCode()
@@ -265,6 +410,22 @@ namespace Decompose.Numerics
                 }
             }
             return 0;
+        }
+
+        public int CompareTo(uint other)
+        {
+            CheckValid();
+            if (last > 0)
+                return 1;
+            return bits[index].CompareTo(other);
+        }
+
+        public int CompareTo(ulong other)
+        {
+            CheckValid();
+            if (last > 1)
+                return 1;
+            return ((ulong)bits[index + 1] << 32 | bits[index]).CompareTo(other);
         }
 
         public unsafe Word32Integer Mask(int n)
