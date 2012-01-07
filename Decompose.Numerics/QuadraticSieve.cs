@@ -555,9 +555,18 @@ namespace Decompose.Numerics
             EvaluatePolynomial(x, y, z, out negative);
             if (negative)
                 exponents[0] = 1;
+            var delta = x - interval.OffsetRef;
+            var offsets = interval.Offsets;
             for (int i = 0; i < factorBaseSize; i++)
             {
                 var p = factorBase[i];
+#if true
+                var offset = (int)((delta - offsets[i]) % p);
+                if (offset < 0)
+                    offset += p;
+                if (offset != 0 && offset != rootsDiff[i])
+                    continue;
+#endif
                 while (y.GetRemainder((uint)p) == 0)
                 {
                     ++exponents[i + 1];
