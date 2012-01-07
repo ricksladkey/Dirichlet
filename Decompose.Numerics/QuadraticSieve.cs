@@ -23,6 +23,7 @@ namespace Decompose.Numerics
             Solutions = 0x2,
             Sieve = 0x4,
             Timing = 0x8,
+            Verbose = Summary | Sieve | Timing,
         }
 
         public class Config
@@ -71,6 +72,7 @@ namespace Decompose.Numerics
         private class Interval
         {
             public long X { get; set; }
+            public long OffsetRef { get; set; }
             public int Size { get; set; }
             public int[] Exponents { get; set; }
             public CountInt[] Counts { get; set; }
@@ -444,15 +446,16 @@ namespace Decompose.Numerics
             for (int k0 = 0; k0 < intervalSize; k0 += subIntervalSize)
             {
                 int size = Math.Min(subIntervalSize, intervalSize - k0);
-                SieveInterval(interval, k0, size);
-                count += CheckForSmooth(interval, k0, size, countLimit);
+                SieveInterval(interval, size);
+                count += CheckForSmooth(interval, size, countLimit);
                 if (relationBuffer.Count >= relationBuffer.BoundedCapacity)
                     break;
+                interval.X += subIntervalSize;
             }
             return count;
         }
 
-        private void SieveInterval(Interval interval, int k0, int size)
+        private void SieveInterval(Interval interval, int size)
         {
             var offsets = interval.Offsets;
             var counts = interval.Counts;
@@ -463,7 +466,7 @@ namespace Decompose.Numerics
                 int k;
                 for (k = offsets[0]; k < size; k += 2)
                 {
-                    Debug.Assert(EvaluatePolynomial(interval.X + k0 + k) % 2 == 0);
+                    Debug.Assert(EvaluatePolynomial(interval.X + k) % 2 == 0);
                     counts[k] += logP;
                 }
                 offsets[0] = k - size;
@@ -478,24 +481,25 @@ namespace Decompose.Numerics
                 int k = offsets[i];
                 if (k >= p2 && k - p2 < size)
                 {
-                    Debug.Assert(EvaluatePolynomial(interval.X + k0 + k - p2) % p == 0);
+                    Debug.Assert(EvaluatePolynomial(interval.X + k - p2) % p == 0);
                     counts[k - p2] += logP;
                 }
                 while (k < size)
                 {
-                    Debug.Assert(EvaluatePolynomial(interval.X + k0 + k) % p == 0);
+                    Debug.Assert(EvaluatePolynomial(interval.X + k) % p == 0);
                     counts[k] += logP;
                     k += p1;
-                    Debug.Assert(EvaluatePolynomial(interval.X + k0 + k) % p == 0);
+                    Debug.Assert(EvaluatePolynomial(interval.X + k) % p == 0);
                     counts[k] += logP;
                     k += p2;
                 }
                 offsets[i] = k - size;
 
             }
+            interval.OffsetRef = interval.X + size;
         }
 
-        private int CheckForSmooth(Interval interval, int k0, int size, CountInt countLimit)
+        private int CheckForSmooth(Interval interval, int size, CountInt countLimit)
         {
             int count = 0;
             var counts = interval.Counts;
@@ -504,7 +508,7 @@ namespace Decompose.Numerics
                 if (counts[k] >= countLimit)
                 {
                     ++valuesChecked;
-                    var relation = GetRelation(interval, k0 + k);
+                    var relation = GetRelation(interval, k);
                     if (relation != null)
                     {
                         ++count;

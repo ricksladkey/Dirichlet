@@ -249,7 +249,14 @@ namespace Decompose
 
             Console.WriteLine("n = {0}", n);
             //FactorTest(debug, 500, n, new PollardRhoReduction(pollardThreads, new MontgomeryReduction()));
-            var factors = FactorTest(debug, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads }));
+            var config = new QuadraticSieve.Config
+            {
+                Threads = threads,
+                //FactorBaseSize = 12000,
+                Multiplier = 3,
+                Diagnostics = QuadraticSieve.Diag.Verbose,
+            };
+            var factors = FactorTest(debug, 1, n, new QuadraticSieve(config));
             foreach (var factor in factors)
                 Console.WriteLine("{0}", factor);
         }
