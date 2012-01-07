@@ -21,10 +21,10 @@ namespace Decompose
                 //FactorTest2();
                 //FactorTest3();
                 //FactorTest4();
-                //FactorTest5();
+                FactorTest5();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                QuadraticSieveDigitsTest();
+                //QuadraticSieveDigitsTest();
                 //CunnihamTest();
                 //GaussianEliminationTest1();
             }
@@ -252,7 +252,8 @@ namespace Decompose
             var config = new QuadraticSieve.Config
             {
                 Threads = threads,
-                //FactorBaseSize = 12000,
+                //FactorBaseSize = 24000,
+                //LowerBoundPercent = 35,
                 Multiplier = 3,
                 Diagnostics = QuadraticSieve.Diag.Verbose,
             };
@@ -278,13 +279,13 @@ namespace Decompose
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
                 var n = p * q;
-                if (i < 30)
+                if (i < 27)
                     continue;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
                 for (int size = 0; size <= 0; size += 100)
                 {
                     Console.WriteLine("size = {0}", size);
-                    for (int percent = 0; percent <= 100; percent += 5)
+                    for (int percent = 25; percent <= 75; percent += 5)
                     {
                         Console.WriteLine("percent = {0}", percent);
                         var config = new QuadraticSieve.Config
@@ -310,11 +311,8 @@ namespace Decompose
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
                 var n = p * q;
-                if (i < 27)
-                    continue;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
                 FactorTest(false, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads }));
-                break;
             }
         }
 

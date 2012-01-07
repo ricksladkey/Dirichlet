@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using BitArray = Decompose.Numerics.Word64BitArray;
 using BitMatrix = Decompose.Numerics.Word64BitMatrix;
-using CountInt = System.UInt16;
+using CountInt = System.Byte;
 
 namespace Decompose.Numerics
 {
@@ -85,10 +85,10 @@ namespace Decompose.Numerics
             }
         }
 
-        private const int maximumIntervalSize = 1000000;
-        private const int subIntervalSize = 200000;
+        private const int subIntervalSize = 256 * 1024;
+        private const int maximumIntervalSize = subIntervalSize * 8;
         private const int lowerBoundPercentDefaultNoCofactors = 85;
-        private const int lowerBoundPercentDefaultCofactors = 50;
+        private const int lowerBoundPercentDefaultCofactors = 75;
         private const int surplusRelations = 10;
         private readonly BigInteger smallFactorCutoff = (BigInteger)int.MaxValue;
         private readonly Tuple<int, int>[] sizePairs =
@@ -280,7 +280,7 @@ namespace Decompose.Numerics
             if (processPartialRelations)
             {
                 int percent = lowerBoundPercentOverride != 0 ? lowerBoundPercentOverride : lowerBoundPercentDefaultCofactors;
-                return (CountInt)(LogScale(y) - (logMaximumDivisorSquared * (100 + percent) / 200));
+                return (CountInt)(LogScale(y) - (logMaximumDivisorSquared * (200 - percent) / 200));
             }
             else
             {
@@ -332,12 +332,12 @@ namespace Decompose.Numerics
 
         private static CountInt LogScale(BigInteger n)
         {
-            return (CountInt)Math.Ceiling(10 * BigInteger.Log(BigInteger.Abs(n), 2));
+            return (CountInt)Math.Ceiling(BigInteger.Log(BigInteger.Abs(n), 2));
         }
 
         private static CountInt LogScale(long n)
         {
-            return (CountInt)Math.Ceiling(10 * Math.Log(Math.Abs(n), 2));
+            return (CountInt)Math.Ceiling(Math.Log(Math.Abs(n), 2));
         }
 
         private void Sieve(int desired, Func<Interval, int> sieveCore)
@@ -395,7 +395,7 @@ namespace Decompose.Numerics
         {
             var interval = new Interval();
             interval.Exponents = new int[factorBaseSize + 1];
-            interval.Counts = new CountInt[subIntervalSize + factorBase[factorBaseSize - 1]];
+            interval.Counts = new CountInt[subIntervalSize];
             interval.Offsets = new int[factorBaseSize];
             interval.Reg1 = nRep.Copy();
             interval.Reg2 = nRep.Copy();
@@ -462,7 +462,7 @@ namespace Decompose.Numerics
         {
             var offsets = interval.Offsets;
             var counts = interval.Counts;
-            int i0 = 0;
+            int i = 0;
             if (factorBase[0] == 2)
             {
                 var logP = logFactorBase[0];
@@ -473,11 +473,13 @@ namespace Decompose.Numerics
                     counts[k] += logP;
                 }
                 offsets[0] = k - size;
-                ++i0;
+                ++i;
             }
-            for (int i = i0; i < factorBaseSize; i++)
+            while (i < factorBaseSize)
             {
                 var p = factorBase[i];
+                if (p >= size)
+                    break;
                 var logP = logFactorBase[i];
                 int p1 = rootsDiff[i];
                 int p2 = p - p1;
@@ -487,7 +489,8 @@ namespace Decompose.Numerics
                     Debug.Assert(EvaluatePolynomial(interval.X + k - p2) % p == 0);
                     counts[k - p2] += logP;
                 }
-                while (k < size)
+                int limit = size - p1;
+                while (k < limit)
                 {
                     Debug.Assert(EvaluatePolynomial(interval.X + k) % p == 0);
                     counts[k] += logP;
@@ -496,8 +499,37 @@ namespace Decompose.Numerics
                     counts[k] += logP;
                     k += p2;
                 }
-                offsets[i] = k - size;
-
+                if (k < size)
+                {
+                    Debug.Assert(EvaluatePolynomial(interval.X + k + p1) % p == 0);
+                    counts[k] += logP;
+                    k += p;
+                }
+                offsets[i++] = k - size;
+            }
+            while (i < factorBaseSize)
+            {
+                var p = factorBase[i];
+                int p1 = rootsDiff[i];
+                int p2 = p - p1;
+                int k = offsets[i];
+                if (k >= p2 && k - p2 < size)
+                {
+                    Debug.Assert(EvaluatePolynomial(interval.X + k - p2) % p == 0);
+                    counts[k - p2] += logFactorBase[i];
+                }
+                else if (k + p1 < size)
+                {
+                    Debug.Assert(EvaluatePolynomial(interval.X + k + p1) % p == 0);
+                    counts[k + p1] += logFactorBase[i];
+                }
+                if (k < size)
+                {
+                    Debug.Assert(EvaluatePolynomial(interval.X + k) % p == 0);
+                    counts[k] += logFactorBase[i];
+                    k += p;
+                }
+                offsets[i++] = k - size;
             }
             interval.OffsetRef = interval.X + size;
         }
