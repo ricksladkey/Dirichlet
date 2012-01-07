@@ -88,7 +88,7 @@ namespace Decompose.Numerics
         private const int maximumIntervalSize = 1000000;
         private const int subIntervalSize = 200000;
         private const int lowerBoundPercentDefaultNoCofactors = 85;
-        private const int lowerBoundPercentDefaultCofactors = 95;
+        private const int lowerBoundPercentDefaultCofactors = 50;
         private const int surplusRelations = 10;
         private readonly BigInteger smallFactorCutoff = (BigInteger)int.MaxValue;
         private readonly Tuple<int, int>[] sizePairs =
@@ -122,6 +122,7 @@ namespace Decompose.Numerics
         private BigInteger nOrig;
         private BigInteger n;
         private BigInteger sqrtN;
+        private CountInt logSqrtN;
         private int factorBaseSize;
         private int[] factorBase;
         private CountInt[] logFactorBase;
@@ -173,6 +174,7 @@ namespace Decompose.Numerics
             this.nOrig = nOrig;
             n = nOrig * multiplier;
             sqrtN = IntegerMath.Sqrt(this.n);
+            logSqrtN = LogScale(sqrtN);
             factorBaseSize = CalculateFactorBaseSize(n);
             factorBase = primes
                 .Where(p => IntegerMath.JacobiSymbol(n, p) == 1)
@@ -274,21 +276,17 @@ namespace Decompose.Numerics
 
         private CountInt CalculateLowerBound(long x)
         {
-#if true
             var y = EvaluatePolynomial(x);
             if (processPartialRelations)
             {
                 int percent = lowerBoundPercentOverride != 0 ? lowerBoundPercentOverride : lowerBoundPercentDefaultCofactors;
-                return (CountInt)((LogScale(y) - logMaximumDivisorSquared / 2) * percent / 100);
+                return (CountInt)(LogScale(y) - (logMaximumDivisorSquared * (100 + percent) / 200));
             }
             else
             {
                 int percent = lowerBoundPercentOverride != 0 ? lowerBoundPercentOverride : lowerBoundPercentDefaultNoCofactors;
                 return (CountInt)(LogScale(y) * percent / 100);
             }
-#else
-            return LogScale((2 * x) * sqrtN);
-#endif
         }
 
         private BigInteger ComputeFactor(IBitArray v)
@@ -334,7 +332,12 @@ namespace Decompose.Numerics
 
         private static CountInt LogScale(BigInteger n)
         {
-            return (CountInt)Math.Ceiling(10 * BigInteger.Log(BigInteger.Abs(n)));
+            return (CountInt)Math.Ceiling(10 * BigInteger.Log(BigInteger.Abs(n), 2));
+        }
+
+        private static CountInt LogScale(long n)
+        {
+            return (CountInt)Math.Ceiling(10 * Math.Log(Math.Abs(n), 2));
         }
 
         private void Sieve(int desired, Func<Interval, int> sieveCore)
@@ -560,13 +563,11 @@ namespace Decompose.Numerics
             for (int i = 0; i < factorBaseSize; i++)
             {
                 var p = factorBase[i];
-#if true
                 var offset = (int)((delta - offsets[i]) % p);
                 if (offset < 0)
                     offset += p;
                 if (offset != 0 && offset != rootsDiff[i])
                     continue;
-#endif
                 while (y.GetRemainder((uint)p) == 0)
                 {
                     ++exponents[i + 1];

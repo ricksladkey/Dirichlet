@@ -272,19 +272,19 @@ namespace Decompose
         {
             var random = new MersenneTwister32(0);
             int threads = 8;
-            for (int i = 10; i <= 25; i++)
+            for (int i = 10; i <= 30; i++)
             {
                 var limit = BigInteger.Pow(10, i);
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
                 var n = p * q;
-                if (i < 25)
+                if (i < 30)
                     continue;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                for (int size = 4000; size <= 4000; size += 100)
+                for (int size = 0; size <= 0; size += 100)
                 {
                     Console.WriteLine("size = {0}", size);
-                    for (int percent = 65; percent <= 75; percent += 1)
+                    for (int percent = 0; percent <= 100; percent += 5)
                     {
                         Console.WriteLine("percent = {0}", percent);
                         var config = new QuadraticSieve.Config
@@ -296,6 +296,7 @@ namespace Decompose
                         FactorTest(false, 1, n, new QuadraticSieve(config));
                     }
                 }
+                break;
             }
         }
 
@@ -309,8 +310,11 @@ namespace Decompose
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
                 var n = p * q;
+                if (i < 27)
+                    continue;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
                 FactorTest(false, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads }));
+                break;
             }
         }
 
