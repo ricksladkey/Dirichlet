@@ -12,7 +12,7 @@ namespace Decompose.Numerics
 
         public GaussianElimination(int threads)
         {
-            this.threads = threads;
+            this.threads = threads != 0 ? threads : 1;
         }
 
         public IEnumerable<IBitArray> Solve(IBitMatrix matrix)

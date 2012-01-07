@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Numerics;
+using System.Collections.Generic;
 
 namespace Decompose.Numerics
 {
@@ -25,6 +27,16 @@ namespace Decompose.Numerics
             return a > b ? a : b;
         }
 
+        public static int QuotientFloor(int a, int b)
+        {
+            return a / b;
+        }
+
+        public static BigInteger QuotientFloor(BigInteger a, BigInteger b)
+        {
+            return a / b;
+        }
+
         public static int QuotientCeiling(int a, int b)
         {
             return (a + b - 1) / b;
@@ -33,6 +45,16 @@ namespace Decompose.Numerics
         public static BigInteger QuotientCeiling(BigInteger a, BigInteger b)
         {
             return (a + b - 1) / b;
+        }
+
+        public static int MultipleOfFloor(int a, int b)
+        {
+            return a / b * b;
+        }
+
+        public static BigInteger MultipleOfFloor(BigInteger a, BigInteger b)
+        {
+            return a / b * b;
         }
 
         public static int MultipleOfCeiling(int a, int b)
@@ -45,24 +67,30 @@ namespace Decompose.Numerics
             return (a + b - 1) / b * b;
         }
 
-        public static int QuotientFloor(int a, int b)
+        public static int Modulus(int n, int p)
         {
-            return a / b;
+            return (n % p + p) % p;
         }
 
-        public static BigInteger QuotientFloor(BigInteger a, BigInteger b)
+        public static BigInteger Modulus(BigInteger n, BigInteger p)
         {
-            return a / b;
+            return (n % p + p) % p;
         }
 
-        public static int MultipleOfFloor(int a, int b)
+        public static bool IsSquareFree(IEnumerable<int> factors)
         {
-            return a / b * b;
+            return factors
+                .OrderBy(factor => factor)
+                .GroupBy(factor => factor)
+                .Any(grouping => grouping.Count() == 1);
         }
 
-        public static BigInteger MultipleOfFloor(BigInteger a, BigInteger b)
+        public static bool IsSquareFree(IEnumerable<BigInteger> factors)
         {
-            return a * b;
+            return factors
+                .OrderBy(factor => factor)
+                .GroupBy(factor => factor)
+                .Any(grouping => grouping.Count() == 1);
         }
 
         public static void ExtendedGreatestCommonDivisor(BigInteger a, BigInteger b, out BigInteger c, out BigInteger d)

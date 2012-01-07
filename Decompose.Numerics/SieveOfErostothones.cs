@@ -8,62 +8,62 @@ namespace Decompose.Numerics
     public class SieveOfErostothones : IEnumerable<int>
     {
         private const int initialSize = 1024;
-        private BitArray bits;
+        private Word64BitArray bits;
+        int m;
+        int n;
+        private List<int> primes;
 
-        private IEnumerable<int> Sieve()
+        public SieveOfErostothones()
         {
-            int m = 0;
-            if (bits == null)
+            bits = new Word64BitArray(initialSize);
+            bits[0] = true;
+            bits[1] = true;
+            m = 0;
+            n = initialSize;
+            primes = new List<int>();
+            primes.Add(2);
+            Sieve(2);
+        }
+
+        private IEnumerable<int> Enumerate()
+        {
+            for (int n = 0; true; n++)
             {
-                bits = new BitArray(initialSize);
-                bits[0] = true;
-                bits[1] = true;
+                if (n == primes.Count)
+                    NextPrime();
+                yield return primes[n];
             }
-            else
+        }
+
+        private void NextPrime()
+        {
+            int p = primes[primes.Count - 1] + 1;
+            while (p < m + n && bits[p - m])
+                ++p;
+            if (p == m + n)
             {
-                for (int i = 0; i < bits.Length; i++)
-                {
-                    if (!bits[i])
-                        yield return i;
-                }
-                m = bits.Length;
-                bits.Length = m * 2;
-            }
-            while (true)
-            {
-                int n = bits.Length;
-                int p = 2;
-                while (true)
-                {
-                    if (p >= m)
-                        yield return p;
-                    if (2 * p >= n)
-                    {
-                        for (p++; p < n; p++)
-                        {
-                            if (!bits[p])
-                                yield return p;
-                        }
-                        break;
-                    }
-                    int q = Math.Max(m + (p - m % p) % p, 2 * p);
-                    Debug.Assert(q % p == 0);
-                    for (int i = q; i < n; i += p)
-                        bits[i] = true;
+                m += n;
+                n *= 2;
+                bits = new Word64BitArray(n);
+                for (int i = 0; i < primes.Count; i++)
+                    Sieve(primes[i]);
+                while (p < m + n && bits[p - m])
                     ++p;
-                    while (p < n && bits[p])
-                        ++p;
-                    if (p >= n)
-                        break;
-                }
-                m = bits.Length;
-                bits.Length = m * 2;
             }
+            Sieve(p);
+            primes.Add(p);
+        }
+
+        private void Sieve(int p)
+        {
+            int q = Math.Max(IntegerMath.Modulus(-m, p), 2 * p - m);
+            for (int i = q; i < n; i += p)
+                bits[i] = true;
         }
 
         public IEnumerator<int> GetEnumerator()
         {
-            return Sieve().GetEnumerator();
+            return Enumerate().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

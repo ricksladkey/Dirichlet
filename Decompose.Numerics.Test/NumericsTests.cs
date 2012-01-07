@@ -74,7 +74,7 @@ namespace Decompose.Numerics.Test
         {
             var expected = new[] { BigInteger.Parse("274177"), BigInteger.Parse("67280421310721") };
             var n = BigInteger.Parse("18446744073709551617");
-            var algorithm = new QuadraticSieve(8, 0, 0, null);
+            var algorithm = new QuadraticSieve(new QuadraticSieve.Config { Threads = 8 });
             var factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
             Assert.IsTrue(factors.Length == 2);
             var product = factors.Aggregate((sofar, current) => sofar * current);
@@ -258,22 +258,26 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void SieveOfErostothonesTest1()
         {
-            int n = 0;
-            int i = 0;
+            var primes = new SieveOfErostothones();
             int iterations = 1000;
-            foreach (int p in new SieveOfErostothones())
+            for (int repetition = 1; repetition <= 2; repetition++)
             {
-                while (n < p)
+                int n = 0;
+                int i = 0;
+                foreach (int p in primes)
                 {
-                    Assert.IsFalse(IntegerMath.IsPrime(n));
-                    ++n;
+                    while (n < p)
+                    {
+                        Assert.IsFalse(IntegerMath.IsPrime(n));
+                        ++n;
+                    }
+                    Assert.IsTrue(IntegerMath.IsPrime(p));
+                    n = p + 1;
+                    if (++i >= iterations)
+                        break;
                 }
-                Assert.IsTrue(IntegerMath.IsPrime(p));
-                n = p + 1;
-                if (++i >= iterations)
-                    break;
+                Assert.AreEqual(i, iterations);
             }
-            Assert.AreEqual(i, iterations);
         }
 
         [TestMethod]

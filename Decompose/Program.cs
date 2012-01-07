@@ -235,7 +235,7 @@ namespace Decompose
                 //factors = FactorTest(true, 1, n, new PollardRho(threads, 0));
                 //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, 0, new Radix32IntegerReduction()));
                 //factors = FactorTest(true, 10, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
-                factors = FactorTest(true, 1, n, new QuadraticSieve(threads, 0, 0, null));
+                factors = FactorTest(true, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads }));
             }
         }
 
@@ -244,12 +244,12 @@ namespace Decompose
             //var n = BigInteger.Parse("87463");
             //var n = BigInteger.Parse("10023859281455311421");
             var n = BigInteger.Parse("5382000000735683358022919837657883000000078236999000000000000063"); // https://sites.google.com/site/shouthillgc/Home/gc1p8qn/factorizing-tool
-            const int quadraticSieveThreads = 8;
+            const int threads = 8;
             bool debug = false;
 
             Console.WriteLine("n = {0}", n);
             //FactorTest(debug, 500, n, new PollardRhoReduction(pollardThreads, new MontgomeryReduction()));
-            var factors = FactorTest(debug, 1, n, new QuadraticSieve(quadraticSieveThreads, 0, 0, null));
+            var factors = FactorTest(debug, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads }));
             foreach (var factor in factors)
                 Console.WriteLine("{0}", factor);
         }
@@ -258,7 +258,7 @@ namespace Decompose
         {
             var n = BigInteger.Parse("18446744073709551617");
             //var n = BigInteger.Parse("12345678901");
-            FactorTest(false, 100, n, new QuadraticSieve(8, 0, 0, null));
+            FactorTest(false, 100, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = 8 }));
         }
 
         static void QuadraticSieveParametersTest()
@@ -280,7 +280,13 @@ namespace Decompose
                     for (int percent = 65; percent <= 75; percent += 1)
                     {
                         Console.WriteLine("percent = {0}", percent);
-                        FactorTest(false, 1, n, new QuadraticSieve(threads, size, percent, null));
+                        var config = new QuadraticSieve.Config
+                        {
+                            Threads = threads,
+                            FactorBaseSize = size,
+                            LowerBoundPercent = percent
+                        };
+                        FactorTest(false, 1, n, new QuadraticSieve(config));
                     }
                 }
             }
@@ -296,8 +302,11 @@ namespace Decompose
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
                 var n = p * q;
+                if (i < 27)
+                    continue;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                FactorTest(false, 1, n, new QuadraticSieve(threads, 0, 0, null));
+                FactorTest(false, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads }));
+                break;
             }
         }
 
@@ -311,7 +320,7 @@ namespace Decompose
                 Console.WriteLine("{0}", factor);
             var c = n / smallFactors.Aggregate((sofar, factor) => sofar * factor);
             Console.WriteLine("c = {0}", c);
-            var qr = new QuadraticSieve(8, 0, 0, null);
+            var qr = new QuadraticSieve(new QuadraticSieve.Config { Threads = 8 });
             var factors = qr.Factor(c);
             foreach (var factor in factors)
                 Console.WriteLine("{0}", factor);
@@ -326,7 +335,7 @@ namespace Decompose
             var p = NextPrime(random, limit);
             var q = NextPrime(random, limit);
             var n = p * q;
-            FactorTest(false, 1, n, new QuadraticSieve(threads, 10000, 0, null));
+            FactorTest(false, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads, FactorBaseSize = 10000 }));
         }
 
         static BigInteger NextPrime(MersenneTwister32 random, BigInteger limit)
