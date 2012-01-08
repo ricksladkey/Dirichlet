@@ -2,11 +2,12 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics;
 using BitArray = Decompose.Numerics.Word64BitArray;
 using BitMatrix = Decompose.Numerics.Word64BitMatrix;
 using CountInt = System.Byte;
@@ -72,7 +73,7 @@ namespace Decompose.Numerics
         private class Interval
         {
             public long X { get; set; }
-            public long OffsetRef { get; set; }
+            public long OffsetX { get; set; }
             public int Size { get; set; }
             public int[] Exponents { get; set; }
             public CountInt[] Counts { get; set; }
@@ -168,7 +169,6 @@ namespace Decompose.Numerics
         {
             if (nOrig.IsEven)
                 return BigIntegers.Two;
-            var smallPrimes = primes.Take(5).ToArray();
             multiplier = multiplierOverride != 0 ? multiplierOverride : 1;
             multiplierFactors = smallFactorizationAlgorithm.Factor(multiplier).ToArray();
             this.nOrig = nOrig;
@@ -213,20 +213,29 @@ namespace Decompose.Numerics
                 timer.Start();
             }
 
-            Sieve(desired, SieveQuadraticResidue);
+            Sieve(desired);
 
             if ((diag & Diag.Summary) != 0)
             {
                 Console.WriteLine("digits = {0}, factorBaseSize = {1}, desired = {2}", digits, factorBaseSize, desired);
-                Console.WriteLine("values checked = {0}", valuesChecked);
-                Console.WriteLine("intervals processed = {0}, relations processed = {1}, converted = {2}", intervalsProcessed, partialRelationsProcessed, partialRelationsConverted);
+                Console.WriteLine("intervals processsed = {0}, values checked = {1}", intervalsProcessed, valuesChecked);
+                Console.WriteLine("partial relations processed = {0}, converted = {1}", partialRelationsProcessed, partialRelationsConverted);
                 Console.WriteLine("first few factors: {0}", string.Join(", ", factorBase.Take(10).ToArray()));
             }
             if ((diag & Diag.Timing) != 0)
             {
-                var elapsed1 = timer.ElapsedTicks;
+                var elapsed = timer.ElapsedTicks;
                 timer.Restart();
-                Console.WriteLine("Sieving: {0:F3} msec", 1000.0 * elapsed1 / Stopwatch.Frequency);
+                Console.WriteLine("Sieving: {0:F3} msec", 1000.0 * elapsed / Stopwatch.Frequency);
+            }
+
+            ProcessRelations();
+
+            if ((diag & Diag.Timing) != 0)
+            {
+                var elapsed = timer.ElapsedTicks;
+                timer.Restart();
+                Console.WriteLine("Processing relations: {0:F3} msec", 1000.0 * elapsed / Stopwatch.Frequency);
             }
 
             var result = nullSpaceAlgorithm.Solve(matrix)
@@ -237,9 +246,9 @@ namespace Decompose.Numerics
 
             if ((diag & Diag.Timing) != 0)
             {
-                var elapsed2 = timer.ElapsedTicks;
+                var elapsed = timer.ElapsedTicks;
                 timer.Stop();
-                Console.WriteLine("Gaussian elimination: {0:F3}", 1000.0 * elapsed2 / Stopwatch.Frequency);
+                Console.WriteLine("Gaussian elimination: {0:F3}", 1000.0 * elapsed / Stopwatch.Frequency);
             }
 
             return result;
@@ -340,7 +349,7 @@ namespace Decompose.Numerics
             return (CountInt)Math.Ceiling(Math.Log(Math.Abs(n), 2));
         }
 
-        private void Sieve(int desired, Func<Interval, int> sieveCore)
+        private void Sieve(int desired)
         {
             CalculateNumberOfThreads();
             SetupIntervals();
@@ -349,11 +358,10 @@ namespace Decompose.Numerics
 
             if (threads == 1)
             {
-                relations = new List<Relation>();
                 var interval = CreateInterval();
-                while (relations.Count < desired)
+                while (relationBuffer.Count < relationBuffer.BoundedCapacity)
                 {
-                    sieveCore(GetNextInterval(interval));
+                    Sieve(GetNextInterval(interval));
                     ++intervalsProcessed;
                 }
             }
@@ -361,24 +369,23 @@ namespace Decompose.Numerics
             {
                 var tasks = new Task[threads];
                 for (int i = 0; i < threads; i++)
-                    tasks[i] = Task.Factory.StartNew(() => SieveThread(sieveCore));
+                    tasks[i] = Task.Factory.StartNew(SieveThread);
                 Task.WaitAll(tasks);
             }
 
             relations = relationBuffer.ToList();
             relationBuffer = null;
             partialRelations = null;
-            ProcessRelations();
         }
 
-        private void SieveThread(Func<Interval, int> sieveCore)
+        private void SieveThread()
         {
             int count = 0;
             int intervals = 0;
             var interval = CreateInterval();
             while (relationBuffer.Count < relationBuffer.BoundedCapacity)
             {
-                count += sieveCore(GetNextInterval(interval));
+                count += Sieve(GetNextInterval(interval));
                 if ((diag & Diag.Sieve) != 0)
                 {
                     if (++intervals % 500 == 0)
@@ -412,9 +419,26 @@ namespace Decompose.Numerics
         {
             int intervalId = Interlocked.Increment(ref nextIntervalId) - 1;
             int intervalNumber = intervalId % 2 == 0 ? intervalId / 2 : -(intervalId + 1) / 2;
-            interval.X = (long)intervalNumber * intervalSize;
+            var x = (long)intervalNumber * intervalSize;
+            interval.X = x;
             interval.Size = intervalSize;
+            var offsets = interval.Offsets;
+            for (int i = 0; i < factorBaseSize; i++)
+            {
+                int p = factorBase[i];
+                offsets[i] = ((int)((sqrtNOffsets[i] - x) % p) + p) % p;
+            }
+            interval.OffsetX = x;
             return interval;
+        }
+
+        private int Sieve(Interval interval)
+        {
+#if false
+            return SieveTrialDivision(interval);
+#else
+            return SieveQuadraticResidue(interval);
+#endif
         }
 
         private int SieveTrialDivision(Interval interval)
@@ -422,6 +446,7 @@ namespace Decompose.Numerics
             int count = 0;
             for (int k = 0; k < interval.Size; k++)
             {
+                ++valuesChecked;
                 var relation = GetRelation(interval, k);
                 if (relation != null)
                 {
@@ -435,13 +460,6 @@ namespace Decompose.Numerics
 
         private int SieveQuadraticResidue(Interval interval)
         {
-            var offsets = interval.Offsets;
-            for (int i = 0; i < factorBaseSize; i++)
-            {
-                int p = factorBase[i];
-                offsets[i] = ((int)((sqrtNOffsets[i] - interval.X) % p) + p) % p;
-            }
-
             int count = 0;
             int intervalSize = interval.Size;
             var xMin = interval.X > 0 ? interval.X : interval.X + interval.Size;
@@ -531,7 +549,7 @@ namespace Decompose.Numerics
                 }
                 offsets[i++] = k - size;
             }
-            interval.OffsetRef = interval.X + size;
+            interval.OffsetX = interval.X + size;
         }
 
         private int CheckForSmooth(Interval interval, int size, CountInt countLimit)
@@ -558,11 +576,6 @@ namespace Decompose.Numerics
 
         private Relation GetRelation(Interval interval, int k)
         {
-            return GetRelationWord32Integer(interval, k);
-        }
-
-        private Relation GetRelationWord32Integer(Interval interval, int k)
-        {
             long y = FactorOverBase(interval, interval.X + k);
             if (y == 0)
                 return null;
@@ -581,37 +594,16 @@ namespace Decompose.Numerics
 
         private long FactorOverBase(Interval interval, long x)
         {
-            var exponents = interval.Exponents;
-            var y = interval.Reg1;
-            var z = interval.Reg2;
-            for (int i = 0; i <= factorBaseSize; i++)
-                exponents[i] = 0;
-            bool negative;
-            EvaluatePolynomial(x, y, z, out negative);
-            if (negative)
-                exponents[0] = 1;
-            var delta = x - interval.OffsetRef;
-            var offsets = interval.Offsets;
-            for (int i = 0; i < factorBaseSize; i++)
-            {
-                var p = factorBase[i];
-                var offset = (int)((delta - offsets[i]) % p);
-                if (offset < 0)
-                    offset += p;
-                if (offset != 0 && offset != rootsDiff[i])
-                    continue;
-                while (y.GetRemainder((uint)p) == 0)
-                {
-                    ++exponents[i + 1];
-                    y.Divide((uint)p, z);
-                }
-            }
-            return y < (ulong)long.MaxValue ? (long)(ulong)y : 0;
+#if false
+            return FactorOverBaseBigInteger(interval, x);
+#else
+            return FactorOverBaseWord32Integer(interval, x);
+#endif
         }
 
-        private Relation GetRelationBigInteger(Interval interval, int k)
+        private long FactorOverBaseBigInteger(Interval interval, long x)
         {
-            var y = EvaluatePolynomial(interval.X + k);
+            var y = EvaluatePolynomial(x);
             var exponents = interval.Exponents;
             for (int i = 0; i <= factorBaseSize; i++)
                 exponents[i] = 0;
@@ -620,24 +612,61 @@ namespace Decompose.Numerics
                 exponents[0] = 1;
                 y = -y;
             }
+            var delta = x - interval.OffsetX;
+            var offsets = interval.Offsets;
             for (int i = 0; i < factorBaseSize; i++)
             {
                 var p = factorBase[i];
+                var offset = (int)((delta - offsets[i]) % p);
+                if (offset < 0)
+                    offset += p;
+                if (offset != 0 && offset != rootsDiff[i])
+                {
+                    Debug.Assert(y % p != 0);
+                    continue;
+                }
+                Debug.Assert(y % p == 0);
                 while ((y % p).IsZero)
                 {
                     ++exponents[i + 1];
                     y /= p;
                 }
             }
-            if (processPartialRelations && y.IsOne && y < maximumDivisorSquared)
-                return ProcessPartialRelation(interval, k, (long)y);
-            if (!y.IsOne)
-                return null;
-            return new Relation
+            return y < long.MaxValue ? (long)y : 0;
+        }
+
+        private long FactorOverBaseWord32Integer(Interval interval, long x)
+        {
+            var y = interval.Reg1;
+            var z = interval.Reg2;
+            bool negative;
+            EvaluatePolynomial(x, y, z, out negative);
+            var exponents = interval.Exponents;
+            for (int i = 0; i <= factorBaseSize; i++)
+                exponents[i] = 0;
+            if (negative)
+                exponents[0] = 1;
+            var delta = x - interval.OffsetX;
+            var offsets = interval.Offsets;
+            for (int i = 0; i < factorBaseSize; i++)
             {
-                X = sqrtN + interval.X + k,
-                Exponents = (int[])interval.Exponents.Clone(),
-            };
+                var p = factorBase[i];
+                var offset = (int)((delta - offsets[i]) % p);
+                if (offset < 0)
+                    offset += p;
+                if (offset != 0 && offset != rootsDiff[i])
+                {
+                    Debug.Assert(y.ToBigInteger() % p != 0);
+                    continue;
+                }
+                Debug.Assert(y.ToBigInteger() % p == 0);
+                while (y.GetRemainder((uint)p) == 0)
+                {
+                    ++exponents[i + 1];
+                    y.Divide((uint)p, z);
+                }
+            }
+            return y < (ulong)long.MaxValue ? (long)(ulong)y : 0;
         }
 
         private Relation ProcessPartialRelation(Interval interval, int k, long cofactor)
@@ -684,6 +713,13 @@ namespace Decompose.Numerics
                 matrix.CopySubMatrix(cache, 0, j);
                 cache.Clear();
             }
+#if false
+            using (var stream = new StreamWriter("matrix.txt"))
+            {
+                for (int i = 0; i < matrix.Rows; i++)
+                    stream.WriteLine(string.Concat(matrix.GetRow(i).Select(bit => bit ? 1 : 0).ToArray()));
+            }
+#endif
         }
 
         private void ProcessRelationsSimple()

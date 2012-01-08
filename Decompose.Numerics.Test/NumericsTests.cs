@@ -344,7 +344,7 @@ namespace Decompose.Numerics.Test
             var solver = new GaussianElimination<BoolBitArray>(1);
             foreach (var text in new[] { matrix1, matrix2 })
             {
-                var origMatrix = GetBitMatrix(text);
+                var origMatrix = GetBitMatrix(GetLines(text));
                 var matrix = new BoolBitMatrix(origMatrix);
                 foreach (var v in solver.Solve(matrix))
                 {
@@ -355,9 +355,13 @@ namespace Decompose.Numerics.Test
             }
         }
 
-        private IBitMatrix GetBitMatrix(string text)
+        private string[] GetLines(string text)
         {
-            var lines = text.Split('\n').Select(row => row.Trim()).Where(row => row != "").ToArray();
+            return text.Split('\n').Select(row => row.Trim()).Where(row => row != "").ToArray();
+        }
+
+        private IBitMatrix GetBitMatrix(string[] lines)
+        {
             int rows = lines.Length;
             int cols = lines[0].Length;
             var matrix = new BoolBitMatrix(rows, cols);

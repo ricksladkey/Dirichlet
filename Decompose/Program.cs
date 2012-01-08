@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Numerics;
 using Decompose.Numerics;
@@ -21,12 +23,12 @@ namespace Decompose
                 //FactorTest2();
                 //FactorTest3();
                 //FactorTest4();
-                FactorTest5();
+                //FactorTest5();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
                 //QuadraticSieveDigitsTest();
                 //CunnihamTest();
-                //GaussianEliminationTest1();
+                GaussianEliminationTest1();
             }
             catch (Exception ex)
             {
@@ -272,29 +274,33 @@ namespace Decompose
         static void QuadraticSieveParametersTest()
         {
             var random = new MersenneTwister32(0);
-            int threads = 8;
+            int threads = 1;
             for (int i = 10; i <= 30; i++)
             {
-                var limit = BigInteger.Pow(10, i);
-                var p = NextPrime(random, limit);
-                var q = NextPrime(random, limit);
-                var n = p * q;
-                if (i < 27)
+                if (i < 10)
                     continue;
-                Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                for (int size = 0; size <= 0; size += 100)
+                for (int j = 0; j < 10; j++)
                 {
-                    Console.WriteLine("size = {0}", size);
-                    for (int percent = 25; percent <= 75; percent += 5)
+                    var limit = BigInteger.Pow(10, i);
+                    var p = NextPrime(random, limit);
+                    var q = NextPrime(random, limit);
+                    var n = p * q;
+                    Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
+                    for (int size = 0; size <= 0; size += 100)
                     {
-                        Console.WriteLine("percent = {0}", percent);
-                        var config = new QuadraticSieve.Config
+                        Console.WriteLine("size = {0}", size);
+                        for (int percent = 0; percent <= 0; percent += 5)
                         {
-                            Threads = threads,
-                            FactorBaseSize = size,
-                            LowerBoundPercent = percent
-                        };
-                        FactorTest(false, 1, n, new QuadraticSieve(config));
+                            Console.WriteLine("percent = {0}", percent);
+                            var config = new QuadraticSieve.Config
+                            {
+                                Threads = threads,
+                                FactorBaseSize = size,
+                                LowerBoundPercent = percent,
+                                Diagnostics = QuadraticSieve.Diag.Verbose,
+                            };
+                            FactorTest(false, 1, n, new QuadraticSieve(config));
+                        }
                     }
                 }
                 break;
@@ -334,14 +340,47 @@ namespace Decompose
 
         static void GaussianEliminationTest1()
         {
-            var random = new MersenneTwister32(0);
-            int threads = 8;
-            int digits = 25;
-            var limit = BigInteger.Pow(10, digits);
-            var p = NextPrime(random, limit);
-            var q = NextPrime(random, limit);
-            var n = p * q;
-            FactorTest(false, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads, FactorBaseSize = 10000 }));
+            var threads = 8;
+            var matrix = GetBitMatrix(GetLinesGzip("matrix-18401.txt.gz"));
+            Console.WriteLine("Rows = {0}, Cols = {1}", matrix.Rows, matrix.Cols);
+            var solver = new GaussianElimination<Word64BitArray>(threads);
+            var timer = new Stopwatch();
+            timer.Start();
+            var solutions = solver.Solve(matrix).ToArray();
+            Console.WriteLine("solutions = {0}", solutions.Length);
+            var elapsed = timer.ElapsedTicks;
+            Console.WriteLine("elapsed = {0:F3} msec", (double)elapsed / Stopwatch.Frequency * 1000);
+        }
+
+
+        private static string[] GetLinesGzip(string file)
+        {
+            using (var stream = new StreamReader(new GZipStream(File.OpenRead(file), CompressionMode.Decompress)))
+            {
+                var lines = new List<string>();
+                while (true)
+                {
+                    var line = stream.ReadLine();
+                    if (line == null)
+                        break;
+                    lines.Add(line);
+                }
+                return lines.ToArray();
+            }
+        }
+
+        private static IBitMatrix GetBitMatrix(string[] lines)
+        {
+            int rows = lines.Length;
+            int cols = lines[0].Length;
+            var matrix = new Word64BitMatrix(rows, cols);
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i];
+                for (int j = 0; j < line.Length; j++)
+                    matrix[i, j] = line[j] == '1';
+            }
+            return matrix;
         }
 
         static BigInteger NextPrime(MersenneTwister32 random, BigInteger limit)
