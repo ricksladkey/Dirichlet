@@ -223,6 +223,11 @@ namespace Decompose.Numerics
             return BigInteger.ModPow(n, (p - 1) / 2, p).IsOne;
         }
 
+        public static int ModularSquareRoot(BigInteger n, int p)
+        {
+            return (int)ModularSquareRoot(n, (BigInteger)p);
+        }
+
         public static BigInteger ModularSquareRoot(BigInteger n, BigInteger p)
         {
             var r = ModularSquareRootCore(n, p);

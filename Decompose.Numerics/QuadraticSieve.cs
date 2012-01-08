@@ -59,7 +59,7 @@ namespace Decompose.Numerics
             return factors;
         }
 
-        private struct Entry
+        private struct ExponentEntry
         {
             public int Index { get; set; }
             public int Exponent { get; set; }
@@ -69,10 +69,31 @@ namespace Decompose.Numerics
             }
         }
 
+        private class FactorBaseEntry
+        {
+            public int P { get; set; }
+            public CountInt LogP { get; set; }
+            public int Root { get; set; }
+            public int RootDiff { get; set; }
+            public int Offset { get; set; }
+            public FactorBaseEntry(int p, BigInteger n, BigInteger OffsetX)
+            {
+                P = p;
+                LogP = LogScale(p);
+                Root = IntegerMath.ModularSquareRoot(n, p);
+                RootDiff = (P - Root) - Root;
+                Offset = ((int)((Root - OffsetX) % P) + P) % P;
+            }
+            public override string ToString()
+            {
+                return string.Format("P = {0}", P);
+            }
+        }
+
         private class Relation
         {
             public BigInteger X { get; set; }
-            public Entry[] Entries { get; set; }
+            public ExponentEntry[] Entries { get; set; }
             public long Cofactor { get; set; }
             public override string ToString()
             {
@@ -135,11 +156,7 @@ namespace Decompose.Numerics
         private BigInteger sqrtN;
         private CountInt logSqrtN;
         private int factorBaseSize;
-        private int[] factorBase;
-        private CountInt[] logFactorBase;
-        private int[] roots;
-        private int[] sqrtNOffsets;
-        private int[] rootsDiff;
+        private FactorBaseEntry[] factorBase;
         private long maximumDivisorSquared;
         private CountInt logMaximumDivisorSquared;
         private Word32Integer nRep;
@@ -179,31 +196,43 @@ namespace Decompose.Numerics
         {
             if (nOrig.IsEven)
                 return BigIntegers.Two;
-            multiplier = multiplierOverride != 0 ? multiplierOverride : 1;
+            if (multiplierOverride != 0)
+                multiplier = multiplierOverride;
+            else
+            {
+                multiplier = 1;
+#if false
+                if (IntegerMath.JacobiSymbol(nOrig, 2) == 1)
+                {
+                    switch ((int)(nOrig % 8))
+                    {
+                        case 3:
+                            multiplier = 5;
+                            break;
+                        case 5:
+                            multiplier = 3;
+                            break;
+                        case 7:
+                            multiplier = 7;
+                            break;
+                    }
+                }
+                Console.WriteLine("multiplier = {0}, J({1} * n) = {2})", multiplier, multiplier, IntegerMath.JacobiSymbol(nOrig * multiplier, 2));
+#endif
+            }
             multiplierFactors = smallFactorizationAlgorithm.Factor(multiplier).ToArray();
             this.nOrig = nOrig;
             n = nOrig * multiplier;
             sqrtN = IntegerMath.Sqrt(this.n);
             logSqrtN = LogScale(sqrtN);
-            factorBaseSize = CalculateFactorBaseSize(n);
+            factorBaseSize = CalculateFactorBaseSize(nOrig);
             factorBase = primes
                 .Where(p => IntegerMath.JacobiSymbol(n, p) == 1)
                 .Take(factorBaseSize)
-                .ToArray();
-            logFactorBase = factorBase
-                .Select(factor => LogScale(factor))
-                .ToArray();
-            roots = factorBase
-                .Select(root => (int)IntegerMath.ModularSquareRoot(n, root))
-                .ToArray();
-            rootsDiff = factorBase
-                .Zip(roots, (p, root) => p - 2 * root)
-                .ToArray();
-            sqrtNOffsets = factorBase
-                .Zip(roots, (p, root) => ((int)((root - sqrtN) % p) + p) % p)
+                .Select(p => new FactorBaseEntry(p, n, sqrtN))
                 .ToArray();
             int desired = factorBaseSize + 1 + surplusRelations;
-            long maximumDivisor = factorBase[factorBaseSize - 1];
+            long maximumDivisor = factorBase[factorBaseSize - 1].P;
             maximumDivisorSquared = maximumDivisor * maximumDivisor;
             logMaximumDivisorSquared = LogScale(maximumDivisorSquared);
             int digits = (int)Math.Ceiling(BigInteger.Log(n, 10));
@@ -230,7 +259,7 @@ namespace Decompose.Numerics
                 Console.WriteLine("digits = {0}, factorBaseSize = {1}, desired = {2}", digits, factorBaseSize, desired);
                 Console.WriteLine("intervals processsed = {0}, values checked = {1}", intervalsProcessed, valuesChecked);
                 Console.WriteLine("partial relations processed = {0}, converted = {1}", partialRelationsProcessed, partialRelationsConverted);
-                Console.WriteLine("first few factors: {0}", string.Join(", ", factorBase.Take(10).ToArray()));
+                Console.WriteLine("first few factors: {0}", string.Join(", ", factorBase.Select(entry => entry.P).Take(10).ToArray()));
             }
             if ((diag & Diag.Timing) != 0)
             {
@@ -319,7 +348,7 @@ namespace Decompose.Numerics
                 Console.WriteLine("v = {0}", string.Join(", ", indices));
             var xPrime = indices.Select(index => relations[index].X).ProductModulo(n);
             var exponents = SumExponents(indices);
-            var yFactorBase = new[] { -1 }.Concat(factorBase).Zip(exponents,
+            var yFactorBase = new[] { -1 }.Concat(factorBase.Select(entry => entry.P)).Zip(exponents,
                 (p, exponent) => BigInteger.Pow(p, exponent / 2));
             var yCofactors = indices
                 .Select(index => (BigInteger)relations[index].Cofactor)
@@ -434,8 +463,9 @@ namespace Decompose.Numerics
             var offsets = interval.Offsets;
             for (int i = 0; i < factorBaseSize; i++)
             {
-                int p = factorBase[i];
-                offsets[i] = ((int)((sqrtNOffsets[i] - x) % p) + p) % p;
+                var entry = factorBase[i];
+                var p = entry.P;
+                offsets[i] = ((int)((entry.Offset - x) % p) + p) % p;
             }
             interval.OffsetX = x;
             return interval;
@@ -490,8 +520,9 @@ namespace Decompose.Numerics
             var offsets = interval.Offsets;
             var counts = interval.Counts;
             int i = 0;
-            if (factorBase[0] == 2)
+            if (factorBase[0].P == 2)
             {
+#if false
                 var logP = logFactorBase[0];
                 int k;
                 for (k = offsets[0]; k < size; k += 2)
@@ -500,15 +531,20 @@ namespace Decompose.Numerics
                     counts[k] += logP;
                 }
                 offsets[0] = k - size;
+#else
+                if ((size & 1) == 1)
+                    offsets[0] = 1 - offsets[0];
+#endif
                 ++i;
             }
             while (i < factorBaseSize)
             {
-                var p = factorBase[i];
+                var entry = factorBase[i];
+                int p = entry.P;
                 if (p >= size)
                     break;
-                var logP = logFactorBase[i];
-                int p1 = rootsDiff[i];
+                var logP = entry.LogP;
+                int p1 = entry.RootDiff;
                 int p2 = p - p1;
                 int k = offsets[i];
                 if (k >= p2 && k - p2 < size)
@@ -536,24 +572,25 @@ namespace Decompose.Numerics
             }
             while (i < factorBaseSize)
             {
-                var p = factorBase[i];
-                int p1 = rootsDiff[i];
-                int p2 = p - p1;
+                var entry = factorBase[i];
                 int k = offsets[i];
+                int p1 = entry.RootDiff;
+                int p = entry.P;
+                int p2 = p - p1;
                 if (k >= p2 && k - p2 < size)
                 {
                     Debug.Assert(EvaluatePolynomial(interval.X + k - p2) % p == 0);
-                    counts[k - p2] += logFactorBase[i];
+                    counts[k - p2] += entry.LogP;
                 }
                 else if (k + p1 < size)
                 {
                     Debug.Assert(EvaluatePolynomial(interval.X + k + p1) % p == 0);
-                    counts[k + p1] += logFactorBase[i];
+                    counts[k + p1] += entry.LogP;
                 }
                 if (k < size)
                 {
                     Debug.Assert(EvaluatePolynomial(interval.X + k) % p == 0);
-                    counts[k] += logFactorBase[i];
+                    counts[k] += entry.LogP;
                     k += p;
                 }
                 offsets[i++] = k - size;
@@ -625,11 +662,12 @@ namespace Decompose.Numerics
             var offsets = interval.Offsets;
             for (int i = 0; i < factorBaseSize; i++)
             {
-                var p = factorBase[i];
+                var entry = factorBase[i];
+                var p = entry.P;
                 var offset = (int)((delta - offsets[i]) % p);
                 if (offset < 0)
                     offset += p;
-                if (offset != 0 && offset != rootsDiff[i])
+                if (offset != 0 && offset != entry.RootDiff)
                 {
                     Debug.Assert(y % p != 0);
                     continue;
@@ -659,11 +697,12 @@ namespace Decompose.Numerics
             var offsets = interval.Offsets;
             for (int i = 0; i < factorBaseSize; i++)
             {
-                var p = factorBase[i];
+                var entry = factorBase[i];
+                var p = entry.P;
                 var offset = (int)((delta - offsets[i]) % p);
                 if (offset < 0)
                     offset += p;
-                if (offset != 0 && offset != rootsDiff[i])
+                if (offset != 0 && offset != entry.RootDiff)
                 {
                     Debug.Assert(y.ToBigInteger() % p != 0);
                     continue;
@@ -706,29 +745,6 @@ namespace Decompose.Numerics
         private void ProcessRelations()
         {
             ProcessRelationsSimple();
-        }
-
-        private void ProcessRelationsWithCache()
-        {
-            Debug.Assert(relations.GroupBy(relation => relation.X).Count() == relations.Count);
-            matrix = new BitMatrix(factorBaseSize + 1, relations.Count);
-            int cacheSize = matrix.WordLength;
-            var cache = new BitMatrix(matrix.Rows, cacheSize);
-            for (int j = 0; j < relations.Count; j += cacheSize)
-            {
-                int limit = Math.Min(cacheSize, relations.Count - j);
-                for (int k = 0; k < limit; k++)
-                {
-                    var entries = relations[j + k].Entries;
-                    for (int i = 0; i < entries.Length; i++)
-                    {
-                        var entry = entries[i];
-                        cache[entry.Index, k] = entry.Exponent % 2 != 0;
-                    }
-                }
-                matrix.CopySubMatrix(cache, 0, j);
-                cache.Clear();
-            }
 #if false
             using (var stream = new StreamWriter("matrix.txt"))
             {
@@ -753,21 +769,44 @@ namespace Decompose.Numerics
             }
         }
 
-        private Entry[] GetEntries(byte[] exponents)
+        private void ProcessRelationsWithCache()
+        {
+            Debug.Assert(relations.GroupBy(relation => relation.X).Count() == relations.Count);
+            matrix = new BitMatrix(factorBaseSize + 1, relations.Count);
+            int cacheSize = matrix.WordLength;
+            var cache = new BitMatrix(matrix.Rows, cacheSize);
+            for (int j = 0; j < relations.Count; j += cacheSize)
+            {
+                int limit = Math.Min(cacheSize, relations.Count - j);
+                for (int k = 0; k < limit; k++)
+                {
+                    var entries = relations[j + k].Entries;
+                    for (int i = 0; i < entries.Length; i++)
+                    {
+                        var entry = entries[i];
+                        cache[entry.Index, k] = entry.Exponent % 2 != 0;
+                    }
+                }
+                matrix.CopySubMatrix(cache, 0, j);
+                cache.Clear();
+            }
+        }
+
+        private ExponentEntry[] GetEntries(byte[] exponents)
         {
             return exponents
-                .Select((exponent, index) => new Entry { Index = index, Exponent = exponent })
+                .Select((exponent, index) => new ExponentEntry { Index = index, Exponent = exponent })
                 .Where(entry => entry.Exponent != 0)
                 .ToArray();
         }
 
-        private Entry[] CombineEntries(Entry[] a, Entry[] b)
+        private ExponentEntry[] CombineEntries(ExponentEntry[] a, ExponentEntry[] b)
         {
             return a.Concat(b)
                 .OrderBy(entry => entry.Index)
                 .GroupBy(entry => entry.Index)
                 .Select(grouping =>
-                    new Entry
+                    new ExponentEntry
                     {
                         Index = grouping.Key,
                         Exponent = grouping.Sum(entry => entry.Exponent),
