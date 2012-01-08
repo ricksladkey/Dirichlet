@@ -37,20 +37,9 @@ namespace Decompose.Numerics
             set { this[i][j] = value; }
         }
 
-        public void XorRows(int dst, int src)
+        public void XorRows(int dst, int src, int col)
         {
             this[dst].Xor(this[src]);
-        }
-
-        public bool IsRowEmpty(int i)
-        {
-            var row = this[i];
-            for (int j = 0; j < cols; j++)
-            {
-                if (row[j])
-                    return false;
-            }
-            return true;
         }
 
         public new void Clear()
@@ -72,6 +61,15 @@ namespace Decompose.Numerics
         {
             for (int j = 0; j < cols; j++)
                 yield return this[row, j];
+        }
+
+        public int GetRowWeight(int row)
+        {
+            int weight = 0;
+            var srcRow = this[row];
+            for (int col = 0; col < cols; col++)
+                weight += srcRow[col] ? 1 : 0;
+            return weight;
         }
     }
 }

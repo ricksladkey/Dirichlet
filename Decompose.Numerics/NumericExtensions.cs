@@ -84,5 +84,38 @@ namespace Decompose.Numerics
             }
             return 0;
         }
+
+        public static int GetBitCount(this long word)
+        {
+            int count = 0;
+            while (word != 0)
+            {
+                ++count;
+                word >>= 1;
+            }
+            return count;
+        }
+
+        public static int GetBitCount(this int word)
+        {
+            int count = 0;
+            while (word != 0)
+            {
+                ++count;
+                word >>= 1;
+            }
+            return count;
+        }
+
+        public static int GetBitCount(this short word)
+        {
+            int count = 0;
+            while (word != 0)
+            {
+                ++count;
+                word >>= 1;
+            }
+            return count;
+        }
     }
 }

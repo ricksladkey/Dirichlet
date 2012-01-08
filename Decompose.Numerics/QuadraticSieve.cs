@@ -573,10 +573,10 @@ namespace Decompose.Numerics
             while (i < factorBaseSize)
             {
                 var entry = factorBase[i];
-                int k = offsets[i];
-                int p1 = entry.RootDiff;
                 int p = entry.P;
+                int p1 = entry.RootDiff;
                 int p2 = p - p1;
+                int k = offsets[i];
                 if (k >= p2 && k - p2 < size)
                 {
                     Debug.Assert(EvaluatePolynomial(interval.X + k - p2) % p == 0);

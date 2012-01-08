@@ -26,9 +26,9 @@ namespace Decompose
                 //FactorTest5();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                QuadraticSieveDigitsTest();
+                //QuadraticSieveDigitsTest();
                 //CunnihamTest();
-                //GaussianEliminationTest1();
+                GaussianEliminationTest1();
             }
             catch (Exception ex)
             {

@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Decompose.Numerics
 {
-    public class GaussianElimination<TArray> : INullSpaceAlgorithm<IBitArray, IBitMatrix> where TArray : IBitArray, new()
+    public class StructuredGaussianElimination<TArray> : INullSpaceAlgorithm<IBitArray, IBitMatrix> where TArray : IBitArray, new()
     {
         private int threads;
 
-        public GaussianElimination(int threads)
+        public StructuredGaussianElimination(int threads)
         {
             this.threads = threads != 0 ? threads : 1;
         }

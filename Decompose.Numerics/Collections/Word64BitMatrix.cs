@@ -55,23 +55,12 @@ namespace Decompose.Numerics
             }
         }
 
-        public void XorRows(int dst, int src)
+        public void XorRows(int dst, int src, int col)
         {
             var dstRow = dst * words;
             var srcRow = src * words;
-            for (int j = 0; j < words; j++)
-                bits[dstRow + j] ^= bits[srcRow + j];
-        }
-
-        public bool IsRowEmpty(int i)
-        {
-            var row = i * words;
-            for (int j = 0; j < words; j++)
-            {
-                if (bits[row] != 0)
-                    return false;
-            }
-            return true;
+            for (int word = col / wordLength; word < words; word++)
+                bits[dstRow + word] ^= bits[srcRow + word];
         }
 
         public void Clear()
@@ -111,6 +100,15 @@ namespace Decompose.Numerics
         {
             for (int j = 0; j < cols; j++)
                 yield return this[row, j];
+        }
+
+        public int GetRowWeight(int row)
+        {
+            int weight = 0;
+            int srcRow = row * words;
+            for (int word = 0; word < words; word++)
+                weight += bits[srcRow + word].GetBitCount();
+            return weight;
         }
     }
 }
