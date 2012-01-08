@@ -95,12 +95,9 @@ namespace Decompose.Numerics
             }
             else
             {
-                int range = (rows + threads - 1) / threads;
                 Parallel.For(0, threads, thread =>
                 {
-                    int beg = thread * range;
-                    int end = Math.Min(beg + range, rows);
-                    for (int i = beg; i < end; i++)
+                    for (int i = thread; i < rows; i += threads)
                     {
                         if (i != j && matrix[i, k])
                             matrix.XorRows(i, j, k);
