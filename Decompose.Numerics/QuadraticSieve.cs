@@ -59,10 +59,20 @@ namespace Decompose.Numerics
             return factors;
         }
 
+        private struct Entry
+        {
+            public int Index { get; set; }
+            public int Exponent { get; set; }
+            public override string ToString()
+            {
+                return string.Format("Factor[{0}] ^ {1}", Index, Exponent);
+            }
+        }
+
         private class Relation
         {
             public BigInteger X { get; set; }
-            public int[] Exponents { get; set; }
+            public Entry[] Entries { get; set; }
             public long Cofactor { get; set; }
             public override string ToString()
             {
@@ -75,7 +85,7 @@ namespace Decompose.Numerics
             public long X { get; set; }
             public long OffsetX { get; set; }
             public int Size { get; set; }
-            public int[] Exponents { get; set; }
+            public byte[] Exponents { get; set; }
             public CountInt[] Counts { get; set; }
             public int[] Offsets { get; set; }
             public Word32Integer Reg1 { get; set; }
@@ -331,9 +341,8 @@ namespace Decompose.Numerics
             var results = new int[factorBaseSize + 1];
             foreach (int index in indices)
             {
-                var exponents = relations[index].Exponents;
-                for (int i = 0; i <= factorBaseSize; i++)
-                    results[i] += exponents[i];
+                foreach (var entry in relations[index].Entries)
+                    results[entry.Index] += entry.Exponent;
             }
             Debug.Assert(results.All(exponent => exponent % 2 == 0));
             return results;
@@ -401,7 +410,7 @@ namespace Decompose.Numerics
         private Interval CreateInterval()
         {
             var interval = new Interval();
-            interval.Exponents = new int[factorBaseSize + 1];
+            interval.Exponents = new byte[factorBaseSize + 1];
             interval.Counts = new CountInt[subIntervalSize];
             interval.Offsets = new int[factorBaseSize];
             interval.Reg1 = nRep.Copy();
@@ -584,7 +593,7 @@ namespace Decompose.Numerics
                 return new Relation
                 {
                     X = sqrtN + interval.X + k,
-                    Exponents = (int[])interval.Exponents.Clone(),
+                    Entries = GetEntries(interval.Exponents),
                 };
             }
             if (processPartialRelations && y < maximumDivisorSquared)
@@ -686,16 +695,20 @@ namespace Decompose.Numerics
             var relation = new Relation
             {
                 X = (sqrtN + interval.X + k) * (sqrtN + other),
-                Exponents = (int[])interval.Exponents.Clone(),
+                Entries = GetEntries(interval.Exponents),
                 Cofactor = cofactor,
             };
             FactorOverBase(interval, other);
-            for (int i = 0; i <= factorBaseSize; i++)
-                relation.Exponents[i] += interval.Exponents[i];
+            relation.Entries = CombineEntries(relation.Entries, GetEntries(interval.Exponents));
             return relation;
         }
 
         private void ProcessRelations()
+        {
+            ProcessRelationsSimple();
+        }
+
+        private void ProcessRelationsWithCache()
         {
             Debug.Assert(relations.GroupBy(relation => relation.X).Count() == relations.Count);
             matrix = new BitMatrix(factorBaseSize + 1, relations.Count);
@@ -706,9 +719,12 @@ namespace Decompose.Numerics
                 int limit = Math.Min(cacheSize, relations.Count - j);
                 for (int k = 0; k < limit; k++)
                 {
-                    var exponents = relations[j + k].Exponents;
-                    for (int i = 0; i < exponents.Length; i++)
-                        cache[i, k] = exponents[i] % 2 != 0;
+                    var entries = relations[j + k].Entries;
+                    for (int i = 0; i < entries.Length; i++)
+                    {
+                        var entry = entries[i];
+                        cache[entry.Index, k] = entry.Exponent % 2 != 0;
+                    }
                 }
                 matrix.CopySubMatrix(cache, 0, j);
                 cache.Clear();
@@ -728,10 +744,35 @@ namespace Decompose.Numerics
             matrix = new BitMatrix(factorBaseSize + 1, relations.Count);
             for (int j = 0; j < relations.Count; j++)
             {
-                var exponents = relations[j].Exponents;
-                for (int i = 0; i < exponents.Length; i++)
-                    matrix[i, j] = exponents[i] % 2 != 0;
+                var entries = relations[j].Entries;
+                for (int i = 0; i < entries.Length; i++)
+                {
+                    var entry = entries[i];
+                    matrix[entry.Index, j] = entry.Exponent % 2 != 0;
+                }
             }
+        }
+
+        private Entry[] GetEntries(byte[] exponents)
+        {
+            return exponents
+                .Select((exponent, index) => new Entry { Index = index, Exponent = exponent })
+                .Where(entry => entry.Exponent != 0)
+                .ToArray();
+        }
+
+        private Entry[] CombineEntries(Entry[] a, Entry[] b)
+        {
+            return a.Concat(b)
+                .OrderBy(entry => entry.Index)
+                .GroupBy(entry => entry.Index)
+                .Select(grouping =>
+                    new Entry
+                    {
+                        Index = grouping.Key,
+                        Exponent = grouping.Sum(entry => entry.Exponent),
+                    })
+                .ToArray();
         }
 
         private BigInteger EvaluatePolynomial(long x)

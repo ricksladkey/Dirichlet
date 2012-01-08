@@ -23,12 +23,12 @@ namespace Decompose
                 //FactorTest2();
                 //FactorTest3();
                 //FactorTest4();
-                //FactorTest5();
+                FactorTest5();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
                 //QuadraticSieveDigitsTest();
                 //CunnihamTest();
-                GaussianEliminationTest1();
+                //GaussianEliminationTest1();
             }
             catch (Exception ex)
             {
