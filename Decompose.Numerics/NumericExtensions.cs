@@ -117,7 +117,7 @@ namespace Decompose.Numerics
 
         public static int GetBitCount(this byte word)
         {
-            return bitCounts[word & (1 << 4 - 1)] + bitCounts[word >> 4];
+            return bitCounts[word & ((1 << 4) - 1)] + bitCounts[word >> 4];
         }
 
         private static int[] bitCounts = new[]

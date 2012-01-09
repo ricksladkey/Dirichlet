@@ -137,7 +137,7 @@ namespace Decompose.Numerics
             Tuple.Create(20, 60),
             Tuple.Create(30, 500),
             Tuple.Create(40, 1200),
-            Tuple.Create(50, 5000),
+            Tuple.Create(50, 4500),
             Tuple.Create(60, 12000),
             Tuple.Create(70, 35000),
             Tuple.Create(90, 60000), // http://www.mersenneforum.org/showthread.php?t=4013
@@ -172,7 +172,7 @@ namespace Decompose.Numerics
 
         private int threads;
         private BlockingCollection<Relation> relationBuffer;
-        private List<Relation> relations;
+        private Relation[] relations;
         private Dictionary<long, long> partialRelations;
         private IBitMatrix matrix;
         private Stopwatch timer;
@@ -404,14 +404,7 @@ namespace Decompose.Numerics
             partialRelations = new Dictionary<long, long>();
 
             if (threads == 1)
-            {
-                var interval = CreateInterval();
-                while (relationBuffer.Count < relationBuffer.BoundedCapacity)
-                {
-                    Sieve(GetNextInterval(interval));
-                    ++intervalsProcessed;
-                }
-            }
+                SieveThread();
             else
             {
                 var tasks = new Task[threads];
@@ -420,7 +413,7 @@ namespace Decompose.Numerics
                 Task.WaitAll(tasks);
             }
 
-            relations = relationBuffer.ToList();
+            relations = relationBuffer.ToArray();
             relationBuffer = null;
             partialRelations = null;
         }
@@ -765,9 +758,9 @@ namespace Decompose.Numerics
 
         private void ProcessRelationsSimple()
         {
-            Debug.Assert(relations.GroupBy(relation => relation.X).Count() == relations.Count);
-            matrix = new BitMatrix(factorBaseSize + 1, relations.Count);
-            for (int j = 0; j < relations.Count; j++)
+            Debug.Assert(relations.GroupBy(relation => relation.X).Count() == relations.Length);
+            matrix = new BitMatrix(factorBaseSize + 1, relations.Length);
+            for (int j = 0; j < relations.Length; j++)
             {
                 var entries = relations[j].Entries;
                 for (int i = 0; i < entries.Length; i++)
@@ -781,13 +774,13 @@ namespace Decompose.Numerics
 
         private void ProcessRelationsWithCache()
         {
-            Debug.Assert(relations.GroupBy(relation => relation.X).Count() == relations.Count);
-            matrix = new BitMatrix(factorBaseSize + 1, relations.Count);
+            Debug.Assert(relations.GroupBy(relation => relation.X).Count() == relations.Length);
+            matrix = new BitMatrix(factorBaseSize + 1, relations.Length);
             int cacheSize = matrix.WordLength;
             var cache = new BitMatrix(matrix.Rows, cacheSize);
-            for (int j = 0; j < relations.Count; j += cacheSize)
+            for (int j = 0; j < relations.Length; j += cacheSize)
             {
-                int limit = Math.Min(cacheSize, relations.Count - j);
+                int limit = Math.Min(cacheSize, relations.Length - j);
                 for (int k = 0; k < limit; k++)
                 {
                     var entries = relations[j + k].Entries;

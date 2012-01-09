@@ -275,33 +275,30 @@ namespace Decompose
         static void QuadraticSieveParametersTest()
         {
             var random = new MersenneTwister32(0);
-            int threads = 1;
+            int threads = 8;
             for (int i = 10; i <= 30; i++)
             {
-                if (i < 10)
+                var limit = BigInteger.Pow(10, i);
+                var p = NextPrime(random, limit);
+                var q = NextPrime(random, limit);
+                var n = p * q;
+                if (i < 30)
                     continue;
-                for (int j = 0; j < 10; j++)
+                Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
+                for (int size = 10000; size <= 15000; size += 1000)
                 {
-                    var limit = BigInteger.Pow(10, i);
-                    var p = NextPrime(random, limit);
-                    var q = NextPrime(random, limit);
-                    var n = p * q;
-                    Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                    for (int size = 0; size <= 0; size += 100)
+                    Console.WriteLine("size = {0}", size);
+                    for (int percent = 0; percent <= 0; percent += 5)
                     {
-                        Console.WriteLine("size = {0}", size);
-                        for (int percent = 0; percent <= 0; percent += 5)
+                        Console.WriteLine("percent = {0}", percent);
+                        var config = new QuadraticSieve.Config
                         {
-                            Console.WriteLine("percent = {0}", percent);
-                            var config = new QuadraticSieve.Config
-                            {
-                                Threads = threads,
-                                FactorBaseSize = size,
-                                LowerBoundPercent = percent,
-                                Diagnostics = QuadraticSieve.Diag.Verbose,
-                            };
-                            FactorTest(false, 1, n, new QuadraticSieve(config));
-                        }
+                            Threads = threads,
+                            FactorBaseSize = size,
+                            LowerBoundPercent = percent,
+                            Diagnostics = QuadraticSieve.Diag.Verbose,
+                        };
+                        FactorTest(false, 1, n, new QuadraticSieve(config));
                     }
                 }
                 break;
@@ -318,11 +315,8 @@ namespace Decompose
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
                 var n = p * q;
-                if (i < 30)
-                    continue;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                FactorTest(false, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads, FactorBaseSize = 35000, Diagnostics = QuadraticSieve.Diag.Verbose }));
-                break;
+                FactorTest(false, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads }));
             }
         }
 

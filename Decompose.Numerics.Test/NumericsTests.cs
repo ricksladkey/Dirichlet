@@ -373,5 +373,23 @@ namespace Decompose.Numerics.Test
             }
             return matrix;
         }
+
+        [TestMethod]
+        public void BitCountTest()
+        {
+            for (int i = 0; i < 256; i++)
+            {
+                ulong value = (ulong)i;
+                int count = 0;
+                while (value != 0)
+                {
+                    if ((value & 1) != 0)
+                        ++count;
+                    value >>= 1;
+                }
+                Assert.AreEqual(count, i.GetBitCount());
+                count += 0;
+            }
+        }
     }
 }

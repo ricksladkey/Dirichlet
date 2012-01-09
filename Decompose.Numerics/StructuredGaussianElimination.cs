@@ -16,6 +16,7 @@ namespace Decompose.Numerics
             public Ancestor Next { get; set; }
         }
 
+        private const int multiThreadedCutoff = 256;
         private int threads;
         private INullSpaceAlgorithm<IBitArray, IBitMatrix> solver;
 
@@ -94,15 +95,7 @@ namespace Decompose.Numerics
                     {
                         var col = matrix.GetNonZeroIndices(n).First();
                         deletedRows[n] = true;
-                        for (int i = 0; i < matrix.Rows; i++)
-                        {
-                            if (matrix[i, col])
-                            {
-                                --weights[i];
-                                matrix[i, col] = false;
-                            }
-                            Debug.Assert(weights[i] == matrix.GetRowWeight(i));
-                        }
+                        ClearColumn(matrix, weights, col);
                         deletedCols[col] = true;
                         ++deleted;
 #if false
@@ -114,18 +107,7 @@ namespace Decompose.Numerics
                         var cols = matrix.GetNonZeroIndices(n).ToArray();
                         var col1 = cols[0];
                         var col2 = cols[1];
-                        for (int i = 0; i < matrix.Rows; i++)
-                        {
-                            if (matrix[i, col2])
-                            {
-                                var old = matrix[i, col1];
-                                if (old)
-                                    weights[i] -= 2;
-                                matrix[i, col1] = !old;
-                                matrix[i, col2] = false;
-                                Debug.Assert(weights[i] == matrix.GetRowWeight(i));
-                            }
-                        }
+                        MergeColumns(matrix, weights, col1, col2);
                         var ancestor = ancestors[col1];
                         while (ancestor.Next != null)
                             ancestor = ancestor.Next;
@@ -177,6 +159,76 @@ namespace Decompose.Numerics
             }
 #endif
             return compact;
+        }
+
+        private void ClearColumn(IBitMatrix matrix, int[] weights, int col)
+        {
+            int rows = matrix.Rows;
+            if (rows < multiThreadedCutoff)
+            {
+                for (int i = 0; i < rows; i++)
+                {
+                    if (matrix[i, col])
+                    {
+                        --weights[i];
+                        matrix[i, col] = false;
+                    }
+                    Debug.Assert(weights[i] == matrix.GetRowWeight(i));
+                }
+            }
+            else
+            {
+                Parallel.For(0, threads, thread =>
+                {
+                    for (int i = thread; i < rows; i += threads)
+                    {
+                        if (matrix[i, col])
+                        {
+                            --weights[i];
+                            matrix[i, col] = false;
+                        }
+                        Debug.Assert(weights[i] == matrix.GetRowWeight(i));
+                    }
+                });
+            }
+        }
+
+        private void MergeColumns(IBitMatrix matrix, int[] weights, int col1, int col2)
+        {
+            int rows = matrix.Rows;
+            if (rows < multiThreadedCutoff)
+            {
+                for (int i = 0; i < rows; i++)
+                {
+                    if (matrix[i, col2])
+                    {
+                        var old = matrix[i, col1];
+                        if (old)
+                            weights[i] -= 2;
+                        matrix[i, col1] = !old;
+                        matrix[i, col2] = false;
+                        Debug.Assert(weights[i] == matrix.GetRowWeight(i));
+                    }
+                }
+            }
+            else
+            {
+                Parallel.For(0, threads, thread =>
+                {
+                    for (int i = thread; i < rows; i += threads)
+                    {
+                        if (matrix[i, col2])
+                        {
+                            var old = matrix[i, col1];
+                            if (old)
+                                weights[i] -= 2;
+                            matrix[i, col1] = !old;
+                            matrix[i, col2] = false;
+                            Debug.Assert(weights[i] == matrix.GetRowWeight(i));
+                        }
+                    }
+                });
+            }
         }
     }
 }

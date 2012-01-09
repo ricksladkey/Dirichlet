@@ -137,16 +137,9 @@ namespace Decompose.Numerics
             int srcRow = row * words;
             for (int word = 0; word < words; word++)
             {
-                var value = (ulong)bits[srcRow + word];
-                int w = 0;
-                while (value != 0)
-                {
-                    if ((value & 1) != 0)
-                        ++w;
-                    value >>= 1;
-                }
-                weight += w;
-                //Debug.Assert(w == bits[srcRow + word].GetBitCount());
+                var value = bits[srcRow + word];
+                if (value != 0)
+                    weight += value.GetBitCount();
             }
             Debug.Assert(weight == GetRow(row).Select(bit => bit ? 1 : 0).Sum());
             return weight;

@@ -9,6 +9,7 @@ namespace Decompose.Numerics
     public class GaussianElimination<TArray> : INullSpaceAlgorithm<IBitArray, IBitMatrix>
         where TArray : IBitArray
     {
+        private const int multiThreadedCutoff = 256;
         private int threads;
 
         public GaussianElimination(int threads)
@@ -84,13 +85,12 @@ namespace Decompose.Numerics
 
         private void ZeroColumn(IBitMatrix matrix, int rows, int j, int k)
         {
-            if (rows < 256)
+            if (rows < multiThreadedCutoff)
             {
                 for (int i = 0; i < rows; i++)
                 {
-                    if (i == j || !matrix[i, k])
-                        continue;
-                    matrix.XorRows(i, j, k);
+                    if (i != j && matrix[i, k])
+                        matrix.XorRows(i, j, k);
                 }
             }
             else
