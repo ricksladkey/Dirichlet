@@ -127,6 +127,7 @@ namespace Decompose.Numerics
         private const int maximumIntervalSize = subIntervalSize * 8;
         private const int lowerBoundPercentDefaultNoCofactors = 85;
         private const int lowerBoundPercentDefaultCofactors = 75;
+        private const int cofactorScaleFactor = 4096;
         private const int surplusRelations = 10;
         private readonly BigInteger smallFactorCutoff = (BigInteger)int.MaxValue;
         private readonly Tuple<int, int>[] sizePairs =
@@ -165,6 +166,7 @@ namespace Decompose.Numerics
         private int factorBaseSize;
         private FactorBaseEntry[] factorBase;
         private long maximumDivisorSquared;
+        private long maximumCofactorSize;
         private CountInt logMaximumDivisorSquared;
         private Word32Integer nRep;
         private Word32Integer sqrtNRep;
@@ -251,6 +253,7 @@ namespace Decompose.Numerics
             largePrimeIndex = 0;
             while (largePrimeIndex < factorBaseSize && factorBase[largePrimeIndex].P < subIntervalSize)
                 ++largePrimeIndex;
+            maximumCofactorSize = Math.Min(maximumDivisor * cofactorScaleFactor, maximumDivisorSquared);
 
             intervalsProcessed = 0;
             valuesChecked = 0;
@@ -650,7 +653,7 @@ namespace Decompose.Numerics
                     Entries = GetEntries(interval.Exponents),
                 };
             }
-            if (processPartialRelations && y < maximumDivisorSquared)
+            if (processPartialRelations && y < maximumCofactorSize)
                 return ProcessPartialRelation(interval, k, y);
             return null;
         }

@@ -256,7 +256,7 @@ namespace Decompose
             {
                 Threads = threads,
                 //FactorBaseSize = 24000,
-                //LowerBoundPercent = 35,
+                LowerBoundPercent = 65,
                 Multiplier = 3,
                 Diagnostics = QuadraticSieve.Diag.Verbose,
             };
