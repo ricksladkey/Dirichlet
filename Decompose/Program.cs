@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Numerics;
 using Decompose.Numerics;
+using System.Reflection;
 
 namespace Decompose
 {
@@ -317,8 +318,11 @@ namespace Decompose
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
                 var n = p * q;
+                if (i < 30)
+                    continue;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                FactorTest(false, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads }));
+                FactorTest(false, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads, FactorBaseSize = 35000, Diagnostics = QuadraticSieve.Diag.Verbose }));
+                break;
             }
         }
 
@@ -341,7 +345,8 @@ namespace Decompose
         static void GaussianEliminationTest1()
         {
             var threads = 8;
-            var lines = GetLinesGzip("matrix-18401.txt.gz");
+            var file = @"..\..\..\..\matrix-18401.txt.gz";
+            var lines = GetLinesGzip(file);
             var timer = new Stopwatch();
 
 #if false
@@ -349,7 +354,7 @@ namespace Decompose
             var getter = new Func<string[], IBitMatrix>(GetBitMatrix<Word64BitMatrix>);
 #else
             var solver = new StructuredGaussianElimination<Word64BitArray, Word64BitMatrix>(threads);
-            var getter = new Func<string[], IBitMatrix>(GetBitMatrix<HashSetBitMatrix>);
+            var getter = new Func<string[], IBitMatrix>(GetBitMatrix<Word64BitMatrix>);
 #endif
 
             timer.Restart();

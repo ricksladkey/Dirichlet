@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Word = System.Int64;
+using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
@@ -136,9 +137,18 @@ namespace Decompose.Numerics
             int srcRow = row * words;
             for (int word = 0; word < words; word++)
             {
-                if (bits[srcRow + word] != 0)
-                    weight += bits[srcRow + word].GetBitCount();
+                var value = (ulong)bits[srcRow + word];
+                int w = 0;
+                while (value != 0)
+                {
+                    if ((value & 1) != 0)
+                        ++w;
+                    value >>= 1;
+                }
+                weight += w;
+                //Debug.Assert(w == bits[srcRow + word].GetBitCount());
             }
+            Debug.Assert(weight == GetRow(row).Select(bit => bit ? 1 : 0).Sum());
             return weight;
         }
 

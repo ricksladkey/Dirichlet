@@ -10,11 +10,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using CountInt = System.Byte;
 
-#if true
+#if false
 using BitMatrix = Decompose.Numerics.Word64BitMatrix;
 using Solver = Decompose.Numerics.GaussianElimination<Decompose.Numerics.Word64BitArray>;
 #else
-using BitMatrix = Decompose.Numerics.HashSetBitMatrix;
+using BitMatrix = Decompose.Numerics.Word64BitMatrix;
 using Solver = Decompose.Numerics.StructuredGaussianElimination<Decompose.Numerics.Word64BitArray, Decompose.Numerics.Word64BitMatrix>;
 #endif
 

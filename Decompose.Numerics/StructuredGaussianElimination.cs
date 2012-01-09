@@ -66,11 +66,14 @@ namespace Decompose.Numerics
 
         private IBitMatrix CompactMatrix(IBitMatrix matrix)
         {
-            bool[] deletedRows = new bool[matrix.Rows];
-            bool[] deletedCols = new bool[matrix.Cols];
+            var deletedRows = new bool[matrix.Rows];
+            var deletedCols = new bool[matrix.Cols];
+            var weights = new int[matrix.Rows];
             ancestors = new Ancestor[matrix.Cols];
             for (int i = 0; i < matrix.Cols; i++)
                 ancestors[i] = new Ancestor { Column = i };
+            for (int i = 0; i < matrix.Rows; i++)
+                weights[i] = matrix.GetRowWeight(i);
             while (true)
             {
                 int deleted = 0;
@@ -78,7 +81,7 @@ namespace Decompose.Numerics
                 {
                     if (deletedRows[n])
                         continue;
-                    var weight = matrix.GetRowWeight(n);
+                    var weight = weights[n];
                     if (weight == 0)
                     {
                         deletedRows[n] = true;
@@ -92,7 +95,14 @@ namespace Decompose.Numerics
                         var col = matrix.GetNonZeroIndices(n).First();
                         deletedRows[n] = true;
                         for (int i = 0; i < matrix.Rows; i++)
-                            matrix[i, col] = false;
+                        {
+                            if (matrix[i, col])
+                            {
+                                --weights[i];
+                                matrix[i, col] = false;
+                            }
+                            Debug.Assert(weights[i] == matrix.GetRowWeight(i));
+                        }
                         deletedCols[col] = true;
                         ++deleted;
 #if false
@@ -108,8 +118,12 @@ namespace Decompose.Numerics
                         {
                             if (matrix[i, col2])
                             {
-                                matrix[i, col1] = !matrix[i, col1];
+                                var old = matrix[i, col1];
+                                if (old)
+                                    weights[i] -= 2;
+                                matrix[i, col1] = !old;
                                 matrix[i, col2] = false;
+                                Debug.Assert(weights[i] == matrix.GetRowWeight(i));
                             }
                         }
                         var ancestor = ancestors[col1];
