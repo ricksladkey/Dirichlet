@@ -70,7 +70,7 @@ namespace Decompose.Numerics
                 yield return this[row, j];
         }
 
-        public IEnumerable<int> GetNonZeroCols(int row)
+        public IEnumerable<int> GetNonZeroIndices(int row)
         {
             return this[row];
         }

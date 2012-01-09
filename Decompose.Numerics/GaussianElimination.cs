@@ -106,12 +106,12 @@ namespace Decompose.Numerics
             }
         }
 
-        public bool IsSolutionValid(IBitMatrix matrix, IBitArray solution)
+        public static bool IsSolutionValid(IBitMatrix matrix, IBitArray solution)
         {
             return IsSolutionValid(matrix, 0, matrix.Rows, solution);
         }
 
-        private bool IsSolutionValid(IBitMatrix matrix, int rowMin, int rowMax, IBitArray solution)
+        private static bool IsSolutionValid(IBitMatrix matrix, int rowMin, int rowMax, IBitArray solution)
         {
             int cols = matrix.Cols;
             for (int i = rowMin; i < rowMax; i++)

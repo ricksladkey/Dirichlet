@@ -64,6 +64,15 @@ namespace Decompose.Numerics
                 yield return this[row, j];
         }
 
+        public IEnumerable<int> GetNonZeroIndices(int row)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                if (this[row, j])
+                    yield return j;
+            }
+        }
+
         public int GetRowWeight(int row)
         {
             int weight = 0;

@@ -348,8 +348,8 @@ namespace Decompose.Numerics.Test
                 var matrix = new BoolBitMatrix(origMatrix);
                 foreach (var v in solver.Solve(matrix))
                 {
-                    Assert.IsTrue(solver.IsSolutionValid(origMatrix, v));
-                    Assert.IsTrue(solver.IsSolutionValid(matrix, v));
+                    Assert.IsTrue(GaussianElimination<BoolBitArray>.IsSolutionValid(origMatrix, v));
+                    Assert.IsTrue(GaussianElimination<BoolBitArray>.IsSolutionValid(matrix, v));
                 }
                 Console.WriteLine();
             }

@@ -45,20 +45,7 @@ namespace Decompose.Numerics
         {
             for (int i = 0; i < rows; i++)
             {
-                for (int j = 0; j < cols; j++)
-                {
-                    if (matrix[i, j])
-                        this[i, j] = true;
-                }
-            }
-        }
-
-        public Word64BitMatrix(HashSetBitMatrix matrix)
-            : this(matrix.Rows, matrix.Cols)
-        {
-            for (int i = 0; i < rows; i++)
-            {
-                foreach (var j in matrix.GetNonZeroCols(i))
+                foreach (var j in matrix.GetNonZeroIndices(i))
                     this[i, j] = true;
             }
         }
@@ -125,13 +112,39 @@ namespace Decompose.Numerics
                 yield return this[row, j];
         }
 
+        public IEnumerable<int> GetNonZeroIndices(int row)
+        {
+            int srcRow = row * words;
+            for (int word = 0; word < words; word++)
+            {
+                var value = bits[srcRow + word];
+                if (value != 0)
+                {
+                    int col = word * wordLength;
+                    for (int j = 0; j < wordLength; j++)
+                    {
+                        if ((value & (Word)1 << j) != 0)
+                            yield return col + j;
+                    }
+                }
+            }
+        }
+
         public int GetRowWeight(int row)
         {
             int weight = 0;
             int srcRow = row * words;
             for (int word = 0; word < words; word++)
-                weight += bits[srcRow + word].GetBitCount();
+            {
+                if (bits[srcRow + word] != 0)
+                    weight += bits[srcRow + word].GetBitCount();
+            }
             return weight;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("Rows = {0}, Cols = {1}", Rows, Cols);
         }
     }
 }

@@ -41,6 +41,15 @@ namespace Decompose.Numerics
             }
         }
 
+        public IEnumerable<int> GetNonZeroIndices()
+        {
+            for (int i = 0; i < length; i++)
+            {
+                if (this[i])
+                    yield return i;
+            }
+        }
+
         public IEnumerator<bool> GetEnumerator()
         {
             for (int i = 0; i < length; i++)
@@ -50,6 +59,11 @@ namespace Decompose.Numerics
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        public override string ToString()
+        {
+            return string.Format("Length = {0}", Length);
         }
     }
 }

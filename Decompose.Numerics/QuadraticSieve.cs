@@ -8,9 +8,15 @@ using System.Linq;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
-using BitMatrix = Decompose.Numerics.Word64BitMatrix;
 using CountInt = System.Byte;
+
+#if true
+using BitMatrix = Decompose.Numerics.Word64BitMatrix;
 using Solver = Decompose.Numerics.GaussianElimination<Decompose.Numerics.Word64BitArray>;
+#else
+using BitMatrix = Decompose.Numerics.HashSetBitMatrix;
+using Solver = Decompose.Numerics.StructuredGaussianElimination<Decompose.Numerics.Word64BitArray, Decompose.Numerics.Word64BitMatrix>;
+#endif
 
 namespace Decompose.Numerics
 {
@@ -340,20 +346,24 @@ namespace Decompose.Numerics
         private BigInteger ComputeFactor(IBitArray v)
         {
             var indices = v
-                .Select((selected, index) => new { Index = index, Selected = selected })
-                .Where(pair => pair.Selected)
-                .Select(pair => pair.Index)
+                .Select((selected, index) => selected ? index : -1)
+                .Where(index => index != -1)
                 .ToArray();
             if ((diag & Diag.Solutions) != 0)
                 Console.WriteLine("v = {0}", string.Join(", ", indices));
-            var xPrime = indices.Select(index => relations[index].X).ProductModulo(n);
+            var xPrime = indices
+                .Select(index => relations[index].X)
+                .ProductModulo(n);
             var exponents = SumExponents(indices);
-            var yFactorBase = new[] { -1 }.Concat(factorBase.Select(entry => entry.P)).Zip(exponents,
-                (p, exponent) => BigInteger.Pow(p, exponent / 2));
+            var yFactorBase = new[] { -1 }
+                .Concat(factorBase.Select(entry => entry.P))
+                .Zip(exponents, (p, exponent) => BigInteger.Pow(p, exponent / 2));
             var yCofactors = indices
                 .Select(index => (BigInteger)relations[index].Cofactor)
                 .Where(cofactor => cofactor != 0);
-            var yPrime = yFactorBase.Concat(yCofactors).ProductModulo(n);
+            var yPrime = yFactorBase
+                .Concat(yCofactors)
+                .ProductModulo(n);
             var factor = BigInteger.GreatestCommonDivisor(xPrime + yPrime, n);
             foreach (var multiplierFactor in multiplierFactors)
             {

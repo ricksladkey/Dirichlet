@@ -14,5 +14,14 @@ namespace Decompose.Numerics
             for (int i = 0; i < length; i++)
                 Add(false);
         }
+
+        public IEnumerable<int> GetNonZeroIndices()
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                if (this[i])
+                    yield return i;
+            }
+        }
     }
 }
