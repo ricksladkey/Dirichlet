@@ -26,6 +26,7 @@ namespace Decompose.Numerics
 #if false
         private IBitMatrix matrixOrig;
 #endif
+
         public StructuredGaussianElimination(int threads)
         {
             this.threads = threads != 0 ? threads : 1;

@@ -139,6 +139,7 @@ namespace Decompose.Numerics
             Tuple.Create(40, 1200),
             Tuple.Create(50, 5000),
             Tuple.Create(60, 12000),
+            Tuple.Create(70, 35000),
             Tuple.Create(90, 60000), // http://www.mersenneforum.org/showthread.php?t=4013
         };
 
@@ -345,12 +346,10 @@ namespace Decompose.Numerics
 
         private BigInteger ComputeFactor(IBitArray v)
         {
-            var indices = v
-                .Select((selected, index) => selected ? index : -1)
-                .Where(index => index != -1)
-                .ToArray();
             if ((diag & Diag.Solutions) != 0)
-                Console.WriteLine("v = {0}", string.Join(", ", indices));
+                Console.WriteLine("v = {0}", string.Join(", ", v.GetNonZeroIndices().ToArray()));
+
+            var indices = v.GetNonZeroIndices().ToArray();
             var xPrime = indices
                 .Select(index => relations[index].X)
                 .ProductModulo(n);
@@ -774,7 +773,8 @@ namespace Decompose.Numerics
                 for (int i = 0; i < entries.Length; i++)
                 {
                     var entry = entries[i];
-                    matrix[entry.Index, j] = entry.Exponent % 2 != 0;
+                    if (entry.Exponent % 2 != 0)
+                        matrix[entry.Index, j] = true;
                 }
             }
         }
