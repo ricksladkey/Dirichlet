@@ -41,7 +41,14 @@ namespace Decompose.Numerics
 #endif
             rowsOrig = matrix.Rows;
             colsOrig = matrix.Cols;
+#if false
+            var timer = new Stopwatch();
+            timer.Restart();
+#endif
             matrix = CompactMatrix(matrix);
+#if false
+            Console.WriteLine("compaction: {0:F3}", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
             foreach (var v in solver.Solve(matrix))
                 yield return GetOriginalSolution(v);
         }

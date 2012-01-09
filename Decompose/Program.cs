@@ -285,10 +285,10 @@ namespace Decompose
                 if (i < 30)
                     continue;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                for (int size = 10000; size <= 15000; size += 1000)
+                for (int size = 12000; size <= 24000; size += 1000)
                 {
                     Console.WriteLine("size = {0}", size);
-                    for (int percent = 0; percent <= 0; percent += 5)
+                    for (int percent = 80; percent <= 80; percent += 5)
                     {
                         Console.WriteLine("percent = {0}", percent);
                         var config = new QuadraticSieve.Config
@@ -296,7 +296,7 @@ namespace Decompose
                             Threads = threads,
                             FactorBaseSize = size,
                             LowerBoundPercent = percent,
-                            Diagnostics = QuadraticSieve.Diag.Verbose,
+                            //Diagnostics = QuadraticSieve.Diag.Verbose,
                         };
                         FactorTest(false, 1, n, new QuadraticSieve(config));
                     }
