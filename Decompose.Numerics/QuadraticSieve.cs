@@ -169,6 +169,7 @@ namespace Decompose.Numerics
         private Word32Integer nRep;
         private Word32Integer sqrtNRep;
         private bool processPartialRelations;
+        private int largePrimeIndex;
 
         private int threads;
         private BlockingCollection<Relation> relationBuffer;
@@ -247,6 +248,9 @@ namespace Decompose.Numerics
             var words = IntegerMath.QuotientCeiling(n.GetBitLength(), Word32Integer.WordLength);
             nRep = new Word32Integer(words * 2 + 1).Set(n);
             sqrtNRep = nRep.Copy().Set(sqrtN);
+            largePrimeIndex = 0;
+            while (largePrimeIndex < factorBaseSize && factorBase[largePrimeIndex].P < subIntervalSize)
+                ++largePrimeIndex;
 
             intervalsProcessed = 0;
             valuesChecked = 0;
@@ -519,16 +523,16 @@ namespace Decompose.Numerics
 
         private void SieveInterval(Interval interval, int size)
         {
-            int i = 0;
-            i = SieveSmallPrimes(interval, size, i);
-            i = SieveLargePrimes(interval, size, i);
+            SieveSmallPrimes(interval, size, largePrimeIndex);
+            SieveLargePrimes(interval, size, largePrimeIndex);
             interval.OffsetX = interval.X + size;
         }
 
-        private int SieveSmallPrimes(Interval interval, int size, int i)
+        private void SieveSmallPrimes(Interval interval, int size, int iMax)
         {
             var offsets = interval.Offsets;
             var counts = interval.Counts;
+            int i = 0;
             if (factorBase[0].P == 2)
             {
 #if false
@@ -546,12 +550,10 @@ namespace Decompose.Numerics
 #endif
                 ++i;
             }
-            while (i < factorBaseSize)
+            while (i < iMax)
             {
                 var entry = factorBase[i];
                 int p = entry.P;
-                if (p >= size)
-                    break;
                 var logP = entry.LogP;
                 int p1 = entry.RootDiff;
                 int p2 = p - p1;
@@ -566,26 +568,25 @@ namespace Decompose.Numerics
                 {
                     Debug.Assert(EvaluatePolynomial(interval.X + k) % p == 0);
                     counts[k] += logP;
-                    k += p1;
-                    Debug.Assert(EvaluatePolynomial(interval.X + k) % p == 0);
-                    counts[k] += logP;
-                    k += p2;
+                    Debug.Assert(EvaluatePolynomial(interval.X + k + p1) % p == 0);
+                    counts[k + p1] += logP;
+                    k += p;
                 }
                 if (k < size)
                 {
-                    Debug.Assert(EvaluatePolynomial(interval.X + k + p1) % p == 0);
+                    Debug.Assert(EvaluatePolynomial(interval.X + k) % p == 0);
                     counts[k] += logP;
                     k += p;
                 }
                 offsets[i++] = k - size;
             }
-            return i;
         }
 
-        private int SieveLargePrimes(Interval interval, int size, int i)
+        private void SieveLargePrimes(Interval interval, int size, int iMin)
         {
             var offsets = interval.Offsets;
             var counts = interval.Counts;
+            int i = iMin;
             while (i < factorBaseSize)
             {
                 var entry = factorBase[i];
@@ -611,7 +612,6 @@ namespace Decompose.Numerics
                 }
                 offsets[i++] = k - size;
             }
-            return i;
         }
 
         private int CheckForSmooth(Interval interval, int size, CountInt countLimit)
