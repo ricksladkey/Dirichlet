@@ -733,25 +733,52 @@ namespace Decompose.Numerics
             var exponents = interval.Exponents;
             if (negative)
                 ++exponents[0];
-            var delta = x - interval.OffsetX;
+            var deltaOrig = x - interval.OffsetX;
             var offsets = interval.Offsets;
-            for (int i = 0; i < factorBaseSize; i++)
+            if (deltaOrig >= int.MinValue && deltaOrig <= int.MaxValue)
             {
-                var entry = factorBase[i];
-                var p = entry.P;
-                var offset = (int)((delta - offsets[i]) % p);
-                if (offset < 0)
-                    offset += p;
-                if (offset != 0 && offset != entry.RootDiff)
+                int delta = (int)deltaOrig;
+                for (int i = 0; i < factorBaseSize; i++)
                 {
-                    Debug.Assert(y.ToBigInteger() % p != 0);
-                    continue;
+                    var entry = factorBase[i];
+                    var p = entry.P;
+                    var offset = (delta - offsets[i]) % p;
+                    if (offset < 0)
+                        offset += p;
+                    if (offset != 0 && offset != entry.RootDiff)
+                    {
+                        Debug.Assert(y.ToBigInteger() % p != 0);
+                        continue;
+                    }
+                    Debug.Assert(y.ToBigInteger() % p == 0);
+                    while (y.GetRemainder((uint)p) == 0)
+                    {
+                        ++exponents[i + 1];
+                        y.Divide((uint)p, z);
+                    }
                 }
-                Debug.Assert(y.ToBigInteger() % p == 0);
-                while (y.GetRemainder((uint)p) == 0)
+            }
+            else
+            {
+                long delta = deltaOrig;
+                for (int i = 0; i < factorBaseSize; i++)
                 {
-                    ++exponents[i + 1];
-                    y.Divide((uint)p, z);
+                    var entry = factorBase[i];
+                    var p = entry.P;
+                    var offset = (int)((delta - offsets[i]) % p);
+                    if (offset < 0)
+                        offset += p;
+                    if (offset != 0 && offset != entry.RootDiff)
+                    {
+                        Debug.Assert(y.ToBigInteger() % p != 0);
+                        continue;
+                    }
+                    Debug.Assert(y.ToBigInteger() % p == 0);
+                    while (y.GetRemainder((uint)p) == 0)
+                    {
+                        ++exponents[i + 1];
+                        y.Divide((uint)p, z);
+                    }
                 }
             }
             return y < (ulong)long.MaxValue ? (long)(ulong)y : 0;
