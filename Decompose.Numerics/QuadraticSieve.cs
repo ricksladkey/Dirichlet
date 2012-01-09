@@ -519,13 +519,20 @@ namespace Decompose.Numerics
 
         private void SieveInterval(Interval interval, int size)
         {
+            int i = 0;
+            i = SieveSmallPrimes(interval, size, i);
+            i = SieveLargePrimes(interval, size, i);
+            interval.OffsetX = interval.X + size;
+        }
+
+        private int SieveSmallPrimes(Interval interval, int size, int i)
+        {
             var offsets = interval.Offsets;
             var counts = interval.Counts;
-            int i = 0;
             if (factorBase[0].P == 2)
             {
 #if false
-                var logP = logFactorBase[0];
+                var logP = factorBase[0].LogP;
                 int k;
                 for (k = offsets[0]; k < size; k += 2)
                 {
@@ -572,6 +579,13 @@ namespace Decompose.Numerics
                 }
                 offsets[i++] = k - size;
             }
+            return i;
+        }
+
+        private int SieveLargePrimes(Interval interval, int size, int i)
+        {
+            var offsets = interval.Offsets;
+            var counts = interval.Counts;
             while (i < factorBaseSize)
             {
                 var entry = factorBase[i];
@@ -597,7 +611,7 @@ namespace Decompose.Numerics
                 }
                 offsets[i++] = k - size;
             }
-            interval.OffsetX = interval.X + size;
+            return i;
         }
 
         private int CheckForSmooth(Interval interval, int size, CountInt countLimit)
@@ -624,6 +638,7 @@ namespace Decompose.Numerics
 
         private Relation GetRelation(Interval interval, int k)
         {
+            ClearExponents(interval);
             long y = FactorOverBase(interval, interval.X + k);
             if (y == 0)
                 return null;
@@ -653,32 +668,57 @@ namespace Decompose.Numerics
         {
             var y = EvaluatePolynomial(x);
             var exponents = interval.Exponents;
-            for (int i = 0; i <= factorBaseSize; i++)
-                exponents[i] = 0;
             if (y < 0)
             {
-                exponents[0] = 1;
+                ++exponents[0];
                 y = -y;
             }
-            var delta = x - interval.OffsetX;
+            var deltaOrig = x - interval.OffsetX;
             var offsets = interval.Offsets;
-            for (int i = 0; i < factorBaseSize; i++)
+            if (deltaOrig >= int.MinValue && deltaOrig <= int.MaxValue)
             {
-                var entry = factorBase[i];
-                var p = entry.P;
-                var offset = (int)((delta - offsets[i]) % p);
-                if (offset < 0)
-                    offset += p;
-                if (offset != 0 && offset != entry.RootDiff)
+                int delta = (int)deltaOrig;
+                for (int i = 0; i < factorBaseSize; i++)
                 {
-                    Debug.Assert(y % p != 0);
-                    continue;
+                    var entry = factorBase[i];
+                    var p = entry.P;
+                    var offset = (delta - offsets[i]) % p;
+                    if (offset < 0)
+                        offset += p;
+                    if (offset != 0 && offset != entry.RootDiff)
+                    {
+                        Debug.Assert(y % p != 0);
+                        continue;
+                    }
+                    Debug.Assert(y % p == 0);
+                    while ((y % p).IsZero)
+                    {
+                        ++exponents[i + 1];
+                        y /= p;
+                    }
                 }
-                Debug.Assert(y % p == 0);
-                while ((y % p).IsZero)
+            }
+            else
+            {
+                long delta = deltaOrig;
+                for (int i = 0; i < factorBaseSize; i++)
                 {
-                    ++exponents[i + 1];
-                    y /= p;
+                    var entry = factorBase[i];
+                    var p = entry.P;
+                    var offset = (int)((delta - offsets[i]) % p);
+                    if (offset < 0)
+                        offset += p;
+                    if (offset != 0 && offset != entry.RootDiff)
+                    {
+                        Debug.Assert(y % p != 0);
+                        continue;
+                    }
+                    Debug.Assert(y % p == 0);
+                    while ((y % p).IsZero)
+                    {
+                        ++exponents[i + 1];
+                        y /= p;
+                    }
                 }
             }
             return y < long.MaxValue ? (long)y : 0;
@@ -691,10 +731,8 @@ namespace Decompose.Numerics
             bool negative;
             EvaluatePolynomial(x, y, z, out negative);
             var exponents = interval.Exponents;
-            for (int i = 0; i <= factorBaseSize; i++)
-                exponents[i] = 0;
             if (negative)
-                exponents[0] = 1;
+                ++exponents[0];
             var delta = x - interval.OffsetX;
             var offsets = interval.Offsets;
             for (int i = 0; i < factorBaseSize; i++)
@@ -733,14 +771,13 @@ namespace Decompose.Numerics
             if (other == 0)
                 return null;
             ++partialRelationsConverted;
+            FactorOverBase(interval, other);
             var relation = new Relation
             {
                 X = (sqrtN + interval.X + k) * (sqrtN + other),
                 Entries = GetEntries(interval.Exponents),
                 Cofactor = cofactor,
             };
-            FactorOverBase(interval, other);
-            relation.Entries = CombineEntries(relation.Entries, GetEntries(interval.Exponents));
             return relation;
         }
 
@@ -795,16 +832,44 @@ namespace Decompose.Numerics
             }
         }
 
+        private void ClearExponents(Interval interval)
+        {
+            var exponents = interval.Exponents;
+            for (int i = 0; i <= factorBaseSize; i++)
+                exponents[i] = 0;
+        }
+
         private ExponentEntry[] GetEntries(byte[] exponents)
         {
+#if false
             return exponents
                 .Select((exponent, index) => new ExponentEntry { Index = index, Exponent = exponent })
                 .Where(entry => entry.Exponent != 0)
                 .ToArray();
+#else
+            int size = 16;
+            var entries = new ExponentEntry[size];
+            int k = 0;
+            for (int i = 0; i < exponents.Length; i++)
+            {
+                if (exponents[i] != 0)
+                {
+                    entries[k++] = new ExponentEntry { Index = i, Exponent = exponents[i] };
+                    if (k == size)
+                    {
+                        size *= 2;
+                        Array.Resize(ref entries, size);
+                    }
+                }
+            }
+            Array.Resize(ref entries, k);
+            return entries;
+#endif
         }
 
         private ExponentEntry[] CombineEntries(ExponentEntry[] a, ExponentEntry[] b)
         {
+#if false
             return a.Concat(b)
                 .OrderBy(entry => entry.Index)
                 .GroupBy(entry => entry.Index)
@@ -815,6 +880,25 @@ namespace Decompose.Numerics
                         Exponent = grouping.Sum(entry => entry.Exponent),
                     })
                 .ToArray();
+#else
+            var entries = new ExponentEntry[a.Length + b.Length];
+            int j = 0;
+            int k = 0;
+            for (int i = 0; i < a.Length; i++)
+            {
+                var index = a[i].Index;
+                while (j < b.Length && b[j].Index < index)
+                    entries[k++] = b[j++];
+                if (j < b.Length && b[j].Index == index)
+                    entries[k++] = new ExponentEntry { Index = index, Exponent = a[i].Exponent + b[j++].Exponent };
+                else
+                    entries[k++] = a[i];
+            }
+            while (j < b.Length)
+                entries[k++] = b[j++];
+            Array.Resize(ref entries, k);
+            return entries;
+#endif
         }
 
         private BigInteger EvaluatePolynomial(long x)
