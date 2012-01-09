@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Decompose.Numerics
 {
-    public class BitArrayBitMatrix : List<BitArray>, IBitMatrix
+    public class HashSetBitMatrix : List<HashSet<int>>, IBitMatrix
     {
         private int rows;
         private int cols;
@@ -24,29 +24,35 @@ namespace Decompose.Numerics
             get { return cols; }
         }
 
-        public BitArrayBitMatrix(int rows, int cols)
+        public HashSetBitMatrix(int rows, int cols)
         {
             this.rows = rows;
             this.cols = cols;
             for (int i = 0; i < rows; i++)
-                this.Add(new BitArray(cols));
+                this.Add(new HashSet<int>());
         }
 
         public bool this[int row, int col]
         {
-            get { return this[row][col]; }
-            set { this[row][col] = value; }
+            get { return this[row].Contains(col); }
+            set
+            {
+                if (value)
+                    this[row].Add(col);
+                else
+                    this[row].Remove(col);
+            }
         }
 
         public void XorRows(int dst, int src, int col)
         {
-            this[dst].Xor(this[src]);
+            this[dst].SymmetricExceptWith(this[src]);
         }
 
         public new void Clear()
         {
             for (int i = 0; i < rows; i++)
-                this[i].SetAll(false);
+                this[i].Clear();
         }
 
         public void CopySubMatrix(IBitMatrix other, int row, int col)
@@ -64,13 +70,14 @@ namespace Decompose.Numerics
                 yield return this[row, j];
         }
 
+        public IEnumerable<int> GetNonZeroCols(int row)
+        {
+            return this[row];
+        }
+
         public int GetRowWeight(int row)
         {
-            int weight = 0;
-            var srcRow = this[row];
-            for (int col = 0; col < cols; col++)
-                weight += srcRow[col] ? 1 : 0;
-            return weight;
+            return this[row].Count;
         }
     }
 }

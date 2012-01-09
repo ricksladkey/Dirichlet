@@ -8,9 +8,9 @@ using System.Linq;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
-using BitArray = Decompose.Numerics.Word64BitArray;
 using BitMatrix = Decompose.Numerics.Word64BitMatrix;
 using CountInt = System.Byte;
+using Solver = Decompose.Numerics.GaussianElimination<Decompose.Numerics.Word64BitArray>;
 
 namespace Decompose.Numerics
 {
@@ -47,7 +47,7 @@ namespace Decompose.Numerics
             multiplierOverride = config.Multiplier;
             smallFactorizationAlgorithm = new TrialDivision();
             primes = new SieveOfErostothones();
-            nullSpaceAlgorithm = new GaussianElimination<BitArray>(config.Threads);
+            nullSpaceAlgorithm = new Solver(config.Threads);
         }
 
         public IEnumerable<BigInteger> Factor(BigInteger n)

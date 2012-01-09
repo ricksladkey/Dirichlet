@@ -4,7 +4,7 @@ namespace Decompose.Numerics
 {
     public interface IArray<T> : IEnumerable<T>
     {
-        int Length { get; set; }
+        int Length { get; }
         T this[int index] { get; set; }
     }
 }

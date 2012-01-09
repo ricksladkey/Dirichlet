@@ -74,6 +74,7 @@
     <Compile Include="PollardRhoReduction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QuadraticSieve.cs" />
+    <Compile Include="Collections\HashSetBitMatrix.cs" />
     <Compile Include="StructuredGaussianElimination.cs" />
     <Compile Include="Word32Integer.cs" />
     <Compile Include="IResidue.cs" />

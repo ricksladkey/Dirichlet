@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 namespace Decompose.Numerics
 {
     public class BoolBitMatrix : List<bool[]>, IBitMatrix
@@ -21,6 +22,12 @@ namespace Decompose.Numerics
             get { return cols; }
         }
 
+        public bool this[int row, int col]
+        {
+            get { return this[row][col]; }
+            set { this[row][col] = value; }
+        }
+
         public BoolBitMatrix(int rows, int cols)
         {
             this.rows = rows;
@@ -37,12 +44,6 @@ namespace Decompose.Numerics
                 for (int j = 0; j < cols; j++)
                     this[i, j] = other[i, j];
             }
-        }
-
-        public bool this[int i, int j]
-        {
-            get { return this[i][j]; }
-            set { this[i][j] = value; }
         }
 
         public void XorRows(int dst, int src, int col)

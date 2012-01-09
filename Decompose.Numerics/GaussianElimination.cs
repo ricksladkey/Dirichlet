@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Decompose.Numerics
 {
-    public class GaussianElimination<TArray> : INullSpaceAlgorithm<IBitArray, IBitMatrix> where TArray : IBitArray, new()
+    public class GaussianElimination<TArray> : INullSpaceAlgorithm<IBitArray, IBitMatrix>
+        where TArray : IBitArray
     {
         private int threads;
 
@@ -34,7 +35,7 @@ namespace Decompose.Numerics
                 int j = -1;
                 for (int i = rows - 1; i >= 0; i--)
                 {
-                    if (matrix[i, k] && c[i] < 0)
+                    if (c[i] < 0 && matrix[i, k])
                     {
                         j = i;
                         break;
@@ -52,8 +53,7 @@ namespace Decompose.Numerics
                 }
                 else
                 {
-                    var v = new TArray();
-                    v.Length = cols;
+                    var v = (IBitArray)Activator.CreateInstance(typeof(TArray), cols);
                     int ones = 0;
                     for (int jj = 0; jj < cols; jj++)
                     {

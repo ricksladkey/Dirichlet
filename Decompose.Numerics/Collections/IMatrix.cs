@@ -4,6 +4,6 @@
     {
         int Rows { get; }
         int Cols { get; }
-        T this[int i, int j] { get; set; }
+        T this[int row, int col] { get; set; }
     }
 }

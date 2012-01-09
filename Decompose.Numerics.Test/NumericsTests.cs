@@ -364,7 +364,7 @@ namespace Decompose.Numerics.Test
         {
             int rows = lines.Length;
             int cols = lines[0].Length;
-            var matrix = new BoolBitMatrix(rows, cols);
+            var matrix = new HashSetBitMatrix(rows, cols);
             for (int i = 0; i < lines.Length; i++)
             {
                 var line = lines[i];

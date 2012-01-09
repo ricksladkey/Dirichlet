@@ -7,12 +7,12 @@ namespace Decompose.Numerics
         public int Length
         {
             get { return Count; }
-            set
-            {
-                Clear();
-                for (int i = 0; i < value; i++)
-                    Add(false);
-            }
+        }
+
+        public BoolBitArray(int length)
+        {
+            for (int i = 0; i < length; i++)
+                Add(false);
         }
     }
 }

@@ -40,6 +40,29 @@ namespace Decompose.Numerics
             bits = new Word[rows * words];
         }
 
+        public Word64BitMatrix(IBitMatrix matrix)
+            : this(matrix.Rows, matrix.Cols)
+        {
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    if (matrix[i, j])
+                        this[i, j] = true;
+                }
+            }
+        }
+
+        public Word64BitMatrix(HashSetBitMatrix matrix)
+            : this(matrix.Rows, matrix.Cols)
+        {
+            for (int i = 0; i < rows; i++)
+            {
+                foreach (var j in matrix.GetNonZeroCols(i))
+                    this[i, j] = true;
+            }
+        }
+
         public bool this[int i, int j]
         {
             get

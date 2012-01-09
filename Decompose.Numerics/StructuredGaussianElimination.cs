@@ -6,133 +6,128 @@ using System.Threading.Tasks;
 
 namespace Decompose.Numerics
 {
-    public class StructuredGaussianElimination<TArray> : INullSpaceAlgorithm<IBitArray, IBitMatrix> where TArray : IBitArray, new()
+    public class StructuredGaussianElimination<TArray, TMatrix> : INullSpaceAlgorithm<IBitArray, IBitMatrix>
+        where TArray : IBitArray
+        where TMatrix : IBitMatrix
     {
+        private class Ancestor
+        {
+            public int Column { get; set; }
+            public Ancestor Next { get; set; }
+        }
+
         private int threads;
+        private INullSpaceAlgorithm<IBitArray, IBitMatrix> solver;
+
+        private int rowsOrig;
+        private int colsOrig;
+        private Ancestor[] ancestors;
 
         public StructuredGaussianElimination(int threads)
         {
             this.threads = threads != 0 ? threads : 1;
+            this.solver = new GaussianElimination<TArray>(threads);
         }
 
         public IEnumerable<IBitArray> Solve(IBitMatrix matrix)
         {
-#if false
-            PrintMatrix("initial:", matrix);
-#endif
-            int rows = Math.Min(matrix.Rows, matrix.Cols);
-            int cols = matrix.Cols;
-            var c = new int[cols];
-            var cInv = new int[cols];
-            for (int j = 0; j < cols; j++)
-            {
-                c[j] = -1;
-                cInv[j] = -1;
-            }
-            for (int k = 0; k < cols; k++)
-            {
-                int j = -1;
-                for (int i = rows - 1; i >= 0; i--)
-                {
-                    if (matrix[i, k] && c[i] < 0)
-                    {
-                        j = i;
-                        break;
-                    }
-                }
-                if (j != -1)
-                {
-                    ZeroColumn(matrix, rows, j, k);
-                    c[j] = k;
-                    cInv[k] = j;
-#if false
-                    Console.WriteLine("c[{0}] = {1}", j, k);
-                    PrintMatrix(string.Format("k = {0}", k), matrix);
-#endif
-                }
-                else
-                {
-                    var v = new TArray();
-                    v.Length = cols;
-                    int ones = 0;
-                    for (int jj = 0; jj < cols; jj++)
-                    {
-                        int s = cInv[jj];
-                        bool bit;
-                        if (s != -1)
-                            bit = matrix[s, k];
-                        else if (jj == k)
-                            bit = true;
-                        else
-                            bit = false;
-                        v[jj] = bit;
-                        if (bit)
-                            ++ones;
-                    }
-#if false
-                    Console.WriteLine("k = {0}, v:\n{1}", k, string.Concat(v.Select(bit => bit ? 1 : 0).ToArray()));
-#endif
-#if DEBUG
-                    Debug.Assert(IsSolutionValid(matrix, 0, matrix.Rows, v));
-
-#endif
-                    if (IsSolutionValid(matrix, rows, matrix.Rows, v))
-                        yield return v;
-                }
-            }
+            rowsOrig = matrix.Rows;
+            colsOrig = matrix.Cols;
+            matrix = CompactMatrix(matrix);
+            foreach (var v in solver.Solve(matrix))
+                yield return GetOriginalSolution(v);
         }
 
-        private void ZeroColumn(IBitMatrix matrix, int rows, int j, int k)
+        private IBitArray GetOriginalSolution(IBitArray w)
         {
-            if (rows < 256)
+            var v = (IBitArray)Activator.CreateInstance(typeof(TArray), rowsOrig);
+            for (int i = 0; i < w.Length; i++)
             {
-                for (int i = 0; i < rows; i++)
+                if (w[i])
                 {
-                    if (i == j || !matrix[i, k])
+                    for (var ancestor = ancestors[i]; ancestor != null; ancestor = ancestor.Next)
+                        v[ancestor.Column] = true;
+                }
+            }
+            return v;
+        }
+
+        private IBitMatrix CompactMatrix(IBitMatrix bitMatrix)
+        {
+            var matrix = bitMatrix as HashSetBitMatrix;
+            bool[] deletedRows = new bool[matrix.Rows];
+            bool[] deletedCols = new bool[matrix.Cols];
+            ancestors = new Ancestor[matrix.Cols];
+            for (int i = 0; i < matrix.Cols; i++)
+                ancestors[i] = new Ancestor { Column = i };
+            while (true)
+            {
+                int deleted = 0;
+                for (int n = matrix.Rows - 1; n >= 0; n--)
+                {
+                    if (deletedRows[n])
                         continue;
-                    matrix.XorRows(i, j, k);
-                }
-            }
-            else
-            {
-                int range = (rows + threads - 1) / threads;
-                Parallel.For(0, threads, thread =>
-                {
-                    int beg = thread * range;
-                    int end = Math.Min(beg + range, rows);
-                    for (int i = beg; i < end; i++)
+                    var weight = matrix.GetRowWeight(n);
+                    if (weight == 0)
                     {
-                        if (i != j && matrix[i, k])
-                            matrix.XorRows(i, j, k);
+                        deletedRows[n] = true;
+                        ++deleted;
                     }
-                });
+                    else if (weight == 1)
+                    {
+                        var col = matrix.GetNonZeroCols(n).First();
+                        deletedRows[n] = true;
+                        for (int i = 0; i < matrix.Rows; i++)
+                            matrix[i, col] = false;
+                        deletedCols[col] = true;
+                        ++deleted;
+                    }
+                    else if (weight == 2)
+                    {
+                        var cols = matrix.GetNonZeroCols(n).ToArray();
+                        var col1 = cols[0];
+                        var col2 = cols[1];
+                        for (int i = 0; i < matrix.Rows; i++)
+                        {
+                            if (matrix[i, col2])
+                            {
+                                matrix[i, col1] = !matrix[i, col1];
+                                matrix[i, col2] = false;
+                            }
+                        }
+                        ancestors[col1] = new Ancestor { Column = col2, Next = ancestors[col1] };
+                        deletedRows[n] = true;
+                        deletedCols[col2] = true;
+                        ++deleted;
+                    }
+                }
+                if (deleted == 0)
+                    break;
+                Console.WriteLine("removed {0} rows", deleted);
             }
-        }
-
-        public bool IsSolutionValid(IBitMatrix matrix, IBitArray solution)
-        {
-            return IsSolutionValid(matrix, 0, matrix.Rows, solution);
-        }
-
-        private bool IsSolutionValid(IBitMatrix matrix, int rowMin, int rowMax, IBitArray solution)
-        {
-            int cols = matrix.Cols;
-            for (int i = rowMin; i < rowMax; i++)
+            ancestors = deletedCols
+                .Select((deleted, index) => deleted ? null : ancestors[index])
+                .Where(ancestor => ancestors != null)
+                .ToArray();
+            var rowMap = deletedRows
+                .Select((deleted, index) => deleted ? -1 : index)
+                .Where(index => index != -1)
+                .ToArray();
+            var colMap = deletedCols
+                .Select((deleted, index) => deleted ? -1 : index)
+                .Where(index => index != -1)
+                .ToArray();
+            var revColMap = new int[matrix.Cols];
+            for (int i = 0; i < colMap.Length; i++)
+                revColMap[colMap[i]] = i;
+            var compact = (IBitMatrix)Activator.CreateInstance(typeof(TArray), rowMap.Length, colMap.Length);
+            for (int i = 0; i < rowMap.Length; i++)
             {
-                bool row = false;
-                for (int j = 0; j < cols; j++)
-                    row ^= solution[j] & matrix[i, j];
-                if (row)
-                    return false;
+                int row = rowMap[i];
+                foreach (var col in matrix.GetNonZeroCols(row))
+                    compact[i, revColMap[col]] = true;
             }
-            return true;
-        }
-
-        private void PrintMatrix(string label, IBitMatrix matrix)
-        {
-            Console.WriteLine(label);
-            for (int i = 0; i < matrix.Rows; i++)
-                Console.WriteLine(string.Concat(matrix.GetRow(i).Select(bit => bit ? 1 : 0).ToArray()));
+            return compact;
         }
     }
 }

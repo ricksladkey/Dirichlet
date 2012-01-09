@@ -17,21 +17,13 @@ namespace Decompose.Numerics
         public int Length
         {
             get { return length; }
-            set
-            {
-                length = value;
-                words = (length + wordLength - 1) / wordLength;
-                bits = new Word[words];
-            }
-        }
-
-        public Word64BitArray()
-        {
         }
 
         public Word64BitArray(int length)
         {
-            Length = length;
+            this.length = length;
+            words = (length + wordLength - 1) / wordLength;
+            bits = new Word[words];
         }
 
         public bool this[int j]

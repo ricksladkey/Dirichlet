@@ -26,9 +26,9 @@ namespace Decompose
                 //FactorTest5();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                //QuadraticSieveDigitsTest();
+                QuadraticSieveDigitsTest();
                 //CunnihamTest();
-                GaussianEliminationTest1();
+                //GaussianEliminationTest1();
             }
             catch (Exception ex)
             {
@@ -317,8 +317,6 @@ namespace Decompose
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
                 var n = p * q;
-                if (i < 30)
-                    continue;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
                 FactorTest(false, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads }));
             }
@@ -343,15 +341,24 @@ namespace Decompose
         static void GaussianEliminationTest1()
         {
             var threads = 8;
-            var matrix = GetBitMatrix(GetLinesGzip("matrix-18401.txt.gz"));
-            Console.WriteLine("Rows = {0}, Cols = {1}", matrix.Rows, matrix.Cols);
             var solver = new GaussianElimination<Word64BitArray>(threads);
             var timer = new Stopwatch();
-            timer.Start();
+
+            timer.Restart();
+            var matrix = GetBitMatrix(GetLinesGzip("matrix-18401.txt.gz"));
+            Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            Console.WriteLine("Rows = {0}, Cols = {1}", matrix.Rows, matrix.Cols);
+
+            timer.Restart();
+            matrix = CompactMatrix(matrix);
+            Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            Console.WriteLine("Rows = {0}, Cols = {1}", matrix.Rows, matrix.Cols);
+
+            timer.Restart();
             var solutions = solver.Solve(matrix).ToArray();
+            Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+
             Console.WriteLine("solutions = {0}", solutions.Length);
-            var elapsed = timer.ElapsedTicks;
-            Console.WriteLine("elapsed = {0:F3} msec", (double)elapsed / Stopwatch.Frequency * 1000);
         }
 
 
@@ -375,14 +382,96 @@ namespace Decompose
         {
             int rows = lines.Length;
             int cols = lines[0].Length;
-            var matrix = new Word64BitMatrix(rows, cols);
+            var matrix = new HashSetBitMatrix(rows, cols);
             for (int i = 0; i < lines.Length; i++)
             {
                 var line = lines[i];
                 for (int j = 0; j < line.Length; j++)
-                    matrix[i, j] = line[j] == '1';
+                {
+                    if (line[j] == '1')
+                        matrix[i, j] = true;
+                }
             }
             return matrix;
+        }
+
+        public static IBitMatrix CompactMatrix(IBitMatrix bitMatrix)
+        {
+            var matrix = bitMatrix as HashSetBitMatrix;
+            bool[] deletedRows = new bool[matrix.Rows];
+            bool[] deletedCols = new bool[matrix.Cols];
+            while (true)
+            {
+                int deleted = 0;
+                for (int n = matrix.Rows - 1; n >= 0; n--)
+                {
+                    if (deletedRows[n])
+                        continue;
+                    var weight = matrix.GetRowWeight(n);
+                    if (weight == 0)
+                    {
+                        deletedRows[n] = true;
+                        ++deleted;
+                    }
+                    else if (weight == 1)
+                    {
+                        var col = matrix.GetNonZeroCols(n).First();
+                        deletedRows[n] = true;
+                        for (int i = 0; i < matrix.Rows; i++)
+                            matrix[i, col] = false;
+                        deletedCols[col] = true;
+                        ++deleted;
+                    }
+                    else if (weight == 2)
+                    {
+                        var cols = matrix.GetNonZeroCols(n).ToArray();
+                        var col1 = cols[0];
+                        var col2 = cols[1];
+                        for (int i = 0; i < matrix.Rows; i++)
+                        {
+                            if (matrix[i, col2])
+                            {
+                                matrix[i, col1] = !matrix[i, col1];
+                                matrix[i, col2] = false;
+                            }
+                        }
+                        deletedRows[n] = true;
+                        deletedCols[col2] = true;
+                        ++deleted;
+                    }
+                }
+                if (deleted == 0)
+                    break;
+                Console.WriteLine("removed {0} rows", deleted);
+            }
+            var rowMap = deletedRows
+                .Select((deleted, index) => deleted ? -1 : index)
+                .Where(index => index != -1)
+                .ToArray();
+            var colMap = deletedCols
+                .Select((deleted, index) => deleted ? -1 : index)
+                .Where(index => index != -1)
+                .ToArray();
+            var revColMap = new int[matrix.Cols];
+            for (int i = 0; i < colMap.Length; i++)
+                revColMap[colMap[i]] = i;
+            var compact = new Word64BitMatrix(rowMap.Length, colMap.Length);
+            for (int i = 0; i < rowMap.Length; i++)
+            {
+                int row = rowMap[i];
+#if false
+                for (int j = 0; j < colMap.Length; j++)
+                {
+                    int col = colMap[j];
+                    if (matrix[row, col])
+                        compact[i, j] = true;
+                }
+#else
+                foreach (var col in matrix.GetNonZeroCols(row))
+                    compact[i, revColMap[col]] = true;
+#endif
+            }
+            return compact;
         }
 
         static BigInteger NextPrime(MersenneTwister32 random, BigInteger limit)

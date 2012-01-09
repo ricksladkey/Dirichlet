@@ -87,35 +87,43 @@ namespace Decompose.Numerics
 
         public static int GetBitCount(this long word)
         {
-            int count = 0;
-            while (word != 0)
-            {
-                ++count;
-                word >>= 1;
-            }
-            return count;
+            return GetBitCount((ulong)word);
         }
 
         public static int GetBitCount(this int word)
         {
-            int count = 0;
-            while (word != 0)
-            {
-                ++count;
-                word >>= 1;
-            }
-            return count;
+            return GetBitCount((uint)word);
         }
 
         public static int GetBitCount(this short word)
         {
-            int count = 0;
-            while (word != 0)
-            {
-                ++count;
-                word >>= 1;
-            }
-            return count;
+            return GetBitCount((ushort)word);
         }
+
+        public static int GetBitCount(this ulong word)
+        {
+            return GetBitCount((uint)word) + GetBitCount((uint)(word >> 32));
+        }
+
+        public static int GetBitCount(this uint word)
+        {
+            return GetBitCount((ushort)word) + GetBitCount((ushort)(word >> 16));
+        }
+
+        public static int GetBitCount(this ushort word)
+        {
+            return GetBitCount((byte)word) + GetBitCount((byte)(word >> 8));
+        }
+
+        public static int GetBitCount(this byte word)
+        {
+            return bitCounts[word & (1 << 4 - 1)] + bitCounts[word >> 4];
+        }
+
+        private static int[] bitCounts = new[]
+        {
+            0, 1, 1, 2, 1, 2, 2, 3,
+            1, 2, 2, 3, 2, 3, 3, 4,
+        };
     }
 }
