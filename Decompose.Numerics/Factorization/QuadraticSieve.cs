@@ -51,7 +51,7 @@ namespace Decompose.Numerics
             lowerBoundPercentOverride = config.LowerBoundPercent;
             multiplierOverride = config.Multiplier;
             reportingIntervalOverride = config.ReportingInterval;
-            smallIntegerFactorer = new TrialDivision();
+            smallIntegerFactorer = new TrialDivisionFactorization();
             primes = new SieveOfErostothones();
             solver = new Solver(config.Threads);
         }

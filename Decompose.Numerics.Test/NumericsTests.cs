@@ -284,14 +284,15 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void TrialDivisionTest1()
         {
-            var algorithm = new TrialDivision();
+            var primalityAlgorithm = new TrialDivisionPrimality();
+            var factorizationAlgorithm = new TrialDivisionFactorization();
             for (int n = 2; n < 10000; n++)
             {
-                var factors = algorithm.Factor(n).ToArray();
+                var factors = factorizationAlgorithm.Factor(n).ToArray();
                 var product = factors.Aggregate((sofar, current) => sofar * current);
                 Assert.AreEqual(n, product);
                 Assert.IsTrue(factors.All(factor => IntegerMath.IsPrime(factor)));
-                Assert.AreEqual(IntegerMath.IsPrime((BigInteger)n), algorithm.IsPrime(n));
+                Assert.AreEqual(IntegerMath.IsPrime((BigInteger)n), primalityAlgorithm.IsPrime(n));
             }
         }
 

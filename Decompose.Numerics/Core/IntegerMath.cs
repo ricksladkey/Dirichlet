@@ -139,7 +139,7 @@ namespace Decompose.Numerics
             return sqrt.Sqrt(n);
         }
 
-        private static IPrimalityAlgorithm<int> trialDivision = new TrialDivision();
+        private static IPrimalityAlgorithm<int> trialDivision = new TrialDivisionPrimality();
 
         public static bool IsPrime(int n)
         {
