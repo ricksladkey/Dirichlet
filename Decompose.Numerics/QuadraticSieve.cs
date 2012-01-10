@@ -49,15 +49,15 @@ namespace Decompose.Numerics
             factorBaseSizeOverride = config.FactorBaseSize;
             lowerBoundPercentOverride = config.LowerBoundPercent;
             multiplierOverride = config.Multiplier;
-            smallFactorizationAlgorithm = new TrialDivision();
+            smallIntegerFactorer = new TrialDivision();
             primes = new SieveOfErostothones();
-            nullSpaceAlgorithm = new Solver(config.Threads);
+            solver = new Solver(config.Threads);
         }
 
         public IEnumerable<BigInteger> Factor(BigInteger n)
         {
             if (n <= smallFactorCutoff)
-                return smallFactorizationAlgorithm.Factor((int)n).Select(factor => (BigInteger)factor);
+                return smallIntegerFactorer.Factor((int)n).Select(factor => (BigInteger)factor);
             var factors = new List<BigInteger>();
             FactorCore(n, factors);
             return factors;
@@ -143,9 +143,9 @@ namespace Decompose.Numerics
         private int factorBaseSizeOverride;
         private int lowerBoundPercentOverride;
         private int multiplierOverride;
-        private IFactorizationAlgorithm<int> smallFactorizationAlgorithm;
+        private IFactorizationAlgorithm<int> smallIntegerFactorer;
         private IEnumerable<int> primes;
-        private INullSpaceAlgorithm<IBitArray, IBitMatrix> nullSpaceAlgorithm;
+        private INullSpaceAlgorithm<IBitArray, IBitMatrix> solver;
 
         private int intervalSize;
         private int nextIntervalId;
@@ -157,11 +157,14 @@ namespace Decompose.Numerics
         private BigInteger n;
         private BigInteger sqrtN;
         private int factorBaseSize;
+        private int desired;
+        private int digits;
         private FactorBaseEntry[] factorBase;
         private long maximumDivisorSquared;
         private long maximumCofactorSize;
         private CountInt logMaximumDivisorSquared;
         private int largePrimeIndex;
+        private int lowerBoundPercent;
 
         private int threads;
         private BlockingCollection<Relation> relationBuffer;
@@ -196,54 +199,6 @@ namespace Decompose.Numerics
         {
             if (nOrig.IsEven)
                 return BigIntegers.Two;
-            if (multiplierOverride != 0)
-                multiplier = multiplierOverride;
-            else
-            {
-                multiplier = 1;
-#if false
-                if (IntegerMath.JacobiSymbol(nOrig, 2) == 1)
-                {
-                    switch ((int)(nOrig % 8))
-                    {
-                        case 3:
-                            multiplier = 5;
-                            break;
-                        case 5:
-                            multiplier = 3;
-                            break;
-                        case 7:
-                            multiplier = 7;
-                            break;
-                    }
-                }
-                Console.WriteLine("multiplier = {0}, J({1} * n) = {2})", multiplier, multiplier, IntegerMath.JacobiSymbol(nOrig * multiplier, 2));
-#endif
-            }
-            multiplierFactors = smallFactorizationAlgorithm.Factor(multiplier).ToArray();
-            this.nOrig = nOrig;
-            n = nOrig * multiplier;
-            sqrtN = IntegerMath.Sqrt(this.n);
-            factorBaseSize = CalculateFactorBaseSize(nOrig);
-            factorBase = primes
-                .Where(p => IntegerMath.JacobiSymbol(n, p) == 1)
-                .Take(factorBaseSize)
-                .Select(p => new FactorBaseEntry(p, n, sqrtN))
-                .ToArray();
-            int desired = factorBaseSize + 1 + surplusRelations;
-            long maximumDivisor = factorBase[factorBaseSize - 1].P;
-            maximumDivisorSquared = maximumDivisor * maximumDivisor;
-            logMaximumDivisorSquared = LogScale(maximumDivisorSquared);
-            int digits = (int)Math.Ceiling(BigInteger.Log(n, 10));
-            largePrimeIndex = 0;
-            while (largePrimeIndex < factorBaseSize && factorBase[largePrimeIndex].P < subIntervalSize)
-                ++largePrimeIndex;
-            maximumCofactorSize = Math.Min(maximumDivisor * cofactorScaleFactor, maximumDivisorSquared);
-
-            intervalsProcessed = 0;
-            valuesChecked = 0;
-            partialRelationsProcessed = 0;
-            partialRelationsConverted = 0;
 
             if ((diag & Diag.Timing) != 0)
             {
@@ -251,11 +206,21 @@ namespace Decompose.Numerics
                 timer.Start();
             }
 
-            Sieve(desired);
+            Initialize(nOrig);
+
+            if ((diag & Diag.Timing) != 0)
+            {
+                var elapsed = timer.ElapsedTicks;
+                timer.Restart();
+                Console.WriteLine("Initialization: {0:F3} msec", 1000.0 * elapsed / Stopwatch.Frequency);
+            }
+
+            Sieve();
 
             if ((diag & Diag.Summary) != 0)
             {
                 Console.WriteLine("digits = {0}, factorBaseSize = {1}, desired = {2}", digits, factorBaseSize, desired);
+                Console.WriteLine("threads = {0}, lowerBoundPercent = {1}", threads, lowerBoundPercent);
                 Console.WriteLine("intervals processsed = {0}, values checked = {1}", intervalsProcessed, valuesChecked);
                 Console.WriteLine("partial relations processed = {0}, converted = {1}", partialRelationsProcessed, partialRelationsConverted);
                 Console.WriteLine("first few factors: {0}", string.Join(", ", factorBase.Select(entry => entry.P).Take(10).ToArray()));
@@ -276,20 +241,66 @@ namespace Decompose.Numerics
                 Console.WriteLine("Processing relations: {0:F3} msec", 1000.0 * elapsed / Stopwatch.Frequency);
             }
 
-            var result = nullSpaceAlgorithm.Solve(matrix)
-                .Select(v => ComputeFactor(v))
-                .Where(factor => !factor.IsZero)
-                .Take(1)
-                .FirstOrDefault();
+#if false
+            using (var stream = new StreamWriter("matrix.txt"))
+            {
+                for (int i = 0; i < matrix.Rows; i++)
+                    stream.WriteLine(string.Concat(matrix.GetRow(i).Select(bit => bit ? 1 : 0).ToArray()));
+            }
+#endif
+
+            var result = Solve();
 
             if ((diag & Diag.Timing) != 0)
             {
                 var elapsed = timer.ElapsedTicks;
                 timer.Stop();
-                Console.WriteLine("Gaussian elimination: {0:F3}", 1000.0 * elapsed / Stopwatch.Frequency);
+                Console.WriteLine("Solving: {0:F3} msec", 1000.0 * elapsed / Stopwatch.Frequency);
             }
 
             return result;
+        }
+
+        private void Initialize(BigInteger nOrig)
+        {
+            if (multiplierOverride != 0)
+                multiplier = multiplierOverride;
+            else
+                multiplier = 1;
+            multiplierFactors = smallIntegerFactorer.Factor(multiplier).ToArray();
+            this.nOrig = nOrig;
+            n = nOrig * multiplier;
+            sqrtN = IntegerMath.Sqrt(this.n);
+            digits = (int)Math.Ceiling(BigInteger.Log(n, 10));
+            factorBaseSize = CalculateFactorBaseSize();
+            factorBase = primes
+                .Where(p => IntegerMath.JacobiSymbol(n, p) == 1)
+                .Take(factorBaseSize)
+                .Select(p => new FactorBaseEntry(p, n, sqrtN))
+                .ToArray();
+            desired = factorBaseSize + 1 + surplusRelations;
+            long maximumDivisor = factorBase[factorBaseSize - 1].P;
+            maximumDivisorSquared = maximumDivisor * maximumDivisor;
+            logMaximumDivisorSquared = LogScale(maximumDivisorSquared);
+            largePrimeIndex = 0;
+            while (largePrimeIndex < factorBaseSize && factorBase[largePrimeIndex].P < subIntervalSize)
+                ++largePrimeIndex;
+            maximumCofactorSize = Math.Min(maximumDivisor * cofactorScaleFactor, maximumDivisorSquared);
+            lowerBoundPercent = lowerBoundPercentOverride != 0 ? lowerBoundPercentOverride : lowerBoundPercentDefault;
+
+            intervalsProcessed = 0;
+            valuesChecked = 0;
+            partialRelationsProcessed = 0;
+            partialRelationsConverted = 0;
+        }
+
+        private BigInteger Solve()
+        {
+            return solver.Solve(matrix)
+                .Select(v => ComputeFactor(v))
+                .Where(factor => !factor.IsZero)
+                .Take(1)
+                .FirstOrDefault();
         }
 
         private void CalculateNumberOfThreads()
@@ -299,11 +310,10 @@ namespace Decompose.Numerics
                 threads = 1;
         }
 
-        private int CalculateFactorBaseSize(BigInteger n)
+        private int CalculateFactorBaseSize()
         {
             if (factorBaseSizeOverride != 0)
                 return factorBaseSizeOverride;
-            int digits = (int)Math.Ceiling(BigInteger.Log(nOrig, 10));
             for (int i = 0; i < sizePairs.Length - 1; i++)
             {
                 var pair = sizePairs[i];
@@ -324,8 +334,7 @@ namespace Decompose.Numerics
         private CountInt CalculateLowerBound(long x)
         {
             var y = EvaluatePolynomial(x);
-            int percent = lowerBoundPercentOverride != 0 ? lowerBoundPercentOverride : lowerBoundPercentDefault;
-            return (CountInt)(LogScale(y) - (logMaximumDivisorSquared * (200 - percent) / 200));
+            return (CountInt)(LogScale(y) - (logMaximumDivisorSquared * (200 - lowerBoundPercent) / 200));
         }
 
         private BigInteger ComputeFactor(IBitArray v)
@@ -380,7 +389,7 @@ namespace Decompose.Numerics
             return (CountInt)Math.Ceiling(Math.Log(Math.Abs(n), 2));
         }
 
-        private void Sieve(int desired)
+        private void Sieve()
         {
             CalculateNumberOfThreads();
             SetupIntervals();
@@ -740,13 +749,6 @@ namespace Decompose.Numerics
                         matrix[entry.Index, j] = true;
                 }
             }
-#if false
-            using (var stream = new StreamWriter("matrix.txt"))
-            {
-                for (int i = 0; i < matrix.Rows; i++)
-                    stream.WriteLine(string.Concat(matrix.GetRow(i).Select(bit => bit ? 1 : 0).ToArray()));
-            }
-#endif
         }
 
         private void ClearExponents(Interval interval)
