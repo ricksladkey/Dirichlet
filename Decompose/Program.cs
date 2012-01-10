@@ -24,10 +24,10 @@ namespace Decompose
                 //FactorTest2();
                 //FactorTest3();
                 //FactorTest4();
-                FactorTest5();
+                //FactorTest5();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                //QuadraticSieveDigitsTest();
+                QuadraticSieveDigitsTest();
                 //CunnihamTest();
                 //GaussianEliminationTest1();
             }
@@ -309,7 +309,7 @@ namespace Decompose
         {
             var random = new MersenneTwister32(0);
             int threads = 8;
-            for (int i = 10; i <= 30; i++)
+            for (int i = 10; i <= 32; i++)
             {
                 var limit = BigInteger.Pow(10, i);
                 var p = NextPrime(random, limit);

@@ -39,7 +39,6 @@ namespace Decompose.Numerics
             public int Threads { get; set; }
             public int FactorBaseSize { get; set; }
             public int LowerBoundPercent { get; set; }
-            public bool? ProcessPartialRelations { get; set; }
             public int Multiplier { get; set; }
         }
 
@@ -49,7 +48,6 @@ namespace Decompose.Numerics
             threadsOverride = config.Threads;
             factorBaseSizeOverride = config.FactorBaseSize;
             lowerBoundPercentOverride = config.LowerBoundPercent;
-            processPartialRelationsOverride = config.ProcessPartialRelations;
             multiplierOverride = config.Multiplier;
             smallFactorizationAlgorithm = new TrialDivision();
             primes = new SieveOfErostothones();
@@ -115,8 +113,6 @@ namespace Decompose.Numerics
             public byte[] Exponents { get; set; }
             public CountInt[] Counts { get; set; }
             public int[] Offsets { get; set; }
-            public Word32Integer Reg1 { get; set; }
-            public Word32Integer Reg2 { get; set; }
             public override string ToString()
             {
                 return string.Format("X = {0}, Size = {1}", X, Size);
@@ -125,8 +121,7 @@ namespace Decompose.Numerics
 
         private const int subIntervalSize = 256 * 1024;
         private const int maximumIntervalSize = subIntervalSize * 8;
-        private const int lowerBoundPercentDefaultNoCofactors = 85;
-        private const int lowerBoundPercentDefaultCofactors = 75;
+        private const int lowerBoundPercentDefault = 75;
         private const int cofactorScaleFactor = 4096;
         private const int surplusRelations = 10;
         private readonly BigInteger smallFactorCutoff = (BigInteger)int.MaxValue;
@@ -147,7 +142,6 @@ namespace Decompose.Numerics
         private int threadsOverride;
         private int factorBaseSizeOverride;
         private int lowerBoundPercentOverride;
-        private bool? processPartialRelationsOverride;
         private int multiplierOverride;
         private IFactorizationAlgorithm<int> smallFactorizationAlgorithm;
         private IEnumerable<int> primes;
@@ -162,15 +156,11 @@ namespace Decompose.Numerics
         private BigInteger nOrig;
         private BigInteger n;
         private BigInteger sqrtN;
-        private CountInt logSqrtN;
         private int factorBaseSize;
         private FactorBaseEntry[] factorBase;
         private long maximumDivisorSquared;
         private long maximumCofactorSize;
         private CountInt logMaximumDivisorSquared;
-        private Word32Integer nRep;
-        private Word32Integer sqrtNRep;
-        private bool processPartialRelations;
         private int largePrimeIndex;
 
         private int threads;
@@ -234,7 +224,6 @@ namespace Decompose.Numerics
             this.nOrig = nOrig;
             n = nOrig * multiplier;
             sqrtN = IntegerMath.Sqrt(this.n);
-            logSqrtN = LogScale(sqrtN);
             factorBaseSize = CalculateFactorBaseSize(nOrig);
             factorBase = primes
                 .Where(p => IntegerMath.JacobiSymbol(n, p) == 1)
@@ -246,10 +235,6 @@ namespace Decompose.Numerics
             maximumDivisorSquared = maximumDivisor * maximumDivisor;
             logMaximumDivisorSquared = LogScale(maximumDivisorSquared);
             int digits = (int)Math.Ceiling(BigInteger.Log(n, 10));
-            processPartialRelations = processPartialRelationsOverride.HasValue ? processPartialRelationsOverride.Value : true;
-            var words = IntegerMath.QuotientCeiling(n.GetBitLength(), Word32Integer.WordLength);
-            nRep = new Word32Integer(words * 2 + 1).Set(n);
-            sqrtNRep = nRep.Copy().Set(sqrtN);
             largePrimeIndex = 0;
             while (largePrimeIndex < factorBaseSize && factorBase[largePrimeIndex].P < subIntervalSize)
                 ++largePrimeIndex;
@@ -339,16 +324,8 @@ namespace Decompose.Numerics
         private CountInt CalculateLowerBound(long x)
         {
             var y = EvaluatePolynomial(x);
-            if (processPartialRelations)
-            {
-                int percent = lowerBoundPercentOverride != 0 ? lowerBoundPercentOverride : lowerBoundPercentDefaultCofactors;
-                return (CountInt)(LogScale(y) - (logMaximumDivisorSquared * (200 - percent) / 200));
-            }
-            else
-            {
-                int percent = lowerBoundPercentOverride != 0 ? lowerBoundPercentOverride : lowerBoundPercentDefaultNoCofactors;
-                return (CountInt)(LogScale(y) * percent / 100);
-            }
+            int percent = lowerBoundPercentOverride != 0 ? lowerBoundPercentOverride : lowerBoundPercentDefault;
+            return (CountInt)(LogScale(y) - (logMaximumDivisorSquared * (200 - percent) / 200));
         }
 
         private BigInteger ComputeFactor(IBitArray v)
@@ -433,12 +410,14 @@ namespace Decompose.Numerics
             while (relationBuffer.Count < relationBuffer.BoundedCapacity)
             {
                 count += Sieve(GetNextInterval(interval));
+                ++intervals;
                 if ((diag & Diag.Sieve) != 0)
                 {
-                    if (++intervals % 500 == 0)
+                    if (count >= 500)
                     {
-                        Console.WriteLine("count = {0}", count);
+                        Console.WriteLine("found {0} relations in {1} intervals", count, intervals);
                         count = 0;
+                        intervals = 0;
                     }
                 }
                 Interlocked.Increment(ref intervalsProcessed);
@@ -451,8 +430,6 @@ namespace Decompose.Numerics
             interval.Exponents = new byte[factorBaseSize + 1];
             interval.Counts = new CountInt[subIntervalSize];
             interval.Offsets = new int[factorBaseSize];
-            interval.Reg1 = nRep.Copy();
-            interval.Reg2 = nRep.Copy();
             return interval;
         }
 
@@ -653,138 +630,76 @@ namespace Decompose.Numerics
                     Entries = GetEntries(interval.Exponents),
                 };
             }
-            if (processPartialRelations && y < maximumCofactorSize)
+            if (y < maximumCofactorSize)
                 return ProcessPartialRelation(interval, k, y);
             return null;
         }
 
         private long FactorOverBase(Interval interval, long x)
         {
-#if false
-            return FactorOverBaseBigInteger(interval, x);
-#else
-            return FactorOverBaseWord32Integer(interval, x);
-#endif
-        }
-
-        private long FactorOverBaseBigInteger(Interval interval, long x)
-        {
             var y = EvaluatePolynomial(x);
-            var exponents = interval.Exponents;
             if (y < 0)
             {
-                ++exponents[0];
+                ++interval.Exponents[0];
                 y = -y;
             }
-            var deltaOrig = x - interval.OffsetX;
-            var offsets = interval.Offsets;
-            if (deltaOrig >= int.MinValue && deltaOrig <= int.MaxValue)
-            {
-                int delta = (int)deltaOrig;
-                for (int i = 0; i < factorBaseSize; i++)
-                {
-                    var entry = factorBase[i];
-                    var p = entry.P;
-                    var offset = (delta - offsets[i]) % p;
-                    if (offset < 0)
-                        offset += p;
-                    if (offset != 0 && offset != entry.RootDiff)
-                    {
-                        Debug.Assert(y % p != 0);
-                        continue;
-                    }
-                    Debug.Assert(y % p == 0);
-                    while ((y % p).IsZero)
-                    {
-                        ++exponents[i + 1];
-                        y /= p;
-                    }
-                }
-            }
+            var delta = x - interval.OffsetX;
+            if (delta >= int.MinValue && delta <= int.MaxValue)
+                return FactorOverBase(interval, y, (int)delta);
             else
+                return FactorOverBase(interval, y, delta);
+        }
+
+        private long FactorOverBase(Interval interval, BigInteger y, int delta)
+        {
+            var offsets = interval.Offsets;
+            var exponents = interval.Exponents;
+            for (int i = 0; i < factorBaseSize; i++)
             {
-                long delta = deltaOrig;
-                for (int i = 0; i < factorBaseSize; i++)
+                var entry = factorBase[i];
+                var p = entry.P;
+                var offset = (delta - offsets[i]) % p;
+                if (offset < 0)
+                    offset += p;
+                if (offset != 0 && offset != entry.RootDiff)
                 {
-                    var entry = factorBase[i];
-                    var p = entry.P;
-                    var offset = (int)((delta - offsets[i]) % p);
-                    if (offset < 0)
-                        offset += p;
-                    if (offset != 0 && offset != entry.RootDiff)
-                    {
-                        Debug.Assert(y % p != 0);
-                        continue;
-                    }
-                    Debug.Assert(y % p == 0);
-                    while ((y % p).IsZero)
-                    {
-                        ++exponents[i + 1];
-                        y /= p;
-                    }
+                    Debug.Assert(y % p != 0);
+                    continue;
+                }
+                Debug.Assert(y % p == 0);
+                while ((y % p).IsZero)
+                {
+                    ++exponents[i + 1];
+                    y /= p;
                 }
             }
             return y < long.MaxValue ? (long)y : 0;
         }
 
-        private long FactorOverBaseWord32Integer(Interval interval, long x)
+        private long FactorOverBase(Interval interval, BigInteger y, long delta)
         {
-            var y = interval.Reg1;
-            var z = interval.Reg2;
-            bool negative;
-            EvaluatePolynomial(x, y, z, out negative);
-            var exponents = interval.Exponents;
-            if (negative)
-                ++exponents[0];
-            var deltaOrig = x - interval.OffsetX;
             var offsets = interval.Offsets;
-            if (deltaOrig >= int.MinValue && deltaOrig <= int.MaxValue)
+            var exponents = interval.Exponents;
+            for (int i = 0; i < factorBaseSize; i++)
             {
-                int delta = (int)deltaOrig;
-                for (int i = 0; i < factorBaseSize; i++)
+                var entry = factorBase[i];
+                var p = entry.P;
+                var offset = (int)((delta - offsets[i]) % p);
+                if (offset < 0)
+                    offset += p;
+                if (offset != 0 && offset != entry.RootDiff)
                 {
-                    var entry = factorBase[i];
-                    var p = entry.P;
-                    var offset = (delta - offsets[i]) % p;
-                    if (offset < 0)
-                        offset += p;
-                    if (offset != 0 && offset != entry.RootDiff)
-                    {
-                        Debug.Assert(y.ToBigInteger() % p != 0);
-                        continue;
-                    }
-                    Debug.Assert(y.ToBigInteger() % p == 0);
-                    while (y.GetRemainder((uint)p) == 0)
-                    {
-                        ++exponents[i + 1];
-                        y.Divide((uint)p, z);
-                    }
+                    Debug.Assert(y % p != 0);
+                    continue;
+                }
+                Debug.Assert(y % p == 0);
+                while ((y % p).IsZero)
+                {
+                    ++exponents[i + 1];
+                    y /= p;
                 }
             }
-            else
-            {
-                long delta = deltaOrig;
-                for (int i = 0; i < factorBaseSize; i++)
-                {
-                    var entry = factorBase[i];
-                    var p = entry.P;
-                    var offset = (int)((delta - offsets[i]) % p);
-                    if (offset < 0)
-                        offset += p;
-                    if (offset != 0 && offset != entry.RootDiff)
-                    {
-                        Debug.Assert(y.ToBigInteger() % p != 0);
-                        continue;
-                    }
-                    Debug.Assert(y.ToBigInteger() % p == 0);
-                    while (y.GetRemainder((uint)p) == 0)
-                    {
-                        ++exponents[i + 1];
-                        y.Divide((uint)p, z);
-                    }
-                }
-            }
-            return y < (ulong)long.MaxValue ? (long)(ulong)y : 0;
+            return y < long.MaxValue ? (long)y : 0;
         }
 
         private Relation ProcessPartialRelation(Interval interval, int k, long cofactor)
@@ -813,18 +728,6 @@ namespace Decompose.Numerics
 
         private void ProcessRelations()
         {
-            ProcessRelationsSimple();
-#if false
-            using (var stream = new StreamWriter("matrix.txt"))
-            {
-                for (int i = 0; i < matrix.Rows; i++)
-                    stream.WriteLine(string.Concat(matrix.GetRow(i).Select(bit => bit ? 1 : 0).ToArray()));
-            }
-#endif
-        }
-
-        private void ProcessRelationsSimple()
-        {
             Debug.Assert(relations.GroupBy(relation => relation.X).Count() == relations.Length);
             matrix = new BitMatrix(factorBaseSize + 1, relations.Length);
             for (int j = 0; j < relations.Length; j++)
@@ -837,29 +740,13 @@ namespace Decompose.Numerics
                         matrix[entry.Index, j] = true;
                 }
             }
-        }
-
-        private void ProcessRelationsWithCache()
-        {
-            Debug.Assert(relations.GroupBy(relation => relation.X).Count() == relations.Length);
-            matrix = new BitMatrix(factorBaseSize + 1, relations.Length);
-            int cacheSize = matrix.WordLength;
-            var cache = new BitMatrix(matrix.Rows, cacheSize);
-            for (int j = 0; j < relations.Length; j += cacheSize)
+#if false
+            using (var stream = new StreamWriter("matrix.txt"))
             {
-                int limit = Math.Min(cacheSize, relations.Length - j);
-                for (int k = 0; k < limit; k++)
-                {
-                    var entries = relations[j + k].Entries;
-                    for (int i = 0; i < entries.Length; i++)
-                    {
-                        var entry = entries[i];
-                        cache[entry.Index, k] = entry.Exponent % 2 != 0;
-                    }
-                }
-                matrix.CopySubMatrix(cache, 0, j);
-                cache.Clear();
+                for (int i = 0; i < matrix.Rows; i++)
+                    stream.WriteLine(string.Concat(matrix.GetRow(i).Select(bit => bit ? 1 : 0).ToArray()));
             }
+#endif
         }
 
         private void ClearExponents(Interval interval)
@@ -871,12 +758,6 @@ namespace Decompose.Numerics
 
         private ExponentEntry[] GetEntries(byte[] exponents)
         {
-#if false
-            return exponents
-                .Select((exponent, index) => new ExponentEntry { Index = index, Exponent = exponent })
-                .Where(entry => entry.Exponent != 0)
-                .ToArray();
-#else
             int size = 16;
             var entries = new ExponentEntry[size];
             int k = 0;
@@ -894,68 +775,12 @@ namespace Decompose.Numerics
             }
             Array.Resize(ref entries, k);
             return entries;
-#endif
-        }
-
-        private ExponentEntry[] CombineEntries(ExponentEntry[] a, ExponentEntry[] b)
-        {
-#if false
-            return a.Concat(b)
-                .OrderBy(entry => entry.Index)
-                .GroupBy(entry => entry.Index)
-                .Select(grouping =>
-                    new ExponentEntry
-                    {
-                        Index = grouping.Key,
-                        Exponent = grouping.Sum(entry => entry.Exponent),
-                    })
-                .ToArray();
-#else
-            var entries = new ExponentEntry[a.Length + b.Length];
-            int j = 0;
-            int k = 0;
-            for (int i = 0; i < a.Length; i++)
-            {
-                var index = a[i].Index;
-                while (j < b.Length && b[j].Index < index)
-                    entries[k++] = b[j++];
-                if (j < b.Length && b[j].Index == index)
-                    entries[k++] = new ExponentEntry { Index = index, Exponent = a[i].Exponent + b[j++].Exponent };
-                else
-                    entries[k++] = a[i];
-            }
-            while (j < b.Length)
-                entries[k++] = b[j++];
-            Array.Resize(ref entries, k);
-            return entries;
-#endif
         }
 
         private BigInteger EvaluatePolynomial(long x)
         {
             var xPrime = sqrtN + x;
             return xPrime * xPrime - n;
-        }
-
-        private Word32Integer EvaluatePolynomial(long x, Word32Integer y, Word32Integer reg1, out bool negative)
-        {
-            reg1.Set(sqrtNRep);
-            if (x < 0)
-                reg1.Subtract(y.Set((ulong)-x));
-            else
-                reg1.Add(y.Set((ulong)x));
-            y.SetSquare(reg1);
-            if (y < nRep)
-            {
-                y.SetDifference(nRep, y);
-                negative = true;
-            }
-            else
-            {
-                y.Subtract(nRep);
-                negative = false;
-            }
-            return y;
         }
     }
 }
