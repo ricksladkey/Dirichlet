@@ -85,7 +85,7 @@ namespace Decompose.Numerics
 
         private void ZeroColumn(IBitMatrix matrix, int rows, int j, int k)
         {
-            if (rows < multiThreadedCutoff)
+            if (threads == 1 || rows < multiThreadedCutoff)
             {
                 for (int i = 0; i < rows; i++)
                 {

@@ -27,8 +27,8 @@ namespace Decompose
                 //FactorTest5();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                //QuadraticSieveDigitsTest();
-                CunnihamTest();
+                QuadraticSieveDigitsTest();
+                //CunnihamTest();
                 //GaussianEliminationTest1();
             }
             catch (Exception ex)
@@ -256,7 +256,7 @@ namespace Decompose
             {
                 Threads = threads,
                 //FactorBaseSize = 24000,
-                LowerBoundPercent = 65,
+                //LowerBoundPercent = 65,
                 Multiplier = 3,
                 Diagnostics = QuadraticSieve.Diag.Verbose,
             };
@@ -309,14 +309,17 @@ namespace Decompose
         {
             var random = new MersenneTwister32(0);
             int threads = 8;
-            for (int i = 10; i <= 32; i++)
+            for (int i = 10; i <= 40; i++)
             {
                 var limit = BigInteger.Pow(10, i);
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
                 var n = p * q;
+                if (i < 40)
+                    continue;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                FactorTest(false, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads }));
+                FactorTest(false, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads, Diagnostics = QuadraticSieve.Diag.Verbose }));
+                break;
             }
         }
 
@@ -357,7 +360,6 @@ namespace Decompose
             Console.WriteLine("solutions = {0}", solutions.Length);
         }
 
-
         private static string[] GetLinesGzip(string file)
         {
             using (var stream = new StreamReader(new GZipStream(File.OpenRead(file), CompressionMode.Decompress)))
@@ -391,28 +393,16 @@ namespace Decompose
             return matrix;
         }
 
-        static BigInteger NextPrime(MersenneTwister32 random, BigInteger limit)
+        private static BigInteger NextPrime(MersenneTwister32 random, BigInteger limit)
         {
+            var digits = IntegerMath.GetDigitLength(limit - 1, 10);
             var n = random.Next(limit);
-            while (GetDigitLength(n, 10) < GetDigitLength(limit - 1, 10))
+            while (IntegerMath.GetDigitLength(n, 10) < digits)
                 n = random.Next(limit);
-            while (!IntegerMath.IsPrime(n))
-                ++n;
-            return n;
+            return IntegerMath.NextPrime(n);
         }
 
-        static int GetDigitLength(BigInteger n, int b)
-        {
-            int i = 0;
-            while (!n.IsZero)
-            {
-                ++i;
-                n /= b;
-            }
-            return i;
-        }
-
-        static BigInteger[] FactorTest(bool debug, int iterations, BigInteger n, IFactorizationAlgorithm<BigInteger> algorithm)
+        private static BigInteger[] FactorTest(bool debug, int iterations, BigInteger n, IFactorizationAlgorithm<BigInteger> algorithm)
         {
             var results = new List<BigInteger[]>();
             GC.Collect();

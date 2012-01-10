@@ -171,7 +171,7 @@ namespace Decompose.Numerics
         private void ClearColumn(IBitMatrix matrix, int[] weights, int col)
         {
             int rows = matrix.Rows;
-            if (rows < multiThreadedCutoff)
+            if (threads == 1 || rows < multiThreadedCutoff)
             {
                 for (int i = 0; i < rows; i++)
                 {
@@ -203,7 +203,7 @@ namespace Decompose.Numerics
         private void MergeColumns(IBitMatrix matrix, int[] weights, int col1, int col2)
         {
             int rows = matrix.Rows;
-            if (rows < multiThreadedCutoff)
+            if (threads == 1 || rows < multiThreadedCutoff)
             {
                 for (int i = 0; i < rows; i++)
                 {

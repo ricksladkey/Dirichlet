@@ -150,6 +150,11 @@ namespace Decompose.Numerics
             return n;
         }
 
+        public static int GetDigitLength(BigInteger n, int b)
+        {
+            return (int)Math.Ceiling(BigInteger.Log(n, b));
+        }
+
         private static BigInteger limit = (BigInteger)int.MaxValue;
         private static BigInteger four = (BigInteger)4;
         private static BigInteger eight = (BigInteger)8;

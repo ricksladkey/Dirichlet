@@ -40,6 +40,7 @@ namespace Decompose.Numerics
             public int FactorBaseSize { get; set; }
             public int LowerBoundPercent { get; set; }
             public int Multiplier { get; set; }
+            public int ReportingInterval { get; set; }
         }
 
         public QuadraticSieve(Config config)
@@ -49,6 +50,7 @@ namespace Decompose.Numerics
             factorBaseSizeOverride = config.FactorBaseSize;
             lowerBoundPercentOverride = config.LowerBoundPercent;
             multiplierOverride = config.Multiplier;
+            reportingIntervalOverride = config.ReportingInterval;
             smallIntegerFactorer = new TrialDivision();
             primes = new SieveOfErostothones();
             solver = new Solver(config.Threads);
@@ -120,10 +122,11 @@ namespace Decompose.Numerics
         }
 
         private const int subIntervalSize = 256 * 1024;
-        private const int maximumIntervalSize = subIntervalSize * 8;
+        private const int maximumIntervalSize = 256 * 1024 * 8;
         private const int lowerBoundPercentDefault = 75;
         private const int cofactorScaleFactor = 4096;
         private const int surplusRelations = 10;
+        private const int reportingIntervalDefault = 60;
         private readonly BigInteger smallFactorCutoff = (BigInteger)int.MaxValue;
         private readonly Tuple<int, int>[] sizePairs =
         {
@@ -136,13 +139,16 @@ namespace Decompose.Numerics
             Tuple.Create(50, 4500),
             Tuple.Create(60, 12000),
             Tuple.Create(70, 35000),
-            Tuple.Create(90, 60000), // http://www.mersenneforum.org/showthread.php?t=4013
+            Tuple.Create(80, 60000),
+            Tuple.Create(90, 100000),
+            Tuple.Create(100, 200000),
         };
 
         private int threadsOverride;
         private int factorBaseSizeOverride;
         private int lowerBoundPercentOverride;
         private int multiplierOverride;
+        private int reportingIntervalOverride;
         private IFactorizationAlgorithm<int> smallIntegerFactorer;
         private IEnumerable<int> primes;
         private INullSpaceAlgorithm<IBitArray, IBitMatrix> solver;
@@ -165,6 +171,7 @@ namespace Decompose.Numerics
         private CountInt logMaximumDivisorSquared;
         private int largePrimeIndex;
         private int lowerBoundPercent;
+        private int reportingInterval;
 
         private int threads;
         private BlockingCollection<Relation> relationBuffer;
@@ -287,6 +294,7 @@ namespace Decompose.Numerics
                 ++largePrimeIndex;
             maximumCofactorSize = Math.Min(maximumDivisor * cofactorScaleFactor, maximumDivisorSquared);
             lowerBoundPercent = lowerBoundPercentOverride != 0 ? lowerBoundPercentOverride : lowerBoundPercentDefault;
+            reportingInterval = reportingIntervalOverride != 0 ? reportingIntervalOverride : reportingIntervalDefault;
 
             intervalsProcessed = 0;
             valuesChecked = 0;
@@ -397,13 +405,13 @@ namespace Decompose.Numerics
             partialRelations = new Dictionary<long, long>();
 
             if (threads == 1)
-                SieveThread();
+                SieveTask();
             else
             {
                 var tasks = new Task[threads];
                 for (int i = 0; i < threads; i++)
-                    tasks[i] = Task.Factory.StartNew(SieveThread);
-                Task.WaitAll(tasks);
+                    tasks[i] = Task.Factory.StartNew(SieveTask);
+                WaitForTasks(tasks);
             }
 
             relations = relationBuffer.ToArray();
@@ -411,7 +419,7 @@ namespace Decompose.Numerics
             partialRelations = null;
         }
 
-        private void SieveThread()
+        private void SieveTask()
         {
             int count = 0;
             int intervals = 0;
@@ -420,16 +428,31 @@ namespace Decompose.Numerics
             {
                 count += Sieve(GetNextInterval(interval));
                 ++intervals;
-                if ((diag & Diag.Sieve) != 0)
-                {
-                    if (count >= 500)
-                    {
-                        Console.WriteLine("found {0} relations in {1} intervals", count, intervals);
-                        count = 0;
-                        intervals = 0;
-                    }
-                }
                 Interlocked.Increment(ref intervalsProcessed);
+            }
+        }
+
+        private void WaitForTasks(Task[] tasks)
+        {
+            if ((diag & Diag.Sieve) == 0)
+            {
+                Task.WaitAll(tasks);
+                return;
+            }
+
+            int sofar = 0;
+            while (!Task.WaitAll(tasks, reportingInterval * 1000))
+            {
+                int current = relationBuffer.Count;
+                double percentComplete = (double)current / desired * 100;
+                int latest = current - sofar;
+                int remaining = desired - current;
+                double rate = (double)latest / reportingInterval;
+                double timeToCompletionSeconds = Math.Ceiling(rate == 0 ? 0 : remaining / rate);
+                var timeToCompletion = TimeSpan.FromSeconds(timeToCompletionSeconds);
+                Console.WriteLine("{0:F1}% complete, rate = {1:F2} relations/sec, remaining = {2}",
+                    percentComplete, rate, timeToCompletion);
+                sofar = current;
             }
         }
 
