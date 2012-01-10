@@ -305,21 +305,39 @@ namespace Decompose
             }
         }
 
-        static void QuadraticSieveDigitsTest()
+        static void CreateSamplesTest()
         {
             var random = new MersenneTwister32(0);
-            int threads = 8;
             for (int i = 10; i <= 40; i++)
             {
                 var limit = BigInteger.Pow(10, i);
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
                 var n = p * q;
-                if (i < 40)
-                    continue;
+                Console.WriteLine("new SampleComposite");
+                Console.WriteLine("{");
+                Console.WriteLine("    Digits = {0},", 2 * i);
+                Console.WriteLine("    P = BigInteger.Parse(\"{0}\"),", p);
+                Console.WriteLine("    Q = BigInteger.Parse(\"{0}\"),", q);
+                Console.WriteLine("},");
+            }
+        }
+
+        static void QuadraticSieveDigitsTest()
+        {
+            for (int i = 10; i <= 30; i++)
+            {
+                var sample = samples[i - 10];
+                var p = sample.P;
+                var q = sample.Q;
+                var n = p * q;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                FactorTest(false, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads, Diagnostics = QuadraticSieve.Diag.Verbose }));
-                break;
+                var config = new QuadraticSieve.Config
+                {
+                    Threads = 8,
+                    //Diagnostics = QuadraticSieve.Diag.Verbose,
+                };
+                FactorTest(false, 1, n, new QuadraticSieve(config));
             }
         }
 
@@ -426,5 +444,203 @@ namespace Decompose
             Console.WriteLine("{0} iterations in {1:F0} msec, {2:F3} msec/iteration", iterations, elapsed, elapsed / iterations);
             return results[0];
         }
+
+        private class SampleComposite
+        {
+            public int Digits { get; set; }
+            public BigInteger P { get; set; }
+            public BigInteger Q { get; set; }
+            public BigInteger N { get { return P * Q; } }
+        }
+
+        private static SampleComposite[] samples =
+        {
+            new SampleComposite
+            {
+                Digits = 20,
+                P = BigInteger.Parse("6359727791"),
+                Q = BigInteger.Parse("4501387931"),
+            },
+            new SampleComposite
+            {
+                Digits = 22,
+                P = BigInteger.Parse("81112462157"),
+                Q = BigInteger.Parse("65534533327"),
+            },
+            new SampleComposite
+            {
+                Digits = 24,
+                P = BigInteger.Parse("922920006683"),
+                Q = BigInteger.Parse("718097069881"),
+            },
+            new SampleComposite
+            {
+                Digits = 26,
+                P = BigInteger.Parse("9752697519233"),
+                Q = BigInteger.Parse("6069293365573"),
+            },
+            new SampleComposite
+            {
+                Digits = 28,
+                P = BigInteger.Parse("68645165989399"),
+                Q = BigInteger.Parse("16044355135579"),
+            },
+            new SampleComposite
+            {
+                Digits = 30,
+                P = BigInteger.Parse("600557957340779"),
+                Q = BigInteger.Parse("931078023997103"),
+            },
+            new SampleComposite
+            {
+                Digits = 32,
+                P = BigInteger.Parse("3860645359479661"),
+                Q = BigInteger.Parse("6660723000417049"),
+            },
+            new SampleComposite
+            {
+                Digits = 34,
+                P = BigInteger.Parse("92857397119223941"),
+                Q = BigInteger.Parse("56396174139495167"),
+            },
+            new SampleComposite
+            {
+                Digits = 36,
+                P = BigInteger.Parse("589014875010582533"),
+                Q = BigInteger.Parse("736526309666503507"),
+            },
+            new SampleComposite
+            {
+                Digits = 38,
+                P = BigInteger.Parse("7581008776610031599"),
+                Q = BigInteger.Parse("4941861830454018857"),
+            },
+            new SampleComposite
+            {
+                Digits = 40,
+                P = BigInteger.Parse("43760554345460349857"),
+                Q = BigInteger.Parse("59780183007898320881"),
+            },
+            new SampleComposite
+            {
+                Digits = 42,
+                P = BigInteger.Parse("166737023217956147843"),
+                Q = BigInteger.Parse("266578926331401913067"),
+            },
+            new SampleComposite
+            {
+                Digits = 44,
+                P = BigInteger.Parse("2341864285495243696819"),
+                Q = BigInteger.Parse("6862234825035212041109"),
+            },
+            new SampleComposite
+            {
+                Digits = 46,
+                P = BigInteger.Parse("81173737403430771942307"),
+                Q = BigInteger.Parse("64443839329396315580339"),
+            },
+            new SampleComposite
+            {
+                Digits = 48,
+                P = BigInteger.Parse("547109861053076293701181"),
+                Q = BigInteger.Parse("218393091309815530058033"),
+            },
+            new SampleComposite
+            {
+                Digits = 50,
+                P = BigInteger.Parse("3150497848572778166077033"),
+                Q = BigInteger.Parse("1419806924383975860451933"),
+            },
+            new SampleComposite
+            {
+                Digits = 52,
+                P = BigInteger.Parse("71553049119880264914826637"),
+                Q = BigInteger.Parse("47084627876852469799938151"),
+            },
+            new SampleComposite
+            {
+                Digits = 54,
+                P = BigInteger.Parse("668223788916828667974184073"),
+                Q = BigInteger.Parse("475483409844077547574254721"),
+            },
+            new SampleComposite
+            {
+                Digits = 56,
+                P = BigInteger.Parse("8816136275150582711618365859"),
+                Q = BigInteger.Parse("3044375869342823579225836457"),
+            },
+            new SampleComposite
+            {
+                Digits = 58,
+                P = BigInteger.Parse("79616313635618041020736352419"),
+                Q = BigInteger.Parse("36109767180534668555739700277"),
+            },
+            new SampleComposite
+            {
+                Digits = 60,
+                P = BigInteger.Parse("289209603456915754116025390283"),
+                Q = BigInteger.Parse("651974473535965720429005879311"),
+            },
+            new SampleComposite
+            {
+                Digits = 62,
+                P = BigInteger.Parse("2135862096280413518185169595631"),
+                Q = BigInteger.Parse("4946257487231393668368584144179"),
+            },
+            new SampleComposite
+            {
+                Digits = 64,
+                P = BigInteger.Parse("90484786924920304861107250841203"),
+                Q = BigInteger.Parse("93819551150572322228605590151427"),
+            },
+            new SampleComposite
+            {
+                Digits = 66,
+                P = BigInteger.Parse("752171408379662548633208575616947"),
+                Q = BigInteger.Parse("727656629739503749143743912576693"),
+            },
+            new SampleComposite
+            {
+                Digits = 68,
+                P = BigInteger.Parse("1452509806874688515960900257523821"),
+                Q = BigInteger.Parse("6091273916310546401352905015178757"),
+            },
+            new SampleComposite
+            {
+                Digits = 70,
+                P = BigInteger.Parse("39590771509308181367548580586664897"),
+                Q = BigInteger.Parse("10420963447932920373972059082256531"),
+            },
+            new SampleComposite
+            {
+                Digits = 72,
+                P = BigInteger.Parse("780748679899154536912466202699047849"),
+                Q = BigInteger.Parse("379148146974432114134205653148097117"),
+            },
+            new SampleComposite
+            {
+                Digits = 74,
+                P = BigInteger.Parse("1944657516979563550209812173755027707"),
+                Q = BigInteger.Parse("8281713719538507681810654356958903461"),
+            },
+            new SampleComposite
+            {
+                Digits = 76,
+                P = BigInteger.Parse("20221947695032137682483252436640950611"),
+                Q = BigInteger.Parse("90083006931593945195319860191440222337"),
+            },
+            new SampleComposite
+            {
+                Digits = 78,
+                P = BigInteger.Parse("234578372300126118738414197724923928917"),
+                Q = BigInteger.Parse("789827369472404641442870779900199537177"),
+            },
+            new SampleComposite
+            {
+                Digits = 80,
+                P = BigInteger.Parse("4866868528098421482780624850039639204477"),
+                Q = BigInteger.Parse("7613720546717210496574998828026372396927"),
+            },
+        };
     }
 }
