@@ -54,6 +54,7 @@
     <Compile Include="Collections\IBitArray.cs" />
     <Compile Include="Collections\IBitMatrix.cs" />
     <Compile Include="Collections\IMatrix.cs" />
+    <Compile Include="HybridPollardRhoQuadraticSieve.cs" />
     <Compile Include="INullSpaceAlgorithm.cs" />
     <Compile Include="Collections\Word32BitArray.cs" />
     <Compile Include="Collections\Word32BitMatrix.cs" />

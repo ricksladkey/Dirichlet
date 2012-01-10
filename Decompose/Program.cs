@@ -27,8 +27,8 @@ namespace Decompose
                 //FactorTest5();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                QuadraticSieveDigitsTest();
-                //CunnihamTest();
+                //QuadraticSieveDigitsTest();
+                CunnihamTest();
                 //GaussianEliminationTest1();
             }
             catch (Exception ex)
@@ -324,14 +324,8 @@ namespace Decompose
         {
             var n = BigInteger.Pow(3, 225) - 1;
             Console.WriteLine("n = {0}", n);
-            var pollard = new PollardRhoReduction(4, 1000000, new MontgomeryReduction());
-            var smallFactors = pollard.Factor(n);
-            foreach (var factor in smallFactors)
-                Console.WriteLine("{0}", factor);
-            var c = n / smallFactors.Aggregate((sofar, factor) => sofar * factor);
-            Console.WriteLine("c = {0}", c);
-            var qr = new QuadraticSieve(new QuadraticSieve.Config { Threads = 8 });
-            var factors = qr.Factor(c);
+            var algorithm = new HybridPollardRhoQuadraticSieve(4, 1000000, new QuadraticSieve.Config());
+            var factors = algorithm.Factor(n);
             foreach (var factor in factors)
                 Console.WriteLine("{0}", factor);
         }
