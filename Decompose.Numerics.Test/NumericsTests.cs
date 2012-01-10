@@ -130,7 +130,7 @@ namespace Decompose.Numerics.Test
             var xPrime = reducer.ToResidue(0);
             var yPrime = reducer.ToResidue(0);
             var zPrime = reducer.ToResidue(0);
-            var random = new MersenneTwister32(0);
+            var random = new MersenneTwisterBigInteger(0);
             for (int i = 0; i < 100; i++)
             {
                 var x = random.Next(p);
@@ -150,7 +150,8 @@ namespace Decompose.Numerics.Test
         public void TestRadix32()
         {
             var n = BigInteger.Parse("10023859281455311421");
-            var random = new MersenneTwister32(0);
+            var random = new MersenneTwisterBigInteger(0);
+            var smallRandom = new MersenneTwister32(0);
             var length = (n.GetBitLength() * 2 + 31) / 32 + 3;
             var store = new Word32IntegerStore(length);
             var a = store.Create();
@@ -162,7 +163,7 @@ namespace Decompose.Numerics.Test
             {
                 var aPrime = random.Next(n);
                 var bPrime = random.Next(n);
-                uint c = random.Next();
+                uint c = smallRandom.Next(0);
                 a.Set(aPrime);
                 b.Set(bPrime);
 
@@ -224,7 +225,7 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void ModularSquareRootTest1()
         {
-            var random = new MersenneTwister32(0);
+            var random = new MersenneTwisterBigInteger(0);
             var limit = BigInteger.Parse("10023859281455311421");
             for (int i = 0; i < 100; i++)
             {
@@ -389,6 +390,26 @@ namespace Decompose.Numerics.Test
                 }
                 Assert.AreEqual(count, i.GetBitCount());
                 count += 0;
+            }
+        }
+
+        [TestMethod]
+        public void ModularInverseTest()
+        {
+            var n = BigInteger.Parse("10023859281455311421");
+            var random = new MersenneTwisterBigInteger(0);
+            for (int i = 0; i < 1000; i++)
+            {
+                var p = random.Next(n);
+                var q = random.Next(n);
+                while (!BigInteger.GreatestCommonDivisor(p, q).IsOne)
+                {
+                    p = random.Next(n);
+                    q = random.Next(n);
+                }
+                var pInv = IntegerMath.ModularInverse(p, q);
+                var result = p * pInv % q;
+                Assert.AreEqual(BigInteger.One, result);
             }
         }
     }

@@ -4,7 +4,7 @@ namespace Decompose.Numerics
 {
     public class MillerRabin : IPrimalityAlgorithm<BigInteger>
     {
-        private MersenneTwister32 random = new MersenneTwister32(0);
+        private IRandomNumberAlgorithm<BigInteger> random = new MersenneTwisterBigInteger(0);
         private int k;
 
         public MillerRabin(int k)

@@ -39,7 +39,7 @@ namespace Decompose
 
         static void FindPrimeTest1()
         {
-            var random = new MersenneTwister32(0);
+            var random = new MersenneTwisterBigInteger(0);
             var limit = BigInteger.One << (32 * 4);
             var x = random.Next(limit);
             while (!IntegerMath.IsPrime(x))
@@ -50,7 +50,7 @@ namespace Decompose
         static void BarrettReductionTest1()
         {
             var p = BigInteger.Parse("10023859281455311421");
-            var random = new MersenneTwister32(0);
+            var random = new MersenneTwisterBigInteger(0);
             var x = random.Next(p);
             var y = random.Next(p);
             var z = x * y;
@@ -79,8 +79,8 @@ namespace Decompose
         static void BarrettReductionTest2()
         {
             var n = BigInteger.Parse("10023859281455311421");
-            var random1 = new MersenneTwister32(0);
-            var random2 = new MersenneTwister32(0);
+            var random1 = new MersenneTwisterBigInteger(0);
+            var random2 = new MersenneTwisterBigInteger(0);
             var timer1 = new Stopwatch();
             var timer2 = new Stopwatch();
             var iterations1 = 1000;
@@ -132,8 +132,8 @@ namespace Decompose
         {
             var n = BigInteger.Parse("10023859281455311421");
             var length = (n.GetBitLength() * 2 + 31) / 32;
-            var random1 = new MersenneTwister32(0);
-            var random2 = new MersenneTwister32(0);
+            var random1 = new MersenneTwisterBigInteger(0);
+            var random2 = new MersenneTwisterBigInteger(0);
             var timer1 = new Stopwatch();
             var timer2 = new Stopwatch();
             var iterations1 = 1000;
@@ -225,7 +225,7 @@ namespace Decompose
 
         static void FactorTest4()
         {
-            var random = new MersenneTwister32(0);
+            var random = new MersenneTwisterBigInteger(0);
             for (int i = 16; i <= 16; i++)
             {
                 var limit = BigInteger.Pow(new BigInteger(10), i);
@@ -274,7 +274,7 @@ namespace Decompose
 
         static void QuadraticSieveParametersTest()
         {
-            var random = new MersenneTwister32(0);
+            var random = new MersenneTwisterBigInteger(0);
             int threads = 8;
             for (int i = 10; i <= 30; i++)
             {
@@ -307,7 +307,7 @@ namespace Decompose
 
         static void CreateSamplesTest()
         {
-            var random = new MersenneTwister32(0);
+            var random = new MersenneTwisterBigInteger(0);
             for (int i = 10; i <= 40; i++)
             {
                 var limit = BigInteger.Pow(10, i);
@@ -325,7 +325,7 @@ namespace Decompose
 
         static void QuadraticSieveDigitsTest()
         {
-            for (int i = 10; i <= 30; i++)
+            for (int i = 32; i <= 32; i++)
             {
                 var sample = samples[i - 10];
                 var p = sample.P;
@@ -335,7 +335,8 @@ namespace Decompose
                 var config = new QuadraticSieve.Config
                 {
                     Threads = 8,
-                    //Diagnostics = QuadraticSieve.Diag.Verbose,
+                    Diagnostics = QuadraticSieve.Diag.Verbose,
+                    ReportingInterval = 10,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
             }
@@ -411,7 +412,7 @@ namespace Decompose
             return matrix;
         }
 
-        private static BigInteger NextPrime(MersenneTwister32 random, BigInteger limit)
+        private static BigInteger NextPrime(IRandomNumberAlgorithm<BigInteger> random, BigInteger limit)
         {
             var digits = IntegerMath.GetDigitLength(limit - 1, 10);
             var n = random.Next(limit);

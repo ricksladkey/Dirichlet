@@ -77,12 +77,22 @@ namespace Decompose.Numerics
             return (n % p + p) % p;
         }
 
+        public static BigInteger ModularInverse(BigInteger n, BigInteger p)
+        {
+            BigInteger x;
+            BigInteger y;
+            ExtendedGreatestCommonDivisor(n, p, out x, out y);
+            if (x < 0)
+                x += p;
+            return x;
+        }
+
         public static bool IsSquareFree(IEnumerable<int> factors)
         {
             return factors
                 .OrderBy(factor => factor)
                 .GroupBy(factor => factor)
-                .Any(grouping => grouping.Count() == 1);
+                .All(grouping => grouping.Count() < 2);
         }
 
         public static bool IsSquareFree(IEnumerable<BigInteger> factors)
@@ -90,7 +100,7 @@ namespace Decompose.Numerics
             return factors
                 .OrderBy(factor => factor)
                 .GroupBy(factor => factor)
-                .Any(grouping => grouping.Count() == 1);
+                .All(grouping => grouping.Count() < 2);
         }
 
         public static void ExtendedGreatestCommonDivisor(BigInteger a, BigInteger b, out BigInteger c, out BigInteger d)

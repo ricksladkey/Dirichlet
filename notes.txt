@@ -4,4 +4,10 @@
 - process both roots during a single pass
 - combine small factors when sieving into a single pattern
 
+- add "right justify" method to IntegerMath
+
 - try log(2 * x * sqrt(n)) as the cutoff: http://www.crypto-world.com/documents/contini_siqs.pdf
+- convert to "round" instead of "cieling"
+- try sieving for 2 with a large number
+- port multiplier code from msieve
+- add modular inverse method

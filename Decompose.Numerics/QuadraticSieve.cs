@@ -139,9 +139,10 @@ namespace Decompose.Numerics
             Tuple.Create(50, 4500),
             Tuple.Create(60, 12000),
             Tuple.Create(70, 35000),
-            Tuple.Create(80, 60000),
-            Tuple.Create(90, 100000),
-            Tuple.Create(100, 200000),
+            Tuple.Create(80, 100000),
+            Tuple.Create(90, 300000),
+            Tuple.Create(100, 1000000),
+            Tuple.Create(110, 3000000),
         };
 
         private int threadsOverride;
@@ -440,20 +441,25 @@ namespace Decompose.Numerics
                 return;
             }
 
-            int sofar = 0;
+            var timer = new Stopwatch();
+            timer.Start();
+            double percentCompleteSofar = 0;
             while (!Task.WaitAll(tasks, reportingInterval * 1000))
             {
                 int current = relationBuffer.Count;
                 double percentComplete = (double)current / desired * 100;
-                int latest = current - sofar;
-                int remaining = desired - current;
-                double rate = (double)latest / reportingInterval;
-                double timeToCompletionSeconds = Math.Ceiling(rate == 0 ? 0 : remaining / rate);
-                var timeToCompletion = TimeSpan.FromSeconds(timeToCompletionSeconds);
-                Console.WriteLine("{0:F1}% complete, rate = {1:F2} relations/sec, remaining = {2}",
-                    percentComplete, rate, timeToCompletion);
-                sofar = current;
+                double percentLatest = percentComplete - percentCompleteSofar;
+                double percentRemaining = 100 - percentComplete;
+                double percentRate = (double)percentLatest / reportingInterval;
+                double timeRemainingSeconds = percentRate == 0 ? 0 : percentRemaining / percentRate;
+                var timeRemaining = TimeSpan.FromSeconds(Math.Ceiling(timeRemainingSeconds));
+                Console.WriteLine("{0:F2}% complete, rate = {1:F4} %/sec, time remaining = {2}",
+                    percentComplete, percentRate, timeRemaining);
+                percentCompleteSofar = percentComplete;
             }
+            double elapsed = (double)timer.ElapsedTicks / Stopwatch.Frequency;
+            double overallPercentRate = 100 / elapsed;
+            Console.WriteLine("overall rate = {0:F4} %/sec", overallPercentRate);
         }
 
         private Interval CreateInterval()

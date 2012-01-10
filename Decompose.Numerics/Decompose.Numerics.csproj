@@ -60,6 +60,7 @@
     <Compile Include="Collections\Word32BitMatrix.cs" />
     <Compile Include="IFactorizationAlgorithm.cs" />
     <Compile Include="IPrimalityAlgorithm.cs" />
+    <Compile Include="IRandomNumberAlgorithm.cs" />
     <Compile Include="IReducer.cs" />
     <Compile Include="IReductionAlgorithm.cs" />
     <Compile Include="IntegerMath.cs" />
