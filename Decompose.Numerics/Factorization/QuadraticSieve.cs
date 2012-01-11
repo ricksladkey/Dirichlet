@@ -482,7 +482,7 @@ namespace Decompose.Numerics
         {
             var interval = new Interval();
             interval.Exponents = new byte[factorBaseSize + 1];
-            interval.Counts = new CountInt[subIntervalSize];
+            interval.Counts = new CountInt[subIntervalSize + 1];
             interval.Offsets = new int[factorBaseSize];
             return interval;
         }
@@ -549,56 +549,41 @@ namespace Decompose.Numerics
             }
         }
 
-        private int Sieve(Interval interval)
+        private void Sieve(Interval interval)
         {
 #if false
-            return SieveTrialDivision(interval);
+            SieveTrialDivision(interval);
 #else
-            return SieveQuadraticResidue(interval);
+            SieveQuadraticResidue(interval);
 #endif
         }
 
-        private int SieveTrialDivision(Interval interval)
+        private void SieveTrialDivision(Interval interval)
         {
-            int count = 0;
             for (int k = 0; k < interval.Size; k++)
             {
-                ++valuesChecked;
-                var relation = GetRelation(interval, k);
-                if (relation != null)
-                {
-                    ++count;
-                    if (!relationBuffer.TryAdd(relation))
-                        break;
-                }
+                if (!CheckValue(interval, k))
+                    return;
             }
-            return count;
         }
 
-        private int SieveQuadraticResidue(Interval interval)
+        private void SieveQuadraticResidue(Interval interval)
         {
-            int count = 0;
             int intervalSize = interval.Size;
             var xMin = interval.X > 0 ? interval.X : interval.X + interval.Size;
             CountInt countLimit = CalculateLowerBound(xMin);
             for (int k0 = 0; k0 < intervalSize; k0 += subIntervalSize)
             {
                 int size = Math.Min(subIntervalSize, intervalSize - k0);
-                SieveInterval(interval, size);
-                count += CheckForSmooth(interval, size, countLimit);
+                SieveSmallPrimes(interval, size);
+                SieveMediumPrimes(interval, size);
+                SieveLargePrimes(interval, size);
+                interval.OffsetX = interval.X + size;
+                CheckForSmooth(interval, size, countLimit);
                 if (relationBuffer.Count >= relationBuffer.BoundedCapacity)
                     break;
                 interval.X += subIntervalSize;
             }
-            return count;
-        }
-
-        private void SieveInterval(Interval interval, int size)
-        {
-            SieveSmallPrimes(interval, size);
-            SieveMediumPrimes(interval, size);
-            SieveLargePrimes(interval, size);
-            interval.OffsetX = interval.X + size;
         }
 
         private void SieveSmallPrimes(Interval interval, int size)
@@ -713,44 +698,53 @@ namespace Decompose.Numerics
             }
         }
 
-        private int CheckForSmooth(Interval interval, int size, CountInt countLimit)
+        private void CheckForSmooth(Interval interval, int size, CountInt countLimit)
         {
-            int count = 0;
             var counts = interval.Counts;
-            for (int k = 0; k < size; k++)
+            counts[size] = CountInt.MaxValue;
+            int k = 0;
+            if (digits >= 50)
             {
-                if (counts[k] >= countLimit)
+                while (k < size)
                 {
-                    ++valuesChecked;
-                    var relation = GetRelation(interval, k);
-                    if (relation != null)
-                    {
-                        ++count;
-                        if (!relationBuffer.TryAdd(relation))
-                            break;
-                    }
+                    if (counts[k] >= countLimit)
+                        CheckValue(interval, k);
+                    ++k;
                 }
             }
-            return count;
+            else
+            {
+                while (k < size)
+                {
+                    if (counts[k] >= countLimit)
+                    {
+                        if (!CheckValue(interval, k))
+                            return;
+                    }
+                    ++k;
+                }
+            }
         }
 
-        private Relation GetRelation(Interval interval, int k)
+        private bool CheckValue(Interval interval, int k)
         {
+            ++valuesChecked;
             ClearExponents(interval);
-            long y = FactorOverBase(interval, interval.X + k);
-            if (y == 0)
-                return null;
-            if (y == 1)
+            long cofactor = FactorOverBase(interval, interval.X + k);
+            if (cofactor == 0)
+                return true;
+            if (cofactor == 1)
             {
-                return new Relation
+                var relation = new Relation
                 {
                     X = sqrtN + interval.X + k,
                     Entries = GetEntries(interval.Exponents),
                 };
+                return relationBuffer.TryAdd(relation);
             }
-            if (y < maximumCofactorSize)
-                return ProcessPartialRelation(interval, k, y);
-            return null;
+            if (cofactor < maximumCofactorSize)
+                return ProcessPartialRelation(interval, k, cofactor);
+            return true;
         }
 
         private long FactorOverBase(Interval interval, long x)
@@ -820,7 +814,7 @@ namespace Decompose.Numerics
             return y < long.MaxValue ? (long)y : 0;
         }
 
-        private Relation ProcessPartialRelation(Interval interval, int k, long cofactor)
+        private bool ProcessPartialRelation(Interval interval, int k, long cofactor)
         {
             ++partialRelationsProcessed;
             long other;
@@ -832,7 +826,7 @@ namespace Decompose.Numerics
                     partialRelations.Add(cofactor, interval.X + k);
             }
             if (other == 0)
-                return null;
+                return true;
             ++partialRelationsConverted;
             FactorOverBase(interval, other);
             var relation = new Relation
@@ -841,7 +835,7 @@ namespace Decompose.Numerics
                 Entries = GetEntries(interval.Exponents),
                 Cofactor = cofactor,
             };
-            return relation;
+            return relationBuffer.TryAdd(relation);
         }
 
         private void ProcessRelations()
