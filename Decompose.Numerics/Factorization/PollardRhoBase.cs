@@ -21,28 +21,24 @@ namespace Decompose.Numerics
 
         public IEnumerable<BigInteger> Factor(BigInteger n)
         {
-            var factors = new List<BigInteger>();
-            FactorCore(n, factors);
-            return factors;
-        }
-
-        private void FactorCore(BigInteger n, List<BigInteger> factors)
-        {
-            if (n == 1)
-                return;
-            if (IntegerMath.IsPrime(n))
+            if (n.IsOne)
             {
-                factors.Add(n);
-                return;
+                yield return BigInteger.One;
+                yield break;
             }
-            var divisor = RhoParallel(n);
-            if (divisor.IsZero || divisor.IsOne)
-                return;
-            FactorCore(divisor, factors);
-            FactorCore(n / divisor, factors);
+            while (!IntegerMath.IsPrime(n))
+            {
+                var divisor = GetDivisor(n);
+                if (divisor.IsZero || divisor.IsOne)
+                    yield break;
+                foreach (var factor in Factor(divisor))
+                    yield return factor;
+                n /= divisor;
+            }
+            yield return n;
         }
 
-        private BigInteger RhoParallel(BigInteger n)
+        private BigInteger GetDivisor(BigInteger n)
         {
             if (threads == 1)
             {

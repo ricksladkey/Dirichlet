@@ -27,8 +27,8 @@ namespace Decompose
                 //FactorTest5();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                QuadraticSieveDigitsTest();
-                //CunnihamTest();
+                //QuadraticSieveDigitsTest();
+                CunninghamTest();
                 //GaussianEliminationTest1();
             }
             catch (Exception ex)
@@ -342,13 +342,12 @@ namespace Decompose
             }
         }
 
-        static void CunnihamTest()
+        static void CunninghamTest()
         {
             var n = BigInteger.Pow(3, 225) - 1;
             Console.WriteLine("n = {0}", n);
             var algorithm = new HybridPollardRhoQuadraticSieve(4, 1000000, new QuadraticSieve.Config());
-            var factors = algorithm.Factor(n);
-            foreach (var factor in factors)
+            foreach (var factor in algorithm.Factor(n))
                 Console.WriteLine("{0}", factor);
         }
 

@@ -58,11 +58,21 @@ namespace Decompose.Numerics
 
         public IEnumerable<BigInteger> Factor(BigInteger n)
         {
-            if (n <= smallFactorCutoff)
-                return smallIntegerFactorer.Factor((int)n).Select(factor => (BigInteger)factor);
-            var factors = new List<BigInteger>();
-            FactorCore(n, factors);
-            return factors;
+            if (n.IsOne)
+            {
+                yield return BigInteger.One;
+                yield break;
+            }
+            while (!IntegerMath.IsPrime(n))
+            {
+                var divisor = GetDivisor(n);
+                if (divisor.IsZero || divisor.IsOne)
+                    yield break;
+                foreach (var factor in Factor(divisor))
+                    yield return factor;
+                n /= divisor;
+            }
+            yield return n;
         }
 
         private struct ExponentEntry
