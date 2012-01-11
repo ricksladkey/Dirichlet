@@ -77,6 +77,16 @@ namespace Decompose.Numerics
             return (n % p + p) % p;
         }
 
+        public static int ModularInverse(int n, int p)
+        {
+            int x;
+            int y;
+            ExtendedGreatestCommonDivisor(n, p, out x, out y);
+            if (x < 0)
+                x += p;
+            return x;
+        }
+
         public static BigInteger ModularInverse(BigInteger n, BigInteger p)
         {
             BigInteger x;
@@ -101,6 +111,30 @@ namespace Decompose.Numerics
                 .OrderBy(factor => factor)
                 .GroupBy(factor => factor)
                 .All(grouping => grouping.Count() < 2);
+        }
+
+        public static void ExtendedGreatestCommonDivisor(int a, int b, out int c, out int d)
+        {
+            var x = 0;
+            var lastx = 1;
+            var y = 1;
+            var lasty = 0;
+
+            while (b != 0)
+            {
+                var quotient = a / b;
+                var tmpa = a;
+                a = b;
+                b = tmpa % b;
+                var tmpx = x;
+                x = lastx - quotient * x;
+                lastx = tmpx;
+                var tmpy = y;
+                y = lasty - quotient * y;
+                lasty = tmpy;
+            }
+            c = lastx;
+            d = lasty;
         }
 
         public static void ExtendedGreatestCommonDivisor(BigInteger a, BigInteger b, out BigInteger c, out BigInteger d)
