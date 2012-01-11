@@ -124,7 +124,8 @@ namespace Decompose.Numerics
             public int Size { get; set; }
             public byte[] Exponents { get; set; }
             public CountInt[] Counts { get; set; }
-            public int[] Offsets { get; set; }
+            public int[] Offsets1 { get; set; }
+            public int[] Offsets2 { get; set; }
             public override string ToString()
             {
                 return string.Format("X = {0}, Size = {1}", X, Size);
@@ -483,7 +484,8 @@ namespace Decompose.Numerics
             var interval = new Interval();
             interval.Exponents = new byte[factorBaseSize + 1];
             interval.Counts = new CountInt[subIntervalSize + 1];
-            interval.Offsets = new int[factorBaseSize];
+            interval.Offsets1 = new int[factorBaseSize];
+            interval.Offsets2 = new int[factorBaseSize];
             return interval;
         }
 
@@ -500,12 +502,14 @@ namespace Decompose.Numerics
             var x = (long)intervalNumber * intervalSize;
             interval.X = x;
             interval.Size = intervalSize;
-            var offsets = interval.Offsets;
+            var offsets1 = interval.Offsets1;
+            var offsets2 = interval.Offsets2;
             for (int i = 0; i < factorBaseSize; i++)
             {
                 var entry = factorBase[i];
                 var p = entry.P;
-                offsets[i] = ((int)((entry.Offset - x) % p) + p) % p;
+                offsets1[i] = ((int)((entry.Offset - x) % p) + p) % p;
+                offsets2[i] = (offsets1[i] + entry.RootDiff) % p;
             }
             interval.OffsetX = x;
             return interval;
@@ -588,15 +592,15 @@ namespace Decompose.Numerics
 
         private void SieveSmallPrimes(Interval interval, int size)
         {
-            var offsets = interval.Offsets;
+            var offsets1 = interval.Offsets1;
             var counts = interval.Counts;
             int k = 0;
             for (int i = 0; i < mediumPrimeIndex; i++)
-                k += (offsets[i] - k) * cInv[i] % factorBase[i].P * cProduct[i];
+                k += (offsets1[i] - k) * cInv[i] % factorBase[i].P * cProduct[i];
             if (k < 0)
                 k += cycleLength;
             Debug.Assert(k >= 0 && k < cycleLength);
-            Debug.Assert(Enumerable.Range(0, mediumPrimeIndex).All(i => (k - offsets[i]) % factorBase[i].P == 0));
+            Debug.Assert(Enumerable.Range(0, mediumPrimeIndex).All(i => (k - offsets1[i]) % factorBase[i].P == 0));
 
             Array.Copy(cycle, cycleLength - k, counts, 0, k);
             int kMax = size - cycleLength;
@@ -614,24 +618,24 @@ namespace Decompose.Numerics
             Debug.Assert(k >= size);
             k -= size;
             for (int i = 0; i < mediumPrimeIndex; i++)
-                offsets[i] = k % factorBase[i].P;
+                offsets1[i] = k % factorBase[i].P;
         }
 
         private void SieveMediumPrimes(Interval interval, int size)
         {
-            var offsets = interval.Offsets;
+            var offsets1 = interval.Offsets1;
             var counts = interval.Counts;
             int i = mediumPrimeIndex;
             if (factorBase[i].P == 2)
             {
                 var logP = factorBase[i].LogP;
                 int k;
-                for (k = offsets[i]; k < size; k += 2)
+                for (k = offsets1[i]; k < size; k += 2)
                 {
                     Debug.Assert(EvaluatePolynomial(interval.X + k) % 2 == 0);
                     counts[k] += logP;
                 }
-                offsets[i] = k - size;
+                offsets1[i] = k - size;
                 ++i;
             }
             while (i < largePrimeIndex)
@@ -641,7 +645,7 @@ namespace Decompose.Numerics
                 var logP = entry.LogP;
                 int p1 = entry.RootDiff;
                 int p2 = p - p1;
-                int k = offsets[i];
+                int k = offsets1[i];
                 if (k >= p2 && k - p2 < size)
                 {
                     Debug.Assert(EvaluatePolynomial(interval.X + k - p2) % p == 0);
@@ -662,39 +666,37 @@ namespace Decompose.Numerics
                     counts[k] += logP;
                     k += p;
                 }
-                offsets[i++] = k - size;
+                offsets1[i++] = k - size;
             }
         }
 
         private void SieveLargePrimes(Interval interval, int size)
         {
-            var offsets = interval.Offsets;
+            var offsets1 = interval.Offsets1;
+            var offsets2 = interval.Offsets2;
             var counts = interval.Counts;
             int i = largePrimeIndex;
             while (i < factorBaseSize)
             {
                 var entry = factorBase[i];
                 int p = entry.P;
-                int p1 = entry.RootDiff;
-                int p2 = p - p1;
-                int k = offsets[i];
-                if (k >= p2 && k - p2 < size)
+                int k1 = offsets1[i];
+                if (k1 < size)
                 {
-                    Debug.Assert(EvaluatePolynomial(interval.X + k - p2) % p == 0);
-                    counts[k - p2] += entry.LogP;
+                    Debug.Assert(EvaluatePolynomial(interval.X + k1) % p == 0);
+                    counts[k1] += entry.LogP;
+                    k1 += p;
                 }
-                else if (k + p1 < size)
+                offsets1[i] = k1 - size;
+                int k2 = offsets2[i];
+                if (k2 < size)
                 {
-                    Debug.Assert(EvaluatePolynomial(interval.X + k + p1) % p == 0);
-                    counts[k + p1] += entry.LogP;
+                    Debug.Assert(EvaluatePolynomial(interval.X + k2) % p == 0);
+                    counts[k2] += entry.LogP;
+                    k2 += p;
                 }
-                if (k < size)
-                {
-                    Debug.Assert(EvaluatePolynomial(interval.X + k) % p == 0);
-                    counts[k] += entry.LogP;
-                    k += p;
-                }
-                offsets[i++] = k - size;
+                offsets2[i] = k2 - size;
+                ++i;
             }
         }
 
@@ -764,13 +766,13 @@ namespace Decompose.Numerics
 
         private long FactorOverBase(Interval interval, BigInteger y, int delta)
         {
-            var offsets = interval.Offsets;
+            var offsets1 = interval.Offsets1;
             var exponents = interval.Exponents;
             for (int i = 0; i < factorBaseSize; i++)
             {
                 var entry = factorBase[i];
                 var p = entry.P;
-                var offset = (delta - offsets[i]) % p;
+                var offset = (delta - offsets1[i]) % p;
                 if (offset < 0)
                     offset += p;
                 if (offset != 0 && offset != entry.RootDiff)
@@ -790,13 +792,13 @@ namespace Decompose.Numerics
 
         private long FactorOverBase(Interval interval, BigInteger y, long delta)
         {
-            var offsets = interval.Offsets;
+            var offsets1 = interval.Offsets1;
             var exponents = interval.Exponents;
             for (int i = 0; i < factorBaseSize; i++)
             {
                 var entry = factorBase[i];
                 var p = entry.P;
-                var offset = (int)((delta - offsets[i]) % p);
+                var offset = (int)((delta - offsets1[i]) % p);
                 if (offset < 0)
                     offset += p;
                 if (offset != 0 && offset != entry.RootDiff)

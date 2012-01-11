@@ -255,7 +255,7 @@ namespace Decompose
             var config = new QuadraticSieve.Config
             {
                 Threads = threads,
-                //FactorBaseSize = 24000,
+                FactorBaseSize = 5400,
                 //LowerBoundPercent = 65,
                 Multiplier = 3,
                 Diagnostics = QuadraticSieve.Diag.Verbose,
@@ -326,7 +326,7 @@ namespace Decompose
 
         static void QuadraticSieveDigitsTest()
         {
-            for (int i = 10; i <= 30; i++)
+            for (int i = 40; i <= 40; i++)
             {
                 var sample = samples[i - 10];
                 var p = sample.P;
@@ -336,7 +336,7 @@ namespace Decompose
                 var config = new QuadraticSieve.Config
                 {
                     Threads = 8,
-                    //Diagnostics = QuadraticSieve.Diag.Verbose,
+                    Diagnostics = QuadraticSieve.Diag.Verbose,
                     ReportingInterval = 10,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
