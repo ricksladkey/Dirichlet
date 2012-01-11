@@ -181,6 +181,7 @@ namespace Decompose.Numerics
         private long maximumDivisorSquared;
         private long maximumCofactorSize;
         private CountInt logMaximumDivisorSquared;
+        private int mediumPrimeIndex;
         private int largePrimeIndex;
         private int lowerBoundPercent;
         private int reportingInterval;
@@ -194,9 +195,8 @@ namespace Decompose.Numerics
 
         private int cycleLength;
         private byte[] cycle;
-        private int smallPrimeIndex;
-        private int[] cycleFactor;
-
+        private int[] cInv;
+        private int[] cProduct;
 
         private int intervalsProcessed;
         private int valuesChecked;
@@ -420,7 +420,7 @@ namespace Decompose.Numerics
         {
             CalculateNumberOfThreads();
             SetupIntervals();
-            SetupSmallestPrimeCycle();
+            SetupSmallPrimeCycle();
             relationBuffer = new BlockingCollection<Relation>(desired);
             partialRelations = new Dictionary<long, long>();
 
@@ -511,7 +511,7 @@ namespace Decompose.Numerics
             return interval;
         }
 
-        private void SetupSmallestPrimeCycle()
+        private void SetupSmallPrimeCycle()
         {
             int c = 1;
             int j = 0;
@@ -521,18 +521,20 @@ namespace Decompose.Numerics
                 c *= p;
                 ++j;
             }
-            smallPrimeIndex = j;
-            cycleFactor = new int[smallPrimeIndex];
-            c = factorBase[0].P;
-            for (int i = 1; i < smallPrimeIndex; i++)
+            mediumPrimeIndex = j;
+            cInv = new int[mediumPrimeIndex];
+            cProduct = new int[mediumPrimeIndex];
+            c = 1;
+            for (int i = 0; i < mediumPrimeIndex; i++)
             {
                 int p = factorBase[i].P;
-                cycleFactor[i] = IntegerMath.ModularInverse(c, p) * c;
+                cInv[i] = IntegerMath.ModularInverse(c, p);
+                cProduct[i] = c;
                 c *= p;
             }
             cycleLength = c;
             cycle = new CountInt[cycleLength];
-            for (int i = 0; i < smallPrimeIndex; i++)
+            for (int i = 0; i < mediumPrimeIndex; i++)
             {
                 var entry = factorBase[i];
                 int p = entry.P;
@@ -593,23 +595,23 @@ namespace Decompose.Numerics
 
         private void SieveInterval(Interval interval, int size)
         {
-            SieveSmallestPrimes(interval, size);
             SieveSmallPrimes(interval, size);
+            SieveMediumPrimes(interval, size);
             SieveLargePrimes(interval, size);
             interval.OffsetX = interval.X + size;
         }
 
-        private void SieveSmallestPrimes(Interval interval, int size)
+        private void SieveSmallPrimes(Interval interval, int size)
         {
             var offsets = interval.Offsets;
             var counts = interval.Counts;
-            int k = offsets[0];
-            for (int i = 1; i < smallPrimeIndex; i++)
-                k += (offsets[i] - k) * cycleFactor[i];
-            k = (k % cycleLength + cycleLength) % cycleLength;
+            int k = 0;
+            for (int i = 0; i < mediumPrimeIndex; i++)
+                k += (offsets[i] - k) * cInv[i] % factorBase[i].P * cProduct[i];
+            if (k < 0)
+                k += cycleLength;
             Debug.Assert(k >= 0 && k < cycleLength);
-            Debug.Assert(Enumerable.Range(0, smallPrimeIndex)
-                .All(i => (k - offsets[i]) % factorBase[i].P == 0));
+            Debug.Assert(Enumerable.Range(0, mediumPrimeIndex).All(i => (k - offsets[i]) % factorBase[i].P == 0));
 
             Array.Copy(cycle, cycleLength - k, counts, 0, k);
             int kMax = size - cycleLength;
@@ -626,15 +628,15 @@ namespace Decompose.Numerics
 
             Debug.Assert(k >= size);
             k -= size;
-            for (int i = 0; i < smallPrimeIndex; i++)
+            for (int i = 0; i < mediumPrimeIndex; i++)
                 offsets[i] = k % factorBase[i].P;
         }
 
-        private void SieveSmallPrimes(Interval interval, int size)
+        private void SieveMediumPrimes(Interval interval, int size)
         {
             var offsets = interval.Offsets;
             var counts = interval.Counts;
-            int i = smallPrimeIndex;
+            int i = mediumPrimeIndex;
             if (factorBase[i].P == 2)
             {
                 var logP = factorBase[i].LogP;
