@@ -259,6 +259,7 @@ namespace Decompose
                 //LowerBoundPercent = 65,
                 Multiplier = 3,
                 Diagnostics = QuadraticSieve.Diag.Verbose,
+                ReportingInterval = 10,
             };
             var factors = FactorTest(debug, 1, n, new QuadraticSieve(config));
             foreach (var factor in factors)

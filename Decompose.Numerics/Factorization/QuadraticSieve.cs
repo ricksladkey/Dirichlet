@@ -132,6 +132,7 @@ namespace Decompose.Numerics
         }
 
         private const int subIntervalSize = 256 * 1024;
+        private const int maximumCycleLenth = 32 * 1024;
         private const int maximumIntervalSize = 256 * 1024 * 8;
         private const int lowerBoundPercentDefault = 75;
         private const int cofactorScaleFactor = 4096;
@@ -191,6 +192,12 @@ namespace Decompose.Numerics
         private IBitMatrix matrix;
         private Stopwatch timer;
 
+        private int cycleLength;
+        private byte[] cycle;
+        private int smallPrimeIndex;
+        private int[] cycleFactor;
+
+
         private int intervalsProcessed;
         private int valuesChecked;
         private int partialRelationsProcessed;
@@ -235,6 +242,13 @@ namespace Decompose.Numerics
 
             Sieve();
 
+            if ((diag & Diag.Timing) != 0)
+            {
+                var elapsed = timer.ElapsedTicks;
+                timer.Restart();
+                Console.WriteLine("Sieving: {0:F3} msec", 1000.0 * elapsed / Stopwatch.Frequency);
+            }
+
             if ((diag & Diag.Summary) != 0)
             {
                 Console.WriteLine("digits = {0}, factorBaseSize = {1}, desired = {2}", digits, factorBaseSize, desired);
@@ -242,12 +256,6 @@ namespace Decompose.Numerics
                 Console.WriteLine("intervals processsed = {0}, values checked = {1}", intervalsProcessed, valuesChecked);
                 Console.WriteLine("partial relations processed = {0}, converted = {1}", partialRelationsProcessed, partialRelationsConverted);
                 Console.WriteLine("first few factors: {0}", string.Join(", ", factorBase.Select(entry => entry.P).Take(10).ToArray()));
-            }
-            if ((diag & Diag.Timing) != 0)
-            {
-                var elapsed = timer.ElapsedTicks;
-                timer.Restart();
-                Console.WriteLine("Sieving: {0:F3} msec", 1000.0 * elapsed / Stopwatch.Frequency);
             }
 
             ProcessRelations();
@@ -433,13 +441,10 @@ namespace Decompose.Numerics
 
         private void SieveTask()
         {
-            int count = 0;
-            int intervals = 0;
             var interval = CreateInterval();
             while (relationBuffer.Count < relationBuffer.BoundedCapacity)
             {
-                count += Sieve(GetNextInterval(interval));
-                ++intervals;
+                Sieve(GetNextInterval(interval));
                 Interlocked.Increment(ref intervalsProcessed);
             }
         }
@@ -464,13 +469,13 @@ namespace Decompose.Numerics
                 double percentRate = (double)percentLatest / reportingInterval;
                 double timeRemainingSeconds = percentRate == 0 ? 0 : percentRemaining / percentRate;
                 var timeRemaining = TimeSpan.FromSeconds(Math.Ceiling(timeRemainingSeconds));
-                Console.WriteLine("{0:F2}% complete, rate = {1:F4} %/sec, time remaining = {2}",
+                Console.WriteLine("{0:F2}% complete, rate = {1:F5} %/sec, sieve time remaining = {2}",
                     percentComplete, percentRate, timeRemaining);
                 percentCompleteSofar = percentComplete;
             }
             double elapsed = (double)timer.ElapsedTicks / Stopwatch.Frequency;
             double overallPercentRate = 100 / elapsed;
-            Console.WriteLine("overall rate = {0:F4} %/sec", overallPercentRate);
+            Console.WriteLine("overall rate = {0:F6} %/sec", overallPercentRate);
         }
 
         private Interval CreateInterval()
@@ -504,6 +509,42 @@ namespace Decompose.Numerics
             }
             interval.OffsetX = x;
             return interval;
+        }
+
+        private void SetupSmallestPrimeCycle()
+        {
+            int c = 1;
+            int j = 0;
+            while (j < factorBaseSize && c * factorBase[j].P < maximumCycleLenth)
+            {
+                int p = factorBase[j].P;
+                c *= p;
+                ++j;
+            }
+            smallPrimeIndex = j;
+            cycleFactor = new int[smallPrimeIndex];
+            c = factorBase[0].P;
+            for (int i = 1; i < smallPrimeIndex; i++)
+            {
+                int p = factorBase[i].P;
+                cycleFactor[i] = IntegerMath.ModularInverse(c, p) * c;
+                c *= p;
+            }
+            cycleLength = c;
+            cycle = new CountInt[cycleLength];
+            for (int i = 0; i < smallPrimeIndex; i++)
+            {
+                var entry = factorBase[i];
+                int p = entry.P;
+                int p2 = entry.RootDiff;
+                var logP = entry.LogP;
+                for (int k = 0; k < cycleLength; k += p)
+                {
+                    cycle[k] += logP;
+                    if (p2 != 0)
+                        cycle[k + p2] += logP;
+                }
+            }
         }
 
         private int Sieve(Interval interval)
@@ -558,48 +599,6 @@ namespace Decompose.Numerics
             interval.OffsetX = interval.X + size;
         }
 
-        private const int maximumCycleLenth = 32 * 1024;
-
-        private int cycleLength;
-        private byte[] cycle;
-        private int smallPrimeIndex;
-        private int[] cycleFactor;
-
-        private void SetupSmallestPrimeCycle()
-        {
-            int c = 1;
-            int j = 0;
-            while (j < factorBaseSize && c * factorBase[j].P < maximumCycleLenth)
-            {
-                int p = factorBase[j].P;
-                c *= p;
-                ++j;
-            }
-            smallPrimeIndex = j;
-            cycleFactor = new int[smallPrimeIndex];
-            c = factorBase[0].P;
-            for (int i = 1; i < smallPrimeIndex; i++)
-            {
-                int p = factorBase[i].P;
-                cycleFactor[i] = IntegerMath.ModularInverse(c, p) * c;
-                c *= p;
-            }
-            cycleLength = c;
-            cycle = new CountInt[cycleLength];
-            for (int i = 0; i < smallPrimeIndex; i++)
-            {
-                var entry = factorBase[i];
-                int p = entry.P;
-                int p2 = entry.RootDiff;
-                var logP = entry.LogP;
-                for (int k = 0; k < cycleLength; k += p)
-                {
-                    cycle[k] += logP;
-                    cycle[k + p2] += logP;
-                }
-            }
-        }
-
         private void SieveSmallestPrimes(Interval interval, int size)
         {
             var offsets = interval.Offsets;
@@ -619,8 +618,13 @@ namespace Decompose.Numerics
                 cycle.CopyTo(counts, k);
                 k += cycleLength;
             }
-            Array.Copy(cycle, 0, counts, k, size - k);
+            if (k < size)
+            {
+                Array.Copy(cycle, 0, counts, k, size - k);
+                k += cycleLength;
+            }
 
+            Debug.Assert(k >= size);
             k -= size;
             for (int i = 0; i < smallPrimeIndex; i++)
                 offsets[i] = k % factorBase[i].P;
@@ -633,7 +637,6 @@ namespace Decompose.Numerics
             int i = smallPrimeIndex;
             if (factorBase[i].P == 2)
             {
-#if true
                 var logP = factorBase[i].LogP;
                 int k;
                 for (k = offsets[i]; k < size; k += 2)
@@ -642,10 +645,6 @@ namespace Decompose.Numerics
                     counts[k] += logP;
                 }
                 offsets[i] = k - size;
-#else
-                if ((size & 1) == 1)
-                    offsets[i] = 1 - offsets[i];
-#endif
                 ++i;
             }
             while (i < largePrimeIndex)
