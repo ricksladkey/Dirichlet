@@ -38,6 +38,7 @@ namespace Decompose.Numerics
             Sieve = 0x4,
             Timing = 0x8,
             Solving = 0x10,
+            SaveMatrix = 0x20,
             Verbose = Summary | Sieve | Timing | Solving,
         }
 
@@ -332,6 +333,16 @@ namespace Decompose.Numerics
 
         private BigInteger Solve()
         {
+            if ((diag & Diag.SaveMatrix) != 0)
+            {
+                using (var stream = new StreamWriter(File.OpenWrite("matrix.txt")))
+                {
+                    stream.WriteLine("{0} {1}", matrix.Rows, matrix.Cols);
+                    for (int i = 0; i < matrix.Rows; i++)
+                        stream.WriteLine(string.Join(" ", matrix.GetNonZeroIndices(i)));
+                }
+            }
+
             if ((diag & Diag.Solving) == 0)
             {
                 return solver.Solve(matrix)
@@ -343,19 +354,28 @@ namespace Decompose.Numerics
             var timer = new Stopwatch();
             timer.Start();
             var solutions = solver.Solve(matrix).GetEnumerator();
-            solutions.MoveNext();
+            var next = solutions.MoveNext();
             var elapsed = (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000;
             Console.WriteLine("first solution: {0:F3} msec", elapsed);
+            if (!next)
+            {
+                Console.WriteLine("no solutions!");
+                return BigInteger.Zero;
+            }
             do
             {
+                var v = solutions.Current;
+                if ((diag & Diag.Solutions) != 0)
+                    Console.WriteLine("v = {0}", string.Join(", ", v.GetNonZeroIndices().ToArray()));
+                int numberOfIndices = v.GetNonZeroIndices().Count();
                 timer.Restart();
-                var factor = ComputeFactor(solutions.Current);
+                var factor = ComputeFactor(v);
                 elapsed = (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000;
-                Console.WriteLine("compute factor: {0:F3} msec", elapsed);
+                Console.WriteLine("compute factor: {0:F3} msec ({1} indices)", elapsed, numberOfIndices);
                 if (!factor.IsZero)
                     return factor;
             } while (solutions.MoveNext());
-            Console.WriteLine("failed");
+            Console.WriteLine("failed!");
             return BigInteger.Zero;
         }
 
@@ -395,9 +415,6 @@ namespace Decompose.Numerics
 
         private BigInteger ComputeFactor(IBitArray v)
         {
-            if ((diag & Diag.Solutions) != 0)
-                Console.WriteLine("v = {0}", string.Join(", ", v.GetNonZeroIndices().ToArray()));
-
             var indices = v.GetNonZeroIndices().ToArray();
             var xPrime = indices
                 .Select(index => relations[index].X)
@@ -418,9 +435,7 @@ namespace Decompose.Numerics
                 if (factor % multiplierFactor == 0)
                     factor /= multiplierFactor;
             }
-            if (!factor.IsOne && factor != nOrig)
-                return factor;
-            return BigInteger.Zero;
+            return !factor.IsOne && factor != nOrig ? factor : BigInteger.Zero;
         }
 
         private int[] SumExponents(IEnumerable<int> indices)

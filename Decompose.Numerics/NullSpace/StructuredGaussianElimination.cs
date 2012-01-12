@@ -102,6 +102,14 @@ namespace Decompose.Numerics
                     if (weight == 0)
                     {
                         deletedRows[n] = true;
+
+                        // Pick a column to delete.
+                        int col = matrix.Cols - 1;
+                        while (deletedCols[col])
+                            --col;
+
+                        ClearColumn(matrix, weights, col);
+                        deletedCols[col] = true;
                         ++deleted;
 #if false
                         Console.WriteLine("deleted empty row {0}", n);

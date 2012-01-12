@@ -326,7 +326,7 @@ namespace Decompose
 
         static void QuadraticSieveDigitsTest()
         {
-            for (int i = 30; i <= 30; i++)
+            for (int i = 10; i <= 30; i++)
             {
                 var sample = samples[i - 10];
                 var p = sample.P;
@@ -336,8 +336,8 @@ namespace Decompose
                 var config = new QuadraticSieve.Config
                 {
                     Threads = 8,
-                    FactorBaseSize = 150000,
-                    Diagnostics = QuadraticSieve.Diag.Verbose,
+                    //FactorBaseSize = 150000,
+                    //Diagnostics = QuadraticSieve.Diag.Verbose,
                     ReportingInterval = 10,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
@@ -356,7 +356,8 @@ namespace Decompose
         static void GaussianEliminationTest1()
         {
             var threads = 8;
-            var file = @"..\..\..\..\matrix-18401.txt.gz";
+            //var file = @"..\..\..\..\matrix-18401.txt.gz";
+            var file = @"..\..\..\..\matrix-12001.txt.gz";
             var lines = GetLinesGzip(file);
             var timer = new Stopwatch();
 
@@ -403,19 +404,38 @@ namespace Decompose
 
         private static IBitMatrix GetBitMatrix<TMatrix>(string[] lines) where TMatrix : IBitMatrix
         {
-            int rows = lines.Length;
-            int cols = lines[0].Length;
-            var matrix = (IBitMatrix)Activator.CreateInstance(typeof(TMatrix), rows, cols);
-            for (int i = 0; i < lines.Length; i++)
+            if (!lines[0].Contains(' '))
             {
-                var line = lines[i];
-                for (int j = 0; j < line.Length; j++)
+                int rows = lines.Length;
+                int cols = lines[0].Length;
+                var matrix = (IBitMatrix)Activator.CreateInstance(typeof(TMatrix), rows, cols);
+                for (int i = 0; i < rows; i++)
                 {
-                    if (line[j] == '1')
+                    var line = lines[i];
+                    for (int j = 0; j < cols; j++)
+                    {
+                        if (line[j] == '1')
+                            matrix[i, j] = true;
+                    }
+                }
+                return matrix;
+            }
+            else
+            {
+                var fields = lines[0].Split(' ').Select(field => int.Parse(field)).ToArray();
+                int rows = fields[0];
+                int cols = fields[1];
+                var matrix = (IBitMatrix)Activator.CreateInstance(typeof(TMatrix), rows, cols);
+                for (int i = 0; i < rows; i++)
+                {
+                    var indices = lines[i + 1].Split(' ')
+                        .Where(field => field != "")
+                        .Select(field => int.Parse(field));
+                    foreach (var j in indices)
                         matrix[i, j] = true;
                 }
+                return matrix;
             }
-            return matrix;
         }
 
         private static BigInteger NextPrime(IRandomNumberAlgorithm<BigInteger> random, BigInteger limit)

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 
@@ -29,9 +30,13 @@ namespace Decompose.Numerics
                 var f = factor;
                 if (f >= n)
                     f %= n;
+                else if (f.Sign == -1)
+                    f = f % n + n;
                 product *= f;
                 if (product >= n)
                     product %= n;
+                else if (product.Sign == -1)
+                    product = product % n + n;
             }
             return product;
         }
