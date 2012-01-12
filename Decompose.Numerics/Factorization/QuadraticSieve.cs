@@ -160,7 +160,9 @@ namespace Decompose.Numerics
             Tuple.Create(50, 4500),
             Tuple.Create(60, 12000),
             Tuple.Create(70, 35000),
-            Tuple.Create(80, 100000),
+            Tuple.Create(80, 150000),
+
+            // Untested.
             Tuple.Create(90, 300000),
             Tuple.Create(100, 1000000),
             Tuple.Create(110, 3000000),
@@ -188,7 +190,7 @@ namespace Decompose.Numerics
         private int desired;
         private int digits;
         private FactorBaseEntry[] factorBase;
-        private long maximumDivisorSquared;
+        private int maximumDivisor;
         private long maximumCofactorSize;
         private CountInt logMaximumDivisorSquared;
         private int mediumPrimeIndex;
@@ -277,14 +279,6 @@ namespace Decompose.Numerics
                 Console.WriteLine("Processing relations: {0:F3} msec", 1000.0 * elapsed / Stopwatch.Frequency);
             }
 
-#if false
-            using (var stream = new StreamWriter("matrix.txt"))
-            {
-                for (int i = 0; i < matrix.Rows; i++)
-                    stream.WriteLine(string.Concat(matrix.GetRow(i).Select(bit => bit ? 1 : 0).ToArray()));
-            }
-#endif
-
             var result = Solve();
 
             if ((diag & Diag.Timing) != 0)
@@ -315,13 +309,13 @@ namespace Decompose.Numerics
                 .Select(p => new FactorBaseEntry(p, n, sqrtN))
                 .ToArray();
             desired = factorBaseSize + 1 + surplusRelations;
-            long maximumDivisor = factorBase[factorBaseSize - 1].P;
-            maximumDivisorSquared = maximumDivisor * maximumDivisor;
+            maximumDivisor = factorBase[factorBaseSize - 1].P;
+            long maximumDivisorSquared = (long)maximumDivisor * maximumDivisor;
             logMaximumDivisorSquared = LogScale(maximumDivisorSquared);
             largePrimeIndex = Enumerable.Range(0, factorBaseSize + 1)
                 .Where(index => index == factorBaseSize || factorBase[index].P >= subIntervalSize)
                 .First();
-            maximumCofactorSize = Math.Min(maximumDivisor * cofactorScaleFactor, maximumDivisorSquared);
+            maximumCofactorSize = Math.Min((long)maximumDivisor * cofactorScaleFactor, maximumDivisorSquared);
             lowerBoundPercent = lowerBoundPercentOverride != 0 ? lowerBoundPercentOverride : lowerBoundPercentDefault;
             reportingInterval = reportingIntervalOverride != 0 ? reportingIntervalOverride : reportingIntervalDefault;
 
@@ -799,7 +793,7 @@ namespace Decompose.Numerics
                 y = -y;
             }
             var delta = x - interval.OffsetX;
-            if (delta >= int.MinValue && delta <= int.MaxValue)
+            if (delta >= int.MinValue + maximumDivisor && delta <= int.MaxValue - maximumDivisor)
                 return FactorOverBase(interval, y, (int)delta);
             else
                 return FactorOverBase(interval, y, delta);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Decompose.Numerics
@@ -26,7 +27,7 @@ namespace Decompose.Numerics
         private int colsOrig;
         private Ancestor[] ancestors;
 
-#if false
+#if DEBUG
         private IBitMatrix matrixOrig;
 #endif
 
@@ -76,7 +77,7 @@ namespace Decompose.Numerics
             Console.WriteLine("v = {0}", string.Join(" ", v.GetNonZeroIndices()));
 #endif
 #if DEBUG
-            Debug.Assert(GaussianElimination<TArray>.IsSolutionValid(matrixOrig, v))
+            Debug.Assert(GaussianElimination<TArray>.IsSolutionValid(matrixOrig, v));
 #endif
             return v;
         }
@@ -85,12 +86,16 @@ namespace Decompose.Numerics
         {
             var deletedRows = new bool[matrix.Rows];
             var deletedCols = new bool[matrix.Cols];
-            var weights = new int[matrix.Rows];
             ancestors = new Ancestor[matrix.Cols];
             for (int i = 0; i < matrix.Cols; i++)
                 ancestors[i] = new Ancestor { Column = i };
-            for (int i = 0; i < matrix.Rows; i++)
-                weights[i] = matrix.GetRowWeight(i);
+            var rowWeights = matrix.GetRowWeights().ToArray();
+            var colWeights = matrix.GetColWeights().ToArray();
+            Debug.Assert(rowWeights.Sum() == colWeights.Sum());
+            int surplusCols = 0;
+            int pass = 1;
+            if (diagnostics)
+                Console.WriteLine("initial density = {1:F3}/col", pass, (double)colWeights.Sum() / matrix.Rows);
             while (true)
             {
                 int deleted = 0;
@@ -98,40 +103,45 @@ namespace Decompose.Numerics
                 {
                     if (deletedRows[n])
                         continue;
-                    var weight = weights[n];
+                    var weight = rowWeights[n];
                     if (weight == 0)
                     {
                         deletedRows[n] = true;
-
-                        // Pick a column to delete.
-                        int col = matrix.Cols - 1;
-                        while (deletedCols[col])
-                            --col;
-
-                        ClearColumn(matrix, weights, col);
-                        deletedCols[col] = true;
+                        ++surplusCols;
                         ++deleted;
-#if false
-                        Console.WriteLine("deleted empty row {0}", n);
-#endif
+                        continue;
                     }
-                    else if (weight == 1)
+                    if (weight == 1)
                     {
                         var col = matrix.GetNonZeroIndices(n).First();
                         deletedRows[n] = true;
-                        ClearColumn(matrix, weights, col);
+                        ClearColumn(matrix, rowWeights, colWeights, col);
                         deletedCols[col] = true;
                         ++deleted;
-#if false
-                        Console.WriteLine("deleted row {0} and column {1}", n, col);
-#endif
+                        continue;
                     }
-                    else if (weight == 2)
+                    if (weight > 2 && surplusCols > 0 && weight - surplusCols <= 2)
                     {
-                        var cols = matrix.GetNonZeroIndices(n).ToArray();
+                        while (weight > 2)
+                        {
+                            var col = matrix.GetNonZeroIndices(n)
+                                .OrderByDescending(index => colWeights[index])
+                                .First();
+                            ClearColumn(matrix, rowWeights, colWeights, col);
+                            deletedCols[col] = true;
+                            ++deleted;
+                            --surplusCols;
+                            --weight;
+                        }
+                    }
+                    if (weight == 2)
+                    {
+                        var cols = matrix.GetNonZeroIndices(n)
+                            .OrderBy(index => colWeights[index])
+                            .ToArray();
                         var col1 = cols[0];
                         var col2 = cols[1];
-                        MergeColumns(matrix, weights, col1, col2);
+                        MergeColumns(matrix, rowWeights, colWeights, col1, col2);
                         var ancestor = ancestors[col1];
                         while (ancestor.Next != null)
                             ancestor = ancestor.Next;
@@ -140,17 +150,27 @@ namespace Decompose.Numerics
                         deletedRows[n] = true;
                         deletedCols[col2] = true;
                         ++deleted;
-#if false
-                        Console.WriteLine("merged column {0} into {1}", col2, col1);
-#endif
+                    }
+                }
+                if (deleted == 0 && surplusCols > 0)
+                {
+                    for (int col = matrix.Cols - 1; surplusCols > 0; col--)
+                    {
+                        if (deletedCols[col])
+                            continue;
+                        ClearColumn(matrix, rowWeights, colWeights, col);
+                        deletedCols[col] = true;
+                        ++deleted;
+                        --surplusCols;
                     }
                 }
                 if (deleted == 0)
                     break;
-#if false
-                Console.WriteLine("removed {0} rows", deleted);
-#endif
+                if (diagnostics)
+                    Console.WriteLine("pass {0}: deleted {1} rows", pass, deleted);
+                ++pass;
             }
+            Debug.Assert(rowWeights.Sum() == colWeights.Sum());
             ancestors = deletedCols
                 .Select((deleted, index) => deleted ? null : ancestors[index])
                 .Where(ancestor => ancestor != null)
@@ -173,6 +193,11 @@ namespace Decompose.Numerics
                 foreach (var col in matrix.GetNonZeroIndices(row))
                     compact[i, revColMap[col]] = true;
             }
+            if (diagnostics)
+            {
+                Console.WriteLine("completed compaction in {0} passes", pass);
+                Console.WriteLine("final density = {0:F3}/col", (double)colWeights.Sum() / compact.Rows);
+            }
 #if false
             for (int i = 0; i < ancestors.Length; i++)
             {
@@ -185,7 +210,7 @@ namespace Decompose.Numerics
             return compact;
         }
 
-        private void ClearColumn(IBitMatrix matrix, int[] weights, int col)
+        private void ClearColumn(IBitMatrix matrix, int[] rowWeights, int[] colWeights, int col)
         {
             int rows = matrix.Rows;
             if (threads == 1 || rows < multiThreadedCutoff)
@@ -194,10 +219,10 @@ namespace Decompose.Numerics
                 {
                     if (matrix[i, col])
                     {
-                        --weights[i];
+                        --rowWeights[i];
                         matrix[i, col] = false;
                     }
-                    Debug.Assert(weights[i] == matrix.GetRowWeight(i));
+                    Debug.Assert(rowWeights[i] == matrix.GetRowWeight(i));
                 }
             }
             else
@@ -208,18 +233,21 @@ namespace Decompose.Numerics
                     {
                         if (matrix[i, col])
                         {
-                            --weights[i];
+                            --rowWeights[i];
                             matrix[i, col] = false;
                         }
-                        Debug.Assert(weights[i] == matrix.GetRowWeight(i));
+                        Debug.Assert(rowWeights[i] == matrix.GetRowWeight(i));
                     }
                 });
             }
+            colWeights[col] = 0;
+            Debug.Assert(colWeights[col] == matrix.GetColWeight(col));
         }
 
-        private void MergeColumns(IBitMatrix matrix, int[] weights, int col1, int col2)
+        private void MergeColumns(IBitMatrix matrix, int[] rowWeights, int[] colWeights, int col1, int col2)
         {
             int rows = matrix.Rows;
+            int delta = 0;
             if (threads == 1 || rows < multiThreadedCutoff)
             {
                 for (int i = 0; i < rows; i++)
@@ -228,10 +256,11 @@ namespace Decompose.Numerics
                     {
                         var old = matrix[i, col1];
                         if (old)
-                            weights[i] -= 2;
+                            rowWeights[i] -= 2;
                         matrix[i, col1] = !old;
                         matrix[i, col2] = false;
-                        Debug.Assert(weights[i] == matrix.GetRowWeight(i));
+                        delta += old ? -1 : 1;
+                        Debug.Assert(rowWeights[i] == matrix.GetRowWeight(i));
                     }
                 }
             }
@@ -245,14 +274,22 @@ namespace Decompose.Numerics
                         {
                             var old = matrix[i, col1];
                             if (old)
-                                weights[i] -= 2;
+                                rowWeights[i] -= 2;
                             matrix[i, col1] = !old;
                             matrix[i, col2] = false;
-                            Debug.Assert(weights[i] == matrix.GetRowWeight(i));
+                            if (old)
+                                Interlocked.Decrement(ref delta);
+                            else
+                                Interlocked.Increment(ref delta);
+                            Debug.Assert(rowWeights[i] == matrix.GetRowWeight(i));
                         }
                     }
                 });
             }
+            colWeights[col1] += delta;
+            colWeights[col2] = 0;
+            Debug.Assert(colWeights[col1] == matrix.GetColWeight(col1));
+            Debug.Assert(colWeights[col2] == matrix.GetColWeight(col2));
         }
     }
 }

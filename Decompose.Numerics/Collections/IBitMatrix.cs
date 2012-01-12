@@ -11,5 +11,8 @@ namespace Decompose.Numerics
         IEnumerable<bool> GetRow(int row);
         IEnumerable<int> GetNonZeroIndices(int row);
         int GetRowWeight(int row);
+        int GetColWeight(int col);
+        IEnumerable<int> GetRowWeights();
+        IEnumerable<int> GetColWeights();
     }
 }

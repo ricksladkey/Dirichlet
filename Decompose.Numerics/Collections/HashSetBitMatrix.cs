@@ -82,5 +82,30 @@ namespace Decompose.Numerics
         {
             return rowSets[row].Count;
         }
+
+        public int GetColWeight(int col)
+        {
+            int weight = 0;
+            for (int row = 0; row < rows; row++)
+                weight += this[row, col] ? 1 : 0;
+            return weight;
+        }
+
+        public IEnumerable<int> GetRowWeights()
+        {
+            for (int row = 0; row < rows; row++)
+                yield return GetRowWeight(row);
+        }
+
+        public IEnumerable<int> GetColWeights()
+        {
+            var weights = new int[cols];
+            for (int row = 0; row < rows; row++)
+            {
+                foreach (var col in rowSets[row])
+                    ++weights[col];
+            }
+            return weights;
+        }
     }
 }

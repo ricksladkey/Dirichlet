@@ -27,9 +27,9 @@ namespace Decompose
                 //FactorTest5();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                QuadraticSieveDigitsTest();
+                //QuadraticSieveDigitsTest();
                 //CunninghamTest();
-                //GaussianEliminationTest1();
+                GaussianEliminationTest1();
             }
             catch (Exception ex)
             {
@@ -326,7 +326,7 @@ namespace Decompose
 
         static void QuadraticSieveDigitsTest()
         {
-            for (int i = 10; i <= 30; i++)
+            for (int i = 40; i <= 40; i++)
             {
                 var sample = samples[i - 10];
                 var p = sample.P;
@@ -336,9 +336,8 @@ namespace Decompose
                 var config = new QuadraticSieve.Config
                 {
                     Threads = 8,
-                    //FactorBaseSize = 150000,
-                    //Diagnostics = QuadraticSieve.Diag.Verbose,
-                    ReportingInterval = 10,
+                    Diagnostics = QuadraticSieve.Diag.Verbose,
+                    ReportingInterval = 60,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
             }
@@ -356,8 +355,9 @@ namespace Decompose
         static void GaussianEliminationTest1()
         {
             var threads = 8;
-            //var file = @"..\..\..\..\matrix-18401.txt.gz";
-            var file = @"..\..\..\..\matrix-12001.txt.gz";
+            //var file = @"..\..\..\..\matrix-12001.txt.gz";
+            var file = @"..\..\..\..\matrix-18401.txt.gz";
+            //var file = @"..\..\..\..\matrix-150001.txt.gz";
             var lines = GetLinesGzip(file);
             var timer = new Stopwatch();
 

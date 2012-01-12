@@ -145,6 +145,26 @@ namespace Decompose.Numerics
             return weight;
         }
 
+        public int GetColWeight(int col)
+        {
+            int weight = 0;
+            for (int row = 0; row < rows; row++)
+                weight += this[row, col] ? 1 : 0;
+            return weight;
+        }
+
+        public IEnumerable<int> GetRowWeights()
+        {
+            for (int row = 0; row < rows; row++)
+                yield return GetRowWeight(row);
+        }
+
+        public IEnumerable<int> GetColWeights()
+        {
+            for (int col = 0; col < cols; col++)
+                yield return GetColWeight(col);
+        }
+
         public override string ToString()
         {
             return string.Format("Rows = {0}, Cols = {1}", Rows, Cols);
