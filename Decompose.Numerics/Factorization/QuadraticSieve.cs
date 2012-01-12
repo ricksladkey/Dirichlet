@@ -13,8 +13,15 @@ using CountInt = System.Byte;
 #if false
 using BitMatrix = Decompose.Numerics.Word64BitMatrix;
 using Solver = Decompose.Numerics.GaussianElimination<Decompose.Numerics.Word64BitArray>;
-#else
+#endif
+
+#if false
 using BitMatrix = Decompose.Numerics.Word64BitMatrix;
+using Solver = Decompose.Numerics.StructuredGaussianElimination<Decompose.Numerics.Word64BitArray, Decompose.Numerics.Word64BitMatrix>;
+#endif
+
+#if true
+using BitMatrix = Decompose.Numerics.HashSetBitMatrix;
 using Solver = Decompose.Numerics.StructuredGaussianElimination<Decompose.Numerics.Word64BitArray, Decompose.Numerics.Word64BitMatrix>;
 #endif
 
@@ -309,9 +316,9 @@ namespace Decompose.Numerics
             long maximumDivisor = factorBase[factorBaseSize - 1].P;
             maximumDivisorSquared = maximumDivisor * maximumDivisor;
             logMaximumDivisorSquared = LogScale(maximumDivisorSquared);
-            largePrimeIndex = 0;
-            while (largePrimeIndex < factorBaseSize && factorBase[largePrimeIndex].P < subIntervalSize)
-                ++largePrimeIndex;
+            largePrimeIndex = Enumerable.Range(0, factorBaseSize + 1)
+                .Where(index => index == factorBaseSize || factorBase[index].P >= subIntervalSize)
+                .First();
             maximumCofactorSize = Math.Min(maximumDivisor * cofactorScaleFactor, maximumDivisorSquared);
             lowerBoundPercent = lowerBoundPercentOverride != 0 ? lowerBoundPercentOverride : lowerBoundPercentDefault;
             reportingInterval = reportingIntervalOverride != 0 ? reportingIntervalOverride : reportingIntervalDefault;
@@ -349,8 +356,8 @@ namespace Decompose.Numerics
                 {
                     // Interpolate.
                     double x0 = sizePairs[i].Item1;
-                    double x1 = sizePairs[i + 1].Item1;
                     double y0 = sizePairs[i].Item2;
+                    double x1 = sizePairs[i + 1].Item1;
                     double y1 = sizePairs[i + 1].Item2;
                     double x = y0 + (digits - x0) * (y1 - y0) / (x1 - x0);
                     return (int)Math.Ceiling(x);
@@ -675,28 +682,26 @@ namespace Decompose.Numerics
             var offsets1 = interval.Offsets1;
             var offsets2 = interval.Offsets2;
             var counts = interval.Counts;
-            int i = largePrimeIndex;
-            while (i < factorBaseSize)
+            for (int i = largePrimeIndex; i < factorBaseSize; i++)
             {
-                var entry = factorBase[i];
-                int p = entry.P;
                 int k1 = offsets1[i];
                 if (k1 < size)
                 {
-                    Debug.Assert(EvaluatePolynomial(interval.X + k1) % p == 0);
+                    var entry = factorBase[i];
+                    Debug.Assert(EvaluatePolynomial(interval.X + k1) % entry.P == 0);
                     counts[k1] += entry.LogP;
-                    k1 += p;
+                    k1 += entry.P;
                 }
                 offsets1[i] = k1 - size;
                 int k2 = offsets2[i];
                 if (k2 < size)
                 {
-                    Debug.Assert(EvaluatePolynomial(interval.X + k2) % p == 0);
+                    var entry = factorBase[i];
+                    Debug.Assert(EvaluatePolynomial(interval.X + k2) % entry.P == 0);
                     counts[k2] += entry.LogP;
-                    k2 += p;
+                    k2 += entry.P;
                 }
                 offsets2[i] = k2 - size;
-                ++i;
             }
         }
 

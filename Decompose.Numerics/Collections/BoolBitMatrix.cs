@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 namespace Decompose.Numerics
 {
     public class BoolBitMatrix : List<bool[]>, IBitMatrix

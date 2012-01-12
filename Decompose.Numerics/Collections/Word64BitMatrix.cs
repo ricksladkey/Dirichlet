@@ -16,7 +16,7 @@ namespace Decompose.Numerics
         private int rows;
         private int cols;
         private int words;
-        private Word[] bits;
+        private Word[][] bits;
 
         public int WordLength
         {
@@ -38,7 +38,9 @@ namespace Decompose.Numerics
             this.rows = rows;
             this.cols = cols;
             words = (cols + wordLength - 1) / wordLength;
-            bits = new Word[rows * words];
+            bits = new Word[rows][];
+            for (int i = 0; i < rows; i++)
+                bits[i] = new Word[words];
         }
 
         public Word64BitMatrix(IBitMatrix matrix)
@@ -55,30 +57,34 @@ namespace Decompose.Numerics
         {
             get
             {
-                return (bits[i * words + (j >> wordShift)] & (Word)1 << (j & wordMask)) != 0;
+                return (bits[i][j >> wordShift] & (Word)1 << (j & wordMask)) != 0;
             }
             set
             {
                 if (value)
-                    bits[i * words + (j >> wordShift)] |= (Word)1 << (j & wordMask);
+                    bits[i][j >> wordShift] |= (Word)1 << (j & wordMask);
                 else
-                    bits[i * words + (j >> wordShift)] &= ~((Word)1 << (j & wordMask));
+                    bits[i][j >> wordShift] &= ~((Word)1 << (j & wordMask));
             }
         }
 
         public void XorRows(int dst, int src, int col)
         {
-            var dstRow = dst * words;
-            var srcRow = src * words;
+            var dstRow = bits[dst];
+            var srcRow = bits[src];
             for (int word = col / wordLength; word < words; word++)
-                bits[dstRow + word] ^= bits[srcRow + word];
+                dstRow[word] ^= srcRow[word];
         }
 
         public void Clear()
         {
             int size = rows * words;
-            for (int i = 0; i < size; i++)
-                bits[i] = 0;
+            for (int i = 0; i < rows; i++)
+            {
+                var row = bits[i];
+                for (int j = 0; j < words; j++)
+                    row[j] = 0;
+            }
         }
 
         public void CopySubMatrix(IBitMatrix other, int row, int col)
@@ -97,14 +103,8 @@ namespace Decompose.Numerics
 
         public void CopySubMatrix(Word64BitMatrix other, int row, int col)
         {
-            int dstOffset = row * words + (col >> wordShift);
             for (int i = 0; i < other.rows; i++)
-            {
-                int dstRow = i * words + dstOffset;
-                int srcRow = i * other.words;
-                for (int j = 0; j < other.words; j++)
-                    bits[dstRow + j] = other.bits[srcRow + j];
-            }
+                other.bits[i].CopyTo(bits[row + i], col);
         }
 
         public IEnumerable<bool> GetRow(int row)
@@ -115,10 +115,10 @@ namespace Decompose.Numerics
 
         public IEnumerable<int> GetNonZeroIndices(int row)
         {
-            int srcRow = row * words;
+            var srcRow = bits[row];
             for (int word = 0; word < words; word++)
             {
-                var value = bits[srcRow + word];
+                var value = srcRow[word];
                 if (value != 0)
                 {
                     int col = word * wordLength;
@@ -134,10 +134,10 @@ namespace Decompose.Numerics
         public int GetRowWeight(int row)
         {
             int weight = 0;
-            int srcRow = row * words;
+            var srcRow = bits[row];
             for (int word = 0; word < words; word++)
             {
-                var value = bits[srcRow + word];
+                var value = srcRow[word];
                 if (value != 0)
                     weight += value.GetBitCount();
             }

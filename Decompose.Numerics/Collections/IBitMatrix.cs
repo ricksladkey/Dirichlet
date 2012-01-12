@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+
 namespace Decompose.Numerics
 {
     public interface IBitMatrix : IMatrix<bool>

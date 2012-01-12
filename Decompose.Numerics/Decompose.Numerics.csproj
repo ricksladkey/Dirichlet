@@ -46,7 +46,6 @@
     <Compile Include="Factorization\TrialDivisionFactorization.cs" />
     <Compile Include="Reduction\BarrettReduction.cs" />
     <Compile Include="Core\BigIntegers.cs" />
-    <Compile Include="Collections\BitArrayBitMatrix.cs" />
     <Compile Include="Collections\BoolBitArray.cs" />
     <Compile Include="Collections\BoolBitMatrix.cs" />
     <Compile Include="Collections\Word64BitArray.cs" />
@@ -57,8 +56,6 @@
     <Compile Include="Collections\IMatrix.cs" />
     <Compile Include="Factorization\HybridPollardRhoQuadraticSieve.cs" />
     <Compile Include="NullSpace\INullSpaceAlgorithm.cs" />
-    <Compile Include="Collections\Word32BitArray.cs" />
-    <Compile Include="Collections\Word32BitMatrix.cs" />
     <Compile Include="Factorization\IFactorizationAlgorithm.cs" />
     <Compile Include="Primality\IPrimalityAlgorithm.cs" />
     <Compile Include="Random\IRandomNumberAlgorithm.cs" />

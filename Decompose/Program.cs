@@ -27,9 +27,9 @@ namespace Decompose
                 //FactorTest5();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                QuadraticSieveDigitsTest();
+                //QuadraticSieveDigitsTest();
                 //CunninghamTest();
-                //GaussianEliminationTest1();
+                GaussianEliminationTest1();
             }
             catch (Exception ex)
             {
@@ -326,7 +326,7 @@ namespace Decompose
 
         static void QuadraticSieveDigitsTest()
         {
-            for (int i = 40; i <= 40; i++)
+            for (int i = 30; i <= 30; i++)
             {
                 var sample = samples[i - 10];
                 var p = sample.P;
@@ -336,6 +336,7 @@ namespace Decompose
                 var config = new QuadraticSieve.Config
                 {
                     Threads = 8,
+                    FactorBaseSize = 150000,
                     Diagnostics = QuadraticSieve.Diag.Verbose,
                     ReportingInterval = 10,
                 };
@@ -362,9 +363,14 @@ namespace Decompose
 #if false
             var solver = new GaussianElimination<Word64BitArray>(threads);
             var getter = new Func<string[], IBitMatrix>(GetBitMatrix<Word64BitMatrix>);
-#else
+#endif
+#if false
             var solver = new StructuredGaussianElimination<Word64BitArray, Word64BitMatrix>(threads);
             var getter = new Func<string[], IBitMatrix>(GetBitMatrix<Word64BitMatrix>);
+#endif
+#if true
+            var solver = new StructuredGaussianElimination<Word64BitArray, Word64BitMatrix>(threads);
+            var getter = new Func<string[], IBitMatrix>(GetBitMatrix<HashSetBitMatrix>);
 #endif
 
             timer.Restart();
