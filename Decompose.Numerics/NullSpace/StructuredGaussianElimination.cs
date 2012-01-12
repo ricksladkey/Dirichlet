@@ -18,6 +18,8 @@ namespace Decompose.Numerics
 
         private const int multiThreadedCutoff = 256;
         private int threads;
+        private bool diagnostics;
+        private Stopwatch timer;
         private INullSpaceAlgorithm<IBitArray, IBitMatrix> solver;
 
         private int rowsOrig;
@@ -28,27 +30,32 @@ namespace Decompose.Numerics
         private IBitMatrix matrixOrig;
 #endif
 
-        public StructuredGaussianElimination(int threads)
+        public StructuredGaussianElimination(int threads, bool diagnostics)
         {
             this.threads = threads != 0 ? threads : 1;
+            this.diagnostics = diagnostics;
             this.solver = new GaussianElimination<TArray>(threads);
         }
 
         public IEnumerable<IBitArray> Solve(IBitMatrix matrix)
         {
-#if false
+#if DEBUG
             matrixOrig = (IBitMatrix)Activator.CreateInstance(typeof(TMatrix), matrix);
 #endif
             rowsOrig = matrix.Rows;
             colsOrig = matrix.Cols;
-#if false
-            var timer = new Stopwatch();
-            timer.Restart();
-#endif
+            if (diagnostics)
+            {
+                Console.WriteLine("original matrix: {0} rows, {1} cols", matrix.Rows, matrix.Cols);
+                timer = new Stopwatch();
+                timer.Restart();
+            }
             matrix = CompactMatrix(matrix);
-#if false
-            Console.WriteLine("compaction: {0:F3}", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-#endif
+            if (diagnostics)
+            {
+                Console.WriteLine("compaction: {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                Console.WriteLine("matrix compacted: {0} rows, {1} cols", matrix.Rows, matrix.Cols);
+            }
             foreach (var v in solver.Solve(matrix))
                 yield return GetOriginalSolution(v);
         }
@@ -67,6 +74,8 @@ namespace Decompose.Numerics
 #if false
             Console.WriteLine("w = {0}", string.Join(" ", w.GetNonZeroIndices()));
             Console.WriteLine("v = {0}", string.Join(" ", v.GetNonZeroIndices()));
+#endif
+#if DEBUG
             Debug.Assert(GaussianElimination<TArray>.IsSolutionValid(matrixOrig, v))
 #endif
             return v;

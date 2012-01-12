@@ -37,7 +37,8 @@ namespace Decompose.Numerics
             Solutions = 0x2,
             Sieve = 0x4,
             Timing = 0x8,
-            Verbose = Summary | Sieve | Timing,
+            Solving = 0x10,
+            Verbose = Summary | Sieve | Timing | Solving,
         }
 
         public class Config
@@ -60,7 +61,7 @@ namespace Decompose.Numerics
             reportingIntervalOverride = config.ReportingInterval;
             smallIntegerFactorer = new TrialDivisionFactorization();
             primes = new SieveOfErostothones();
-            solver = new Solver(config.Threads);
+            solver = new Solver(config.Threads, (diag & Diag.Solving) != 0);
         }
 
         public IEnumerable<BigInteger> Factor(BigInteger n)
@@ -331,11 +332,31 @@ namespace Decompose.Numerics
 
         private BigInteger Solve()
         {
-            return solver.Solve(matrix)
-                .Select(v => ComputeFactor(v))
-                .Where(factor => !factor.IsZero)
-                .Take(1)
-                .FirstOrDefault();
+            if ((diag & Diag.Solving) == 0)
+            {
+                return solver.Solve(matrix)
+                    .Select(v => ComputeFactor(v))
+                    .Where(factor => !factor.IsZero)
+                    .FirstOrDefault();
+            }
+
+            var timer = new Stopwatch();
+            timer.Start();
+            var solutions = solver.Solve(matrix).GetEnumerator();
+            solutions.MoveNext();
+            var elapsed = (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000;
+            Console.WriteLine("first solution: {0:F3} msec", elapsed);
+            do
+            {
+                timer.Restart();
+                var factor = ComputeFactor(solutions.Current);
+                elapsed = (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000;
+                Console.WriteLine("compute factor: {0:F3} msec", elapsed);
+                if (!factor.IsZero)
+                    return factor;
+            } while (solutions.MoveNext());
+            Console.WriteLine("failed");
+            return BigInteger.Zero;
         }
 
         private void CalculateNumberOfThreads()
