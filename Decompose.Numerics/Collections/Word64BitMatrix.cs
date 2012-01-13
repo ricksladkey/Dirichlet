@@ -23,6 +23,16 @@ namespace Decompose.Numerics
             get { return wordLength; }
         }
 
+        public bool IsRowMajor
+        {
+            get { return true; }
+        }
+
+        public bool IsColMajor
+        {
+            get { return false; }
+        }
+
         public int Rows
         {
             get { return rows; }
@@ -46,7 +56,7 @@ namespace Decompose.Numerics
         public Word64BitMatrix(IBitMatrix matrix)
             : this(matrix.Rows, matrix.Cols)
         {
-            BitMatrixHelper.CopySubMatrix(this, matrix, 0, 0);
+            BitMatrixHelper.CopyNonZero(this, matrix);
         }
 
         public bool this[int i, int j]
@@ -83,7 +93,7 @@ namespace Decompose.Numerics
             }
         }
 
-        public void CopySubMatrix(IBitMatrix other, int row, int col)
+        public void Copy(IBitMatrix other, int row, int col)
         {
             if (other is Word64BitMatrix)
             {

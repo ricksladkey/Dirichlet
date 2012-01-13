@@ -13,6 +13,16 @@ namespace Decompose.Numerics
             get { return 1; }
         }
 
+        public bool IsRowMajor
+        {
+            get { return true; }
+        }
+
+        public bool IsColMajor
+        {
+            get { return false; }
+        }
+
         public int Rows
         {
             get { return rows; }
@@ -40,7 +50,7 @@ namespace Decompose.Numerics
         public BoolBitMatrix(IBitMatrix other)
             : this(other.Rows, other.Cols)
         {
-            BitMatrixHelper.CopySubMatrix(this, other, 0, 0);
+            BitMatrixHelper.CopyNonZero(this, other);
         }
 
         public void XorRows(int dst, int src, int col)
@@ -53,9 +63,9 @@ namespace Decompose.Numerics
             BitMatrixHelper.Clear(this);
         }
 
-        public void CopySubMatrix(IBitMatrix other, int row, int col)
+        public void Copy(IBitMatrix other, int row, int col)
         {
-            BitMatrixHelper.CopySubMatrix(this, other, row, col);
+            BitMatrixHelper.Copy(this, other, row, col);
         }
 
         public IEnumerable<bool> GetRow(int row)

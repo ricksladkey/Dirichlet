@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Decompose.Numerics
 {
-    public class HashSetBitMatrix : IBitMatrix
+    public class ByRowHashSetBitMatrix : IBitMatrix
     {
         private int rows;
         private int cols;
@@ -14,6 +14,16 @@ namespace Decompose.Numerics
         public int WordLength
         {
             get { return 1; }
+        }
+
+        public bool IsRowMajor
+        {
+            get { return true; }
+        }
+
+        public bool IsColMajor
+        {
+            get { return false; }
         }
 
         public int Rows
@@ -26,7 +36,7 @@ namespace Decompose.Numerics
             get { return cols; }
         }
 
-        public HashSetBitMatrix(int rows, int cols)
+        public ByRowHashSetBitMatrix(int rows, int cols)
         {
             this.rows = rows;
             this.cols = cols;
@@ -58,9 +68,9 @@ namespace Decompose.Numerics
                 rowSets[i].Clear();
         }
 
-        public void CopySubMatrix(IBitMatrix other, int row, int col)
+        public void Copy(IBitMatrix other, int row, int col)
         {
-            BitMatrixHelper.CopySubMatrix(this, other, row, col);
+            BitMatrixHelper.Copy(this, other, row, col);
         }
 
         public IEnumerable<bool> GetRow(int row)

@@ -16,6 +16,16 @@ namespace Decompose.Numerics
             get { return 1; }
         }
 
+        public bool IsRowMajor
+        {
+            get { return false; }
+        }
+
+        public bool IsColMajor
+        {
+            get { return true; }
+        }
+
         public int Rows
         {
             get { return rows; }
@@ -58,9 +68,9 @@ namespace Decompose.Numerics
                 colSets[j].Clear();
         }
 
-        public void CopySubMatrix(IBitMatrix other, int row, int col)
+        public void Copy(IBitMatrix other, int row, int col)
         {
-            BitMatrixHelper.CopySubMatrix(this, other, row, col);
+            BitMatrixHelper.Copy(this, other, row, col);
         }
 
         public IEnumerable<bool> GetRow(int row)

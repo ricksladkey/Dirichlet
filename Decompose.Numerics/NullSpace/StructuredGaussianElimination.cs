@@ -224,14 +224,38 @@ namespace Decompose.Numerics
         {
             int cols = colIndices.Length;
             var deltas = new int[cols];
-            if (threads == 1 || matrix.Rows < multiThreadedCutoff)
-                MergeColumns(colIndices, deltas, 0, 1);
+            if (threads == 1 || matrix.Rows < multiThreadedCutoff || matrix.IsColMajor)
+                MergeColumns(colIndices, deltas);
             else
                 Parallel.For(0, threads, thread => MergeColumns(colIndices, deltas, thread, threads));
             for (int i = 1; i < cols; i++)
                 colWeights[colIndices[i]] += deltas[i];
             colWeights[colIndices[0]] = 0;
             Debug.Assert(Enumerable.Range(1, cols - 1).All(col => colWeights[col] == matrix.GetColWeight(col)));
+        }
+
+        public void MergeColumns(int[] colIndices, int[] deltas)
+        {
+            int rows = matrix.Rows;
+            int cols = colIndices.Length;
+            int srcCol = colIndices[0];
+            foreach (var i in matrix.GetNonZeroRows(srcCol).ToArray())
+            {
+                for (int j = 1; j < cols; j++)
+                {
+                    int col = colIndices[j];
+                    var old = matrix[i, col];
+                    matrix[i, col] = !old;
+                    var adj = old ? -1 : 1;
+                    rowWeights[i] += adj;
+                    deltas[j] += adj;
+                }
+
+                matrix[i, srcCol] = false;
+                --rowWeights[i];
+
+                Debug.Assert(rowWeights[i] == matrix.GetRowWeight(i));
+            }
         }
 
         public void MergeColumns(int[] colIndices, int[] deltas, int start, int incr)

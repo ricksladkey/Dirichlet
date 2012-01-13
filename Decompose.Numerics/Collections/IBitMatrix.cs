@@ -5,9 +5,11 @@ namespace Decompose.Numerics
     public interface IBitMatrix : IMatrix<bool>
     {
         int WordLength { get; }
+        bool IsRowMajor { get; }
+        bool IsColMajor { get; }
         void XorRows(int dst, int src, int col);
         void Clear();
-        void CopySubMatrix(IBitMatrix other, int row, int col);
+        void Copy(IBitMatrix other, int row, int col);
         IEnumerable<bool> GetRow(int row);
         IEnumerable<int> GetNonZeroCols(int row);
         IEnumerable<bool> GetCol(int col);

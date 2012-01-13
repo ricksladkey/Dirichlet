@@ -22,12 +22,32 @@ namespace Decompose.Numerics
             }
         }
 
-        public static void CopySubMatrix(IBitMatrix matrix, IBitMatrix other, int row, int col)
+        public static void Copy(IBitMatrix matrix, IBitMatrix other, int row, int col)
         {
             for (int i = 0; i < other.Rows; i++)
             {
-                foreach (var j in other.GetNonZeroCols(i))
-                    matrix[row + i, col + j] = true;
+                for (int j = 0; j < other.Cols; j++)
+                    matrix[row + i, col + j] = matrix[i, j];
+            }
+        }
+
+        public static void CopyNonZero(IBitMatrix matrix, IBitMatrix other)
+        {
+            if (other.IsRowMajor)
+            {
+                for (int i = 0; i < other.Rows; i++)
+                {
+                    foreach (var j in other.GetNonZeroCols(i))
+                        matrix[i, j] = true;
+                }
+            }
+            else
+            {
+                for (int j = 0; j < other.Cols; j++)
+                {
+                    foreach (var i in other.GetNonZeroRows(j))
+                        matrix[i, j] = true;
+                }
             }
         }
 
