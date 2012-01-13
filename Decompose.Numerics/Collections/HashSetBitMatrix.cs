@@ -2,10 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 
-#if true
+#if false
 using Set = System.Collections.Generic.HashSet<int>;
 #endif
-#if false
+#if true
 using Set = Decompose.Numerics.IntegerSet;
 #endif
 
@@ -58,7 +58,7 @@ namespace Decompose.Numerics
 
         public bool this[int row, int col]
         {
-            get { return rowSets[row].Contains(col); }
+            get { return colSets[col].Contains(row); }
             set
             {
                 if (value)

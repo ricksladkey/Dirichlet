@@ -15,15 +15,16 @@ namespace Decompose.Numerics
             public override string ToString() { return string.Format("Value = {0}, Next = {1}", Value, Next); }
         }
 
-        private const int bucketFactor = 10;
-        private const int initialCapacity = 10;
-        private const int initialBuckets = initialCapacity * bucketFactor;
+        private const int capacityFactor = 1;
+        private const int initialBuckets = 64;
+        private const int initialCapacity = initialBuckets * capacityFactor;
         private const int lastSentinel = -1;
         private Entry[] entries;
         private int[] buckets;
         private int freeList;
         private int count;
         private int used;
+        private int bucketsLength;
 
         public IntegerSet()
         {
@@ -42,6 +43,7 @@ namespace Decompose.Numerics
             count = 0;
             used = 0;
             freeList = -1;
+            bucketsLength = buckets.Length;
         }
 
         public bool Contains(int value)
@@ -51,17 +53,14 @@ namespace Decompose.Numerics
 
         public void Add(int value)
         {
-            var bucket = GetBucket(value);
             if (!ContainsEntry(value))
                 AddEntry(value);
         }
 
         public void Remove(int value)
         {
-            var bucket = GetBucket(value);
-            if (!ContainsEntry(value))
-                return;
-            RemoveEntry(value);
+            if (ContainsEntry(value))
+                RemoveEntry(value);
         }
 
         public IEnumerator<int> GetEnumerator()
@@ -78,11 +77,6 @@ namespace Decompose.Numerics
             return GetEnumerator();
         }
 
-        private int GetBucket(int value)
-        {
-            return value % buckets.Length;
-        }
-
         private int GetBucketEntry(int bucket)
         {
             return buckets[bucket] - 1;
@@ -95,7 +89,7 @@ namespace Decompose.Numerics
 
         private bool ContainsEntry(int value)
         {
-            var bucket = GetBucket(value);
+            var bucket = value % bucketsLength;
             for (var entry = GetBucketEntry(bucket); entry != lastSentinel; entry = entries[entry].Next)
             {
                 if (entries[entry].Value == value)
@@ -106,14 +100,14 @@ namespace Decompose.Numerics
 
         private int AddEntry(int value)
         {
-            var bucket = GetBucket(value);
+            var bucket = value % bucketsLength;
             var entry = freeList;
             if (entry == lastSentinel)
             {
                 if (used + 1 == entries.Length)
                 {
                     Resize();
-                    bucket = GetBucket(value);
+                    bucket = value % bucketsLength;
                 }
                 entry = used++;
             }
@@ -128,7 +122,7 @@ namespace Decompose.Numerics
 
         private void RemoveEntry(int value)
         {
-            var bucket = GetBucket(value);
+            var bucket = value % bucketsLength;
             var prev = lastSentinel;
             var entry = GetBucketEntry(bucket);
             while (entries[entry].Value != value)
@@ -154,6 +148,30 @@ namespace Decompose.Numerics
         private void Resize()
         {
             Array.Resize(ref entries, entries.Length * 2);
+            Array.Resize(ref buckets, bucketsLength * 2);
+            for (int i = 0; i < bucketsLength; i++)
+            {
+                var list1 = lastSentinel;
+                var list2 = lastSentinel;
+                var bucket = GetBucketEntry(i);
+                for (var entry = GetBucketEntry(i); entry != lastSentinel; entry = entries[entry].Next)
+                {
+                    int value = entries[entry].Value;
+                    if (value % buckets.Length == value % bucketsLength)
+                    {
+                        entries[entry].Next = list1;
+                        list1 = entry;
+                    }
+                    else
+                    {
+                        entries[entry].Next = list2;
+                        list2 = entry;
+                    }
+                }
+                SetBucketEntry(i, list1);
+                SetBucketEntry(2 * i, list2);
+            }
+            bucketsLength = buckets.Length;
         }
     }
 }
