@@ -15,14 +15,15 @@ namespace Decompose.Numerics
             public override string ToString() { return string.Format("Value = {0}, Next = {1}", Value, Next); }
         }
 
-        private const int initialBuckets = 1000;
-        private const int initialCapacity = 100;
+        private const int bucketFactor = 10;
+        private const int initialCapacity = 10;
+        private const int initialBuckets = initialCapacity * bucketFactor;
         private const int lastSentinel = -1;
-        private const int freeSentinel = -2;
         private Entry[] entries;
         private int[] buckets;
-        int count;
-        int used;
+        private int freeList;
+        private int count;
+        private int used;
 
         public IntegerSet()
         {
@@ -40,33 +41,34 @@ namespace Decompose.Numerics
             entries = new Entry[initialCapacity];
             count = 0;
             used = 0;
+            freeList = -1;
         }
 
         public bool Contains(int value)
         {
-            return ContainsEntry(GetBucket(value), value);
+            return ContainsEntry(value);
         }
 
         public void Add(int value)
         {
             var bucket = GetBucket(value);
-            if (!ContainsEntry(bucket, value))
-                AddEntry(bucket, value);
+            if (!ContainsEntry(value))
+                AddEntry(value);
         }
 
         public void Remove(int value)
         {
             var bucket = GetBucket(value);
-            if (!ContainsEntry(bucket, value))
+            if (!ContainsEntry(value))
                 return;
-            RemoveEntry(bucket, value);
+            RemoveEntry(value);
         }
 
         public IEnumerator<int> GetEnumerator()
         {
             for (int entry = 0; entry < used; entry++)
             {
-                if (entries[entry].Next != freeSentinel)
+                if (entries[entry].Next >= lastSentinel)
                     yield return entries[entry].Value;
             }
         }
@@ -91,8 +93,9 @@ namespace Decompose.Numerics
             buckets[bucket] = entry + 1;
         }
 
-        private bool ContainsEntry(int bucket, int value)
+        private bool ContainsEntry(int value)
         {
+            var bucket = GetBucket(value);
             for (var entry = GetBucketEntry(bucket); entry != lastSentinel; entry = entries[entry].Next)
             {
                 if (entries[entry].Value == value)
@@ -101,11 +104,21 @@ namespace Decompose.Numerics
             return false;
         }
 
-        private int AddEntry(int bucket, int value)
+        private int AddEntry(int value)
         {
-            int entry = used++;
-            if (used == entries.Length)
-                Array.Resize(ref entries, entries.Length * 2);
+            var bucket = GetBucket(value);
+            var entry = freeList;
+            if (entry == lastSentinel)
+            {
+                if (used + 1 == entries.Length)
+                {
+                    Resize();
+                    bucket = GetBucket(value);
+                }
+                entry = used++;
+            }
+            else
+                freeList = GetFreeListEntry(entries[freeList].Next);
             entries[entry].Value = value;
             entries[entry].Next = GetBucketEntry(bucket);
             SetBucketEntry(bucket, entry);
@@ -113,8 +126,9 @@ namespace Decompose.Numerics
             return entry;
         }
 
-        private void RemoveEntry(int bucket, int value)
+        private void RemoveEntry(int value)
         {
+            var bucket = GetBucket(value);
             var prev = lastSentinel;
             var entry = GetBucketEntry(bucket);
             while (entries[entry].Value != value)
@@ -126,8 +140,20 @@ namespace Decompose.Numerics
                 SetBucketEntry(bucket, entries[entry].Next);
             else
                 entries[prev].Next = entries[entry].Next;
-            entries[entry].Next = freeSentinel;
+            entries[entry].Next = GetFreeListEntry(freeList);
+            freeList = entry;
             --count;
+        }
+
+        private int GetFreeListEntry(int entry)
+        {
+            int result = -2 - entry;
+            return result;
+        }
+
+        private void Resize()
+        {
+            Array.Resize(ref entries, entries.Length * 2);
         }
     }
 }

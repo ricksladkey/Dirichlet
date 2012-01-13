@@ -356,8 +356,8 @@ namespace Decompose
         {
             var threads = 8;
             //var file = @"..\..\..\..\matrix-12001.txt.gz";
-            var file = @"..\..\..\..\matrix-18401.txt.gz";
-            //var file = @"..\..\..\..\matrix-150001.txt.gz";
+            //var file = @"..\..\..\..\matrix-18401.txt.gz";
+            var file = @"..\..\..\..\matrix-150001.txt.gz";
             var lines = GetLinesGzip(file);
             var timer = new Stopwatch();
 
