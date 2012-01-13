@@ -357,6 +357,23 @@ namespace Decompose.Numerics.Test
             }
         }
 
+        [TestMethod]
+        public void StructuredGaussianEliminationTest()
+        {
+            var solver = new StructuredGaussianElimination<BoolBitArray, BoolBitMatrix>(1, false);
+            foreach (var text in new[] { matrix1, matrix2 })
+            {
+                var origMatrix = GetBitMatrix(GetLines(text));
+                var matrix = new BoolBitMatrix(origMatrix);
+                foreach (var v in solver.Solve(matrix))
+                {
+                    Assert.IsTrue(GaussianElimination<BoolBitArray>.IsSolutionValid(origMatrix, v));
+                    Assert.IsTrue(GaussianElimination<BoolBitArray>.IsSolutionValid(matrix, v));
+                }
+                Console.WriteLine();
+            }
+        }
+
         private string[] GetLines(string text)
         {
             return text.Split('\n').Select(row => row.Trim()).Where(row => row != "").ToArray();

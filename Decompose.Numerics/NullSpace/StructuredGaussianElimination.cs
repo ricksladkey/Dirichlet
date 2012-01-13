@@ -27,9 +27,6 @@ namespace Decompose.Numerics
         private int colsOrig;
         private IBitMatrix matrix;
         private Ancestor[] ancestors;
-        int[] rowWeights;
-        int[] colWeights;
-
 
 #if DEBUG
         private IBitMatrix matrixOrig;
@@ -90,11 +87,8 @@ namespace Decompose.Numerics
             ancestors = new Ancestor[matrix.Cols];
             for (int i = 0; i < matrix.Cols; i++)
                 ancestors[i] = new Ancestor { Column = i };
-            rowWeights = matrix.GetRowWeights().ToArray();
-            colWeights = matrix.GetColWeights().ToArray();
-            Debug.Assert(rowWeights.Sum() == colWeights.Sum());
             if (diagnostics)
-                Console.WriteLine("initial density = {0:F3}/col", (double)colWeights.Sum() / matrix.Rows);
+                Console.WriteLine("initial density = {0:F3}/col", (double)matrix.GetRowWeights().Sum() / matrix.Rows);
 
             int surplusCols = 0;
             int pass = 1;
@@ -105,7 +99,7 @@ namespace Decompose.Numerics
                 {
                     if (deletedRows[n])
                         continue;
-                    var weight = rowWeights[n];
+                    var weight = matrix.GetRowWeight(n);
 
                     // Delete entirely empty rows.
                     if (weight == 0)
@@ -134,7 +128,7 @@ namespace Decompose.Numerics
                         while (weight > limit)
                         {
                             var col = matrix.GetNonZeroCols(n)
-                                .OrderByDescending(index => colWeights[index])
+                                .OrderByDescending(index => matrix.GetColWeight(index))
                                 .First();
                             MergeColumns(col);
                             deletedCols[col] = true;
@@ -148,7 +142,7 @@ namespace Decompose.Numerics
                     if (weight <= limit)
                     {
                         var cols = matrix.GetNonZeroCols(n)
-                            .OrderByDescending(index => colWeights[index])
+                            .OrderByDescending(index => matrix.GetColWeight(index))
                             .ToArray();
                         Debug.Assert(cols.Length == weight);
                         var srcCol = cols[0];
@@ -172,7 +166,6 @@ namespace Decompose.Numerics
                     break;
                 ++pass;
             }
-            Debug.Assert(rowWeights.Sum() == colWeights.Sum());
 
             // Compute mapping between original matrix and compact matrix.
             ancestors = deletedCols
@@ -190,7 +183,7 @@ namespace Decompose.Numerics
 
             // Permute columns to sort by increasing column weight.
             var order = Enumerable.Range(0, colMap.Length)
-                .OrderBy(index => colWeights[colMap[index]])
+                .OrderBy(index => matrix.GetColWeight(colMap[index]))
                 .ToArray();
             ancestors = Enumerable.Range(0, colMap.Length)
                 .Select(index => ancestors[order[index]])
@@ -214,27 +207,13 @@ namespace Decompose.Numerics
             if (diagnostics)
             {
                 Console.WriteLine("completed compaction in {0} passes", pass);
-                Console.WriteLine("final density = {0:F3}/col", (double)colWeights.Sum() / compactMatrix.Rows);
+                Console.WriteLine("final density = {0:F3}/col", (double)matrix.GetRowWeights().Sum() / compactMatrix.Rows);
             }
 
             return compactMatrix;
         }
 
-        private void MergeColumns(params int[] colIndices)
-        {
-            int cols = colIndices.Length;
-            var deltas = new int[cols];
-            if (threads == 1 || matrix.Rows < multiThreadedCutoff || matrix.IsColMajor)
-                MergeColumns(colIndices, deltas);
-            else
-                Parallel.For(0, threads, thread => MergeColumns(colIndices, deltas, thread, threads));
-            for (int i = 1; i < cols; i++)
-                colWeights[colIndices[i]] += deltas[i];
-            colWeights[colIndices[0]] = 0;
-            Debug.Assert(Enumerable.Range(1, cols - 1).All(col => colWeights[col] == matrix.GetColWeight(col)));
-        }
-
-        public void MergeColumns(int[] colIndices, int[] deltas)
+        public void MergeColumns(params int[] colIndices)
         {
             int rows = matrix.Rows;
             int cols = colIndices.Length;
@@ -246,44 +225,9 @@ namespace Decompose.Numerics
                     int col = colIndices[j];
                     var old = matrix[i, col];
                     matrix[i, col] = !old;
-                    var adj = old ? -1 : 1;
-                    rowWeights[i] += adj;
-                    deltas[j] += adj;
                 }
 
                 matrix[i, srcCol] = false;
-                --rowWeights[i];
-
-                Debug.Assert(rowWeights[i] == matrix.GetRowWeight(i));
-            }
-        }
-
-        public void MergeColumns(int[] colIndices, int[] deltas, int start, int incr)
-        {
-            int rows = matrix.Rows;
-            int cols = colIndices.Length;
-            int srcCol = colIndices[0];
-            for (int i = start; i < rows; i += incr)
-            {
-                if (matrix[i, srcCol])
-                {
-                    for (int j = 1; j < cols; j++)
-                    {
-                        int col = colIndices[j];
-                        var old = matrix[i, col];
-                        matrix[i, col] = !old;
-                        rowWeights[i] += old ? -1 : 1;
-                        if (old)
-                            Interlocked.Decrement(ref deltas[j]);
-                        else
-                            Interlocked.Increment(ref deltas[j]);
-                    }
-
-                    matrix[i, srcCol] = false;
-                    --rowWeights[i];
-
-                    Debug.Assert(rowWeights[i] == matrix.GetRowWeight(i));
-                }
             }
         }
     }
