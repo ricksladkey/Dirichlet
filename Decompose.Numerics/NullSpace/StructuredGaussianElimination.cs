@@ -18,7 +18,7 @@ namespace Decompose.Numerics
         }
 
         private const int multiThreadedCutoff = 256;
-        private const int mergeLimit = 5;
+        private const int mergeLimit = 10;
         private int threads;
         private bool diagnostics;
         private Stopwatch timer;

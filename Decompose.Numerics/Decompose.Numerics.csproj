@@ -46,6 +46,7 @@
     <Compile Include="Collections\BitMatrixHelper.cs" />
     <Compile Include="Collections\ByColHashSetBitMatrix.cs" />
     <Compile Include="Collections\HashSetBitMatrix.cs" />
+    <Compile Include="Collections\IntegerSet.cs" />
     <Compile Include="Factorization\TrialDivisionFactorization.cs" />
     <Compile Include="Reduction\BarrettReduction.cs" />
     <Compile Include="Core\BigIntegers.cs" />

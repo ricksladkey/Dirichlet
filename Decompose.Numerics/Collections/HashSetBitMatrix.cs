@@ -2,6 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 
+#if true
+using Set = System.Collections.Generic.HashSet<int>;
+#endif
+#if false
+using Set = Decompose.Numerics.IntegerSet;
+#endif
+
 namespace Decompose.Numerics
 {
     public class HashSetBitMatrix : IBitMatrix
@@ -9,8 +16,8 @@ namespace Decompose.Numerics
         private int rows;
         private int cols;
 
-        private HashSet<int>[] rowSets;
-        private HashSet<int>[] colSets;
+        private Set[] rowSets;
+        private Set[] colSets;
 
         public int WordLength
         {
@@ -41,12 +48,12 @@ namespace Decompose.Numerics
         {
             this.rows = rows;
             this.cols = cols;
-            rowSets = new HashSet<int>[rows];
+            rowSets = new Set[rows];
             for (int i = 0; i < rows; i++)
-                rowSets[i] = new HashSet<int>();
-            colSets = new HashSet<int>[cols];
+                rowSets[i] = new Set();
+            colSets = new Set[cols];
             for (int i = 0; i < cols; i++)
-                colSets[i] = new HashSet<int>();
+                colSets[i] = new Set();
         }
 
         public bool this[int row, int col]
