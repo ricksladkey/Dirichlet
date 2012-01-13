@@ -40,80 +40,62 @@ namespace Decompose.Numerics
         public BoolBitMatrix(IBitMatrix other)
             : this(other.Rows, other.Cols)
         {
-            for (int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < cols; j++)
-                    this[i, j] = other[i, j];
-            }
+            BitMatrixHelper.CopySubMatrix(this, other, 0, 0);
         }
 
         public void XorRows(int dst, int src, int col)
         {
-            var dstRow = this[dst];
-            var srcRow = this[src];
-            for (int j = col; j < cols; j++)
-                dstRow[j] ^= srcRow[j];
+            BitMatrixHelper.XorRows(this, dst, src, col);
         }
 
         public new void Clear()
         {
-            for (int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < cols; j++)
-                    this[i][j] = false;
-            }
+            BitMatrixHelper.Clear(this);
         }
 
         public void CopySubMatrix(IBitMatrix other, int row, int col)
         {
-            for (int i = 0; i < other.Rows; i++)
-            {
-                for (int j = 0; j < other.Cols; j++)
-                    this[row + i, col + j] = other[i, j];
-            }
+            BitMatrixHelper.CopySubMatrix(this, other, row, col);
         }
 
         public IEnumerable<bool> GetRow(int row)
         {
-            for (int j = 0; j < cols; j++)
-                yield return this[row, j];
+            return BitMatrixHelper.GetRow(this, row);
         }
 
-        public IEnumerable<int> GetNonZeroIndices(int row)
+        public IEnumerable<int> GetNonZeroCols(int row)
         {
-            for (int j = 0; j < cols; j++)
-            {
-                if (this[row, j])
-                    yield return j;
-            }
+            return BitMatrixHelper.GetNonZeroCols(this, row);
+        }
+
+        public IEnumerable<bool> GetCol(int col)
+        {
+            return BitMatrixHelper.GetCol(this, col);
+        }
+
+        public IEnumerable<int> GetNonZeroRows(int col)
+        {
+            return BitMatrixHelper.GetNonZeroRows(this, col);
         }
 
         public int GetRowWeight(int row)
         {
-            int weight = 0;
-            for (int col = 0; col < cols; col++)
-                weight += this[row, col] ? 1 : 0;
-            return weight;
+            return BitMatrixHelper.GetRowWeight(this, row);
         }
 
         public int GetColWeight(int col)
         {
-            int weight = 0;
-            for (int row = 0; row < rows; row++)
-                weight += this[row, col] ? 1 : 0;
-            return weight;
+            return BitMatrixHelper.GetColWeight(this, col);
         }
 
         public IEnumerable<int> GetRowWeights()
         {
-            for (int row = 0; row < rows; row++)
-                yield return GetRowWeight(row);
+            return BitMatrixHelper.GetRowWeights(this);
         }
 
         public IEnumerable<int> GetColWeights()
         {
-            for (int col = 0; col < cols; col++)
-                yield return GetColWeight(col);
+            return BitMatrixHelper.GetColWeights(this);
         }
     }
 }

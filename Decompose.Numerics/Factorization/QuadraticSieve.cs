@@ -333,7 +333,7 @@ namespace Decompose.Numerics
                 {
                     stream.WriteLine("{0} {1}", matrix.Rows, matrix.Cols);
                     for (int i = 0; i < matrix.Rows; i++)
-                        stream.WriteLine(string.Join(" ", matrix.GetNonZeroIndices(i)));
+                        stream.WriteLine(string.Join(" ", matrix.GetNonZeroCols(i)));
                 }
             }
 

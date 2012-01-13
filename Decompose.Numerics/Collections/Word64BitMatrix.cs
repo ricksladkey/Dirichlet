@@ -46,11 +46,7 @@ namespace Decompose.Numerics
         public Word64BitMatrix(IBitMatrix matrix)
             : this(matrix.Rows, matrix.Cols)
         {
-            for (int i = 0; i < rows; i++)
-            {
-                foreach (var j in matrix.GetNonZeroIndices(i))
-                    this[i, j] = true;
-            }
+            BitMatrixHelper.CopySubMatrix(this, matrix, 0, 0);
         }
 
         public bool this[int i, int j]
@@ -109,11 +105,10 @@ namespace Decompose.Numerics
 
         public IEnumerable<bool> GetRow(int row)
         {
-            for (int j = 0; j < cols; j++)
-                yield return this[row, j];
+            return BitMatrixHelper.GetRow(this, row);
         }
 
-        public IEnumerable<int> GetNonZeroIndices(int row)
+        public IEnumerable<int> GetNonZeroCols(int row)
         {
             var srcRow = bits[row];
             for (int word = 0; word < words; word++)
@@ -129,6 +124,16 @@ namespace Decompose.Numerics
                     }
                 }
             }
+        }
+
+        public IEnumerable<bool> GetCol(int col)
+        {
+            return BitMatrixHelper.GetCol(this, col);
+        }
+
+        public IEnumerable<int> GetNonZeroRows(int col)
+        {
+            return BitMatrixHelper.GetNonZeroRows(this, col);
         }
 
         public int GetRowWeight(int row)
@@ -147,22 +152,17 @@ namespace Decompose.Numerics
 
         public int GetColWeight(int col)
         {
-            int weight = 0;
-            for (int row = 0; row < rows; row++)
-                weight += this[row, col] ? 1 : 0;
-            return weight;
+            return BitMatrixHelper.GetColWeight(this, col);
         }
 
         public IEnumerable<int> GetRowWeights()
         {
-            for (int row = 0; row < rows; row++)
-                yield return GetRowWeight(row);
+            return BitMatrixHelper.GetRowWeights(this);
         }
 
         public IEnumerable<int> GetColWeights()
         {
-            for (int col = 0; col < cols; col++)
-                yield return GetColWeight(col);
+            return BitMatrixHelper.GetColWeights(this);
         }
 
         public override string ToString()

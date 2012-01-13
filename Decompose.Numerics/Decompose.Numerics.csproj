@@ -43,6 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collections\BitMatrixHelper.cs" />
+    <Compile Include="Collections\ByColHashSetBitMatrix.cs" />
     <Compile Include="Factorization\TrialDivisionFactorization.cs" />
     <Compile Include="Reduction\BarrettReduction.cs" />
     <Compile Include="Core\BigIntegers.cs" />

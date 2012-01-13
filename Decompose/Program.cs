@@ -27,9 +27,9 @@ namespace Decompose
                 //FactorTest5();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                QuadraticSieveDigitsTest();
+                //QuadraticSieveDigitsTest();
                 //CunninghamTest();
-                //GaussianEliminationTest1();
+                GaussianEliminationTest1();
             }
             catch (Exception ex)
             {
@@ -372,6 +372,10 @@ namespace Decompose
 #if true
             var solver = new StructuredGaussianElimination<Word64BitArray, Word64BitMatrix>(threads, true);
             var getter = new Func<string[], IBitMatrix>(GetBitMatrix<HashSetBitMatrix>);
+#endif
+#if false
+            var solver = new StructuredGaussianElimination<Word64BitArray, Word64BitMatrix>(threads, true);
+            var getter = new Func<string[], IBitMatrix>(GetBitMatrix<ByColHashSetBitMatrix>);
 #endif
 
             timer.Restart();

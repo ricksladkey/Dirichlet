@@ -18,7 +18,7 @@ namespace Decompose.Numerics
         }
 
         private const int multiThreadedCutoff = 256;
-        private const int mergeLimit = 4;
+        private const int mergeLimit = 5;
         private int threads;
         private bool diagnostics;
         private Stopwatch timer;
@@ -50,6 +50,7 @@ namespace Decompose.Numerics
             if (diagnostics)
             {
                 Console.WriteLine("original matrix: {0} rows, {1} cols", matrix.Rows, matrix.Cols);
+                Console.WriteLine("merge limit = {0}", mergeLimit);
                 timer = new Stopwatch();
                 timer.Restart();
             }
@@ -118,7 +119,7 @@ namespace Decompose.Numerics
                     // Delete rows with a single non-zero entry.
                     if (weight == 1)
                     {
-                        var col = matrix.GetNonZeroIndices(n).First();
+                        var col = matrix.GetNonZeroCols(n).First();
                         deletedRows[n] = true;
                         MergeColumns(col);
                         deletedCols[col] = true;
@@ -127,11 +128,12 @@ namespace Decompose.Numerics
                     }
 
                     // Use surplus rows to bring weight down to merge limit.
-                    if (weight > mergeLimit && surplusCols > 0 && weight - surplusCols <= mergeLimit)
+                    int limit = Math.Min(pass, mergeLimit);
+                    if (weight > limit && surplusCols > 0 && weight - surplusCols <= limit)
                     {
-                        while (weight > mergeLimit)
+                        while (weight > limit)
                         {
-                            var col = matrix.GetNonZeroIndices(n)
+                            var col = matrix.GetNonZeroCols(n)
                                 .OrderByDescending(index => colWeights[index])
                                 .First();
                             MergeColumns(col);
@@ -143,9 +145,9 @@ namespace Decompose.Numerics
                     }
 
                     // Merge low weight rows.
-                    if (weight <= mergeLimit)
+                    if (weight <= limit)
                     {
-                        var cols = matrix.GetNonZeroIndices(n)
+                        var cols = matrix.GetNonZeroCols(n)
                             .OrderByDescending(index => colWeights[index])
                             .ToArray();
                         Debug.Assert(cols.Length == weight);
@@ -163,24 +165,11 @@ namespace Decompose.Numerics
                         continue;
                     }
                 }
-                if (deleted == 0 && surplusCols > 0)
-                {
-                    if (diagnostics)
-                        Console.WriteLine("deleting {0} surplus columns", surplusCols);
-                    for (int col = matrix.Cols - 1; surplusCols > 0; col--)
-                    {
-                        if (deletedCols[col])
-                            continue;
-                        MergeColumns(col);
-                        deletedCols[col] = true;
-                        ++deleted;
-                        --surplusCols;
-                    }
-                }
+
+                if (diagnostics)
+                    Console.WriteLine("pass {0}: deleted {1} rows, {2} surplus cols", pass, deleted, surplusCols);
                 if (deleted == 0)
                     break;
-                if (diagnostics)
-                    Console.WriteLine("pass {0}: deleted {1} rows", pass, deleted);
                 ++pass;
             }
             Debug.Assert(rowWeights.Sum() == colWeights.Sum());
@@ -218,7 +207,7 @@ namespace Decompose.Numerics
             for (int i = 0; i < rowMap.Length; i++)
             {
                 int row = rowMap[i];
-                foreach (var col in matrix.GetNonZeroIndices(row))
+                foreach (var col in matrix.GetNonZeroCols(row))
                     compactMatrix[i, revColMap[col]] = true;
             }
 
@@ -227,6 +216,7 @@ namespace Decompose.Numerics
                 Console.WriteLine("completed compaction in {0} passes", pass);
                 Console.WriteLine("final density = {0:F3}/col", (double)colWeights.Sum() / compactMatrix.Rows);
             }
+
             return compactMatrix;
         }
 

@@ -9,7 +9,9 @@ namespace Decompose.Numerics
         void Clear();
         void CopySubMatrix(IBitMatrix other, int row, int col);
         IEnumerable<bool> GetRow(int row);
-        IEnumerable<int> GetNonZeroIndices(int row);
+        IEnumerable<int> GetNonZeroCols(int row);
+        IEnumerable<bool> GetCol(int col);
+        IEnumerable<int> GetNonZeroRows(int col);
         int GetRowWeight(int row);
         int GetColWeight(int col);
         IEnumerable<int> GetRowWeights();
