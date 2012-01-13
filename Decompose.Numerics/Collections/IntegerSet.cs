@@ -1,35 +1,32 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Decompose.Numerics
 {
     public class IntegerSet : IEnumerable<int>
     {
-        private class Entry
+        private struct Entry
         {
-            public int Integer { get; set; }
-            public Entry Next { get; set; }
+            public int Value { get; set; }
+            public int Next { get; set; }
+            public override string ToString() { return string.Format("Value = {0}, Next = {1}", Value, Next); }
         }
 
-        private class Bucket
-        {
-            public Entry Entry { get; set; }
-            public Bucket Next { get; set; }
-            public Bucket Prev { get; set; }
-        }
-
-        private const int n = 100;
-        private Bucket[] buckets;
-        private Bucket root;
+        private const int initialBuckets = 1000;
+        private const int initialCapacity = 100;
+        private const int lastSentinel = -1;
+        private const int freeSentinel = -2;
+        private Entry[] entries;
+        private int[] buckets;
         int count;
+        int used;
 
         public IntegerSet()
         {
-            buckets = new Bucket[n];
-            count = 0;
-            root = null;
+            Clear();
         }
 
         public int Count
@@ -37,111 +34,41 @@ namespace Decompose.Numerics
             get { return count; }
         }
 
-        public void Add(int i)
-        {
-            int j = i % n;
-            var bucket = buckets[j];
-            if (bucket == null)
-            {
-                CheckBuckets();
-                bucket = buckets[j] = new Bucket();
-                if (root == null)
-                {
-                    bucket.Prev = bucket.Next = bucket;
-                    root = bucket;
-                }
-                else
-                {
-                    bucket.Prev = root.Prev;
-                    bucket.Next = root;
-                    root.Prev = bucket;
-                    bucket.Prev.Next = bucket;
-                }
-                CheckBuckets();
-            }
-            var entry = bucket.Entry;
-            while (entry != null && entry.Integer != i)
-                entry = entry.Next;
-            if (entry == null)
-            {
-                bucket.Entry = new Entry { Integer = i, Next = bucket.Entry };
-                ++count;
-            }
-        }
-
-        public void Remove(int i)
-        {
-            int j = i % n;
-            var bucket = buckets[j];
-            if (bucket == null)
-                return;
-            var entry = bucket.Entry;
-            var prev = null as Entry;
-            while (entry != null)
-            {
-                if (entry.Integer == i)
-                    break;
-                prev = entry;
-                entry = entry.Next;
-            }
-            if (entry == null)
-                return;
-            if (prev == null)
-                bucket.Entry = entry.Next;
-            else
-                prev.Next = entry.Next;
-            if (bucket.Entry == null)
-            {
-                CheckBuckets();
-                buckets[j] = null;
-                if (bucket.Next == bucket)
-                    root = null;
-                else
-                {
-                    bucket.Prev.Next = bucket.Next;
-                    bucket.Next.Prev = bucket.Prev;
-                    if (root == bucket)
-                        root = bucket.Next;
-                }
-                CheckBuckets();
-            }
-            --count;
-        }
-
-        public bool Contains(int i)
-        {
-            var bucket = buckets[i % n];
-            if (bucket == null)
-                return false;
-            var entry = bucket.Entry;
-            while (entry != null)
-            {
-                if (entry.Integer == i)
-                    return true;
-                entry = entry.Next;
-            }
-            return false;
-        }
-
         public void Clear()
         {
-            for (int i = 0; i < n; i++)
-                buckets[i] = null;
+            buckets = new int[initialBuckets];
+            entries = new Entry[initialCapacity];
             count = 0;
-            root = null;
+            used = 0;
+        }
+
+        public bool Contains(int value)
+        {
+            return ContainsEntry(GetBucket(value), value);
+        }
+
+        public void Add(int value)
+        {
+            var bucket = GetBucket(value);
+            if (!ContainsEntry(bucket, value))
+                AddEntry(bucket, value);
+        }
+
+        public void Remove(int value)
+        {
+            var bucket = GetBucket(value);
+            if (!ContainsEntry(bucket, value))
+                return;
+            RemoveEntry(bucket, value);
         }
 
         public IEnumerator<int> GetEnumerator()
         {
-            if (root == null)
-                yield break;
-            var bucket = root;
-            do
+            for (int entry = 0; entry < used; entry++)
             {
-                for (var entry = bucket.Entry; entry != null; entry = entry.Next)
-                    yield return entry.Integer;
-                bucket = bucket.Next;
-            } while (bucket != root);
+                if (entries[entry].Next != freeSentinel)
+                    yield return entries[entry].Value;
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -149,25 +76,58 @@ namespace Decompose.Numerics
             return GetEnumerator();
         }
 
-        [Conditional("DEBUG")]
-        private void CheckBuckets()
+        private int GetBucket(int value)
         {
-            if (root == null)
+            return value % buckets.Length;
+        }
+
+        private int GetBucketEntry(int bucket)
+        {
+            return buckets[bucket] - 1;
+        }
+
+        private void SetBucketEntry(int bucket, int entry)
+        {
+            buckets[bucket] = entry + 1;
+        }
+
+        private bool ContainsEntry(int bucket, int value)
+        {
+            for (var entry = GetBucketEntry(bucket); entry != lastSentinel; entry = entries[entry].Next)
             {
-                Debug.Assert(buckets.All(b => b == null));
-                return;
+                if (entries[entry].Value == value)
+                    return true;
             }
-            var bucket = root;
-            do
+            return false;
+        }
+
+        private int AddEntry(int bucket, int value)
+        {
+            int entry = used++;
+            if (used == entries.Length)
+                Array.Resize(ref entries, entries.Length * 2);
+            entries[entry].Value = value;
+            entries[entry].Next = GetBucketEntry(bucket);
+            SetBucketEntry(bucket, entry);
+            ++count;
+            return entry;
+        }
+
+        private void RemoveEntry(int bucket, int value)
+        {
+            var prev = lastSentinel;
+            var entry = GetBucketEntry(bucket);
+            while (entries[entry].Value != value)
             {
-                Debug.Assert(bucket != null);
-                bucket = bucket.Next;
-            } while (bucket != root);
-            do
-            {
-                Debug.Assert(bucket != null);
-                bucket = bucket.Prev;
-            } while (bucket != root);
+                prev = entry;
+                entry = entries[entry].Next;
+            }
+            if (prev == lastSentinel)
+                SetBucketEntry(bucket, entries[entry].Next);
+            else
+                entries[prev].Next = entries[entry].Next;
+            entries[entry].Next = freeSentinel;
+            --count;
         }
     }
 }
