@@ -256,9 +256,9 @@ namespace Decompose
             //FactorTest(debug, 500, n, new PollardRhoReduction(pollardThreads, new MontgomeryReduction()));
             var config = new QuadraticSieve.Config
             {
-                //Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
+                Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
                 Threads = threads,
-              //  FactorBaseSize = 5400,
+                //FactorBaseSize = 5400,
                 //LowerBoundPercent = 65,
                 Multiplier = 3,
                 Diagnostics = QuadraticSieve.Diag.Verbose,

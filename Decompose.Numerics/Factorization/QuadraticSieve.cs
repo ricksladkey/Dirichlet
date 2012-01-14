@@ -548,6 +548,9 @@ namespace Decompose.Numerics
         private BigInteger ComputeFactor(IBitArray v)
         {
             var indices = v.GetNonZeroIndices().ToArray();
+            Debug.Assert(indices
+                .Select(index => relations[index])
+                .All(relation => (relation.X * relation.X - MultiplyFactors(relation)) % n == 0));
             var xPrime = indices
                 .Select(index => relations[index].X)
                 .ProductModulo(n);
@@ -937,25 +940,29 @@ namespace Decompose.Numerics
                 return true;
             if (cofactor == 1)
             {
-                if (siqs != null)
-                {
-                    for (int i = 0; i < factorBaseSize; i++)
-                    {
-                        if (siqs.Excluded[i])
-                            ++interval.Exponents[i + 1];
-                    }
-                }
+                AddQFactors(interval);
                 var relation = new Relation
                 {
                     X = EvaluateMapping(interval.Polynomial, interval.X + k),
                     Entries = GetEntries(interval.Exponents),
                 };
-                Debug.Assert((relation.X * relation.X - MultiplyFactors(relation.Entries)) % n == 0);
+                Debug.Assert((relation.X * relation.X - MultiplyFactors(relation)) % n == 0);
                 return relationBuffer.TryAdd(relation);
             }
             if (cofactor < maximumCofactorSize)
                 return ProcessPartialRelation(interval, k, cofactor);
             return true;
+        }
+
+        private void AddQFactors(Interval interval)
+        {
+            if (siqs == null)
+                return;
+            for (int i = 0; i < factorBaseSize; i++)
+            {
+                if (siqs.Excluded[i])
+                    ++interval.Exponents[i + 1];
+            }
         }
 
         private long FactorOverBase(Interval interval, long x)
@@ -1049,14 +1056,37 @@ namespace Decompose.Numerics
             }
             if (other == 0)
                 return true;
+            AddQFactors(interval);
+#if false
+            var relation1 = new Relation
+            {
+                X = EvaluateMapping(interval.Polynomial, interval.X + k),
+                Entries = GetEntries(interval.Exponents),
+                Cofactor = cofactor,
+            };
+            Debug.Assert((relation1.X * relation1.X - MultiplyFactors(relation1)) % n == 0);
+            ClearExponents(interval);
+            FactorOverBase(interval, other);
+            AddQFactors(interval);
+            var relation2 = new Relation
+            {
+                X = EvaluateMapping(interval.Polynomial, other),
+                Entries = GetEntries(interval.Exponents),
+                Cofactor = cofactor,
+            };
+            Debug.Assert((relation2.X * relation2.X - MultiplyFactors(relation2)) % n == 0);
+            Debug.Assert((BigInteger.Pow(relation1.X * relation2.X, 2) - MultiplyFactors(relation1) * MultiplyFactors(relation2)) % n == 0);
+#endif
             ++partialRelationsConverted;
             FactorOverBase(interval, other);
+            AddQFactors(interval);
             var relation = new Relation
             {
                 X = EvaluateMapping(interval.Polynomial, interval.X + k) * EvaluateMapping(interval.Polynomial, other),
                 Entries = GetEntries(interval.Exponents),
                 Cofactor = cofactor,
             };
+            Debug.Assert((relation.X * relation.X - MultiplyFactors(relation)) % n == 0);
             return relationBuffer.TryAdd(relation);
         }
 
@@ -1117,11 +1147,14 @@ namespace Decompose.Numerics
             return yPrime / polynomial.A;
         }
 
-        private BigInteger MultiplyFactors(ExponentEntry[] entries)
+        private BigInteger MultiplyFactors(Relation relation)
         {
-            return entries
+            var result = relation.Entries
                 .Select(entry => BigInteger.Pow(entry.Row == 0 ? -1 : factorBase[entry.Row - 1].P, entry.Exponent))
                 .ProductModulo(n);
+            if (relation.Cofactor != 0)
+                return result * relation.Cofactor * relation.Cofactor % n;
+            return result;
         }
     }
 }
