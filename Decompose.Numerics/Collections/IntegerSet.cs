@@ -15,16 +15,17 @@ namespace Decompose.Numerics
             public override string ToString() { return string.Format("Value = {0}, Next = {1}", Value, Next); }
         }
 
-        private const int capacityFactor = 1;
-        private const int initialBuckets = 64;
-        private const int initialCapacity = initialBuckets * capacityFactor;
+        private const double bucketFactor = 1;
+        private const int initialCapacity = 64;
+        private readonly int initialBuckets = (int)Math.Ceiling(initialCapacity * bucketFactor);
         private const int lastSentinel = -1;
+
         private Entry[] entries;
         private int[] buckets;
         private int freeList;
         private int count;
         private int used;
-        private int bucketsLength;
+        private int n;
 
         public IntegerSet()
         {
@@ -39,11 +40,13 @@ namespace Decompose.Numerics
         public void Clear()
         {
             buckets = new int[initialBuckets];
+            for (int bucket = 0; bucket < buckets.Length; bucket++)
+                buckets[bucket] = lastSentinel;
             entries = new Entry[initialCapacity];
             count = 0;
             used = 0;
             freeList = -1;
-            bucketsLength = buckets.Length;
+            n = buckets.Length;
         }
 
         public bool Contains(int value)
@@ -65,11 +68,16 @@ namespace Decompose.Numerics
 
         public IEnumerator<int> GetEnumerator()
         {
+            int total = 0;
             for (int entry = 0; entry < used; entry++)
             {
                 if (entries[entry].Next >= lastSentinel)
+                {
+                    ++total;
                     yield return entries[entry].Value;
+                }
             }
+            Debug.Assert(total == count);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -77,20 +85,10 @@ namespace Decompose.Numerics
             return GetEnumerator();
         }
 
-        private int GetBucketEntry(int bucket)
-        {
-            return buckets[bucket] - 1;
-        }
-
-        private void SetBucketEntry(int bucket, int entry)
-        {
-            buckets[bucket] = entry + 1;
-        }
-
         private bool ContainsEntry(int value)
         {
-            var bucket = value % bucketsLength;
-            for (var entry = GetBucketEntry(bucket); entry != lastSentinel; entry = entries[entry].Next)
+            var bucket = value % n;
+            for (var entry = buckets[bucket]; entry != lastSentinel; entry = entries[entry].Next)
             {
                 if (entries[entry].Value == value)
                     return true;
@@ -100,38 +98,38 @@ namespace Decompose.Numerics
 
         private int AddEntry(int value)
         {
-            var bucket = value % bucketsLength;
+            var bucket = value % n;
             var entry = freeList;
             if (entry == lastSentinel)
             {
                 if (used + 1 == entries.Length)
                 {
                     Resize();
-                    bucket = value % bucketsLength;
+                    bucket = value % n;
                 }
                 entry = used++;
             }
             else
                 freeList = GetFreeListEntry(entries[freeList].Next);
             entries[entry].Value = value;
-            entries[entry].Next = GetBucketEntry(bucket);
-            SetBucketEntry(bucket, entry);
+            entries[entry].Next = buckets[bucket];
+            buckets[bucket] = entry;
             ++count;
             return entry;
         }
 
         private void RemoveEntry(int value)
         {
-            var bucket = value % bucketsLength;
+            var bucket = value % n;
             var prev = lastSentinel;
-            var entry = GetBucketEntry(bucket);
+            var entry = buckets[bucket];
             while (entries[entry].Value != value)
             {
                 prev = entry;
                 entry = entries[entry].Next;
             }
             if (prev == lastSentinel)
-                SetBucketEntry(bucket, entries[entry].Next);
+                buckets[bucket] = entries[entry].Next;
             else
                 entries[prev].Next = entries[entry].Next;
             entries[entry].Next = GetFreeListEntry(freeList);
@@ -141,37 +139,39 @@ namespace Decompose.Numerics
 
         private int GetFreeListEntry(int entry)
         {
-            int result = -2 - entry;
+            int result = -3 - entry;
             return result;
         }
 
         private void Resize()
         {
             Array.Resize(ref entries, entries.Length * 2);
-            Array.Resize(ref buckets, bucketsLength * 2);
-            for (int i = 0; i < bucketsLength; i++)
+            Array.Resize(ref buckets, n * 2);
+            for (int bucket = 0; bucket < n; bucket++)
             {
                 var list1 = lastSentinel;
                 var list2 = lastSentinel;
-                var bucket = GetBucketEntry(i);
-                for (var entry = GetBucketEntry(i); entry != lastSentinel; entry = entries[entry].Next)
+                var next = lastSentinel;
+                for (var entry = buckets[bucket]; entry != lastSentinel; entry = next)
                 {
+                    next = entries[entry].Next;
                     int value = entries[entry].Value;
-                    if (value % buckets.Length == value % bucketsLength)
+                    if (value % buckets.Length == value % n)
                     {
                         entries[entry].Next = list1;
                         list1 = entry;
                     }
                     else
                     {
+                        Debug.Assert(value % buckets.Length == bucket + n);
                         entries[entry].Next = list2;
                         list2 = entry;
                     }
                 }
-                SetBucketEntry(i, list1);
-                SetBucketEntry(2 * i, list2);
+                buckets[bucket] = list1;
+                buckets[bucket + n] = list2;
             }
-            bucketsLength = buckets.Length;
+            n = buckets.Length;
         }
     }
 }
