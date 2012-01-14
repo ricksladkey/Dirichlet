@@ -27,9 +27,9 @@ namespace Decompose
                 //FactorTest5();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                //QuadraticSieveDigitsTest();
+                QuadraticSieveDigitsTest();
                 //CunninghamTest();
-                GaussianEliminationTest1();
+                //GaussianEliminationTest1();
             }
             catch (Exception ex)
             {
@@ -333,6 +333,8 @@ namespace Decompose
                 var q = sample.Q;
                 var n = p * q;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
+                //Console.WriteLine("n = {0}", n);
+                //Console.WriteLine("n mod 8 = {0}", n % 8);
                 var config = new QuadraticSieve.Config
                 {
                     Threads = 8,

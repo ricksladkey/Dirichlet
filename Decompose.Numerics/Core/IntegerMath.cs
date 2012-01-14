@@ -205,6 +205,8 @@ namespace Decompose.Numerics
 
         public static int JacobiSymbol(BigInteger m, BigInteger n)
         {
+            if (n == 2)
+                throw new InvalidOperationException("not an odd prime");
             int result = 1;
             while (true)
             {

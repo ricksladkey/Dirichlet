@@ -148,7 +148,7 @@ namespace Decompose.Numerics
                     }
                     else
                     {
-                        Debug.Assert((value & nMask) == bucket + nMask);
+                        Debug.Assert((value & nMask) == bucket + n);
                         entries[entry].Next = list2;
                         list2 = entry;
                     }

@@ -304,7 +304,7 @@ namespace Decompose.Numerics
             digits = (int)Math.Ceiling(BigInteger.Log(n, 10));
             factorBaseSize = CalculateFactorBaseSize();
             factorBase = primes
-                .Where(p => IntegerMath.JacobiSymbol(n, p) == 1)
+                .Where(p => p == 2 || IntegerMath.JacobiSymbol(n, p) == 1)
                 .Take(factorBaseSize)
                 .Select(p => new FactorBaseEntry(p, n, sqrtN))
                 .ToArray();
@@ -336,6 +336,19 @@ namespace Decompose.Numerics
                         stream.WriteLine(string.Join(" ", matrix.GetNonZeroCols(i)));
                 }
             }
+
+#if false
+            if (factorBase[0].P == 2)
+            {
+                var even = matrix.GetNonZeroCols(1).Count() == 0;
+                Console.WriteLine("all exponents of two are even: {0}", even);
+                if (even)
+                {
+                    Console.WriteLine("exponents: {0}",
+                        string.Join(" ", relations.Select(relation => relation.Entries.Where(entry => entry.Index == 1).FirstOrDefault().Exponent)));
+                }
+            }
+#endif
 
             if ((diag & Diag.Solving) == 0)
             {
@@ -792,6 +805,12 @@ namespace Decompose.Numerics
                 ++interval.Exponents[0];
                 y = -y;
             }
+            var exponents = interval.Exponents;
+            while (y.IsEven)
+            {
+                ++exponents[1];
+                y >>= 1;
+            }
             var delta = x - interval.OffsetX;
             if (delta >= int.MinValue + maximumDivisor && delta <= int.MaxValue - maximumDivisor)
                 return FactorOverBase(interval, y, (int)delta);
@@ -803,7 +822,7 @@ namespace Decompose.Numerics
         {
             var offsets1 = interval.Offsets1;
             var exponents = interval.Exponents;
-            for (int i = 0; i < factorBaseSize; i++)
+            for (int i = 1; i < factorBaseSize; i++)
             {
                 var entry = factorBase[i];
                 var p = entry.P;
@@ -829,7 +848,7 @@ namespace Decompose.Numerics
         {
             var offsets1 = interval.Offsets1;
             var exponents = interval.Exponents;
-            for (int i = 0; i < factorBaseSize; i++)
+            for (int i = 1; i < factorBaseSize; i++)
             {
                 var entry = factorBase[i];
                 var p = entry.P;
