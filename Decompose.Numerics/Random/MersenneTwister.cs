@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Numerics;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Decompose.Numerics
 {
@@ -80,6 +82,12 @@ namespace Decompose.Numerics
                 return n == 0 ? next : next % n;
             }
         }
+
+        public IEnumerable<uint> Series(uint n)
+        {
+            while (true)
+                yield return Next(n);
+        }
     }
 
     public class MersenneTwister64 : IRandomNumberAlgorithm<ulong>
@@ -98,6 +106,12 @@ namespace Decompose.Numerics
                 var next = (ulong)random.Next() << 32 | random.Next();
                 return n == 0 ? next : next % n;
             }
+        }
+
+        public IEnumerable<ulong> Series(ulong n)
+        {
+            while (true)
+                yield return Next(n);
         }
     }
 
@@ -120,6 +134,12 @@ namespace Decompose.Numerics
                     BitConverter.GetBytes(random.Next()).CopyTo(bytes, i);
                 return new BigInteger(bytes) % n;
             }
+        }
+
+        public IEnumerable<BigInteger> Series(BigInteger n)
+        {
+            while (true)
+                yield return Next(n);
         }
     }
 }

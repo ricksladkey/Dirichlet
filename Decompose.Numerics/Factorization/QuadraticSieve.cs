@@ -42,8 +42,16 @@ namespace Decompose.Numerics
             Verbose = Summary | Sieve | Timing | Solving,
         }
 
+        public enum Algorithm
+        {
+            None = 0,
+            QuadraticSieve = 1,
+            SelfInitializingQuadraticSieve = 2,
+        }
+
         public class Config
         {
+            public Algorithm Algorithm { get; set; }
             public Diag Diagnostics { get; set; }
             public int Threads { get; set; }
             public int FactorBaseSize { get; set; }
@@ -54,12 +62,8 @@ namespace Decompose.Numerics
 
         public QuadraticSieve(Config config)
         {
+            this.config = config;
             diag = config.Diagnostics;
-            threadsOverride = config.Threads;
-            factorBaseSizeOverride = config.FactorBaseSize;
-            lowerBoundPercentOverride = config.LowerBoundPercent;
-            multiplierOverride = config.Multiplier;
-            reportingIntervalOverride = config.ReportingInterval;
             smallIntegerFactorer = new TrialDivisionFactorization();
             primes = new SieveOfErostothones();
             solver = new Solver(config.Threads, (diag & Diag.Solving) != 0);
@@ -86,11 +90,11 @@ namespace Decompose.Numerics
 
         private struct ExponentEntry
         {
-            public int Index { get; set; }
+            public int Row { get; set; }
             public int Exponent { get; set; }
             public override string ToString()
             {
-                return string.Format("Factor[{0}] ^ {1}", Index, Exponent);
+                return string.Format("Row[{0}] ^ {1}", Row, Exponent);
             }
         }
 
@@ -168,11 +172,7 @@ namespace Decompose.Numerics
             Tuple.Create(110, 3000000),
         };
 
-        private int threadsOverride;
-        private int factorBaseSizeOverride;
-        private int lowerBoundPercentOverride;
-        private int multiplierOverride;
-        private int reportingIntervalOverride;
+        private Config config;
         private IFactorizationAlgorithm<int> smallIntegerFactorer;
         private IEnumerable<int> primes;
         private INullSpaceAlgorithm<IBitArray, IBitMatrix> solver;
@@ -293,10 +293,7 @@ namespace Decompose.Numerics
 
         private void Initialize(BigInteger nOrig)
         {
-            if (multiplierOverride != 0)
-                multiplier = multiplierOverride;
-            else
-                multiplier = 1;
+            multiplier = config.Multiplier != 0 ? config.Multiplier : 1;
             multiplierFactors = smallIntegerFactorer.Factor(multiplier).ToArray();
             this.nOrig = nOrig;
             n = nOrig * multiplier;
@@ -316,13 +313,94 @@ namespace Decompose.Numerics
                 .Where(index => index == factorBaseSize || factorBase[index].P >= subIntervalSize)
                 .First();
             maximumCofactorSize = Math.Min((long)maximumDivisor * cofactorScaleFactor, maximumDivisorSquared);
-            lowerBoundPercent = lowerBoundPercentOverride != 0 ? lowerBoundPercentOverride : lowerBoundPercentDefault;
-            reportingInterval = reportingIntervalOverride != 0 ? reportingIntervalOverride : reportingIntervalDefault;
+            lowerBoundPercent = config.LowerBoundPercent != 0 ? config.LowerBoundPercent : lowerBoundPercentDefault;
+            reportingInterval = config.ReportingInterval != 0 ? config.ReportingInterval : reportingIntervalDefault;
 
             intervalsProcessed = 0;
             valuesChecked = 0;
             partialRelationsProcessed = 0;
             partialRelationsConverted = 0;
+
+            CalculateNumberOfThreads();
+            SetupIntervals();
+            SetupSmallPrimeCycle();
+
+            if (config.Algorithm == Algorithm.SelfInitializingQuadraticSieve)
+                InitializeSiqs();
+        }
+
+        private void InitializeSiqs()
+        {
+            int m = 12 * 32768;
+            var target = BigInteger.Log(n * 2, 10) / 2 - Math.Log(m, 10);
+            var candidates = Enumerable.Range(0, factorBaseSize)
+                .Where(index => factorBase[index].P >= 2000 && factorBase[index].P <= 4000)
+                .ToArray();
+            if (candidates.Length == 0)
+                candidates = Enumerable.Range(factorBaseSize / 2, factorBaseSize - factorBaseSize / 2)
+                .ToArray();
+            var logCandidates = candidates
+                .Select(index => Math.Log(factorBase[index].P, 10))
+                .ToArray();
+            var random = new MersenneTwister32(0);
+            var permuation = null as int[];
+            var s = 0;
+            var error = 0.0;
+            for (int i = 0; i < 10; i++)
+            {
+                var numbers = random.Series((uint)candidates.Length).Take(candidates.Length).ToArray();
+                var p = Enumerable.Range(0, candidates.Length).OrderBy(index => numbers[index]).ToArray();
+                var sum = 0.0;
+                int count = 0;
+                while (count < logCandidates.Length && sum + logCandidates[p[count]] < target)
+                    sum += logCandidates[p[count++]];
+                if (Math.Abs(sum + logCandidates[p[count]] - target) < Math.Abs(sum - target))
+                    sum += logCandidates[p[count++]];
+                var e = Math.Abs(sum - target);
+                if (permuation == null || e < error)
+                {
+                    permuation = p;
+                    s = count;
+                    error = e;
+                }
+            }
+            var qIndices = Enumerable.Range(0, s)
+                .Select(index => candidates[permuation[index]])
+                .OrderBy(index => index)
+                .ToArray();
+            var q = qIndices.Select(index => factorBase[index].P).ToArray();
+            var tSqrt = qIndices.Select(index => factorBase[index].Root).ToArray();
+#if false
+            s = 3;
+            n = 291;
+            q = new[] { 5, 7, 11 };
+            tSqrt = q.Select(p => IntegerMath.ModularSquareRoot(n, p)).ToArray();
+            Debug.Assert(q.Zip(tSqrt, (p, root) => root * root % p == n % p).All(result => result));
+#endif
+            var a = q.Select(p => (BigInteger)p).Product();
+#if false
+            Console.WriteLine("selected = {0}", string.Join(" ", qIndices));
+            Console.WriteLine("sqrt(2 * n) / m = {0}", IntegerMath.Sqrt(2 * n) / m);
+            Console.WriteLine("a = product(q)  = {0}", a);
+#endif
+            var capB = new BigInteger[s];
+            var b = BigInteger.Zero;
+            for (int l = 0; l < s; l++)
+            {
+                var r = q.Where(p => p != q[l]).ProductModulo(q[l]);
+                var rInv = IntegerMath.ModularInverse(r, q[l]);
+                Debug.Assert(r * rInv % q[l] == 1);
+                var gamma = tSqrt[l] * rInv % q[l];
+                if (gamma > q[l] / 2)
+                    gamma = q[l] - gamma;
+                capB[l] = q.Where(p => p != q[l]).Select(p => (BigInteger)p).Product() * gamma;
+                Debug.Assert((capB[l] * capB[l] - n) % q[l] == 0);
+                b += capB[l];
+            }
+            b %= a;
+            Debug.Assert((b * b - n) % a == 0);
+
+            throw new NotImplementedException();
         }
 
         private BigInteger Solve()
@@ -388,15 +466,15 @@ namespace Decompose.Numerics
 
         private void CalculateNumberOfThreads()
         {
-            threads = threadsOverride != 0 ? threadsOverride : 1;
+            threads = config.Threads != 0 ? config.Threads : 1;
             if (n <= BigInteger.Pow(10, 10))
                 threads = 1;
         }
 
         private int CalculateFactorBaseSize()
         {
-            if (factorBaseSizeOverride != 0)
-                return factorBaseSizeOverride;
+            if (config.FactorBaseSize != 0)
+                return config.FactorBaseSize;
             for (int i = 0; i < sizePairs.Length - 1; i++)
             {
                 var pair = sizePairs[i];
@@ -451,7 +529,7 @@ namespace Decompose.Numerics
             foreach (int index in indices)
             {
                 foreach (var entry in relations[index].Entries)
-                    results[entry.Index] += entry.Exponent;
+                    results[entry.Row] += entry.Exponent;
             }
             Debug.Assert(results.All(exponent => exponent % 2 == 0));
             return results;
@@ -469,9 +547,6 @@ namespace Decompose.Numerics
 
         private void Sieve()
         {
-            CalculateNumberOfThreads();
-            SetupIntervals();
-            SetupSmallPrimeCycle();
             relationBuffer = new BlockingCollection<Relation>(desired);
             partialRelations = new Dictionary<long, long>();
 
@@ -905,7 +980,7 @@ namespace Decompose.Numerics
                 {
                     var entry = entries[i];
                     if (entry.Exponent % 2 != 0)
-                        matrix[entry.Index, j] = true;
+                        matrix[entry.Row, j] = true;
                 }
             }
         }
@@ -926,7 +1001,7 @@ namespace Decompose.Numerics
             {
                 if (exponents[i] != 0)
                 {
-                    entries[k++] = new ExponentEntry { Index = i, Exponent = exponents[i] };
+                    entries[k++] = new ExponentEntry { Row = i, Exponent = exponents[i] };
                     if (k == size)
                     {
                         size *= 2;

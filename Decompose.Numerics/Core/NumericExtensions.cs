@@ -7,6 +7,21 @@ namespace Decompose.Numerics
 {
     public static class NumericExtensions
     {
+        public static int SumModulo(this IEnumerable<int> source, int n)
+        {
+            return source.Aggregate((sofar, current) => sofar + current) % n;
+        }
+
+        public static int Product(this IEnumerable<int> source)
+        {
+            return source.Aggregate((sofar, current) => sofar * current);
+        }
+
+        public static int ProductModulo(this IEnumerable<int> source, int n)
+        {
+            return source.Aggregate((sofar, current) => sofar * current % n);
+        }
+
         public static BigInteger Sum(this IEnumerable<BigInteger> source)
         {
             return source.Aggregate((sofar, current) => sofar + current);

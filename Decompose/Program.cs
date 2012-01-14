@@ -24,10 +24,10 @@ namespace Decompose
                 //FactorTest2();
                 //FactorTest3();
                 //FactorTest4();
-                //FactorTest5();
+                MsieveTest();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                QuadraticSieveDigitsTest();
+                //QuadraticSieveDigitsTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
             }
@@ -242,7 +242,7 @@ namespace Decompose
             }
         }
 
-        static void FactorTest5()
+        static void MsieveTest()
         {
             //var n = BigInteger.Parse("87463");
             //var n = BigInteger.Parse("10023859281455311421");
@@ -254,6 +254,7 @@ namespace Decompose
             //FactorTest(debug, 500, n, new PollardRhoReduction(pollardThreads, new MontgomeryReduction()));
             var config = new QuadraticSieve.Config
             {
+                Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
                 Threads = threads,
                 FactorBaseSize = 5400,
                 //LowerBoundPercent = 65,
