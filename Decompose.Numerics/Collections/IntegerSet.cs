@@ -56,14 +56,46 @@ namespace Decompose.Numerics
 
         public void Add(int value)
         {
-            if (!ContainsEntry(value))
-                AddEntry(value);
+            if (ContainsEntry(value))
+                return;
+            var bucket = value % n;
+            var entry = freeList;
+            if (entry == lastSentinel)
+            {
+                if (used + 1 == entries.Length)
+                {
+                    Resize();
+                    bucket = value % n;
+                }
+                entry = used++;
+            }
+            else
+                freeList = GetFreeListEntry(entries[freeList].Next);
+            entries[entry].Value = value;
+            entries[entry].Next = buckets[bucket];
+            buckets[bucket] = entry;
+            ++count;
         }
 
         public void Remove(int value)
         {
-            if (ContainsEntry(value))
-                RemoveEntry(value);
+            if (!ContainsEntry(value))
+                return;
+            var bucket = value % n;
+            var prev = lastSentinel;
+            var entry = buckets[bucket];
+            while (entries[entry].Value != value)
+            {
+                prev = entry;
+                entry = entries[entry].Next;
+            }
+            if (prev == lastSentinel)
+                buckets[bucket] = entries[entry].Next;
+            else
+                entries[prev].Next = entries[entry].Next;
+            entries[entry].Next = GetFreeListEntry(freeList);
+            freeList = entry;
+            --count;
         }
 
         public IEnumerator<int> GetEnumerator()
@@ -88,53 +120,12 @@ namespace Decompose.Numerics
         private bool ContainsEntry(int value)
         {
             var bucket = value % n;
-            for (var entry = buckets[bucket]; entry != lastSentinel; entry = entries[entry].Next)
+            for (var index = buckets[bucket]; index != lastSentinel; index = entries[index].Next)
             {
-                if (entries[entry].Value == value)
+                if (entries[index].Value == value)
                     return true;
             }
             return false;
-        }
-
-        private int AddEntry(int value)
-        {
-            var bucket = value % n;
-            var entry = freeList;
-            if (entry == lastSentinel)
-            {
-                if (used + 1 == entries.Length)
-                {
-                    Resize();
-                    bucket = value % n;
-                }
-                entry = used++;
-            }
-            else
-                freeList = GetFreeListEntry(entries[freeList].Next);
-            entries[entry].Value = value;
-            entries[entry].Next = buckets[bucket];
-            buckets[bucket] = entry;
-            ++count;
-            return entry;
-        }
-
-        private void RemoveEntry(int value)
-        {
-            var bucket = value % n;
-            var prev = lastSentinel;
-            var entry = buckets[bucket];
-            while (entries[entry].Value != value)
-            {
-                prev = entry;
-                entry = entries[entry].Next;
-            }
-            if (prev == lastSentinel)
-                buckets[bucket] = entries[entry].Next;
-            else
-                entries[prev].Next = entries[entry].Next;
-            entries[entry].Next = GetFreeListEntry(freeList);
-            freeList = entry;
-            --count;
         }
 
         private int GetFreeListEntry(int entry)
