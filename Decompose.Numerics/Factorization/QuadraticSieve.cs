@@ -21,7 +21,7 @@ using Solver = Decompose.Numerics.StructuredGaussianElimination<Decompose.Numeri
 #endif
 
 #if true
-using BitMatrix = Decompose.Numerics.HashSetBitMatrix;
+using BitMatrix = Decompose.Numerics.SetBitMatrix;
 using Solver = Decompose.Numerics.StructuredGaussianElimination<Decompose.Numerics.Word64BitArray, Decompose.Numerics.Word64BitMatrix>;
 #endif
 

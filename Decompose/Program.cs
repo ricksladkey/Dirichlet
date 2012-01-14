@@ -371,15 +371,15 @@ namespace Decompose
 #endif
 #if false
             var solver = new StructuredGaussianElimination<Word64BitArray, Word64BitMatrix>(threads, true);
-            var getter = new Func<string[], IBitMatrix>(GetBitMatrix<ByRowHashSetBitMatrix>);
+            var getter = new Func<string[], IBitMatrix>(GetBitMatrix<ByRowSetBitMatrix>);
 #endif
 #if false
             var solver = new StructuredGaussianElimination<Word64BitArray, Word64BitMatrix>(threads, true);
-            var getter = new Func<string[], IBitMatrix>(GetBitMatrix<ByColHashSetBitMatrix>);
+            var getter = new Func<string[], IBitMatrix>(GetBitMatrix<ByColSetBitMatrix>);
 #endif
 #if true
             var solver = new StructuredGaussianElimination<Word64BitArray, Word64BitMatrix>(threads, true);
-            var getter = new Func<string[], IBitMatrix>(GetBitMatrix<HashSetBitMatrix>);
+            var getter = new Func<string[], IBitMatrix>(GetBitMatrix<SetBitMatrix>);
 #endif
 
             timer.Restart();

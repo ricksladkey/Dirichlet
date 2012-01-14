@@ -2,22 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 
-#if false
-using Set = System.Collections.Generic.HashSet<int>;
-#endif
-#if true
-using Set = Decompose.Numerics.IntegerSet;
-#endif
-
 namespace Decompose.Numerics
 {
-    public class HashSetBitMatrix : IBitMatrix
+    public class ByRowSetBitMatrix : IBitMatrix
     {
         private int rows;
         private int cols;
 
-        private Set[] rowSets;
-        private Set[] colSets;
+        private HashSet<int>[] rowSets;
 
         public int WordLength
         {
@@ -31,7 +23,7 @@ namespace Decompose.Numerics
 
         public bool IsColMajor
         {
-            get { return true; }
+            get { return false; }
         }
 
         public int Rows
@@ -44,47 +36,36 @@ namespace Decompose.Numerics
             get { return cols; }
         }
 
-        public HashSetBitMatrix(int rows, int cols)
+        public ByRowSetBitMatrix(int rows, int cols)
         {
             this.rows = rows;
             this.cols = cols;
-            rowSets = new Set[rows];
+            rowSets = new HashSet<int>[rows];
             for (int i = 0; i < rows; i++)
-                rowSets[i] = new Set();
-            colSets = new Set[cols];
-            for (int i = 0; i < cols; i++)
-                colSets[i] = new Set();
+                rowSets[i] = new HashSet<int>();
         }
 
         public bool this[int row, int col]
         {
-            get { return colSets[col].Contains(row); }
+            get { return rowSets[row].Contains(col); }
             set
             {
                 if (value)
-                {
                     rowSets[row].Add(col);
-                    colSets[col].Add(row);
-                }
                 else
-                {
                     rowSets[row].Remove(col);
-                    colSets[col].Remove(row);
-                }
             }
         }
 
         public void XorRows(int dst, int src, int col)
         {
-            BitMatrixHelper.XorRows(this, dst, src, col);
+            rowSets[dst].SymmetricExceptWith(rowSets[src]);
         }
 
         public void Clear()
         {
             for (int i = 0; i < rows; i++)
                 rowSets[i].Clear();
-            for (int j = 0; j < cols; j++)
-                colSets[j].Clear();
         }
 
         public void Copy(IBitMatrix other, int row, int col)
@@ -109,7 +90,7 @@ namespace Decompose.Numerics
 
         public IEnumerable<int> GetNonZeroRows(int col)
         {
-            return colSets[col];
+            return BitMatrixHelper.GetNonZeroRows(this, col);
         }
 
         public int GetRowWeight(int row)
@@ -119,7 +100,7 @@ namespace Decompose.Numerics
 
         public int GetColWeight(int col)
         {
-            return colSets[col].Count;
+            return BitMatrixHelper.GetColWeight(this, col);
         }
 
         public IEnumerable<int> GetRowWeights()
@@ -129,7 +110,13 @@ namespace Decompose.Numerics
 
         public IEnumerable<int> GetColWeights()
         {
-            return BitMatrixHelper.GetColWeights(this);
+            var weights = new int[cols];
+            for (int row = 0; row < rows; row++)
+            {
+                foreach (var col in rowSets[row])
+                    ++weights[col];
+            }
+            return weights;
         }
     }
 }

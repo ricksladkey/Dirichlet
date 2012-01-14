@@ -44,8 +44,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Collections\BitMatrixHelper.cs" />
-    <Compile Include="Collections\ByColHashSetBitMatrix.cs" />
-    <Compile Include="Collections\HashSetBitMatrix.cs" />
+    <Compile Include="Collections\ByColSetBitMatrix.cs" />
+    <Compile Include="Collections\SetBitMatrix.cs" />
     <Compile Include="Collections\IntegerSet.cs" />
     <Compile Include="Factorization\TrialDivisionFactorization.cs" />
     <Compile Include="Reduction\BarrettReduction.cs" />
@@ -78,7 +78,7 @@
     <Compile Include="Factorization\PollardRhoReduction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Factorization\QuadraticSieve.cs" />
-    <Compile Include="Collections\ByRowHashSetBitMatrix.cs" />
+    <Compile Include="Collections\ByRowSetBitMatrix.cs" />
     <Compile Include="NullSpace\StructuredGaussianElimination.cs" />
     <Compile Include="Core\Word32Integer.cs" />
     <Compile Include="Reduction\IResidue.cs" />
