@@ -246,8 +246,10 @@ namespace Decompose
         {
             //var n = BigInteger.Parse("87463");
             //var n = BigInteger.Parse("10023859281455311421");
-            var n = BigInteger.Parse("5382000000735683358022919837657883000000078236999000000000000063"); // https://sites.google.com/site/shouthillgc/Home/gc1p8qn/factorizing-tool
-            const int threads = 1;
+            //var n = BigInteger.Parse("5382000000735683358022919837657883000000078236999000000000000063"); // https://sites.google.com/site/shouthillgc/Home/gc1p8qn/factorizing-tool
+            var sample = samples[20 - 10]; var n = sample.P * sample.Q;
+
+            const int threads = 8;
             bool debug = false;
 
             Console.WriteLine("n = {0}", n);
@@ -256,7 +258,7 @@ namespace Decompose
             {
                 Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
                 Threads = threads,
-                FactorBaseSize = 5400,
+              //  FactorBaseSize = 5400,
                 //LowerBoundPercent = 65,
                 Multiplier = 3,
                 Diagnostics = QuadraticSieve.Diag.Verbose,

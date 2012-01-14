@@ -140,6 +140,7 @@ namespace Decompose.Numerics
             public CountInt[] Counts { get; set; }
             public int[] Offsets1 { get; set; }
             public int[] Offsets2 { get; set; }
+            public int[] OffsetsDiff { get; set; }
             public override string ToString()
             {
                 return string.Format("X = {0}, Size = {1}", X, Size);
@@ -415,6 +416,7 @@ namespace Decompose.Numerics
             var soln1 = new int[factorBaseSize];
             var soln2 = new int[factorBaseSize];
 
+            intervalSize = m;
             siqs = new Siqs
             {
                 Excluded = excluded,
@@ -649,6 +651,7 @@ namespace Decompose.Numerics
             interval.Counts = new CountInt[subIntervalSize + 1];
             interval.Offsets1 = new int[factorBaseSize];
             interval.Offsets2 = new int[factorBaseSize];
+            interval.OffsetsDiff = new int[factorBaseSize];
             return interval;
         }
 
@@ -668,6 +671,7 @@ namespace Decompose.Numerics
             interval.Size = intervalSize;
             var offsets1 = interval.Offsets1;
             var offsets2 = interval.Offsets2;
+            var offsetsDiff = interval.OffsetsDiff;
             if (siqs == null)
             {
                 for (int i = 0; i < factorBaseSize; i++)
@@ -676,6 +680,7 @@ namespace Decompose.Numerics
                     var p = entry.P;
                     offsets1[i] = ((int)((entry.Offset - x) % p) + p) % p;
                     offsets2[i] = (offsets1[i] + entry.RootDiff) % p;
+                    offsetsDiff[i] = entry.RootDiff;
                 }
             }
             else
@@ -686,6 +691,7 @@ namespace Decompose.Numerics
                     var p = entry.P;
                     offsets1[i] = ((int)((siqs.Solution1[i] - x) % p) + p) % p;
                     offsets2[i] = ((int)((siqs.Solution2[i] - x) % p) + p) % p;
+                    offsetsDiff[i] = ((offsets2[i] - offsets1[i]) % p + p) % p;
                 }
             }
             interval.OffsetX = x;
@@ -801,7 +807,7 @@ namespace Decompose.Numerics
         private void SieveMediumPrimes(Interval interval, int size)
         {
             var offsets1 = interval.Offsets1;
-            var offsets2 = interval.Offsets2;
+            var offsetsDiff = interval.OffsetsDiff;
             var counts = interval.Counts;
             int i = mediumPrimeIndex;
             if (factorBase[i].P == 2)
@@ -819,11 +825,14 @@ namespace Decompose.Numerics
             while (i < largePrimeIndex)
             {
                 if (siqs != null && siqs.Excluded[i])
+                {
+                    ++i;
                     continue;
+                }
                 var entry = factorBase[i];
                 int p = entry.P;
                 var logP = entry.LogP;
-                int p1 = siqs == null ? entry.RootDiff : ((offsets2[i] - offsets1[i]) % p + p) % p;
+                int p1 = offsetsDiff[i];
                 int p2 = p - p1;
                 int k = offsets1[i];
                 if (k >= p2 && k - p2 < size)
@@ -951,15 +960,18 @@ namespace Decompose.Numerics
         private long FactorOverBase(Interval interval, BigInteger y, int delta)
         {
             var offsets1 = interval.Offsets1;
+            var offsetsDiff = interval.OffsetsDiff;
             var exponents = interval.Exponents;
             for (int i = 1; i < factorBaseSize; i++)
             {
+                if (siqs != null && siqs.Excluded[i])
+                    continue;
                 var entry = factorBase[i];
                 var p = entry.P;
                 var offset = (delta - offsets1[i]) % p;
                 if (offset < 0)
                     offset += p;
-                if (offset != 0 && offset != entry.RootDiff)
+                if (offset != 0 && offset != offsetsDiff[i])
                 {
                     Debug.Assert(y % p != 0);
                     continue;
@@ -980,6 +992,8 @@ namespace Decompose.Numerics
             var exponents = interval.Exponents;
             for (int i = 1; i < factorBaseSize; i++)
             {
+                if (siqs != null && siqs.Excluded[i])
+                    continue;
                 var entry = factorBase[i];
                 var p = entry.P;
                 var offset = (int)((delta - offsets1[i]) % p);
@@ -1078,7 +1092,9 @@ namespace Decompose.Numerics
             else
             {
                 var xPrime = siqs.A * x + siqs.B;
-                return xPrime * xPrime - n;
+                var yPrime = xPrime * xPrime - n;
+                Debug.Assert(yPrime % siqs.A == 0);
+                return yPrime / siqs.A;
             }
         }
     }
