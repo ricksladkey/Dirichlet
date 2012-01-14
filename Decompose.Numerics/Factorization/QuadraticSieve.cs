@@ -132,6 +132,7 @@ namespace Decompose.Numerics
 
         private class Interval
         {
+            public int Id { get; set; }
             public long X { get; set; }
             public long OffsetX { get; set; }
             public int Size { get; set; }
@@ -143,6 +144,17 @@ namespace Decompose.Numerics
             {
                 return string.Format("X = {0}, Size = {1}", X, Size);
             }
+        }
+
+        private class Siqs
+        {
+            public bool[] Excluded { get; set; } 
+            public int S { get; set; }
+            public BigInteger[] CapB { get; set; }
+            public BigInteger A { get; set; }
+            public BigInteger B { get; set; }
+            public int[] Solution1 { get; set; }
+            public int[] Solution2 { get; set; }
         }
 
         private const int subIntervalSize = 256 * 1024;
@@ -198,6 +210,7 @@ namespace Decompose.Numerics
         private int lowerBoundPercent;
         private int reportingInterval;
 
+        private Siqs siqs;
         private int threads;
         private BlockingCollection<Relation> relationBuffer;
         private Relation[] relations;
@@ -364,12 +377,12 @@ namespace Decompose.Numerics
                     error = e;
                 }
             }
-            var qIndices = Enumerable.Range(0, s)
+            var qA = Enumerable.Range(0, s)
                 .Select(index => candidates[permuation[index]])
                 .OrderBy(index => index)
                 .ToArray();
-            var q = qIndices.Select(index => factorBase[index].P).ToArray();
-            var tSqrt = qIndices.Select(index => factorBase[index].Root).ToArray();
+            var q = qA.Select(index => factorBase[index].P).ToArray();
+            var tSqrt = qA.Select(index => factorBase[index].Root).ToArray();
 #if false
             s = 3;
             n = 291;
@@ -398,9 +411,34 @@ namespace Decompose.Numerics
                 b += capB[l];
             }
             b %= a;
-            Debug.Assert((b * b - n) % a == 0);
+            var excluded = Enumerable.Range(0, factorBaseSize).Select(index => qA.Contains(index)).ToArray();
+            var soln1 = new int[factorBaseSize];
+            var soln2 = new int[factorBaseSize];
 
-            throw new NotImplementedException();
+            siqs = new Siqs
+            {
+                Excluded = excluded,
+                S = s,
+                CapB = capB,
+                A = a,
+                B = b,
+                Solution1 = soln1,
+                Solution2 = soln2,
+            };
+
+            for (int i = 0; i < factorBaseSize; i++)
+            {
+                if (excluded[i])
+                    continue;
+                var entry = factorBase[i];
+                var p = entry.P;
+                var aInv = (int)IntegerMath.ModularInverse(a, p);
+                Debug.Assert(a * aInv % p == 1);
+                soln1[i] = ((int)(aInv * (entry.Root - b) % p) + p) % p;
+                soln2[i] = ((int)(aInv * (-entry.Root - b) % p) + p) % p;
+                Debug.Assert(EvaluatePolynomial(soln1[i]) % p == 0);
+                Debug.Assert(EvaluatePolynomial(soln2[i]) % p == 0);
+            }
         }
 
         private BigInteger Solve()
@@ -623,18 +661,32 @@ namespace Decompose.Numerics
         private Interval GetNextInterval(Interval interval)
         {
             int intervalId = Interlocked.Increment(ref nextIntervalId) - 1;
+            interval.Id = intervalId;
             int intervalNumber = intervalId % 2 == 0 ? intervalId / 2 : -(intervalId + 1) / 2;
             var x = (long)intervalNumber * intervalSize;
             interval.X = x;
             interval.Size = intervalSize;
             var offsets1 = interval.Offsets1;
             var offsets2 = interval.Offsets2;
-            for (int i = 0; i < factorBaseSize; i++)
+            if (siqs == null)
             {
-                var entry = factorBase[i];
-                var p = entry.P;
-                offsets1[i] = ((int)((entry.Offset - x) % p) + p) % p;
-                offsets2[i] = (offsets1[i] + entry.RootDiff) % p;
+                for (int i = 0; i < factorBaseSize; i++)
+                {
+                    var entry = factorBase[i];
+                    var p = entry.P;
+                    offsets1[i] = ((int)((entry.Offset - x) % p) + p) % p;
+                    offsets2[i] = (offsets1[i] + entry.RootDiff) % p;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < factorBaseSize; i++)
+                {
+                    var entry = factorBase[i];
+                    var p = entry.P;
+                    offsets1[i] = ((int)((siqs.Solution1[i] - x) % p) + p) % p;
+                    offsets2[i] = ((int)((siqs.Solution2[i] - x) % p) + p) % p;
+                }
             }
             interval.OffsetX = x;
             return interval;
@@ -749,6 +801,7 @@ namespace Decompose.Numerics
         private void SieveMediumPrimes(Interval interval, int size)
         {
             var offsets1 = interval.Offsets1;
+            var offsets2 = interval.Offsets2;
             var counts = interval.Counts;
             int i = mediumPrimeIndex;
             if (factorBase[i].P == 2)
@@ -765,10 +818,12 @@ namespace Decompose.Numerics
             }
             while (i < largePrimeIndex)
             {
+                if (siqs != null && siqs.Excluded[i])
+                    continue;
                 var entry = factorBase[i];
                 int p = entry.P;
                 var logP = entry.LogP;
-                int p1 = entry.RootDiff;
+                int p1 = siqs == null ? entry.RootDiff : ((offsets2[i] - offsets1[i]) % p + p) % p;
                 int p2 = p - p1;
                 int k = offsets1[i];
                 if (k >= p2 && k - p2 < size)
@@ -1015,8 +1070,16 @@ namespace Decompose.Numerics
 
         private BigInteger EvaluatePolynomial(long x)
         {
-            var xPrime = sqrtN + x;
-            return xPrime * xPrime - n;
+            if (siqs == null)
+            {
+                var xPrime = sqrtN + x;
+                return xPrime * xPrime - n;
+            }
+            else
+            {
+                var xPrime = siqs.A * x + siqs.B;
+                return xPrime * xPrime - n;
+            }
         }
     }
 }

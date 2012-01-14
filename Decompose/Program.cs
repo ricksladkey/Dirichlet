@@ -247,7 +247,7 @@ namespace Decompose
             //var n = BigInteger.Parse("87463");
             //var n = BigInteger.Parse("10023859281455311421");
             var n = BigInteger.Parse("5382000000735683358022919837657883000000078236999000000000000063"); // https://sites.google.com/site/shouthillgc/Home/gc1p8qn/factorizing-tool
-            const int threads = 8;
+            const int threads = 1;
             bool debug = false;
 
             Console.WriteLine("n = {0}", n);
