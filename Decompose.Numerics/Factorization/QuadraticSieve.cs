@@ -355,6 +355,8 @@ namespace Decompose.Numerics
         private void InitializeSiqs()
         {
             int m = 12 * 32768;
+            if (digits > 50)
+                m *= digits;
             var target = BigInteger.Log(n * 2, 10) / 2 - Math.Log(m, 10);
             var candidates = Enumerable.Range(0, factorBaseSize)
                 .Where(index => factorBase[index].P >= 2000 && factorBase[index].P <= 4000)
