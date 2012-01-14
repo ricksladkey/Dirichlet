@@ -24,10 +24,10 @@ namespace Decompose
                 //FactorTest2();
                 //FactorTest3();
                 //FactorTest4();
-                MsieveTest();
+                //MsieveTest();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                //QuadraticSieveDigitsTest();
+                QuadraticSieveDigitsTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
             }
@@ -340,9 +340,10 @@ namespace Decompose
                 //Console.WriteLine("n mod 8 = {0}", n % 8);
                 var config = new QuadraticSieve.Config
                 {
+                    Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
                     Threads = 8,
                     //Diagnostics = QuadraticSieve.Diag.Verbose,
-                    ReportingInterval = 60,
+                    ReportingInterval = 10,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
             }

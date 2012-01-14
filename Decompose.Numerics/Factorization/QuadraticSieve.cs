@@ -131,6 +131,7 @@ namespace Decompose.Numerics
             public Polynomial Polynomial { get; set; }
             public ExponentEntry[] Entries { get; set; }
             public long Cofactor { get; set; }
+            public int Exponent { get; set; }
             public override string ToString()
             {
                 return string.Format("X = {0}", X);
@@ -157,6 +158,7 @@ namespace Decompose.Numerics
 
         private class Siqs
         {
+            public int[] Included { get; set; }
             public bool[] Excluded { get; set; } 
             public int S { get; set; }
             public BigInteger[] CapB { get; set; }
@@ -441,6 +443,7 @@ namespace Decompose.Numerics
             intervalSize = m;
             siqs = new Siqs
             {
+                Included = qA,
                 Excluded = excluded,
                 S = s,
                 CapB = capB,
@@ -560,7 +563,7 @@ namespace Decompose.Numerics
                 .Zip(exponents, (p, exponent) => BigInteger.ModPow(p, exponent, n));
             var yCofactors = indices
                 .Select(index => (BigInteger)relations[index].Cofactor)
-                .Where(cofactor => cofactor != 0);
+                .Where(cofactor => cofactor != 1);
             var yPrime = yFactorBase
                 .Concat(yCofactors)
                 .ProductModulo(n);
@@ -941,12 +944,10 @@ namespace Decompose.Numerics
             if (cofactor == 1)
             {
                 AddQFactors(interval);
-                var relation = new Relation
-                {
-                    X = EvaluateMapping(interval.Polynomial, interval.X + k),
-                    Entries = GetEntries(interval.Exponents),
-                };
-                Debug.Assert((relation.X * relation.X - MultiplyFactors(relation)) % n == 0);
+                var relation = CreateRelation(
+                    EvaluateMapping(interval.Polynomial, interval.X + k),
+                    GetEntries(interval.Exponents),
+                    1, 0);
                 return relationBuffer.TryAdd(relation);
             }
             if (cofactor < maximumCofactorSize)
@@ -1018,6 +1019,7 @@ namespace Decompose.Numerics
         private long FactorOverBase(Interval interval, BigInteger y, long delta)
         {
             var offsets1 = interval.Offsets1;
+            var offsetsDiff = interval.OffsetsDiff;
             var exponents = interval.Exponents;
             for (int i = 1; i < factorBaseSize; i++)
             {
@@ -1028,7 +1030,7 @@ namespace Decompose.Numerics
                 var offset = (int)((delta - offsets1[i]) % p);
                 if (offset < 0)
                     offset += p;
-                if (offset != 0 && offset != entry.RootDiff)
+                if (offset != 0 && offset != offsetsDiff[i])
                 {
                     Debug.Assert(y % p != 0);
                     continue;
@@ -1057,37 +1059,47 @@ namespace Decompose.Numerics
             if (other == 0)
                 return true;
             AddQFactors(interval);
-#if false
-            var relation1 = new Relation
-            {
-                X = EvaluateMapping(interval.Polynomial, interval.X + k),
-                Entries = GetEntries(interval.Exponents),
-                Cofactor = cofactor,
-            };
-            Debug.Assert((relation1.X * relation1.X - MultiplyFactors(relation1)) % n == 0);
-            ClearExponents(interval);
-            FactorOverBase(interval, other);
-            AddQFactors(interval);
-            var relation2 = new Relation
-            {
-                X = EvaluateMapping(interval.Polynomial, other),
-                Entries = GetEntries(interval.Exponents),
-                Cofactor = cofactor,
-            };
-            Debug.Assert((relation2.X * relation2.X - MultiplyFactors(relation2)) % n == 0);
-            Debug.Assert((BigInteger.Pow(relation1.X * relation2.X, 2) - MultiplyFactors(relation1) * MultiplyFactors(relation2)) % n == 0);
-#endif
             ++partialRelationsConverted;
+#if false
+            var oldExponents = interval.Exponents;
+            interval.Exponents = (CountInt[])oldExponents.Clone();
+            var relation1 = CreateRelation(
+                EvaluateMapping(interval.Polynomial, interval.X + k),
+                GetEntries(interval.Exponents),
+                cofactor, 1);
+            ClearExponents(interval);
+            var otherCofactor = FactorOverBase(interval, other);
+            if (otherCofactor != cofactor)
+                Debugger.Break();
+            AddQFactors(interval);
+            var relation2 = CreateRelation(
+                EvaluateMapping(interval.Polynomial, other),
+                GetEntries(interval.Exponents),
+                cofactor, 1);
+            if ((BigInteger.Pow(relation1.X * relation2.X, 2) - MultiplyFactors(relation1) * MultiplyFactors(relation2)) % n != 0)
+                Debugger.Break();
+            interval.Exponents = oldExponents;
+#endif
             FactorOverBase(interval, other);
             AddQFactors(interval);
+            var relation = CreateRelation(
+                EvaluateMapping(interval.Polynomial, interval.X + k) * EvaluateMapping(interval.Polynomial, other),
+                GetEntries(interval.Exponents),
+                cofactor, 2);
+            return relationBuffer.TryAdd(relation);
+        }
+
+        private Relation CreateRelation(BigInteger x, ExponentEntry[] entries, long cofactor, int exponent)
+        {
             var relation = new Relation
             {
-                X = EvaluateMapping(interval.Polynomial, interval.X + k) * EvaluateMapping(interval.Polynomial, other),
-                Entries = GetEntries(interval.Exponents),
+                X = x,
+                Entries = entries,
                 Cofactor = cofactor,
+                Exponent = exponent,
             };
             Debug.Assert((relation.X * relation.X - MultiplyFactors(relation)) % n == 0);
-            return relationBuffer.TryAdd(relation);
+            return relation;
         }
 
         private void ProcessRelations()
@@ -1152,9 +1164,7 @@ namespace Decompose.Numerics
             var result = relation.Entries
                 .Select(entry => BigInteger.Pow(entry.Row == 0 ? -1 : factorBase[entry.Row - 1].P, entry.Exponent))
                 .ProductModulo(n);
-            if (relation.Cofactor != 0)
-                return result * relation.Cofactor * relation.Cofactor % n;
-            return result;
+            return result * BigInteger.ModPow(relation.Cofactor, relation.Exponent, n) % n;
         }
     }
 }
