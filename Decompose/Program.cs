@@ -329,7 +329,7 @@ namespace Decompose
 
         static void QuadraticSieveDigitsTest()
         {
-            for (int i = 20; i <= 20; i++)
+            for (int i = 22; i <= 30; i++)
             {
                 var sample = samples[i - 10];
                 var p = sample.P;
@@ -346,6 +346,7 @@ namespace Decompose
                     ReportingInterval = 10,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
+                break;
             }
         }
 
