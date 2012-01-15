@@ -775,11 +775,10 @@ namespace Decompose.Numerics
                 interval.Size = intervalSize;
                 for (int i = 0; i < factorBaseSize; i++)
                 {
-                    var entry = factorBase[i];
-                    var p = entry.P;
-                    offsets1[i] = ((int)((siqs.Solution1[i] - x) % p) + p) % p;
-                    offsets2[i] = ((int)((siqs.Solution2[i] - x) % p) + p) % p;
-                    offsetsDiff[i] = ((offsets2[i] - offsets1[i]) % p + p) % p;
+                    var p = factorBase[i].P;
+                    var o1 = offsets1[i] = ((int)((siqs.Solution1[i] - x) % p) + p) % p;
+                    var o2 = offsets2[i] = ((int)((siqs.Solution2[i] - x) % p) + p) % p;
+                    offsetsDiff[i] = ((o2 - o1) % p + p) % p;
                 }
             }
             else
