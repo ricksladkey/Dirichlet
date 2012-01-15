@@ -462,12 +462,14 @@ namespace Decompose.Numerics
                     continue;
                 var entry = factorBase[i];
                 var p = entry.P;
-                var aInv = IntegerMath.ModularInverse(a, p);
+                var aInv = (long)IntegerMath.ModularInverse(a, p);
                 Debug.Assert(a * aInv % p == 1);
                 for (int l = 0; l < s; l++)
                     bainv2[l, i] = (int)(2 * (long)(capB[l] % p) * aInv % p);
-                soln1[i] = (int)((aInv * (long)((entry.Root - b) % p) % p + p) % p);
-                soln2[i] = (int)((aInv * (long)((-entry.Root - b) % p) % p + p) % p);
+                var root1 = (int)((entry.Root - b) % p);
+                var root2 = root1 + entry.RootDiff;
+                soln1[i] = (int)(aInv * root1 % p);
+                soln2[i] = (int)(aInv * root2 % p);
                 Debug.Assert(EvaluatePolynomial(polynomial, soln1[i]) % p == 0);
                 Debug.Assert(EvaluatePolynomial(polynomial, soln2[i]) % p == 0);
                 Debug.Assert(i == 0 || soln1[i] != soln2[i]);
