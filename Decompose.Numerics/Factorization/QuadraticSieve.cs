@@ -372,7 +372,7 @@ namespace Decompose.Numerics
             SetupSmallPrimeCycle();
         }
 
-        private Siqs FirstPolynomial()
+        private Siqs FirstPolynomial(Siqs siqs)
         {
             var m = intervalSize;
             var target = BigInteger.Log(n * 2, 10) / 2 - Math.Log(m, 10);
@@ -406,21 +406,42 @@ namespace Decompose.Numerics
                     error = e;
                 }
             }
+
+            // Allocate and initialize one-time memory.
+            if (siqs == null)
+            {
+                siqs = new Siqs
+                {
+                    IsQIndex = new bool[factorBaseSize],
+                    Solution1 = new int[factorBaseSize],
+                    Solution2 = new int[factorBaseSize],
+                };
+            }
+            else
+            {
+                for (int i = 0; i < factorBaseSize; i++)
+                    siqs.IsQIndex[i] = false;
+            }
+            if (siqs.Bainv2 == null || siqs.S != s)
+                siqs.Bainv2 = new int[s, factorBaseSize];
+
             var qIndices = Enumerable.Range(0, s)
                 .Select(index => candidates[permuation[index]])
                 .OrderBy(index => index)
                 .ToArray();
             var q = qIndices.Select(index => factorBase[index].P).ToArray();
-            var tSqrt = qIndices.Select(index => factorBase[index].Root).ToArray();
             var a = q.Select(p => (BigInteger)p).Product();
             var capB = new BigInteger[s];
             var b = BigInteger.Zero;
             for (int l = 0; l < s; l++)
             {
+                var j = qIndices[l];
+                siqs.IsQIndex[j] = true;
                 var r = q.Where(p => p != q[l]).ProductModulo(q[l]);
                 var rInv = IntegerMath.ModularInverse(r, q[l]);
                 Debug.Assert(r * rInv % q[l] == 1);
-                var gamma = tSqrt[l] * rInv % q[l];
+                var tSqrt = factorBase[j].Root;
+                var gamma = tSqrt * rInv % q[l];
                 if (gamma > q[l] / 2)
                     gamma = q[l] - gamma;
                 capB[l] = q.Where(p => p != q[l]).Select(p => (BigInteger)p).Product() * gamma;
@@ -430,40 +451,33 @@ namespace Decompose.Numerics
             b %= a;
             Debug.Assert((b * b - n) % a == 0);
             var polynomial = new Polynomial { A = a, B = b };
-            var isQIndex = Enumerable.Range(0, factorBaseSize).Select(index => qIndices.Contains(index)).ToArray();
 
-            var bainv2 = new int[s, factorBaseSize];
-            var soln1 = new int[factorBaseSize];
-            var soln2 = new int[factorBaseSize];
+
+            var bainv2 = siqs.Bainv2;
+            var soln1 = siqs.Solution1;
+            var soln2 = siqs.Solution2;
             for (int i = 0; i < factorBaseSize; i++)
             {
-                if (isQIndex[i])
+                if (siqs.IsQIndex[i])
                     continue;
                 var entry = factorBase[i];
                 var p = entry.P;
-                var aInv = (int)IntegerMath.ModularInverse(a, p);
+                var aInv = IntegerMath.ModularInverse(a, p);
                 Debug.Assert(a * aInv % p == 1);
                 for (int l = 0; l < s; l++)
-                    bainv2[l, i] = (int)(2 * capB[l] * aInv % p);
-                soln1[i] = ((int)(aInv * (entry.Root - b) % p) + p) % p;
-                soln2[i] = ((int)(aInv * (-entry.Root - b) % p) + p) % p;
+                    bainv2[l, i] = (int)(2 * (long)(capB[l] % p) * aInv % p);
+                soln1[i] = (int)((aInv * (long)((entry.Root - b) % p) % p + p) % p);
+                soln2[i] = (int)((aInv * (long)((-entry.Root - b) % p) % p + p) % p);
                 Debug.Assert(EvaluatePolynomial(polynomial, soln1[i]) % p == 0);
                 Debug.Assert(EvaluatePolynomial(polynomial, soln2[i]) % p == 0);
                 Debug.Assert(i == 0 || soln1[i] != soln2[i]);
             }
 
-            var siqs = new Siqs
-            {
-                Index = 0,
-                QIndicies = qIndices,
-                IsQIndex = isQIndex,
-                S = s,
-                CapB = capB,
-                Bainv2 = bainv2,
-                Polynomial = polynomial,
-                Solution1 = soln1,
-                Solution2 = soln2,
-            };
+            siqs.Index = 0;
+            siqs.QIndicies = qIndices;
+            siqs.S = s;
+            siqs.CapB = capB;
+            siqs.Polynomial = polynomial;
 
             if ((diag & Diag.Polynomials) != 0)
                 Console.WriteLine("first polynomial ({0} factors)", s);
@@ -474,7 +488,7 @@ namespace Decompose.Numerics
         private Siqs ChangePolynomial(Siqs siqs)
         {
             if (siqs == null || siqs.Index == (1 << (siqs.S - 1)) - 1)
-                return FirstPolynomial();
+                return FirstPolynomial(siqs);
 
             int index = siqs.Index;
             var a = siqs.Polynomial.A;
@@ -498,8 +512,8 @@ namespace Decompose.Numerics
             Debug.Assert((b * b - n) % a == 0);
 
             // Calculate new offsets.
-            var soln1 = (int[])siqs.Solution1.Clone();
-            var soln2 = (int[])siqs.Solution2.Clone();
+            var soln1 = siqs.Solution1;
+            var soln2 = siqs.Solution2;
             for (int i = 0; i < factorBaseSize; i++)
             {
                 if (siqs.IsQIndex[i])
@@ -517,8 +531,6 @@ namespace Decompose.Numerics
             // Update siqs.
             siqs.Index = index + 1;
             siqs.Polynomial = polynomial;
-            siqs.Solution1 = soln1;
-            siqs.Solution2 = soln2;
 
             if ((diag & Diag.Polynomials) != 0)
                 Console.WriteLine("change polynomial: index = {0})", siqs.Index);

@@ -87,6 +87,19 @@ namespace Decompose.Numerics
             return x;
         }
 
+        public static int ModularInverse(BigInteger n, int p)
+        {
+            if (p == 0)
+                return 1;
+            int r = (int)(n % p);
+            int x;
+            int y;
+            ExtendedGreatestCommonDivisor(r, p, out x, out y);
+            if (x < 0)
+                x += p;
+            return x;
+        }
+
         public static BigInteger ModularInverse(BigInteger n, BigInteger p)
         {
             BigInteger x;
