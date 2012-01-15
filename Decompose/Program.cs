@@ -24,10 +24,10 @@ namespace Decompose
                 //FactorTest2();
                 //FactorTest3();
                 //FactorTest4();
-                //MsieveTest();
+                MsieveTest();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                QuadraticSieveDigitsTest();
+                //QuadraticSieveDigitsTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
             }
@@ -246,25 +246,23 @@ namespace Decompose
         {
             //var n = BigInteger.Parse("87463");
             //var n = BigInteger.Parse("10023859281455311421");
-            //var n = BigInteger.Parse("5382000000735683358022919837657883000000078236999000000000000063"); // https://sites.google.com/site/shouthillgc/Home/gc1p8qn/factorizing-tool
-            var sample = samples[20 - 10]; var n = sample.P * sample.Q;
-
-            const int threads = 8;
-            bool debug = false;
+            var n = BigInteger.Parse("5382000000735683358022919837657883000000078236999000000000000063"); // https://sites.google.com/site/shouthillgc/Home/gc1p8qn/factorizing-tool
+            //var sample = samples[20 - 10]; var n = sample.P * sample.Q;
 
             Console.WriteLine("n = {0}", n);
             //FactorTest(debug, 500, n, new PollardRhoReduction(pollardThreads, new MontgomeryReduction()));
             var config = new QuadraticSieve.Config
             {
                 Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
-                Threads = threads,
-                //FactorBaseSize = 5400,
+                Threads = 8,
+                FactorBaseSize = 5400,
                 //LowerBoundPercent = 65,
+                IntervalSize = 12 * 32768,
                 Multiplier = 3,
                 Diagnostics = QuadraticSieve.Diag.Verbose,
                 ReportingInterval = 10,
             };
-            var factors = FactorTest(debug, 1, n, new QuadraticSieve(config));
+            var factors = FactorTest(false, 1, n, new QuadraticSieve(config));
             foreach (var factor in factors)
                 Console.WriteLine("{0}", factor);
         }

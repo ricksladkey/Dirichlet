@@ -56,6 +56,7 @@ namespace Decompose.Numerics
             public Diag Diagnostics { get; set; }
             public int Threads { get; set; }
             public int FactorBaseSize { get; set; }
+            public int IntervalSize { get; set; }
             public int LowerBoundPercent { get; set; }
             public int Multiplier { get; set; }
             public int ReportingInterval { get; set; }
@@ -152,6 +153,7 @@ namespace Decompose.Numerics
             public int[] Offsets1 { get; set; }
             public int[] Offsets2 { get; set; }
             public int[] OffsetsDiff { get; set; }
+            public Siqs Siqs { get; set; }
             public override string ToString()
             {
                 return string.Format("X = {0}, Size = {1}", X, Size);
@@ -218,6 +220,7 @@ namespace Decompose.Numerics
         private int nextIntervalId;
 
         private Diag diag;
+        private Algorithm algorithm;
         private int multiplier;
         private int[] multiplierFactors;
         private BigInteger nOrig;
@@ -235,7 +238,6 @@ namespace Decompose.Numerics
         private int lowerBoundPercent;
         private int reportingInterval;
 
-        private Siqs siqs;
         private int threads;
         private BlockingCollection<Relation> relationBuffer;
         private Relation[] relations;
@@ -290,6 +292,14 @@ namespace Decompose.Numerics
                 Console.WriteLine("Initialization: {0:F3} msec", 1000.0 * elapsed / Stopwatch.Frequency);
             }
 
+            if ((diag & Diag.Summary) != 0)
+            {
+                Console.WriteLine("algorithm = {0}", algorithm);
+                Console.WriteLine("digits = {0}; factorBaseSize = {1:N0}; desired = {2:N0}", digits, factorBaseSize, desired);
+                Console.WriteLine("interval size = {0:N0}; threads = {1}; lowerBoundPercent = {2}", intervalSize, threads, lowerBoundPercent);
+                Console.WriteLine("first few factors: {0}", string.Join(", ", factorBase.Select(entry => entry.P).Take(10).ToArray()));
+            }
+
             Sieve();
 
             if ((diag & Diag.Timing) != 0)
@@ -301,12 +311,8 @@ namespace Decompose.Numerics
 
             if ((diag & Diag.Summary) != 0)
             {
-                Console.WriteLine("digits = {0}; factorBaseSize = {1:N0}; desired = {2:N0}", digits, factorBaseSize, desired);
-                Console.WriteLine("threads = {0}; lowerBoundPercent = {1}", threads, lowerBoundPercent);
-                Console.WriteLine("interval size = {0:N0}; intervals processed = {1:N0}", intervalSize, intervalsProcessed);
-                Console.WriteLine("values processsed = {0:N0}; values checked = {1:N0}", (long)intervalsProcessed * intervalSize, valuesChecked);
-                Console.WriteLine("partial relations processed = {0:N0}; converted = {1:N0}", partialRelationsProcessed, partialRelationsConverted);
-                Console.WriteLine("first few factors: {0}", string.Join(", ", factorBase.Select(entry => entry.P).Take(10).ToArray()));
+                Console.WriteLine("intervals processed = {0:N0}; values processsed = {1:N0}; values checked = {2:N0}", intervalsProcessed, (long)intervalsProcessed * intervalSize, valuesChecked);
+                Console.WriteLine("partial relations processed = {0:N0}; partial relations converted = {1:N0}", partialRelationsProcessed, partialRelationsConverted);
             }
 
             ProcessRelations();
@@ -332,6 +338,7 @@ namespace Decompose.Numerics
 
         private void Initialize(BigInteger nOrig)
         {
+            algorithm = config.Algorithm != Algorithm.None ? config.Algorithm : Algorithm.QuadraticSieve;
             multiplier = config.Multiplier != 0 ? config.Multiplier : 1;
             multiplierFactors = smallIntegerFactorer.Factor(multiplier).ToArray();
             this.nOrig = nOrig;
@@ -365,7 +372,7 @@ namespace Decompose.Numerics
             SetupSmallPrimeCycle();
         }
 
-        private void InitializeSiqs()
+        private Siqs FirstPolynomial()
         {
             var m = intervalSize;
             var target = BigInteger.Log(n * 2, 10) / 2 - Math.Log(m, 10);
@@ -405,13 +412,6 @@ namespace Decompose.Numerics
                 .ToArray();
             var q = qIndices.Select(index => factorBase[index].P).ToArray();
             var tSqrt = qIndices.Select(index => factorBase[index].Root).ToArray();
-#if false
-            s = 3;
-            n = 291;
-            q = new[] { 5, 7, 11 };
-            tSqrt = q.Select(p => IntegerMath.ModularSquareRoot(n, p)).ToArray();
-            Debug.Assert(q.Zip(tSqrt, (p, root) => root * root % p == n % p).All(result => result));
-#endif
             var a = q.Select(p => (BigInteger)p).Product();
             var capB = new BigInteger[s];
             var b = BigInteger.Zero;
@@ -452,7 +452,7 @@ namespace Decompose.Numerics
                 Debug.Assert(i == 0 || soln1[i] != soln2[i]);
             }
 
-            siqs = new Siqs
+            var siqs = new Siqs
             {
                 Index = 0,
                 QIndicies = qIndices,
@@ -464,17 +464,18 @@ namespace Decompose.Numerics
                 Solution1 = soln1,
                 Solution2 = soln2,
             };
+
             if ((diag & Diag.Polynomials) != 0)
                 Console.WriteLine("first polynomial ({0} factors)", s);
+
+            return siqs;
         }
 
-        private void ChangePolynomial()
+        private Siqs ChangePolynomial(Siqs siqs)
         {
             if (siqs == null || siqs.Index == (1 << (siqs.S - 1)) - 1)
-            {
-                InitializeSiqs();
-                return;
-            }
+                return FirstPolynomial();
+
             int index = siqs.Index;
             var a = siqs.Polynomial.A;
             var b = siqs.Polynomial.B;
@@ -521,6 +522,8 @@ namespace Decompose.Numerics
 
             if ((diag & Diag.Polynomials) != 0)
                 Console.WriteLine("change polynomial: index = {0})", siqs.Index);
+
+            return siqs;
         }
 
         private BigInteger Solve()
@@ -729,9 +732,12 @@ namespace Decompose.Numerics
 
         private void SetupIntervals()
         {
-            if (config.Algorithm == Algorithm.SelfInitializingQuadraticSieve)
+            if (config.IntervalSize != 0)
+                intervalSize = config.IntervalSize;
+            else if (algorithm == Algorithm.SelfInitializingQuadraticSieve)
             {
                 intervalSize = 1024 * 1024;
+                intervalSize = IntegerMath.MultipleOfCeiling(intervalSize, subIntervalSize);
             }
             else
             {
@@ -745,12 +751,13 @@ namespace Decompose.Numerics
             var offsets1 = interval.Offsets1;
             var offsets2 = interval.Offsets2;
             var offsetsDiff = interval.OffsetsDiff;
-            if (config.Algorithm == Algorithm.SelfInitializingQuadraticSieve)
+            if (algorithm == Algorithm.SelfInitializingQuadraticSieve)
             {
-                ChangePolynomial();
+                var siqs = ChangePolynomial(interval.Siqs);
+                interval.Siqs = siqs;
                 var x = -intervalSize / 2;
                 interval.X = x;
-                interval.Polynomial = siqs.Polynomial;
+                interval.Polynomial = interval.Siqs.Polynomial;
                 interval.Size = intervalSize;
                 for (int i = 0; i < factorBaseSize; i++)
                 {
@@ -895,6 +902,7 @@ namespace Decompose.Numerics
 
         private void SieveMediumPrimes(Interval interval, int size)
         {
+            var siqs = interval.Siqs;
             var offsets1 = interval.Offsets1;
             var offsetsDiff = interval.OffsetsDiff;
             var counts = interval.Counts;
@@ -1028,6 +1036,7 @@ namespace Decompose.Numerics
         {
             var y = EvaluatePolynomial(interval.Polynomial, x);
             var exponents = interval.Exponents;
+            var siqs = interval.Siqs;
             if (y < 0)
             {
                 ++exponents[0];
@@ -1061,6 +1070,7 @@ namespace Decompose.Numerics
 
         private long FactorOverBase(Interval interval, BigInteger y, int delta)
         {
+            var siqs = interval.Siqs;
             var offsets1 = interval.Offsets1;
             var offsetsDiff = interval.OffsetsDiff;
             var exponents = interval.Exponents;
@@ -1090,6 +1100,7 @@ namespace Decompose.Numerics
 
         private long FactorOverBase(Interval interval, BigInteger y, long delta)
         {
+            var siqs = interval.Siqs;
             var offsets1 = interval.Offsets1;
             var offsetsDiff = interval.OffsetsDiff;
             var exponents = interval.Exponents;
