@@ -24,10 +24,10 @@ namespace Decompose
                 //FactorTest2();
                 //FactorTest3();
                 //FactorTest4();
-                MsieveTest();
+                //MsieveTest();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                //QuadraticSieveDigitsTest();
+                QuadraticSieveDigitsTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
             }
@@ -327,7 +327,7 @@ namespace Decompose
 
         static void QuadraticSieveDigitsTest()
         {
-            for (int i = 22; i <= 30; i++)
+            for (int i = 40; i <= 40; i++)
             {
                 var sample = samples[i - 10];
                 var p = sample.P;
@@ -339,12 +339,12 @@ namespace Decompose
                 var config = new QuadraticSieve.Config
                 {
                     Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
-                    Threads = 1,
+                    Threads = 8,
+                    FactorBaseSize = 60000,
                     Diagnostics = QuadraticSieve.Diag.Verbose,
                     ReportingInterval = 10,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
-                break;
             }
         }
 

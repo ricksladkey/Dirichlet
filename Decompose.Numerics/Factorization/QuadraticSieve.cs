@@ -68,7 +68,7 @@ namespace Decompose.Numerics
             diag = config.Diagnostics;
             random = new MersenneTwister32(0);
             smallIntegerFactorer = new TrialDivisionFactorization();
-            primes = new SieveOfErostothones();
+            allPrimes = new SieveOfErostothones();
             solver = new Solver(config.Threads, (diag & Diag.Solving) != 0);
         }
 
@@ -213,7 +213,7 @@ namespace Decompose.Numerics
         private Config config;
         private IRandomNumberAlgorithm<uint> random;
         private IFactorizationAlgorithm<int> smallIntegerFactorer;
-        private IEnumerable<int> primes;
+        private IEnumerable<int> allPrimes;
         private INullSpaceAlgorithm<IBitArray, IBitMatrix> solver;
 
         private int intervalSize;
@@ -230,6 +230,7 @@ namespace Decompose.Numerics
         private int desired;
         private int digits;
         private FactorBaseEntry[] factorBase;
+        private int[] primes;
         private int maximumDivisor;
         private long maximumCofactorSize;
         private CountInt logMaximumDivisorSquared;
@@ -346,11 +347,12 @@ namespace Decompose.Numerics
             sqrtN = IntegerMath.Sqrt(this.n);
             digits = (int)Math.Ceiling(BigInteger.Log(n, 10));
             factorBaseSize = CalculateFactorBaseSize();
-            factorBase = primes
+            factorBase = allPrimes
                 .Where(p => p == 2 || IntegerMath.JacobiSymbol(n, p) == 1)
                 .Take(factorBaseSize)
                 .Select(p => new FactorBaseEntry(p, n, sqrtN))
                 .ToArray();
+            primes = factorBase.Select(entry => entry.P).ToArray();
             desired = factorBaseSize + 1 + surplusRelations;
             maximumDivisor = factorBase[factorBaseSize - 1].P;
             long maximumDivisorSquared = (long)maximumDivisor * maximumDivisor;
@@ -520,8 +522,7 @@ namespace Decompose.Numerics
             {
                 if (siqs.IsQIndex[i])
                     continue;
-                var entry = factorBase[i];
-                var p = entry.P;
+                var p = primes[i];
                 var step = e * bainv2[v, i] % p;
                 soln1[i] = (soln1[i] - step) % p;
                 soln2[i] = (soln2[i] - step) % p;
@@ -775,9 +776,9 @@ namespace Decompose.Numerics
                 interval.Size = intervalSize;
                 for (int i = 0; i < factorBaseSize; i++)
                 {
-                    var p = factorBase[i].P;
-                    var o1 = offsets1[i] = ((int)((siqs.Solution1[i] - x) % p) + p) % p;
-                    var o2 = offsets2[i] = ((int)((siqs.Solution2[i] - x) % p) + p) % p;
+                    var p = primes[i];
+                    var o1 = offsets1[i] = ((siqs.Solution1[i] - x) % p + p) % p;
+                    var o2 = offsets2[i] = ((siqs.Solution2[i] - x) % p + p) % p;
                     offsetsDiff[i] = ((o2 - o1) % p + p) % p;
                 }
             }
@@ -809,7 +810,7 @@ namespace Decompose.Numerics
             int j = 0;
             while (j < factorBaseSize && c * factorBase[j].P < maximumCycleLenth)
             {
-                int p = factorBase[j].P;
+                var p = factorBase[j].P;
                 c *= p;
                 ++j;
             }
@@ -819,7 +820,7 @@ namespace Decompose.Numerics
             c = 1;
             for (int i = 0; i < mediumPrimeIndex; i++)
             {
-                int p = factorBase[i].P;
+                var p = primes[i];
                 cInv[i] = IntegerMath.ModularInverse(c, p);
                 cProduct[i] = c;
                 c *= p;
@@ -829,8 +830,8 @@ namespace Decompose.Numerics
             for (int i = 0; i < mediumPrimeIndex; i++)
             {
                 var entry = factorBase[i];
-                int p = entry.P;
-                int p2 = entry.RootDiff;
+                var p = entry.P;
+                var p2 = entry.RootDiff;
                 var logP = entry.LogP;
                 for (int k = 0; k < cycleLength; k += p)
                 {
@@ -888,11 +889,11 @@ namespace Decompose.Numerics
             var counts = interval.Counts;
             int k = 0;
             for (int i = 0; i < mediumPrimeIndex; i++)
-                k += (offsets1[i] - k) * cInv[i] % factorBase[i].P * cProduct[i];
+                k += (offsets1[i] - k) * cInv[i] % primes[i] * cProduct[i];
             if (k < 0)
                 k += cycleLength;
             Debug.Assert(k >= 0 && k < cycleLength);
-            Debug.Assert(Enumerable.Range(0, mediumPrimeIndex).All(i => (k - offsets1[i]) % factorBase[i].P == 0));
+            Debug.Assert(Enumerable.Range(0, mediumPrimeIndex).All(i => (k - offsets1[i]) % primes[i] == 0));
 
             Array.Copy(cycle, cycleLength - k, counts, 0, k);
             int kMax = size - cycleLength;
@@ -910,7 +911,7 @@ namespace Decompose.Numerics
             Debug.Assert(k >= size);
             k -= size;
             for (int i = 0; i < mediumPrimeIndex; i++)
-                offsets1[i] = k % factorBase[i].P;
+                offsets1[i] = k % primes[i];
         }
 
         private void SieveMediumPrimes(Interval interval, int size)
@@ -920,7 +921,7 @@ namespace Decompose.Numerics
             var offsetsDiff = interval.OffsetsDiff;
             var counts = interval.Counts;
             int i = mediumPrimeIndex;
-            if (factorBase[i].P == 2)
+            if (primes[i] == 2)
             {
                 var logP = factorBase[i].LogP;
                 int k;
@@ -1091,8 +1092,7 @@ namespace Decompose.Numerics
             {
                 if (siqs != null && siqs.IsQIndex[i])
                     continue;
-                var entry = factorBase[i];
-                var p = entry.P;
+                var p = primes[i];
                 var offset = (delta - offsets1[i]) % p;
                 if (offset < 0)
                     offset += p;
@@ -1121,8 +1121,7 @@ namespace Decompose.Numerics
             {
                 if (siqs != null && siqs.IsQIndex[i])
                     continue;
-                var entry = factorBase[i];
-                var p = entry.P;
+                var p = primes[i];
                 var offset = (int)((delta - offsets1[i]) % p);
                 if (offset < 0)
                     offset += p;
@@ -1156,7 +1155,7 @@ namespace Decompose.Numerics
             }
             for (int i = 1; i < factorBaseSize; i++)
             {
-                var p = factorBase[i].P;
+                var p = primes[i];
                 while (y % p == 0)
                 {
                     ++exponents[i + 1];
