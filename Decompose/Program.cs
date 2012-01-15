@@ -329,7 +329,7 @@ namespace Decompose
 
         static void QuadraticSieveDigitsTest()
         {
-            for (int i = 10; i <= 30; i++)
+            for (int i = 20; i <= 20; i++)
             {
                 var sample = samples[i - 10];
                 var p = sample.P;
@@ -341,8 +341,8 @@ namespace Decompose
                 var config = new QuadraticSieve.Config
                 {
                     Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
-                    Threads = 8,
-                    //Diagnostics = QuadraticSieve.Diag.Verbose,
+                    Threads = 1,
+                    Diagnostics = QuadraticSieve.Diag.Verbose,
                     ReportingInterval = 10,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));

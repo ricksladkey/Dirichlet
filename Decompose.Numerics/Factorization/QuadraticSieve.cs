@@ -156,10 +156,20 @@ namespace Decompose.Numerics
             }
         }
 
+        private struct PartialRelation
+        {
+            public Polynomial Polynomial { get; set; }
+            public long X { get; set; }
+            public override string ToString()
+            {
+                return string.Format("X = {0}", X);
+            }
+        }
+
         private class Siqs
         {
-            public int[] Included { get; set; }
-            public bool[] Excluded { get; set; } 
+            public int[] QIndicies { get; set; }
+            public bool[] IsQIndex { get; set; } 
             public int S { get; set; }
             public BigInteger[] CapB { get; set; }
             public Polynomial Polynomial { get; set; }
@@ -224,7 +234,7 @@ namespace Decompose.Numerics
         private int threads;
         private BlockingCollection<Relation> relationBuffer;
         private Relation[] relations;
-        private Dictionary<long, long> partialRelations;
+        private Dictionary<long, PartialRelation> partialRelations;
         private IBitMatrix matrix;
         private Stopwatch timer;
 
@@ -389,12 +399,12 @@ namespace Decompose.Numerics
                     error = e;
                 }
             }
-            var qA = Enumerable.Range(0, s)
+            var qIndices = Enumerable.Range(0, s)
                 .Select(index => candidates[permuation[index]])
                 .OrderBy(index => index)
                 .ToArray();
-            var q = qA.Select(index => factorBase[index].P).ToArray();
-            var tSqrt = qA.Select(index => factorBase[index].Root).ToArray();
+            var q = qIndices.Select(index => factorBase[index].P).ToArray();
+            var tSqrt = qIndices.Select(index => factorBase[index].Root).ToArray();
 #if false
             s = 3;
             n = 291;
@@ -424,13 +434,13 @@ namespace Decompose.Numerics
             }
             b %= a;
             var polynomial = new Polynomial { A = a, B = b };
-            var excluded = Enumerable.Range(0, factorBaseSize).Select(index => qA.Contains(index)).ToArray();
+            var IsQIndex = Enumerable.Range(0, factorBaseSize).Select(index => qIndices.Contains(index)).ToArray();
             var soln1 = new int[factorBaseSize];
             var soln2 = new int[factorBaseSize];
 
             for (int i = 0; i < factorBaseSize; i++)
             {
-                if (excluded[i])
+                if (IsQIndex[i])
                     continue;
                 var entry = factorBase[i];
                 var p = entry.P;
@@ -445,8 +455,8 @@ namespace Decompose.Numerics
             intervalSize = m;
             siqs = new Siqs
             {
-                Included = qA,
-                Excluded = excluded,
+                QIndicies = qIndices,
+                IsQIndex = IsQIndex,
                 S = s,
                 CapB = capB,
                 Polynomial = polynomial,
@@ -605,7 +615,7 @@ namespace Decompose.Numerics
         private void Sieve()
         {
             relationBuffer = new BlockingCollection<Relation>(desired);
-            partialRelations = new Dictionary<long, long>();
+            partialRelations = new Dictionary<long, PartialRelation>();
 
             if (threads == 1)
                 SieveTask();
@@ -845,7 +855,7 @@ namespace Decompose.Numerics
             }
             while (i < largePrimeIndex)
             {
-                if (siqs != null && siqs.Excluded[i])
+                if (siqs != null && siqs.IsQIndex[i])
                 {
                     ++i;
                     continue;
@@ -945,7 +955,6 @@ namespace Decompose.Numerics
                 return true;
             if (cofactor == 1)
             {
-                AddQFactors(interval);
                 var relation = CreateRelation(
                     EvaluateMapping(interval.Polynomial, interval.X + k),
                     GetEntries(interval.Exponents),
@@ -957,30 +966,33 @@ namespace Decompose.Numerics
             return true;
         }
 
-        private void AddQFactors(Interval interval)
-        {
-            if (siqs == null)
-                return;
-            for (int i = 0; i < factorBaseSize; i++)
-            {
-                if (siqs.Excluded[i])
-                    ++interval.Exponents[i + 1];
-            }
-        }
-
         private long FactorOverBase(Interval interval, long x)
         {
             var y = EvaluatePolynomial(interval.Polynomial, x);
+            var exponents = interval.Exponents;
             if (y < 0)
             {
-                ++interval.Exponents[0];
+                ++exponents[0];
                 y = -y;
             }
-            var exponents = interval.Exponents;
             while (y.IsEven)
             {
                 ++exponents[1];
                 y >>= 1;
+            }
+            if (siqs != null)
+            {
+                for (int i = 0; i < siqs.S; i++)
+                {
+                    var j = siqs.QIndicies[i];
+                    var q = factorBase[j].P;
+                    ++exponents[j + 1];
+                    while (y % q == 0)
+                    {
+                        ++exponents[j + 1];
+                        y /= q;
+                    }
+                }
             }
             var delta = x - interval.OffsetX;
             if (delta >= int.MinValue + maximumDivisor && delta <= int.MaxValue - maximumDivisor)
@@ -996,7 +1008,7 @@ namespace Decompose.Numerics
             var exponents = interval.Exponents;
             for (int i = 1; i < factorBaseSize; i++)
             {
-                if (siqs != null && siqs.Excluded[i])
+                if (siqs != null && siqs.IsQIndex[i])
                     continue;
                 var entry = factorBase[i];
                 var p = entry.P;
@@ -1025,7 +1037,7 @@ namespace Decompose.Numerics
             var exponents = interval.Exponents;
             for (int i = 1; i < factorBaseSize; i++)
             {
-                if (siqs != null && siqs.Excluded[i])
+                if (siqs != null && siqs.IsQIndex[i])
                     continue;
                 var entry = factorBase[i];
                 var p = entry.P;
@@ -1047,45 +1059,69 @@ namespace Decompose.Numerics
             return y < long.MaxValue ? (long)y : 0;
         }
 
+        private long FactorOverBase(byte[] exponents, Polynomial polynomial, long x)
+        {
+            var y = polynomial.A * EvaluatePolynomial(polynomial, x);
+            if (y < 0)
+            {
+                ++exponents[0];
+                y = -y;
+            }
+            while (y.IsEven)
+            {
+                ++exponents[1];
+                y >>= 1;
+            }
+            for (int i = 1; i < factorBaseSize; i++)
+            {
+                var p = factorBase[i].P;
+                while (y % p == 0)
+                {
+                    ++exponents[i + 1];
+                    y /= p;
+                }
+            }
+            return y < long.MaxValue ? (long)y : 0;
+        }
+
+
         private bool ProcessPartialRelation(Interval interval, int k, long cofactor)
         {
             ++partialRelationsProcessed;
-            long other;
+            PartialRelation other;
             lock (partialRelations)
             {
                 if (partialRelations.TryGetValue(cofactor, out other))
                     partialRelations.Remove(cofactor);
                 else
-                    partialRelations.Add(cofactor, interval.X + k);
+                    partialRelations.Add(cofactor, new PartialRelation { X = interval.X + k, Polynomial = interval.Polynomial });
             }
-            if (other == 0)
+            if (other.Polynomial == null)
                 return true;
-            AddQFactors(interval);
             ++partialRelationsConverted;
 #if false
-            var oldExponents = interval.Exponents;
-            interval.Exponents = (CountInt[])oldExponents.Clone();
             var relation1 = CreateRelation(
                 EvaluateMapping(interval.Polynomial, interval.X + k),
                 GetEntries(interval.Exponents),
                 cofactor, 1);
+            var oldExponents = interval.Exponents;
+            interval.Exponents = (CountInt[])oldExponents.Clone();
             ClearExponents(interval);
-            var otherCofactor = FactorOverBase(interval, other);
+            var otherCofactor = FactorOverBase(interval.Exponents, other.Polynomial, other.X);
             if (otherCofactor != cofactor)
                 Debugger.Break();
-            AddQFactors(interval);
+            var entries = GetEntries(interval.Exponents);
             var relation2 = CreateRelation(
-                EvaluateMapping(interval.Polynomial, other),
-                GetEntries(interval.Exponents),
+                EvaluateMapping(other.Polynomial, other.X),
+                entries,
                 cofactor, 1);
             if ((BigInteger.Pow(relation1.X * relation2.X, 2) - MultiplyFactors(relation1) * MultiplyFactors(relation2)) % n != 0)
                 Debugger.Break();
             interval.Exponents = oldExponents;
 #endif
-            FactorOverBase(interval, other);
-            AddQFactors(interval);
+            FactorOverBase(interval.Exponents, other.Polynomial, other.X);
             var relation = CreateRelation(
-                EvaluateMapping(interval.Polynomial, interval.X + k) * EvaluateMapping(interval.Polynomial, other),
+                EvaluateMapping(interval.Polynomial, interval.X + k) * EvaluateMapping(other.Polynomial, other.X),
                 GetEntries(interval.Exponents),
                 cofactor, 2);
             return relationBuffer.TryAdd(relation);
