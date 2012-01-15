@@ -189,9 +189,9 @@ namespace Decompose.Numerics
         private const int lowerBoundPercentDefault = 75;
         private const int cofactorScaleFactor = 4096;
         private const int surplusRelations = 10;
-        private const int reportingIntervalDefault = 60;
+        private const int reportingIntervalDefault = 10;
         private readonly BigInteger smallFactorCutoff = (BigInteger)int.MaxValue;
-        private readonly Tuple<int, int>[] sizePairs =
+        private readonly Tuple<int, int>[] qsSizePairs =
         {
             Tuple.Create(1, 2),
             Tuple.Create(6, 5),
@@ -208,6 +208,25 @@ namespace Decompose.Numerics
             Tuple.Create(90, 300000),
             Tuple.Create(100, 1000000),
             Tuple.Create(110, 3000000),
+        };
+
+        private readonly Tuple<int, int>[] siqsSizePairs =
+        {
+            Tuple.Create(1, 2),
+            Tuple.Create(6, 5),
+            Tuple.Create(10, 30),
+            Tuple.Create(20, 60),
+            Tuple.Create(30, 300),
+            Tuple.Create(40, 900),
+            Tuple.Create(50, 2500),
+            Tuple.Create(60, 6000),
+            Tuple.Create(70, 20000),
+            Tuple.Create(80, 60000),
+            Tuple.Create(90, 150000),
+
+            // Untested.
+            Tuple.Create(100, 300000),
+            Tuple.Create(110, 1000000),
         };
 
         private Config config;
@@ -600,6 +619,7 @@ namespace Decompose.Numerics
         {
             if (config.FactorBaseSize != 0)
                 return config.FactorBaseSize;
+            var sizePairs = algorithm == Algorithm.SelfInitializingQuadraticSieve ? siqsSizePairs : qsSizePairs;
             for (int i = 0; i < sizePairs.Length - 1; i++)
             {
                 var pair = sizePairs[i];

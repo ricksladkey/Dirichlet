@@ -30,6 +30,7 @@ namespace Decompose
                 QuadraticSieveDigitsTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
+                //CreateSamplesTest();
             }
             catch (Exception ex)
             {
@@ -260,7 +261,6 @@ namespace Decompose
                 IntervalSize = 12 * 32768,
                 Multiplier = 3,
                 Diagnostics = QuadraticSieve.Diag.Verbose,
-                ReportingInterval = 10,
             };
             var factors = FactorTest(false, 1, n, new QuadraticSieve(config));
             foreach (var factor in factors)
@@ -277,40 +277,60 @@ namespace Decompose
         static void QuadraticSieveParametersTest()
         {
             var random = new MersenneTwisterBigInteger(0);
-            int threads = 8;
-            for (int i = 10; i <= 30; i++)
+            int i = 30;
+            var sample = samples[i - 10];
+            var p = sample.P;
+            var q = sample.Q;
+            var n = p * q;
+            Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
+#if false
+            for (int size = 250; size <= 500; size += 10)
             {
-                var limit = BigInteger.Pow(10, i);
-                var p = NextPrime(random, limit);
-                var q = NextPrime(random, limit);
-                var n = p * q;
-                if (i < 30)
-                    continue;
-                Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                for (int size = 12000; size <= 24000; size += 1000)
+                var config = new QuadraticSieve.Config
                 {
-                    Console.WriteLine("size = {0}", size);
-                    for (int percent = 80; percent <= 80; percent += 5)
-                    {
-                        Console.WriteLine("percent = {0}", percent);
-                        var config = new QuadraticSieve.Config
-                        {
-                            Threads = threads,
-                            FactorBaseSize = size,
-                            LowerBoundPercent = percent,
-                            //Diagnostics = QuadraticSieve.Diag.Verbose,
-                        };
-                        FactorTest(false, 1, n, new QuadraticSieve(config));
-                    }
-                }
-                break;
+                    Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
+                    Threads = 8,
+                    FactorBaseSize = size,
+                    //Diagnostics = QuadraticSieve.Diag.Verbose,
+                };
+                Console.WriteLine("size = {0}", size);
+                FactorTest(false, 25, n, new QuadraticSieve(config));
             }
+#endif
+#if false
+            for (int percent = 80; percent <= 80; percent += 5)
+            {
+                var config = new QuadraticSieve.Config
+                {
+                    Threads = threads,
+                    FactorBaseSize = size,
+                    LowerBoundPercent = percent,
+                    //Diagnostics = QuadraticSieve.Diag.Verbose,
+                };
+                Console.WriteLine("percent = {0}", percent);
+                FactorTest(false, 1, n, new QuadraticSieve(config));
+            }
+#endif
+#if true
+            for (int size = 1024 * 1024; size <= 2048 * 1024; size += 32 * 1024)
+            {
+                var config = new QuadraticSieve.Config
+                {
+                    Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
+                    Threads = 8,
+                    IntervalSize = size,
+                    //Diagnostics = QuadraticSieve.Diag.Verbose,
+                };
+                Console.WriteLine("size = {0}", size);
+                FactorTest(false, 1, n, new QuadraticSieve(config));
+            }
+#endif
         }
 
         static void CreateSamplesTest()
         {
             var random = new MersenneTwisterBigInteger(0);
-            for (int i = 10; i <= 40; i++)
+            for (int i = 41; i <= 50; i++)
             {
                 var limit = BigInteger.Pow(10, i);
                 var p = NextPrime(random, limit);
@@ -327,7 +347,7 @@ namespace Decompose
 
         static void QuadraticSieveDigitsTest()
         {
-            for (int i = 40; i <= 40; i++)
+            for (int i = 20; i <= 35; i++)
             {
                 var sample = samples[i - 10];
                 var p = sample.P;
@@ -340,9 +360,7 @@ namespace Decompose
                 {
                     Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
                     Threads = 8,
-                    FactorBaseSize = 60000,
-                    Diagnostics = QuadraticSieve.Diag.Verbose,
-                    ReportingInterval = 10,
+                    //Diagnostics = QuadraticSieve.Diag.Verbose,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
             }
@@ -680,6 +698,66 @@ namespace Decompose
                 Digits = 80,
                 P = BigInteger.Parse("4866868528098421482780624850039639204477"),
                 Q = BigInteger.Parse("7613720546717210496574998828026372396927"),
+            },
+            new SampleComposite
+            {
+                Digits = 82,
+                P = BigInteger.Parse("53017745789889873705716127297403311033037"),
+                Q = BigInteger.Parse("63409172442847344082610334892821781304101"),
+            },
+            new SampleComposite
+            {
+                Digits = 84,
+                P = BigInteger.Parse("702295892578093110207938507434822530060641"),
+                Q = BigInteger.Parse("342910649327212340825095863090818452864541"),
+            },
+            new SampleComposite
+            {
+                Digits = 86,
+                P = BigInteger.Parse("8060168753150190457135241985925594282360297"),
+                Q = BigInteger.Parse("5042676674972408672634448697950601300773747"),
+            },
+            new SampleComposite
+            {
+                Digits = 88,
+                P = BigInteger.Parse("75263710689283058958166085987687804905069441"),
+                Q = BigInteger.Parse("33942351450819488061478933627681638281912579"),
+            },
+            new SampleComposite
+            {
+                Digits = 90,
+                P = BigInteger.Parse("452844597483732905842925404011206264228330341"),
+                Q = BigInteger.Parse("205800250143096562811007221948045665761100741"),
+            },
+            new SampleComposite
+            {
+                Digits = 92,
+                P = BigInteger.Parse("2167793402583216605038837020418528979230958321"),
+                Q = BigInteger.Parse("6664463122751216293054375161162506956965538477"),
+            },
+            new SampleComposite
+            {
+                Digits = 94,
+                P = BigInteger.Parse("73732608257939745378758147488940890654818425039"),
+                Q = BigInteger.Parse("57602646692423215509569301754817211741313757471"),
+            },
+            new SampleComposite
+            {
+                Digits = 96,
+                P = BigInteger.Parse("961585810072942641419044210351839016563811857989"),
+                Q = BigInteger.Parse("669160867166029748266517367050911502647054495753"),
+            },
+            new SampleComposite
+            {
+                Digits = 98,
+                P = BigInteger.Parse("3250569350138484738612442549714146714656127558157"),
+                Q = BigInteger.Parse("9560816127493079446607942921966503110052699050311"),
+            },
+            new SampleComposite
+            {
+                Digits = 100,
+                P = BigInteger.Parse("83268231017568575873466457691034899781471011837411"),
+                Q = BigInteger.Parse("74270905395447293272574406310979848354158902086579"),
             },
         };
     }
