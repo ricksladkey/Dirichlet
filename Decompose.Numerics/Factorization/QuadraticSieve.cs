@@ -222,7 +222,7 @@ namespace Decompose.Numerics
             Tuple.Create(50, 2500),
             Tuple.Create(60, 4000),
             Tuple.Create(70, 15000),
-            Tuple.Create(80, 60000),
+            Tuple.Create(80, 45000),
             Tuple.Create(90, 150000),
 
             // Untested.
