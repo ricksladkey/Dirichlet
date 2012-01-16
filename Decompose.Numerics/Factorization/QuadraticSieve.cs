@@ -173,7 +173,7 @@ namespace Decompose.Numerics
         private class Siqs
         {
             public int Index { get; set; }
-            public int[] QIndicies { get; set; }
+            public int[] QMap { get; set; }
             public bool[] IsQIndex { get; set; } 
             public int S { get; set; }
             public BigInteger[] CapB { get; set; }
@@ -220,8 +220,8 @@ namespace Decompose.Numerics
             Tuple.Create(30, 300),
             Tuple.Create(40, 900),
             Tuple.Create(50, 2500),
-            Tuple.Create(60, 6000),
-            Tuple.Create(70, 20000),
+            Tuple.Create(60, 4000),
+            Tuple.Create(70, 15000),
             Tuple.Create(80, 60000),
             Tuple.Create(90, 150000),
 
@@ -392,42 +392,65 @@ namespace Decompose.Numerics
             CalculateNumberOfThreads();
             SetupIntervals();
             SetupSmallPrimeCycle();
+
+            if (algorithm == Algorithm.SelfInitializingQuadraticSieve)
+                InitializeSiqs();
+        }
+
+        private const int minimumAFactor = 2000;
+        private const int maximumAfactor = 4000;
+        private int[] candidateMap;
+        private double[] candidateSizes;
+        private int numberOfFactors;
+        private double targetSize;
+
+        private void InitializeSiqs()
+        {
+            // Choose minum and maximum factors of A so that M is near
+            // the correct size for a multiple of those primes.
+            var min = minimumAFactor;
+            var max = maximumAfactor;
+            var preliminaryM = (intervalSize - 1) / 2;
+            var logSqrt2N = BigInteger.Log(n * 2, 10) / 2;
+            targetSize = logSqrt2N - Math.Log(preliminaryM, 10);
+            var preliminaryAverageSize = Math.Log(min * max, 10) / 2;
+            numberOfFactors = (int)Math.Round(targetSize / preliminaryAverageSize);
+            var averageSize = targetSize / numberOfFactors;
+            var center = Math.Pow(10, averageSize);
+            var sqrt2 = Math.Sqrt(2);
+            min = (int)Math.Round(center / sqrt2);
+            max = (int)Math.Round(center * sqrt2);
+
+            candidateMap = Enumerable.Range(0, factorBaseSize)
+                .Where(index => factorBase[index].P >= min && factorBase[index].P <= max)
+                .ToArray();
+            if (candidateMap.Length == 0)
+                candidateMap = Enumerable.Range(factorBaseSize / 2, factorBaseSize - factorBaseSize / 2)
+                .ToArray();
+            candidateSizes = candidateMap
+                .Select(index => Math.Log(factorBase[index].P, 10))
+                .ToArray();
+
+            if ((diag & Diag.Summary) != 0)
+                Console.WriteLine("number of factors of A = {0}, min = {1}, max = {2}", numberOfFactors, min, max);
         }
 
         private Siqs FirstPolynomial(Siqs siqs)
         {
-            var m = intervalSize;
-            var target = BigInteger.Log(n * 2, 10) / 2 - Math.Log(m, 10);
-            var candidates = Enumerable.Range(0, factorBaseSize)
-                .Where(index => factorBase[index].P >= 2000 && factorBase[index].P <= 4000)
+            var s = numberOfFactors;
+            var numbers = random.Series((uint)candidateMap.Length)
+                .Take(candidateMap.Length)
                 .ToArray();
-            if (candidates.Length == 0)
-                candidates = Enumerable.Range(factorBaseSize / 2, factorBaseSize - factorBaseSize / 2)
+            var permutation = Enumerable.Range(0, candidateMap.Length)
+                .OrderBy(index => numbers[index])
+                .Take(s)
+                .OrderBy(index => index)
                 .ToArray();
-            var logCandidates = candidates
-                .Select(index => Math.Log(factorBase[index].P, 10))
-                .ToArray();
-            var permuation = null as int[];
-            var s = 0;
-            var error = 0.0;
-            for (int i = 0; i < 10; i++)
-            {
-                var numbers = random.Series((uint)candidates.Length).Take(candidates.Length).ToArray();
-                var p = Enumerable.Range(0, candidates.Length).OrderBy(index => numbers[index]).ToArray();
-                var sum = 0.0;
-                int count = 0;
-                while (count < logCandidates.Length && sum + logCandidates[p[count]] < target)
-                    sum += logCandidates[p[count++]];
-                if (Math.Abs(sum + logCandidates[p[count]] - target) < Math.Abs(sum - target))
-                    sum += logCandidates[p[count++]];
-                var e = Math.Abs(sum - target);
-                if (permuation == null || e < error)
-                {
-                    permuation = p;
-                    s = count;
-                    error = e;
-                }
-            }
+
+#if false
+            var error = permutation.Select(index => candidateSizes[index]).Sum() - targetSize;
+            Console.WriteLine("error = {0:F3}", error);
+#endif
 
             // Allocate and initialize one-time memory.
             if (siqs == null)
@@ -447,17 +470,18 @@ namespace Decompose.Numerics
             if (siqs.Bainv2 == null || siqs.S != s)
                 siqs.Bainv2 = new int[s, factorBaseSize];
 
-            var qIndices = Enumerable.Range(0, s)
-                .Select(index => candidates[permuation[index]])
-                .OrderBy(index => index)
+            var qMap = permutation
+                .Select(index => candidateMap[index])
                 .ToArray();
-            var q = qIndices.Select(index => factorBase[index].P).ToArray();
+            var q = qMap
+                .Select(index => factorBase[index].P)
+                .ToArray();
             var a = q.Select(p => (BigInteger)p).Product();
             var capB = new BigInteger[s];
             var b = BigInteger.Zero;
             for (int l = 0; l < s; l++)
             {
-                var j = qIndices[l];
+                var j = qMap[l];
                 siqs.IsQIndex[j] = true;
                 var r = q.Where(p => p != q[l]).ProductModulo(q[l]);
                 var rInv = IntegerMath.ModularInverse(r, q[l]);
@@ -478,7 +502,7 @@ namespace Decompose.Numerics
             var bainv2 = siqs.Bainv2;
             var soln1 = siqs.Solution1;
             var soln2 = siqs.Solution2;
-            var x = -m / 2;
+            var x = -intervalSize / 2;
             for (int i = 0; i < factorBaseSize; i++)
             {
                 if (siqs.IsQIndex[i])
@@ -501,7 +525,7 @@ namespace Decompose.Numerics
             }
 
             siqs.Index = 0;
-            siqs.QIndicies = qIndices;
+            siqs.QMap = qMap;
             siqs.S = s;
             siqs.CapB = capB;
             siqs.Polynomial = polynomial;
@@ -1118,7 +1142,7 @@ namespace Decompose.Numerics
             {
                 for (int i = 0; i < siqs.S; i++)
                 {
-                    var j = siqs.QIndicies[i];
+                    var j = siqs.QMap[i];
                     var q = factorBase[j].P;
                     ++exponents[j + 1];
                     while (y % q == 0)
