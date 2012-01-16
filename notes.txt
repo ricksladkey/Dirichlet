@@ -10,3 +10,5 @@
 - convert to "round" instead of "cieling" for LogScale
 - try sieving for 2 with a large number
 - port multiplier code from msieve
+
+- don't sieve for factors of multiplier (investigate first)

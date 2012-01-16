@@ -256,10 +256,10 @@ namespace Decompose
             {
                 Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
                 Threads = 8,
-                FactorBaseSize = 5400,
+                //FactorBaseSize = 5400,
                 //LowerBoundPercent = 65,
-                IntervalSize = 12 * 32 * 1024,
-                Multiplier = 3,
+                //IntervalSize = 12 * 32 * 1024,
+                //Multiplier = 3,
                 Diagnostics = QuadraticSieve.Diag.Verbose,
             };
             var factors = FactorTest(false, 1, n, new QuadraticSieve(config));
@@ -348,7 +348,7 @@ namespace Decompose
 
         static void QuadraticSieveDigitsTest()
         {
-            for (int i = 40; i <= 40; i++)
+            for (int i = 20; i <= 35; i++)
             {
                 var sample = samples[i - 10];
                 var p = sample.P;
@@ -356,15 +356,15 @@ namespace Decompose
                 var n = p * q;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
                 //Console.WriteLine("n = {0}", n);
-                //Console.WriteLine("n mod 8 = {0}", n % 8);
                 var config = new QuadraticSieve.Config
                 {
                     Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
                     Threads = 8,
-                    Diagnostics = QuadraticSieve.Diag.Verbose,
-                    //FactorBaseSize = 7500,
-                    IntervalSize = 1024 * 1024,
+                    //Diagnostics = QuadraticSieve.Diag.Verbose,
+                    //FactorBaseSize = 12000,
+                    //IntervalSize = 1024 * 1024,
                     //LowerBoundPercent = 75,
+                    //Multiplier = 43,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
             }
@@ -489,9 +489,7 @@ namespace Decompose
             var timer = new Stopwatch();
             timer.Start();
             for (int i = 0; i < iterations; i++)
-            {
                 results.Add(algorithm.Factor(n).OrderBy(factor => factor).ToArray());
-            }
             var elapsed = (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000;
             foreach (var factors in results)
             {

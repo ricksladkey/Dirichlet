@@ -72,6 +72,11 @@ namespace Decompose.Numerics
             return (n % p + p) % p;
         }
 
+        public static int Modulus(BigInteger n, int p)
+        {
+            return ((int)(n % p) + p) % p;
+        }
+
         public static BigInteger Modulus(BigInteger n, BigInteger p)
         {
             return (n % p + p) % p;

@@ -318,7 +318,9 @@ namespace Decompose.Numerics
                 Console.WriteLine("algorithm = {0}", algorithm);
                 Console.WriteLine("digits = {0}; factorBaseSize = {1:N0}; desired = {2:N0}", digits, factorBaseSize, desired);
                 Console.WriteLine("interval size = {0:N0}; threads = {1}; lowerBoundPercent = {2}", intervalSize, threads, lowerBoundPercent);
-                Console.WriteLine("first few factors: {0}", string.Join(", ", factorBase.Select(entry => entry.P).Take(10).ToArray()));
+                Console.WriteLine("first few factors: {0}", string.Join(", ", factorBase.Select(entry => entry.P).Take(10)));
+                Console.WriteLine("last few factors: {0}", string.Join(", ", factorBase.Select(entry => entry.P).Skip(factorBaseSize - 10)));
+                Console.WriteLine("multiplier = {0}", multiplier);
             }
 
             Sieve();
@@ -360,9 +362,9 @@ namespace Decompose.Numerics
         private void Initialize(BigInteger nOrig)
         {
             algorithm = config.Algorithm != Algorithm.None ? config.Algorithm : Algorithm.QuadraticSieve;
-            multiplier = config.Multiplier != 0 ? config.Multiplier : 1;
-            multiplierFactors = smallIntegerFactorer.Factor(multiplier).ToArray();
             this.nOrig = nOrig;
+            ChooseMultiplier();
+            multiplierFactors = smallIntegerFactorer.Factor(multiplier).ToArray();
             n = nOrig * multiplier;
             sqrtN = IntegerMath.Sqrt(this.n);
             digits = (int)Math.Ceiling(BigInteger.Log(n, 10));
@@ -397,6 +399,61 @@ namespace Decompose.Numerics
                 InitializeSiqs();
         }
 
+        private const int maximumMultiplier = 73;
+        private const int maximumScorePrimes = 100;
+
+        private void ChooseMultiplier()
+        {
+            if (config.Multiplier != 0)
+            {
+                multiplier = config.Multiplier;
+                return;
+            }
+#if false
+            multiplier = 1;
+#else
+            multiplier = Enumerable.Range(1, maximumMultiplier)
+                .Where(value => IntegerMath.IsSquareFree(smallIntegerFactorer.Factor(value)))
+                .OrderByDescending(value => ScoreMultiplier(value))
+                .First();
+            Console.WriteLine("multiplier = {0}", multiplier);
+#endif
+        }
+
+        private double ScoreMultiplier(int multiplier)
+        {
+            var n = nOrig * multiplier;
+            var score = -0.5 * BigInteger.Log(multiplier);
+            var log2 = Math.Log(2);
+            switch (IntegerMath.Modulus(n, 8))
+            {
+                case 1:
+                    score += 2 * log2;
+                    break;
+                case 5:
+                    score += log2;
+                    break;
+                case 3:
+                case 7:
+                    score += 0.5 * log2;
+                    break;
+                default:
+                    break;
+            }
+            foreach (var p in allPrimes.Skip(1).Take(maximumScorePrimes))
+            {
+                if (n % p == 0 || IntegerMath.JacobiSymbol(n, p) == 1)
+                {
+                    var contribution = Math.Log(p) / (p - 1);
+                    if (n % p == 0)
+                        score += contribution;
+                    else
+                        score += 2 * contribution;
+                }
+            }
+            return score;
+        }
+
         private const int minimumAFactor = 2000;
         private const int maximumAfactor = 4000;
         private int[] candidateMap;
@@ -411,12 +468,12 @@ namespace Decompose.Numerics
             var min = minimumAFactor;
             var max = maximumAfactor;
             var preliminaryM = (intervalSize - 1) / 2;
-            var logSqrt2N = BigInteger.Log(n * 2, 10) / 2;
-            targetSize = logSqrt2N - Math.Log(preliminaryM, 10);
-            var preliminaryAverageSize = Math.Log(min * max, 10) / 2;
+            var logSqrt2N = BigInteger.Log(n * 2) / 2;
+            targetSize = logSqrt2N - Math.Log(preliminaryM);
+            var preliminaryAverageSize = Math.Log(min * max) / 2;
             numberOfFactors = (int)Math.Round(targetSize / preliminaryAverageSize);
             var averageSize = targetSize / numberOfFactors;
-            var center = Math.Pow(10, averageSize);
+            var center = Math.Exp(averageSize);
             var sqrt2 = Math.Sqrt(2);
             min = (int)Math.Round(center / sqrt2);
             max = (int)Math.Round(center * sqrt2);
@@ -428,7 +485,7 @@ namespace Decompose.Numerics
                 candidateMap = Enumerable.Range(factorBaseSize / 2, factorBaseSize - factorBaseSize / 2)
                 .ToArray();
             candidateSizes = candidateMap
-                .Select(index => Math.Log(factorBase[index].P, 10))
+                .Select(index => Math.Log(factorBase[index].P))
                 .ToArray();
 
             if ((diag & Diag.Summary) != 0)
@@ -568,16 +625,31 @@ namespace Decompose.Numerics
             var x = -m / 2;
             var soln1 = siqs.Solution1;
             var soln2 = siqs.Solution2;
+            e *= -1;
             for (int i = 0; i < factorBaseSize; i++)
             {
                 if (siqs.IsQIndex[i])
                     continue;
                 var p = primes[i];
                 var step = e * bainv2[v, i];
-                var s1 = (soln1[i] - step) % p;
-                soln1[i] = s1 < 0 ? s1 + p : s1;
-                var s2 = (soln2[i] - step) % p;
-                soln2[i] = s2 < 0 ? s2 + p : s2;
+                var s1 = soln1[i] + step;
+                var s2 = soln2[i] + step;
+                if (step >= 0)
+                {
+                    if (s1 >= p)
+                        s1 -= p;
+                    if (s2 >= p)
+                        s2 -= p;
+                }
+                else
+                {
+                    if (s1 < 0)
+                        s1 += p;
+                    if (s2 < 0)
+                        s2 += p;
+                }
+                soln1[i] = s1;
+                soln2[i] = s2;
                 Debug.Assert(EvaluatePolynomial(polynomial, x + soln1[i]) % p == 0);
                 Debug.Assert(EvaluatePolynomial(polynomial, x + soln2[i]) % p == 0); 
                 Debug.Assert(i == 0 || soln1[i] != soln2[i]);
@@ -644,7 +716,7 @@ namespace Decompose.Numerics
         private void CalculateNumberOfThreads()
         {
             threads = config.Threads != 0 ? config.Threads : 1;
-            if (n <= BigInteger.Pow(10, 10))
+            if (digits < 10)
                 threads = 1;
         }
 

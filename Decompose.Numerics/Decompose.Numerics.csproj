@@ -87,7 +87,7 @@
     <Compile Include="Core\SieveOfErostothones.cs" />
     <Compile Include="Core\SqrtBinarySearch.cs" />
     <Compile Include="Core\SqrtNewtonsMethod.cs" />
-    <Compile Include="Primality\TrialDivision.cs" />
+    <Compile Include="Primality\TrialDivisionPrimality.cs" />
     <Compile Include="Unused.cs" />
     <Compile Include="Collections\Word64BitMatrix.cs" />
   </ItemGroup>
