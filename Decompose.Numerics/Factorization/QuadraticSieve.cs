@@ -416,7 +416,6 @@ namespace Decompose.Numerics
                 .Where(value => IntegerMath.IsSquareFree(smallIntegerFactorer.Factor(value)))
                 .OrderByDescending(value => ScoreMultiplier(value))
                 .First();
-            Console.WriteLine("multiplier = {0}", multiplier);
 #endif
         }
 
