@@ -804,7 +804,7 @@ namespace Decompose.Numerics
                 intervalSize = config.IntervalSize;
             else if (algorithm == Algorithm.SelfInitializingQuadraticSieve)
             {
-                intervalSize = 1024 * 1024;
+                intervalSize = 256 * 1024;
                 intervalSize = IntegerMath.MultipleOfCeiling(intervalSize, subIntervalSize);
             }
             else
