@@ -319,8 +319,9 @@ namespace Decompose.Numerics
                 Console.WriteLine("algorithm = {0}", algorithm);
                 Console.WriteLine("digits = {0}; factorBaseSize = {1:N0}; desired = {2:N0}", digits, factorBaseSize, desired);
                 Console.WriteLine("interval size = {0:N0}; threads = {1}; lowerBoundPercent = {2}", intervalSize, threads, lowerBoundPercent);
-                Console.WriteLine("first few factors: {0}", string.Join(", ", factorBase.Select(entry => entry.P).Take(15)));
-                Console.WriteLine("last few factors: {0}", string.Join(", ", factorBase.Select(entry => entry.P).Skip(factorBaseSize - 5)));
+                Console.WriteLine("first few factors: {0}", string.Join(", ", primes.Take(15)));
+                Console.WriteLine("last few factors: {0}", string.Join(", ", primes.Skip(factorBaseSize - 5)));
+                Console.WriteLine("small prime cycle length = {0}, last small prime = {1}", cycleLength, primes[mediumPrimeIndex - 1]);
                 Console.WriteLine("multiplier = {0}", multiplier);
             }
 
