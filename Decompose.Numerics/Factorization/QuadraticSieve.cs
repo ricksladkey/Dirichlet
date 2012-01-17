@@ -190,6 +190,7 @@ namespace Decompose.Numerics
         private const int maximumCycleLenth = 32 * 1024;
         private const int maximumIntervalSize = 256 * 1024 * 8;
         private const int lowerBoundPercentDefault = 75;
+        private const double errorLimit = 0.1;
         private const int cofactorScaleFactor = 4096;
         private const int surplusRelations = 10;
         private const int reportingIntervalDefault = 10;
@@ -476,9 +477,9 @@ namespace Decompose.Numerics
             numberOfFactors = (int)Math.Round(targetSize / preliminaryAverageSize);
             var averageSize = targetSize / numberOfFactors;
             var center = Math.Exp(averageSize);
-            var sqrt2 = Math.Sqrt(2);
-            min = (int)Math.Round(center / sqrt2);
-            max = (int)Math.Round(center * sqrt2);
+            var ratio = Math.Sqrt((double)max / min);
+            min = (int)Math.Round(center / ratio);
+            max = (int)Math.Round(center * ratio);
 
             candidateMap = Enumerable.Range(0, factorBaseSize)
                 .Where(index => factorBase[index].P >= min && factorBase[index].P <= max)
@@ -497,17 +498,24 @@ namespace Decompose.Numerics
         private Siqs FirstPolynomial(Siqs siqs)
         {
             var s = numberOfFactors;
-            var numbers = random.Series((uint)candidateMap.Length)
-                .Take(candidateMap.Length)
-                .ToArray();
-            var permutation = Enumerable.Range(0, candidateMap.Length)
-                .OrderBy(index => numbers[index])
-                .Take(s)
-                .OrderBy(index => index)
-                .ToArray();
+            var permutation = null as int[];
+            var error = 0.0;
+            while (true)
+            {
+                var numbers = random.Series((uint)candidateMap.Length)
+                    .Take(candidateMap.Length)
+                    .ToArray();
+                permutation = Enumerable.Range(0, candidateMap.Length)
+                    .OrderBy(index => numbers[index])
+                    .Take(s)
+                    .OrderBy(index => index)
+                    .ToArray();
 
+                error = permutation.Select(index => candidateSizes[index]).Sum() - targetSize;
+                if (Math.Abs(error) < errorLimit)
+                    break;
+            }
 #if false
-            var error = permutation.Select(index => candidateSizes[index]).Sum() - targetSize;
             Console.WriteLine("error = {0:F3}", error);
 #endif
 

@@ -12,3 +12,6 @@
 - port multiplier code from msieve
 
 - don't sieve for factors of multiplier (investigate first)
+- for q[l], polynomial(x) | q[l] iff x = -c (2 b)^-1 mod q[l]
+- fix ModularSquareRoot mod 2 if value is even, more generally if value mod modulus == 0
+
