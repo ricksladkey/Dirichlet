@@ -343,5 +343,5 @@ namespace Decompose.Numerics
             }
             return r;
         }
-        }
+    }
 }

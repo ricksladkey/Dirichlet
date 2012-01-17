@@ -108,13 +108,14 @@ namespace Decompose.Numerics
             public int Root { get; set; }
             public int RootDiff { get; set; }
             public int Offset { get; set; }
-            public FactorBaseEntry(int p, BigInteger n, BigInteger OffsetX)
+            public FactorBaseEntry(int p, BigInteger n, BigInteger offsetX)
             {
                 P = p;
                 LogP = LogScale(p);
-                Root = IntegerMath.ModularSquareRoot(n, p);
-                RootDiff = (P - Root) - Root;
-                Offset = ((int)((Root - OffsetX) % P) + P) % P;
+                Root = n % p == 0 ? 0 : IntegerMath.ModularSquareRoot(n, p);
+                Debug.Assert((Root * Root - n) % p == 0);
+                RootDiff = ((P - Root) - Root) % p;
+                Offset = ((int)((Root - offsetX) % P) + P) % P;
             }
             public override string ToString()
             {
@@ -223,11 +224,11 @@ namespace Decompose.Numerics
             Tuple.Create(60, 4000),
             Tuple.Create(70, 15000),
             Tuple.Create(80, 45000),
-            Tuple.Create(90, 150000),
+            Tuple.Create(90, 100000),
+            Tuple.Create(100, 150000),
 
             // Untested.
-            Tuple.Create(100, 300000),
-            Tuple.Create(110, 1000000),
+            Tuple.Create(110, 300000),
         };
 
         private Config config;
@@ -370,7 +371,7 @@ namespace Decompose.Numerics
             digits = (int)Math.Ceiling(BigInteger.Log(n, 10));
             factorBaseSize = CalculateFactorBaseSize();
             factorBase = allPrimes
-                .Where(p => p == 2 || IntegerMath.JacobiSymbol(n, p) == 1)
+                .Where(p => p == 2 || /* multiplier % p == 0 || */ IntegerMath.JacobiSymbol(n, p) == 1)
                 .Take(factorBaseSize)
                 .Select(p => new FactorBaseEntry(p, n, sqrtN))
                 .ToArray();
@@ -991,12 +992,18 @@ namespace Decompose.Numerics
             for (int k0 = 0; k0 < intervalSize; k0 += subIntervalSize)
             {
                 int size = Math.Min(subIntervalSize, intervalSize - k0);
-                SieveSmallPrimes(interval, size);
                 if (algorithm == Algorithm.SelfInitializingQuadraticSieve)
-                    SieveMediumPrimesSeparate(interval, size);
+                {
+                    SieveSmallPrimesSiqs(interval, size);
+                    SieveMediumPrimesSiqs(interval, size);
+                    SieveLargePrimes(interval, size);
+                }
                 else
+                {
+                    SieveSmallPrimes(interval, size);
                     SieveMediumPrimes(interval, size);
-                SieveLargePrimes(interval, size);
+                    SieveLargePrimes(interval, size);
+                }
                 interval.OffsetX = interval.X + size;
                 CheckForSmooth(interval, size, countLimit);
                 if (relationBuffer.Count >= relationBuffer.BoundedCapacity)
@@ -1005,10 +1012,61 @@ namespace Decompose.Numerics
             }
         }
 
+        private void SieveSmallPrimesSiqs(Interval interval, int size)
+        {
+            var offsets1 = interval.Offsets1;
+            var offsets2 = interval.Offsets2;
+            var counts = interval.Counts;
+
+            var log2 = factorBase[0].LogP;
+            var count1 = log2;
+            var count2 = log2;
+            if (interval.Siqs.Solution1[0] == 1)
+                count1 = 0;
+            else
+                count2 = 0;
+            int k;
+            for (k = 0; k < cycleLength; k += 2)
+            {
+                counts[k] = count1;
+                Debug.Assert(count1 == 0 || EvaluatePolynomial(interval.Polynomial, interval.X + k) % 2 == 0);
+                counts[k + 1] = count2;
+                Debug.Assert(count2 == 0 || EvaluatePolynomial(interval.Polynomial, interval.X + k + 1) % 2 == 0);
+            }
+            for (int i = 1; i < mediumPrimeIndex; i++)
+            {
+                var entry = factorBase[i];
+                var p = entry.P;
+                var logP = entry.LogP;
+                var offset1 = offsets1[i];
+                var offset2 = offsets2[i];
+                for (k = 0; k < cycleLength; k += p)
+                {
+                    counts[k + offset1] += logP;
+                    Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k + offset1) % p == 0);
+                    counts[k + offset2] += logP;
+                    Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k + offset2) % p == 0);
+                }
+            }
+
+            // Initialize the remainder of the counts array with the cycle.
+            for (k = cycleLength; k < size; k += cycleLength)
+                Array.Copy(counts, 0, counts, k, Math.Min(cycleLength, size - k));
+
+            // Update the offsets.
+            for (int i = 0; i < mediumPrimeIndex; i++)
+            {
+                offsets1[i] = (offsets1[i] + size) % primes[i];
+                offsets2[i] = (offsets2[i] + size) % primes[i];
+            }
+        }
+
         private void SieveSmallPrimes(Interval interval, int size)
         {
             var offsets1 = interval.Offsets1;
             var counts = interval.Counts;
+
+            // Calculate offset into the small prime cycle.
             int k = 0;
             for (int i = 0; i < mediumPrimeIndex; i++)
                 k += (offsets1[i] - k) * cInv[i] % primes[i] * cProduct[i];
@@ -1017,6 +1075,7 @@ namespace Decompose.Numerics
             Debug.Assert(k >= 0 && k < cycleLength);
             Debug.Assert(Enumerable.Range(0, mediumPrimeIndex).All(i => (k - offsets1[i]) % primes[i] == 0));
 
+            // Initialize the counts array with the cycle.
             Array.Copy(cycle, cycleLength - k, counts, 0, k);
             int kMax = size - cycleLength;
             while (k < kMax)
@@ -1030,16 +1089,14 @@ namespace Decompose.Numerics
                 k += cycleLength;
             }
 
+            // Update the offsets.
             Debug.Assert(k >= size);
             k -= size;
             for (int i = 0; i < mediumPrimeIndex; i++)
-            {
                 offsets1[i] = k % primes[i];
-                offsets1[i] = k % primes[i];
-            }
         }
 
-        private void SieveMediumPrimesSeparate(Interval interval, int size)
+        private void SieveMediumPrimesSiqs(Interval interval, int size)
         {
             var siqs = interval.Siqs;
             var offsets1 = interval.Offsets1;
@@ -1224,7 +1281,7 @@ namespace Decompose.Numerics
                 }
             }
             if (algorithm == Algorithm.SelfInitializingQuadraticSieve)
-                return FactorOverBaseSeparate(interval, y, (int)(x - siqs.X));
+                return FactorOverBaseSiqs(interval, y, (int)(x - siqs.X));
             var delta = x - interval.OffsetX;
             if (delta >= int.MinValue + maximumDivisor && delta <= int.MaxValue - maximumDivisor)
                 return FactorOverBase(interval, y, (int)delta);
@@ -1232,7 +1289,7 @@ namespace Decompose.Numerics
                 return FactorOverBase(interval, y, delta);
         }
 
-        private long FactorOverBaseSeparate(Interval interval, BigInteger y, int delta)
+        private long FactorOverBaseSiqs(Interval interval, BigInteger y, int delta)
         {
             var siqs = interval.Siqs;
             var offsets1 = siqs.Solution1;
