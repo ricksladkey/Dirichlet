@@ -165,6 +165,7 @@ namespace Decompose.Numerics
         {
             public Polynomial Polynomial { get; set; }
             public long X { get; set; }
+            public ExponentEntry[] Entries { get; set; }
             public override string ToString()
             {
                 return string.Format("X = {0}", X);
@@ -1406,13 +1407,19 @@ namespace Decompose.Numerics
         private bool ProcessPartialRelation(Interval interval, int k, long cofactor)
         {
             ++partialRelationsProcessed;
+            var partialRelation = new PartialRelation
+            {
+                X = interval.X + k,
+                Polynomial = interval.Polynomial,
+                Entries = GetEntries(interval.Exponents),
+            };
             PartialRelation other;
             lock (partialRelations)
             {
                 if (partialRelations.TryGetValue(cofactor, out other))
                     partialRelations.Remove(cofactor);
                 else
-                    partialRelations.Add(cofactor, new PartialRelation { X = interval.X + k, Polynomial = interval.Polynomial });
+                    partialRelations.Add(cofactor, partialRelation);
             }
             if (other.Polynomial == null)
                 return true;
@@ -1437,12 +1444,21 @@ namespace Decompose.Numerics
                 Debugger.Break();
             interval.Exponents = oldExponents;
 #endif
-            FactorOverBase(interval.Exponents, other.Polynomial, other.X);
+            if (other.Entries != null)
+                AddEntries(interval.Exponents, other.Entries);
+            else
+                FactorOverBase(interval.Exponents, other.Polynomial, other.X);
             var relation = CreateRelation(
                 EvaluateMapping(interval.Polynomial, interval.X + k) * EvaluateMapping(other.Polynomial, other.X),
                 GetEntries(interval.Exponents),
                 cofactor, 2);
             return relationBuffer.TryAdd(relation);
+        }
+
+        private void AddEntries(byte[] exponents, ExponentEntry[] entries)
+        {
+            for (int i = 0; i < entries.Length; i++)
+                exponents[entries[i].Row] += (byte)entries[i].Exponent;
         }
 
         private Relation CreateRelation(BigInteger x, ExponentEntry[] entries, long cofactor, int exponent)

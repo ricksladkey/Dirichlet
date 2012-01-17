@@ -348,7 +348,7 @@ namespace Decompose
 
         static void QuadraticSieveDigitsTest()
         {
-            for (int i = 35; i <= 35; i++)
+            for (int i = 40; i <= 40; i++)
             {
                 var sample = samples[i - 10];
                 var p = sample.P;
