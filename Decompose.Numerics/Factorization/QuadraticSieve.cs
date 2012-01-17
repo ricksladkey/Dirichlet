@@ -179,7 +179,7 @@ namespace Decompose.Numerics
             public bool[] IsQIndex { get; set; } 
             public int S { get; set; }
             public BigInteger[] CapB { get; set; }
-            public int[,] Bainv2 { get; set; }
+            public int[][] Bainv2 { get; set; }
             public Polynomial Polynomial { get; set; }
             public int X { get; set; }
             public int[] Solution1 { get; set; }
@@ -527,7 +527,11 @@ namespace Decompose.Numerics
                     siqs.IsQIndex[i] = false;
             }
             if (siqs.Bainv2 == null || siqs.S != s)
-                siqs.Bainv2 = new int[s, factorBaseSize];
+            {
+                siqs.Bainv2 = new int[s][];
+                for (int i = 0; i < s; i++)
+                    siqs.Bainv2[i] = new int[factorBaseSize];
+            }
 
             var qMap = permutation
                 .Select(index => candidateMap[index])
@@ -570,8 +574,8 @@ namespace Decompose.Numerics
                 var p = entry.P;
                 var aInv = (long)IntegerMath.ModularInverse(a, p);
                 Debug.Assert(a * aInv % p == 1);
-                for (int l = 0; l < s; l++)
-                    bainv2[l, i] = (int)(2 * (long)(capB[l] % p) * aInv % p);
+                for (int l = 0; l < s - 1; l++)
+                    bainv2[l][i] = (int)(2 * (long)(capB[l] % p) * aInv % p);
                 var root1 = (int)((entry.Root - b) % p);
                 var root2 = root1 + entry.RootDiff;
                 var s1 = ((int)((aInv * root1 - x) % p) + p) % p;
@@ -604,7 +608,6 @@ namespace Decompose.Numerics
             var a = siqs.Polynomial.A;
             var b = siqs.Polynomial.B;
             var capB = siqs.CapB;
-            var bainv2 = siqs.Bainv2;
 
             // Advance index; calculate v & e.
             var v = 0;
@@ -627,12 +630,13 @@ namespace Decompose.Numerics
             var soln1 = siqs.Solution1;
             var soln2 = siqs.Solution2;
             e *= -1;
+            var bainv2v = siqs.Bainv2[v];
             for (int i = 0; i < factorBaseSize; i++)
             {
                 if (siqs.IsQIndex[i])
                     continue;
                 var p = primes[i];
-                var step = e * bainv2[v, i];
+                var step = e * bainv2v[i];
                 var s1 = soln1[i] + step;
                 var s2 = soln2[i] + step;
                 if (step >= 0)
