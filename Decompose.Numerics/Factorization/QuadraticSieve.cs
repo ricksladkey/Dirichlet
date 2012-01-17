@@ -585,13 +585,13 @@ namespace Decompose.Numerics
                 for (int l = 0; l < s - 1; l++)
                     bainv2[l][i] = (int)(2 * (long)(capB[l] % p) * aInv % p);
                 var root1 = (int)((entry.Root - b) % p);
+                if (root1 < 0)
+                    root1 += p;
                 var root2 = root1 + entry.RootDiff;
-                var s1 = ((int)((aInv * root1 - x) % p) + p) % p;
-                soln1[i] = s1 < 0 ? s1 + p : s1;
-                var s2 = ((int)((aInv * root2 - x) % p) + p) % p;
-                soln2[i] = s2 < 0 ? s2 + p : s2;
-                Debug.Assert(EvaluatePolynomial(polynomial, x + soln1[i]) % p == 0);
-                Debug.Assert(EvaluatePolynomial(polynomial, x + soln2[i]) % p == 0);
+                soln1[i] = (int)((aInv * root1 - x) % p);
+                soln2[i] = (int)((aInv * root2 - x) % p);
+                Debug.Assert(soln1[i] >= 0 && EvaluatePolynomial(polynomial, x + soln1[i]) % p == 0);
+                Debug.Assert(soln1[i] >= 0 && EvaluatePolynomial(polynomial, x + soln2[i]) % p == 0);
             }
 
             siqs.Index = 0;
@@ -637,34 +637,46 @@ namespace Decompose.Numerics
             var x = -m / 2;
             var soln1 = siqs.Solution1;
             var soln2 = siqs.Solution2;
-            e *= -1;
             var bainv2v = siqs.Bainv2[v];
-            for (int i = 0; i < factorBaseSize; i++)
+            if (e == 1)
             {
-                if (siqs.IsQIndex[i])
-                    continue;
-                var p = primes[i];
-                var step = e * bainv2v[i];
-                var s1 = soln1[i] + step;
-                var s2 = soln2[i] + step;
-                if (step >= 0)
+                for (int i = 0; i < factorBaseSize; i++)
                 {
-                    if (s1 >= p)
-                        s1 -= p;
-                    if (s2 >= p)
-                        s2 -= p;
-                }
-                else
-                {
+                    if (siqs.IsQIndex[i])
+                        continue;
+                    var p = primes[i];
+                    var step = bainv2v[i];
+                    var s1 = soln1[i] - step;
                     if (s1 < 0)
                         s1 += p;
+                    soln1[i] = s1;
+                    Debug.Assert(EvaluatePolynomial(polynomial, x + soln1[i]) % p == 0);
+                    var s2 = soln2[i] - step;
                     if (s2 < 0)
                         s2 += p;
+                    soln2[i] = s2;
+                    Debug.Assert(EvaluatePolynomial(polynomial, x + soln2[i]) % p == 0);
                 }
-                soln1[i] = s1;
-                soln2[i] = s2;
-                Debug.Assert(EvaluatePolynomial(polynomial, x + soln1[i]) % p == 0);
-                Debug.Assert(EvaluatePolynomial(polynomial, x + soln2[i]) % p == 0); 
+            }
+            else
+            {
+                for (int i = 0; i < factorBaseSize; i++)
+                {
+                    if (siqs.IsQIndex[i])
+                        continue;
+                    var p = primes[i];
+                    var step = bainv2v[i];
+                    var s1 = soln1[i] + step;
+                    if (s1 >= p)
+                        s1 -= p;
+                    soln1[i] = s1;
+                    Debug.Assert(EvaluatePolynomial(polynomial, x + soln1[i]) % p == 0);
+                    var s2 = soln2[i] + step;
+                    if (s2 >= p)
+                        s2 -= p;
+                    soln2[i] = s2;
+                    Debug.Assert(EvaluatePolynomial(polynomial, x + soln2[i]) % p == 0);
+                }
             }
 
             // Update siqs.
