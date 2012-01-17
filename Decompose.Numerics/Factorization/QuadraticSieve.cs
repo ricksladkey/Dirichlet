@@ -528,8 +528,8 @@ namespace Decompose.Numerics
             }
             if (siqs.Bainv2 == null || siqs.S != s)
             {
-                siqs.Bainv2 = new int[s][];
-                for (int i = 0; i < s; i++)
+                siqs.Bainv2 = new int[s - 1][];
+                for (int i = 0; i < s - 1; i++)
                     siqs.Bainv2[i] = new int[factorBaseSize];
             }
 
