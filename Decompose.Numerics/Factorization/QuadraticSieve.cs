@@ -113,7 +113,7 @@ namespace Decompose.Numerics
                 P = p;
                 LogP = LogScale(p);
                 Root = n % p == 0 ? 0 : IntegerMath.ModularSquareRoot(n, p);
-                Debug.Assert((Root * Root - n) % p == 0);
+                Debug.Assert(((BigInteger)Root * Root - n) % p == 0);
                 RootDiff = ((P - Root) - Root) % p;
                 Offset = ((int)((Root - offsetX) % P) + P) % P;
             }
@@ -371,7 +371,7 @@ namespace Decompose.Numerics
             digits = (int)Math.Ceiling(BigInteger.Log(n, 10));
             factorBaseSize = CalculateFactorBaseSize();
             factorBase = allPrimes
-                .Where(p => p == 2 || /* multiplier % p == 0 || */ IntegerMath.JacobiSymbol(n, p) == 1)
+                .Where(p => p == 2 || multiplier % p == 0 || IntegerMath.JacobiSymbol(n, p) == 1)
                 .Take(factorBaseSize)
                 .Select(p => new FactorBaseEntry(p, n, sqrtN))
                 .ToArray();
@@ -578,7 +578,6 @@ namespace Decompose.Numerics
                 soln2[i] = s2 < 0 ? s2 + p : s2;
                 Debug.Assert(EvaluatePolynomial(polynomial, x + soln1[i]) % p == 0);
                 Debug.Assert(EvaluatePolynomial(polynomial, x + soln2[i]) % p == 0);
-                Debug.Assert(i == 0 || soln1[i] != soln2[i]);
             }
 
             siqs.Index = 0;
@@ -652,7 +651,6 @@ namespace Decompose.Numerics
                 soln2[i] = s2;
                 Debug.Assert(EvaluatePolynomial(polynomial, x + soln1[i]) % p == 0);
                 Debug.Assert(EvaluatePolynomial(polynomial, x + soln2[i]) % p == 0); 
-                Debug.Assert(i == 0 || soln1[i] != soln2[i]);
             }
 
             // Update siqs.
@@ -1105,10 +1103,7 @@ namespace Decompose.Numerics
             for (int i = mediumPrimeIndex; i < largePrimeIndex; i++)
             {
                 if (siqs.IsQIndex[i])
-                {
-                    ++i;
                     continue;
-                }
                 var entry = factorBase[i];
                 int p = entry.P;
                 var logP = entry.LogP;
@@ -1120,6 +1115,11 @@ namespace Decompose.Numerics
                     k1 += p;
                 }
                 offsets1[i] = k1 - size;
+                if (entry.RootDiff == 0)
+                {
+                    offsets2[i] = offsets1[i];
+                    continue;
+                }
                 int k2 = offsets2[i];
                 while (k2 < size)
                 {
