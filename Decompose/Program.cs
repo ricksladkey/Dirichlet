@@ -363,7 +363,7 @@ namespace Decompose
                     //Diagnostics = QuadraticSieve.Diag.Verbose,
                     //FactorBaseSize = 55500,
                     //IntervalSize = 256 * 1024,
-                    //LowerBoundPercent = 95,
+                    //LowerBoundPercent = 50,
                     //Multiplier = 43,
                     //ReportingInterval = 60,
                 };

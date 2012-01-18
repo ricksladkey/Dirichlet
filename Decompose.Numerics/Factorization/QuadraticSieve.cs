@@ -189,7 +189,8 @@ namespace Decompose.Numerics
         private const int subIntervalSize = 256 * 1024;
         private const int maximumCycleLenth = 32 * 1024;
         private const int maximumIntervalSize = 256 * 1024 * 8;
-        private const int lowerBoundPercentDefault = 75;
+        private const int lowerBoundInterval = 1024;
+        private const int lowerBoundPercentDefault = 50;
         private const double errorLimit = 0.1;
         private const int cofactorScaleFactor = 4096;
         private const int surplusRelations = 10;
@@ -262,6 +263,7 @@ namespace Decompose.Numerics
         private int largePrimeIndex;
         private int lowerBoundPercent;
         private int reportingInterval;
+        private CountInt[] lowerBound;
 
         private int threads;
         private BlockingCollection<Relation> relationBuffer;
@@ -406,6 +408,17 @@ namespace Decompose.Numerics
             moderatePrimeIndex = Enumerable.Range(0, factorBaseSize + 1)
                 .Where(index => index == factorBaseSize || (index >= mediumPrimeIndex && primes[index] >= intervalSize / 2))
                 .First();
+
+            lowerBound = new CountInt[intervalSize / lowerBoundInterval];
+            var numerator = BigInteger.Log(intervalSize * sqrtN / 2, 2);
+            var denominator = Math.Log(maximumDivisorSquared, 2) * (200 - lowerBoundPercent) / 200;
+            var m = intervalSize / 2;
+            for (int i = 0; i < intervalSize; i += lowerBoundInterval)
+            {
+                var x = (double)(i - m) / m;
+                var y = 2 * x * x - 1;
+                lowerBound[i / lowerBoundInterval] = (CountInt)Math.Round(Math.Log(Math.Abs(y), 2) + numerator - denominator);
+            }
         }
 
         private const int maximumMultiplier = 73;
@@ -819,14 +832,19 @@ namespace Decompose.Numerics
             return results;
         }
 
-        private static CountInt LogScale(BigInteger n)
+        private static CountInt LogScale(int n)
         {
-            return (CountInt)Math.Ceiling(BigInteger.Log(BigInteger.Abs(n), 2));
+            return (CountInt)Math.Round(Math.Log(Math.Abs(n), 2));
         }
 
         private static CountInt LogScale(long n)
         {
-            return (CountInt)Math.Ceiling(Math.Log(Math.Abs(n), 2));
+            return (CountInt)Math.Round(Math.Log(Math.Abs(n), 2));
+        }
+
+        private static CountInt LogScale(BigInteger n)
+        {
+            return (CountInt)Math.Round(BigInteger.Log(BigInteger.Abs(n), 2));
         }
 
         private void Sieve()
@@ -1011,6 +1029,12 @@ namespace Decompose.Numerics
 
         private void SieveQuadraticResidue(Interval interval)
         {
+            if (algorithm == Algorithm.SelfInitializingQuadraticSieve)
+            {
+                SieveSiqs(interval);
+                return;
+            }
+
             int intervalSize = interval.Size;
             var xMin = interval.X;
             if (interval.X < 0 && interval.X + interval.Size > 0)
@@ -1021,21 +1045,28 @@ namespace Decompose.Numerics
             for (int k0 = 0; k0 < intervalSize; k0 += subIntervalSize)
             {
                 int size = Math.Min(subIntervalSize, intervalSize - k0);
-                if (algorithm == Algorithm.SelfInitializingQuadraticSieve)
-                {
-                    SieveSmallPrimesSiqs(interval, size);
-                    SieveMediumPrimesSiqs(interval, size);
-                    SieveModeratePrimes(interval, size);
-                    SieveLargePrimes(interval, size);
-                }
-                else
-                {
-                    SieveSmallPrimes(interval, size);
-                    SieveMediumPrimes(interval, size);
-                    SieveLargePrimes(interval, size);
-                }
+                SieveSmallPrimes(interval, size);
+                SieveMediumPrimes(interval, size);
+                SieveLargePrimes(interval, size);
                 interval.OffsetX = interval.X + size;
                 CheckForSmooth(interval, size, countLimit);
+                if (relationBuffer.Count >= relationBuffer.BoundedCapacity)
+                    break;
+                interval.X += subIntervalSize;
+            }
+        }
+
+        private void SieveSiqs(Interval interval)
+        {
+            int intervalSize = interval.Size;
+            for (int k0 = 0; k0 < intervalSize; k0 += subIntervalSize)
+            {
+                int size = Math.Min(subIntervalSize, intervalSize - k0);
+                SieveSmallPrimesSiqs(interval, size);
+                SieveMediumPrimesSiqs(interval, size);
+                SieveModeratePrimes(interval, size);
+                SieveLargePrimes(interval, size);
+                CheckForSmoothSiqs(interval, size);
                 if (relationBuffer.Count >= relationBuffer.BoundedCapacity)
                     break;
                 interval.X += subIntervalSize;
@@ -1301,30 +1332,32 @@ namespace Decompose.Numerics
             }
         }
 
+        private void CheckForSmoothSiqs(Interval interval, int size)
+        {
+            var counts = interval.Counts;
+            counts[size] = CountInt.MaxValue;
+            for (int k = 0; k < size; k += 1024)
+            {
+                var limit = lowerBound[k >> 10];
+                int jMax = k + 1024;
+                for (int j = k; j < jMax; j++)
+                {
+                    if (counts[j] >= limit)
+                        CheckValue(interval, j);
+                }
+            }
+        }
+
         private void CheckForSmooth(Interval interval, int size, CountInt countLimit)
         {
             var counts = interval.Counts;
             counts[size] = CountInt.MaxValue;
-            int k = 0;
-            if (digits >= 50)
+            for (int k = 0; k < size; k++)
             {
-                while (k < size)
+                if (counts[k] >= countLimit)
                 {
-                    if (counts[k] >= countLimit)
-                        CheckValue(interval, k);
-                    ++k;
-                }
-            }
-            else
-            {
-                while (k < size)
-                {
-                    if (counts[k] >= countLimit)
-                    {
-                        if (!CheckValue(interval, k))
-                            return;
-                    }
-                    ++k;
+                    if (!CheckValue(interval, k))
+                        return;
                 }
             }
         }

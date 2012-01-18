@@ -15,3 +15,26 @@
 - for q[l], polynomial(x) | q[l] iff x = -c (2 b)^-1 mod q[l]
 - fix ModularSquareRoot mod 2 if value is even, more generally if value mod modulus == 0
 
+f(0) = -1
+f(-1) = 1
+f(1) = 1
+
+f(x) = a x^2 + b x + c
+
+f(0) = -1 = c
+f(-1) = 1 = a - b + c
+f(1) = 1 = a + b + c
+
+c = -1
+
+a - b - 1 = 1
+a + b - 1 = 1
+
+a - b = 2
+a + b = 2
+
+2 a = 4
+a = 2
+b = 0
+
+f(x) = 2 x^2 - 1
