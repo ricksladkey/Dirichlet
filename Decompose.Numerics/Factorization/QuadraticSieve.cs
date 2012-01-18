@@ -190,6 +190,7 @@ namespace Decompose.Numerics
         private const int maximumCycleLenth = 32 * 1024;
         private const int maximumIntervalSize = 256 * 1024 * 8;
         private const int lowerBoundInterval = 1024;
+        private const int lowerBoundShift = 10;
         private const int lowerBoundPercentDefault = 50;
         private const double errorLimit = 0.1;
         private const int cofactorScaleFactor = 4096;
@@ -1336,10 +1337,10 @@ namespace Decompose.Numerics
         {
             var counts = interval.Counts;
             counts[size] = CountInt.MaxValue;
-            for (int k = 0; k < size; k += 1024)
+            for (int k = 0; k < size; k += lowerBoundInterval)
             {
-                var limit = lowerBound[k >> 10];
-                int jMax = k + 1024;
+                var limit = lowerBound[k >> lowerBoundShift];
+                int jMax = k + lowerBoundInterval;
                 for (int j = k; j < jMax; j++)
                 {
                     if (counts[j] >= limit)
