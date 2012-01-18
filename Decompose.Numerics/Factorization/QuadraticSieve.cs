@@ -1321,19 +1321,32 @@ namespace Decompose.Numerics
             var offsets1 = siqs.Solution1;
             var offsets2 = siqs.Solution2;
             var exponents = interval.Exponents;
-            for (int i = 1; i < factorBaseSize; i++)
+            for (int i = 1; i < largePrimeIndex; i++)
             {
                 if (siqs.IsQIndex[i])
                     continue;
                 var p = primes[i];
                 var offset = delta % p;
-                if (offset < 0)
-                    offset += p;
                 if (offset != offsets1[i] && offset != offsets2[i])
                 {
                     Debug.Assert(y % p != 0);
                     continue;
                 }
+                Debug.Assert(y % p == 0);
+                while ((y % p).IsZero)
+                {
+                    ++exponents[i + 1];
+                    y /= p;
+                }
+            }
+            for (int i = largePrimeIndex; i < factorBaseSize; i++)
+            {
+                if (delta != offsets1[i] && delta != offsets2[i])
+                {
+                    Debug.Assert(y % primes[i] != 0);
+                    continue;
+                }
+                var p = primes[i];
                 Debug.Assert(y % p == 0);
                 while ((y % p).IsZero)
                 {
