@@ -258,6 +258,7 @@ namespace Decompose.Numerics
         private long maximumCofactorSize;
         private CountInt logMaximumDivisorSquared;
         private int mediumPrimeIndex;
+        private int moderatePrimeIndex;
         private int largePrimeIndex;
         private int lowerBoundPercent;
         private int reportingInterval;
@@ -384,7 +385,7 @@ namespace Decompose.Numerics
             long maximumDivisorSquared = (long)maximumDivisor * maximumDivisor;
             logMaximumDivisorSquared = LogScale(maximumDivisorSquared);
             largePrimeIndex = Enumerable.Range(0, factorBaseSize + 1)
-                .Where(index => index == factorBaseSize || factorBase[index].P >= subIntervalSize)
+                .Where(index => index == factorBaseSize || primes[index] >= subIntervalSize)
                 .First();
             maximumCofactorSize = Math.Min((long)maximumDivisor * cofactorScaleFactor, maximumDivisorSquared);
             lowerBoundPercent = config.LowerBoundPercent != 0 ? config.LowerBoundPercent : lowerBoundPercentDefault;
@@ -401,6 +402,10 @@ namespace Decompose.Numerics
 
             if (algorithm == Algorithm.SelfInitializingQuadraticSieve)
                 InitializeSiqs();
+
+            moderatePrimeIndex = Enumerable.Range(0, factorBaseSize + 1)
+                .Where(index => index == factorBaseSize || (index >= mediumPrimeIndex && primes[index] >= intervalSize / 2))
+                .First();
         }
 
         private const int maximumMultiplier = 73;
@@ -482,13 +487,13 @@ namespace Decompose.Numerics
             max = (int)Math.Round(center * ratio);
 
             candidateMap = Enumerable.Range(0, factorBaseSize)
-                .Where(index => factorBase[index].P >= min && factorBase[index].P <= max)
+                .Where(index => primes[index] >= min && primes[index] <= max)
                 .ToArray();
             if (candidateMap.Length == 0)
                 candidateMap = Enumerable.Range(factorBaseSize / 2, factorBaseSize - factorBaseSize / 2)
                 .ToArray();
             candidateSizes = candidateMap
-                .Select(index => Math.Log(factorBase[index].P))
+                .Select(index => Math.Log(primes[index]))
                 .ToArray();
 
             if ((diag & Diag.Summary) != 0)
@@ -545,7 +550,7 @@ namespace Decompose.Numerics
                 .Select(index => candidateMap[index])
                 .ToArray();
             var q = qMap
-                .Select(index => factorBase[index].P)
+                .Select(index => primes[index])
                 .ToArray();
             var a = q.Select(p => (BigInteger)p).Product();
             var capB = new BigInteger[s];
@@ -1020,6 +1025,7 @@ namespace Decompose.Numerics
                 {
                     SieveSmallPrimesSiqs(interval, size);
                     SieveMediumPrimesSiqs(interval, size);
+                    SieveModeratePrimes(interval, size);
                     SieveLargePrimes(interval, size);
                 }
                 else
@@ -1126,10 +1132,76 @@ namespace Decompose.Numerics
             var offsets1 = interval.Offsets1;
             var offsets2 = interval.Offsets2;
             var counts = interval.Counts;
-            for (int i = mediumPrimeIndex; i < largePrimeIndex; i++)
+            for (int i = mediumPrimeIndex; i < moderatePrimeIndex; i++)
             {
                 if (siqs.IsQIndex[i])
                     continue;
+                var entry = factorBase[i];
+                int p = entry.P;
+                var logP = entry.LogP;
+                int k1 = offsets1[i];
+                int k2 = offsets2[i];
+                if (k1 < k2)
+                {
+                    var kDiff = k2 - k1;
+                    int kLimit = size - kDiff;
+                    while (k1 < kLimit)
+                    {
+                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1) % p == 0);
+                        counts[k1] += logP;
+                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1 + kDiff) % p == 0);
+                        counts[k1 + kDiff] += logP;
+                        k1 += p;
+                    }
+                    offsets2[i] = k1 + kDiff - size;
+                    if (k1 < size)
+                    {
+                        counts[k1] += logP;
+                        k1 += p;
+                    }
+                    offsets1[i] = k1 - size;
+                }
+                else if (k2 < k1)
+                {
+                    var kDiff = k1 - k2;
+                    int kLimit = size - kDiff;
+                    while (k2 < kLimit)
+                    {
+                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k2) % p == 0);
+                        counts[k2] += logP;
+                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k2 + kDiff) % p == 0);
+                        counts[k2 + kDiff] += logP;
+                        k2 += p;
+                    }
+                    offsets1[i] = k2 + kDiff - size;
+                    if (k2 < size)
+                    {
+                        counts[k2] += logP;
+                        k2 += p;
+                    }
+                    offsets2[i] = k2 - size;
+                }
+                else
+                {
+                    while (k1 < size)
+                    {
+                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1) % p == 0);
+                        counts[k1] += logP;
+                        k1 += p;
+                    }
+                    offsets1[i] = offsets2[i] = k1 - size;
+                }
+            }
+        }
+
+        private void SieveModeratePrimes(Interval interval, int size)
+        {
+            var siqs = interval.Siqs;
+            var offsets1 = interval.Offsets1;
+            var offsets2 = interval.Offsets2;
+            var counts = interval.Counts;
+            for (int i = moderatePrimeIndex; i < largePrimeIndex; i++)
+            {
                 var entry = factorBase[i];
                 int p = entry.P;
                 var logP = entry.LogP;
