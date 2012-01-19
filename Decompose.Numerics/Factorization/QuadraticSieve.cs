@@ -176,7 +176,7 @@ namespace Decompose.Numerics
         {
             public int Index { get; set; }
             public int[] QMap { get; set; }
-            public bool[] IsQIndex { get; set; } 
+            public bool[] IsQIndex { get; set; }
             public int S { get; set; }
             public BigInteger[] CapB { get; set; }
             public int[][] Bainv2 { get; set; }
@@ -196,7 +196,10 @@ namespace Decompose.Numerics
         private const int cofactorScaleFactor = 4096;
         private const int surplusRelations = 10;
         private const int reportingIntervalDefault = 10;
+        private const int maximumMultiplier = 73;
+        private const int maximumScorePrimes = 100;
         private readonly BigInteger smallFactorCutoff = (BigInteger)int.MaxValue;
+
         private readonly Tuple<int, int>[] qsSizePairs =
         {
             Tuple.Create(1, 2),
@@ -404,26 +407,42 @@ namespace Decompose.Numerics
             SetupSmallPrimeCycle();
 
             if (algorithm == Algorithm.SelfInitializingQuadraticSieve)
+            {
                 InitializeSiqs();
+                SetupLowerBound();
+            }
 
             moderatePrimeIndex = Enumerable.Range(0, factorBaseSize + 1)
-                .Where(index => index == factorBaseSize || (index >= mediumPrimeIndex && primes[index] >= intervalSize / 2))
+                .Where(index => index == factorBaseSize ||
+                    index >= mediumPrimeIndex && primes[index] >= intervalSize / 2)
                 .First();
+        }
 
+        private void SetupLowerBound()
+        {
             lowerBound = new CountInt[intervalSize / lowerBoundInterval];
-            var numerator = BigInteger.Log(intervalSize * sqrtN / 2, 2);
-            var denominator = Math.Log(maximumDivisorSquared, 2) * (200 - lowerBoundPercent) / 200;
+            var logSqrtN = BigInteger.Log(n, 2) / 2;
+            var numerator = BigInteger.Log(intervalSize / 2, 2) + logSqrtN;
+            var denominator = 2 * Math.Log(maximumDivisor, 2) * (200 - lowerBoundPercent) / 200;
+            var baseline = numerator - denominator;
+            var minimum = logSqrtN - denominator;
             var m = intervalSize / 2;
             for (int i = 0; i < intervalSize; i += lowerBoundInterval)
             {
-                var x = (double)(i - m) / m;
-                var y = 2 * x * x - 1;
-                lowerBound[i / lowerBoundInterval] = (CountInt)Math.Round(Math.Log(Math.Abs(y), 2) + numerator - denominator);
+                var representativeLogY = 0.0;
+                for (int j = i; j < i + lowerBoundInterval; j++)
+                {
+                    var x = (double)(j - m) / m;
+                    var y = 2 * x * x - 1;
+                    if (y == 0)
+                        continue;
+                    var logY = Math.Log(Math.Abs(y), 2);
+                    if (j == i || logY > representativeLogY)
+                        representativeLogY = logY;
+                }
+                lowerBound[i >> lowerBoundShift] = (CountInt)Math.Round(representativeLogY + baseline);
             }
         }
-
-        private const int maximumMultiplier = 73;
-        private const int maximumScorePrimes = 100;
 
         private void ChooseMultiplier()
         {
@@ -432,14 +451,10 @@ namespace Decompose.Numerics
                 multiplier = config.Multiplier;
                 return;
             }
-#if false
-            multiplier = 1;
-#else
             multiplier = Enumerable.Range(1, maximumMultiplier)
                 .Where(value => IntegerMath.IsSquareFree(smallIntegerFactorer.Factor(value)))
                 .OrderByDescending(value => ScoreMultiplier(value))
                 .First();
-#endif
         }
 
         private double ScoreMultiplier(int multiplier)

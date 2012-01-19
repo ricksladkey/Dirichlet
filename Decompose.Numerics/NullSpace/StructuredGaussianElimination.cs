@@ -161,7 +161,7 @@ namespace Decompose.Numerics
                 }
 
                 if (diagnostics)
-                    Console.WriteLine("pass {0}: deleted {1} rows, {2} surplus cols", pass, deleted, surplusCols);
+                    Console.WriteLine("pass {0}: deleted {1} rows", pass, deleted);
                 if (deleted == 0)
                     break;
                 ++pass;
