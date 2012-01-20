@@ -269,6 +269,7 @@ namespace Decompose.Numerics
         private BigInteger nOrig;
         private BigInteger n;
         private BigInteger sqrtN;
+        private int powerOfTwo;
         private int factorBaseSize;
         private int desired;
         private int digits;
@@ -351,7 +352,7 @@ namespace Decompose.Numerics
                 Console.WriteLine("first few factors: {0}", string.Join(", ", primes.Take(15)));
                 Console.WriteLine("last few factors: {0}", string.Join(", ", primes.Skip(factorBaseSize - 5)));
                 Console.WriteLine("small prime cycle length = {0}, last small prime = {1}", cycleLength, primes[mediumPrimeIndex - 1]);
-                Console.WriteLine("multiplier = {0}", multiplier);
+                Console.WriteLine("multiplier = {0}, power of two = {1}", multiplier, powerOfTwo);
             }
 
             Sieve();
@@ -397,7 +398,8 @@ namespace Decompose.Numerics
             ChooseMultiplier();
             multiplierFactors = smallIntegerFactorer.Factor(multiplier).ToArray();
             n = nOrig * multiplier;
-            sqrtN = IntegerMath.Sqrt(this.n);
+            sqrtN = IntegerMath.Sqrt(n);
+            powerOfTwo = IntegerMath.Modulus(n, 8) == 1 ? 3 : IntegerMath.Modulus(n, 8) == 5 ? 2 : 1;
             digits = (int)Math.Ceiling(BigInteger.Log(n, 10));
             factorBaseSize = CalculateFactorBaseSize();
             factorBase = allPrimes
@@ -480,7 +482,7 @@ namespace Decompose.Numerics
         private double ScoreMultiplier(int multiplier)
         {
             var n = nOrig * multiplier;
-            var score = -0.5 * BigInteger.Log(multiplier);
+            var score = -0.5 * Math.Log(multiplier);
             var log2 = Math.Log(2);
             switch (IntegerMath.Modulus(n, 8))
             {
@@ -1136,13 +1138,16 @@ namespace Decompose.Numerics
             var counts = interval.Counts;
 
             var log2 = factorBase[0].LogP;
-            var count1 = log2;
-            var count2 = log2;
-            if (interval.Siqs.Solution1[0] == 1)
+            var count1 = (CountInt)(log2 * powerOfTwo);
+            var count2 = (CountInt)(log2 * powerOfTwo);
+            if (offsets1[0] == 1)
                 count1 = 0;
             else
                 count2 = 0;
             int k;
+            Debug.Assert(Enumerable.Range(0, cycleLength)
+                .All(k2 => k2 % 2 != offsets1[0] ||
+                    EvaluatePolynomial(interval.Polynomial, interval.X + k2) % IntegerMath.Pow(2, powerOfTwo) == 0));
             for (k = 0; k < cycleLength; k += 2)
             {
                 counts[k] = count1;

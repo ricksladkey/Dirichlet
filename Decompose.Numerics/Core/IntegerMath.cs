@@ -82,6 +82,11 @@ namespace Decompose.Numerics
             return (n % p + p) % p;
         }
 
+        public static int Pow(int n, int e)
+        {
+            return (int)Math.Round(Math.Pow(n, e));
+        }
+
         public static int ModularInverse(int n, int p)
         {
             int x;

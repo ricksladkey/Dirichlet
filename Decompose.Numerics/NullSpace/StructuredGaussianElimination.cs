@@ -33,6 +33,11 @@ namespace Decompose.Numerics
         private IBitMatrix matrixOrig;
 #endif
 
+        public StructuredGaussianElimination(int threads, bool diagnostics)
+            : this(threads, 0, diagnostics)
+        {
+        }
+
         public StructuredGaussianElimination(int threads, int mergeLimit, bool diagnostics)
         {
             this.threads = threads != 0 ? threads : 1;

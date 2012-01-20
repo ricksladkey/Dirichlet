@@ -277,14 +277,14 @@ namespace Decompose
         static void QuadraticSieveParametersTest()
         {
             var random = new MersenneTwisterBigInteger(0);
-            int i = 33;
+            int i = 35;
             var sample = samples[i - 10];
             var p = sample.P;
             var q = sample.Q;
             var n = p * q;
             Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-#if false
-            for (int size = 250; size <= 500; size += 10)
+#if true
+            for (int size = 10000; size <= 20000; size += 1000)
             {
                 var config = new QuadraticSieve.Config
                 {
@@ -294,7 +294,7 @@ namespace Decompose
                     //Diagnostics = QuadraticSieve.Diag.Verbose,
                 };
                 Console.WriteLine("size = {0}", size);
-                FactorTest(false, 25, n, new QuadraticSieve(config));
+                FactorTest(false, 1, n, new QuadraticSieve(config));
             }
 #endif
 #if false
@@ -311,7 +311,7 @@ namespace Decompose
                 FactorTest(false, 1, n, new QuadraticSieve(config));
             }
 #endif
-#if true
+#if false
             var blockSize = 32 * 1024;
             for (int size = 4 * blockSize; size <= 4 * blockSize; size += blockSize)
             {
@@ -348,7 +348,7 @@ namespace Decompose
 
         static void QuadraticSieveDigitsTest()
         {
-            for (int i = 50; i <= 50; i++)
+            for (int i = 20; i <= 35; i++)
             {
                 var sample = samples[i - 10];
                 var p = sample.P;
@@ -360,10 +360,10 @@ namespace Decompose
                 {
                     Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
                     Threads = 8,
-                    Diagnostics = QuadraticSieve.Diag.Verbose,
-                    //FactorBaseSize = 250000,
+                    //Diagnostics = QuadraticSieve.Diag.Verbose,
+                    //FactorBaseSize = 15000,
                     //IntervalSize = 256 * 1024,
-                    //LowerBoundPercent = 10,
+                    //LowerBoundPercent = 60,
                     //Multiplier = 43,
                     ReportingInterval = 60,
                 };
