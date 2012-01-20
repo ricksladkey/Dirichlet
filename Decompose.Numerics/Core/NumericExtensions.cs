@@ -19,7 +19,7 @@ namespace Decompose.Numerics
 
         public static int ProductModulo(this IEnumerable<int> source, int n)
         {
-            return source.Aggregate((sofar, current) => sofar * current % n);
+            return (int)source.Aggregate((long)1, (sofar, current) => sofar * current % n);
         }
 
         public static BigInteger Sum(this IEnumerable<BigInteger> source)

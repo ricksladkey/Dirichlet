@@ -361,11 +361,11 @@ namespace Decompose
                     Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
                     Threads = 8,
                     //Diagnostics = QuadraticSieve.Diag.Verbose,
-                    //FactorBaseSize = 24000,
+                    //FactorBaseSize = 250000,
                     //IntervalSize = 256 * 1024,
-                    //LowerBoundPercent = 50,
+                    //LowerBoundPercent = 10,
                     //Multiplier = 43,
-                    //ReportingInterval = 60,
+                    ReportingInterval = 60,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
             }
