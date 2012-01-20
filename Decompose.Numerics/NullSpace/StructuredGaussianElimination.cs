@@ -18,8 +18,9 @@ namespace Decompose.Numerics
         }
 
         private const int multiThreadedCutoff = 256;
-        private const int mergeLimit = 5;
+        private const int mergeLimitDefault = 5;
         private int threads;
+        private int mergeLimit;
         private bool diagnostics;
         private Stopwatch timer;
         private INullSpaceAlgorithm<IBitArray, IBitMatrix> solver;
@@ -32,9 +33,10 @@ namespace Decompose.Numerics
         private IBitMatrix matrixOrig;
 #endif
 
-        public StructuredGaussianElimination(int threads, bool diagnostics)
+        public StructuredGaussianElimination(int threads, int mergeLimit, bool diagnostics)
         {
             this.threads = threads != 0 ? threads : 1;
+            this.mergeLimit = mergeLimit != 0 ? mergeLimit : mergeLimitDefault;
             this.diagnostics = diagnostics;
             this.solver = new GaussianElimination<TArray>(threads);
         }

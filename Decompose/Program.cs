@@ -348,7 +348,7 @@ namespace Decompose
 
         static void QuadraticSieveDigitsTest()
         {
-            for (int i = 20; i <= 35; i++)
+            for (int i = 50; i <= 50; i++)
             {
                 var sample = samples[i - 10];
                 var p = sample.P;
@@ -360,7 +360,7 @@ namespace Decompose
                 {
                     Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
                     Threads = 8,
-                    //Diagnostics = QuadraticSieve.Diag.Verbose,
+                    Diagnostics = QuadraticSieve.Diag.Verbose,
                     //FactorBaseSize = 250000,
                     //IntervalSize = 256 * 1024,
                     //LowerBoundPercent = 10,
@@ -383,6 +383,7 @@ namespace Decompose
         static void GaussianEliminationTest1()
         {
             var threads = 8;
+            var mergeLimit = 10;
             //var file = @"..\..\..\..\matrix-12001.txt.gz";
             //var file = @"..\..\..\..\matrix-18401.txt.gz";
             var file = @"..\..\..\..\matrix-150001.txt.gz";
@@ -406,7 +407,7 @@ namespace Decompose
             var getter = new Func<string[], IBitMatrix>(GetBitMatrix<ByColSetBitMatrix>);
 #endif
 #if true
-            var solver = new StructuredGaussianElimination<Word64BitArray, Word64BitMatrix>(threads, true);
+            var solver = new StructuredGaussianElimination<Word64BitArray, Word64BitMatrix>(threads, mergeLimit, true);
             var getter = new Func<string[], IBitMatrix>(GetBitMatrix<SetBitMatrix>);
 #endif
 

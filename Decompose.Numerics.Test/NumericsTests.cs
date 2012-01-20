@@ -360,7 +360,7 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void StructuredGaussianEliminationTest()
         {
-            var solver = new StructuredGaussianElimination<BoolBitArray, BoolBitMatrix>(1, false);
+            var solver = new StructuredGaussianElimination<BoolBitArray, BoolBitMatrix>(1, 0, false);
             foreach (var text in new[] { matrix1, matrix2 })
             {
                 var origMatrix = GetBitMatrix(GetLines(text));
