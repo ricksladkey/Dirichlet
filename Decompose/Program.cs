@@ -277,13 +277,13 @@ namespace Decompose
         static void QuadraticSieveParametersTest()
         {
             var random = new MersenneTwisterBigInteger(0);
-            int i = 50;
+            int i = 40;
             var sample = samples[i - 10];
             var p = sample.P;
             var q = sample.Q;
             var n = p * q;
             Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-#if true
+#if false
             for (int size = 100000; size <= 200000; size += 10000)
             {
                 var config = new QuadraticSieve.Config
@@ -296,22 +296,7 @@ namespace Decompose
                     SieveTimeLimit = 120,
                 };
                 Console.WriteLine("size = {0}", size);
-                GC.Collect();
-                new QuadraticSieve(config).Factor(n).ToArray();
-            }
-#endif
-#if false
-            for (int size = 100000; size <= 200000; size += 10000)
-            {
-                var config = new QuadraticSieve.Config
-                {
-                    Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
-                    Threads = 8,
-                    FactorBaseSize = size,
-                    //Diagnostics = QuadraticSieve.Diag.Verbose,
-                };
-                Console.WriteLine("size = {0}", size);
-                FactorTest(false, 1, n, new QuadraticSieve(config));
+                RunParameterTest(config, n);
             }
 #endif
 #if false
@@ -325,24 +310,37 @@ namespace Decompose
                     //Diagnostics = QuadraticSieve.Diag.Verbose,
                 };
                 Console.WriteLine("percent = {0}", percent);
-                FactorTest(false, 1, n, new QuadraticSieve(config));
+                RunParameterTest(config, n);
             }
 #endif
-#if false
+#if true
             var blockSize = 32 * 1024;
-            for (int size = 4 * blockSize; size <= 4 * blockSize; size += blockSize)
+            for (int size = 4 * blockSize; size <= 32 * blockSize; size += blockSize)
             {
                 var config = new QuadraticSieve.Config
                 {
                     Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
-                    Threads = 8,
+                    Threads = 1,
                     IntervalSize = size,
+                    ReportingInterval = 60,
+                    SieveTimeLimit = 60,
                     //Diagnostics = QuadraticSieve.Diag.Verbose,
                 };
-                Console.WriteLine("size = {0} blocks = {1}", size, size / blockSize);
-                FactorTest(false, 1, n, new QuadraticSieve(config));
+                Console.WriteLine("interval size = {0}", size);
+                RunParameterTest(config, n);
             }
 #endif
+        }
+
+        static void RunParameterTest(QuadraticSieve.Config config, BigInteger n)
+        {
+            if (config.SieveTimeLimit != 0)
+            {
+                GC.Collect();
+                new QuadraticSieve(config).Factor(n).ToArray();
+            }
+            else
+                FactorTest(false, 1, n, new QuadraticSieve(config));
         }
 
         static void CreateSamplesTest()
@@ -378,9 +376,9 @@ namespace Decompose
                     Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
                     Threads = 8,
                     //Diagnostics = QuadraticSieve.Diag.Verbose,
-                    //FactorBaseSize = 180000,
-                    //IntervalSize = 256 * 1024,
-                    //LowerBoundPercent = 50,
+                    //FactorBaseSize = 190000,
+                    //IntervalSize = 425984,
+                    //LowerBoundPercent = 60,
                     ReportingInterval = 60,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
