@@ -16,7 +16,7 @@ namespace Decompose.Numerics
         protected PollardRhoBase(int threads, int iterations)
         {
             this.threads = threads;
-            this.iterations = iterations;
+            this.iterations = iterations != 0 ? iterations: int.MaxValue;
         }
 
         public IEnumerable<BigInteger> Factor(BigInteger n)

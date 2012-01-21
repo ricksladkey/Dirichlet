@@ -61,6 +61,8 @@ namespace Decompose.Numerics
             public int ReportingInterval { get; set; }
             public int MergeLimit { get; set; }
             public int SieveTimeLimit { get; set; }
+            public int CofactorCutoff { get; set; }
+            public double ErrorLimit { get; set; }
         }
 
         public QuadraticSieve(Config config)
@@ -156,7 +158,6 @@ namespace Decompose.Numerics
         {
             public int Id { get; set; }
             public long X { get; set; }
-            public long OffsetX { get; set; }
             public Polynomial Polynomial { get; set; }
             public int Size { get; set; }
             public byte[] Exponents { get; set; }
@@ -208,8 +209,8 @@ namespace Decompose.Numerics
         private const int thresholdInterval = 1024;
         private const int thresholdShift = 10;
         private const double thresholdExponentDefault = 1.4;
-        private const double errorLimit = 0.1;
-        private const int cofactorScaleFactor = 4096;
+        private const double errorLimitDefault = 0.1;
+        private const int cofactorCutoffDefault = 4096;
         private const int surplusRelations = 10;
         private const int reportingIntervalDefault = 10;
         private const int maximumMultiplier = 73;
@@ -271,6 +272,8 @@ namespace Decompose.Numerics
         private int largePrimeIndex;
         private double thresholdExponent;
         private int reportingInterval;
+        private int cofactorCutoff;
+        private double errorLimit;
 
         private int[] candidateMap;
         private double[] candidateSizes;
@@ -401,9 +404,11 @@ namespace Decompose.Numerics
             desired = factorBaseSize + 1 + surplusRelations;
             maximumDivisor = factorBase[factorBaseSize - 1].P;
             long maximumDivisorSquared = (long)maximumDivisor * maximumDivisor;
-            maximumCofactorSize = Math.Min((long)maximumDivisor * cofactorScaleFactor, maximumDivisorSquared);
+            cofactorCutoff = config.CofactorCutoff != 0 ? config.CofactorCutoff : cofactorCutoffDefault;
+            maximumCofactorSize = Math.Min((long)maximumDivisor * cofactorCutoff, maximumDivisorSquared);
             thresholdExponent = config.ThresholdExponent != 0 ? config.ThresholdExponent : thresholdExponentDefault;
             reportingInterval = config.ReportingInterval != 0 ? config.ReportingInterval : reportingIntervalDefault;
+            errorLimit = config.ErrorLimit != 0 ? config.ErrorLimit : errorLimitDefault;
 
             intervalsProcessed = 0;
             valuesChecked = 0;
@@ -478,11 +483,16 @@ namespace Decompose.Numerics
             // the correct size for a multiple of those primes.
             var min = minimumAFactor;
             var max = maximumAfactor;
+            if (min > maximumDivisor || max > maximumDivisor)
+            {
+                min = primes[factorBaseSize / 2];
+                max = primes[factorBaseSize - 1];
+            }
             var m = (intervalSize - 1) / 2;
             var logSqrt2N = BigInteger.Log(n * 2) / 2;
             targetSize = logSqrt2N - Math.Log(m);
             var preliminaryAverageSize = (Math.Log(min) + Math.Log(max)) / 2;
-            numberOfFactors = (int)Math.Round(targetSize / preliminaryAverageSize);
+            numberOfFactors = (int)Math.Ceiling(targetSize / preliminaryAverageSize);
             var averageSize = targetSize / numberOfFactors;
             var center = Math.Exp(averageSize);
             var ratio = Math.Sqrt((double)max / min);
@@ -491,9 +501,6 @@ namespace Decompose.Numerics
 
             candidateMap = Enumerable.Range(0, factorBaseSize)
                 .Where(index => primes[index] >= min && primes[index] <= max)
-                .ToArray();
-            if (candidateMap.Length == 0)
-                candidateMap = Enumerable.Range(factorBaseSize / 2, factorBaseSize - factorBaseSize / 2)
                 .ToArray();
             candidateSizes = candidateMap
                 .Select(index => Math.Log(primes[index]))

@@ -227,7 +227,7 @@ namespace Decompose
         static void FactorTest4()
         {
             var random = new MersenneTwisterBigInteger(0);
-            for (int i = 16; i <= 16; i++)
+            for (int i = 5; i <= 16; i++)
             {
                 var limit = BigInteger.Pow(new BigInteger(10), i);
                 var p = NextPrime(random, limit);
@@ -237,9 +237,9 @@ namespace Decompose
                 int threads = 8;
                 var factors = null as BigInteger[];
                 //factors = FactorTest(true, 1, n, new PollardRho(threads, 0));
-                //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, 0, new Radix32IntegerReduction()));
-                //factors = FactorTest(true, 10, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
-                factors = FactorTest(true, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads }));
+                //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, 0, new Word32IntegerReduction()));
+                factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
+                //factors = FactorTest(true, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads }));
             }
         }
 
@@ -363,7 +363,7 @@ namespace Decompose
 
         static void QuadraticSieveDigitsTest()
         {
-            for (int i = 20; i <= 35; i++)
+            for (int i = 10; i <= 35; i++)
             {
                 var sample = samples[i - 10];
                 var p = sample.P;
@@ -378,7 +378,9 @@ namespace Decompose
                     //Diagnostics = QuadraticSieve.Diag.Verbose,
                     //FactorBaseSize = 190000,
                     //IntervalSize = 425984,
-                    //LowerBoundPercent = 60,
+                    //ThresholdExponent = 2,
+                    //CofactorCutoff = 1000000,
+                    //ErrorLimit = 1,
                     ReportingInterval = 60,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
