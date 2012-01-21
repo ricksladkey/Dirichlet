@@ -61,12 +61,14 @@ namespace Decompose.Numerics
             public int Multiplier { get; set; }
             public int ReportingInterval { get; set; }
             public int MergeLimit { get; set; }
+            public int SieveTimeLimit { get; set; }
         }
 
         public QuadraticSieve(Config config)
         {
             this.config = config;
             diag = config.Diagnostics;
+            sieveTimeLimit = config.SieveTimeLimit;
             random = new MersenneTwister32(0);
             smallIntegerFactorer = new TrialDivisionFactorization();
             allPrimes = new SieveOfErostothones();
@@ -250,6 +252,7 @@ namespace Decompose.Numerics
 
             // Untested.
             Tuple.Create(110, 300000),
+            Tuple.Create(120, 600000),
         };
 
         private Config config;
@@ -263,6 +266,7 @@ namespace Decompose.Numerics
 
         private Diag diag;
         private bool largePrimeOptimization;
+        private int sieveTimeLimit;
         private Algorithm algorithm;
         private int multiplier;
         private int[] multiplierFactors;
@@ -272,6 +276,7 @@ namespace Decompose.Numerics
         private int powerOfTwo;
         private int factorBaseSize;
         private int desired;
+        private volatile bool sieveCompleted;
         private int digits;
         private FactorBaseEntry[] factorBase;
         private int[] primes;
@@ -356,6 +361,9 @@ namespace Decompose.Numerics
             }
 
             Sieve();
+
+            if (relations.Length < desired)
+                return BigInteger.Zero;
 
             if ((diag & Diag.Timing) != 0)
             {
@@ -907,6 +915,7 @@ namespace Decompose.Numerics
 
         private void Sieve()
         {
+            sieveCompleted = false;
             relationBuffer = new BlockingCollection<Relation>(desired);
             partialRelations = new Dictionary<long, PartialRelation>();
 
@@ -925,10 +934,15 @@ namespace Decompose.Numerics
             partialRelations = null;
         }
 
+        private bool SieveCompleted
+        {
+            get { return sieveCompleted || relationBuffer.Count >= relationBuffer.BoundedCapacity; }
+        }
+
         private void SieveTask()
         {
             var interval = CreateInterval();
-            while (relationBuffer.Count < relationBuffer.BoundedCapacity)
+            while (!SieveCompleted)
             {
                 Sieve(GetNextInterval(interval));
                 Interlocked.Increment(ref intervalsProcessed);
@@ -937,7 +951,7 @@ namespace Decompose.Numerics
 
         private void WaitForTasks(Task[] tasks)
         {
-            if ((diag & Diag.Sieve) == 0)
+            if ((diag & Diag.Sieve) == 0 && sieveTimeLimit == 0)
             {
                 Task.WaitAll(tasks);
                 return;
@@ -946,6 +960,7 @@ namespace Decompose.Numerics
             var timer = new Stopwatch();
             timer.Start();
             double percentCompleteSofar = 0;
+            int totalTime = 0;
             while (!Task.WaitAll(tasks, reportingInterval * 1000))
             {
                 int current = relationBuffer.Count;
@@ -955,12 +970,22 @@ namespace Decompose.Numerics
                 double percentRate = (double)percentLatest / reportingInterval;
                 double timeRemainingSeconds = percentRate == 0 ? 0 : percentRemaining / percentRate;
                 var timeRemaining = TimeSpan.FromSeconds(Math.Ceiling(timeRemainingSeconds));
-                Console.WriteLine("{0:F2}% complete, rate = {1:F5} %/sec, sieve time remaining = {2}",
-                    percentComplete, percentRate, timeRemaining);
+                if ((diag & Diag.Sieve) != 0)
+                {
+                    Console.WriteLine("{0:F3}% complete, rate = {1:F6} %/sec, sieve time remaining = {2}",
+                        percentComplete, percentRate, timeRemaining);
+                }
                 percentCompleteSofar = percentComplete;
+                totalTime += reportingInterval;
+                if (sieveTimeLimit != 0 && totalTime >= sieveTimeLimit)
+                {
+                    sieveCompleted = true;
+                    Task.WaitAll(tasks);
+                    break;
+                }
             }
             double elapsed = (double)timer.ElapsedTicks / Stopwatch.Frequency;
-            double overallPercentRate = 100 / elapsed;
+            double overallPercentRate = (double)relationBuffer.Count / desired * 100 / elapsed;
             Console.WriteLine("overall rate = {0:F6} %/sec", overallPercentRate);
         }
 
@@ -1108,7 +1133,7 @@ namespace Decompose.Numerics
                 SieveLargePrimes(interval, size);
                 interval.OffsetX = interval.X + size;
                 CheckForSmooth(interval, size, countLimit);
-                if (relationBuffer.Count >= relationBuffer.BoundedCapacity)
+                if (SieveCompleted)
                     break;
                 interval.X += subIntervalSize;
             }
@@ -1125,7 +1150,7 @@ namespace Decompose.Numerics
                 SieveModeratePrimesSiqs(interval, size);
                 SieveLargePrimesSiqs(interval, size);
                 CheckForSmoothSiqs(interval, size);
-                if (relationBuffer.Count >= relationBuffer.BoundedCapacity)
+                if (SieveCompleted)
                     break;
                 interval.X += subIntervalSize;
             }
