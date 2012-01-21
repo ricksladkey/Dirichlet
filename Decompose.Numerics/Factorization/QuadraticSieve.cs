@@ -199,7 +199,8 @@ namespace Decompose.Numerics
             public int[] Solution2 { get; set; }
         }
 
-        private const int subIntervalSize = 256 * 1024;
+        private const int defaultIntervalSize = 256 * 1024;
+        private const int subIntervalSize = 1024 * 1024;
         private const int maximumIntervalSize = subIntervalSize;
         private const int maximumCycleLenth = 32 * 1024;
         private const int lowerBoundInterval = 1024;
@@ -420,9 +421,6 @@ namespace Decompose.Numerics
             maximumDivisor = factorBase[factorBaseSize - 1].P;
             long maximumDivisorSquared = (long)maximumDivisor * maximumDivisor;
             logMaximumDivisorSquared = LogScale(maximumDivisorSquared);
-            largePrimeIndex = Enumerable.Range(0, factorBaseSize + 1)
-                .Where(index => index == factorBaseSize || primes[index] >= subIntervalSize)
-                .First();
             maximumCofactorSize = Math.Min((long)maximumDivisor * cofactorScaleFactor, maximumDivisorSquared);
             lowerBoundPercent = config.LowerBoundPercent != 0 ? config.LowerBoundPercent : lowerBoundPercentDefault;
             reportingInterval = config.ReportingInterval != 0 ? config.ReportingInterval : reportingIntervalDefault;
@@ -445,6 +443,9 @@ namespace Decompose.Numerics
             moderatePrimeIndex = Enumerable.Range(0, factorBaseSize + 1)
                 .Where(index => index == factorBaseSize ||
                     index >= mediumPrimeIndex && primes[index] >= intervalSize / 2)
+                .First();
+            largePrimeIndex = Enumerable.Range(0, factorBaseSize + 1)
+                .Where(index => index == factorBaseSize || primes[index] >= intervalSize)
                 .First();
         }
 
@@ -993,7 +994,7 @@ namespace Decompose.Numerics
         {
             var interval = new Interval();
             interval.Exponents = new byte[factorBaseSize + 1];
-            interval.Counts = new CountInt[subIntervalSize + 1];
+            interval.Counts = new CountInt[Math.Min(intervalSize, subIntervalSize) + 1];
             interval.Offsets1 = new int[factorBaseSize];
             interval.Offsets2 = new int[factorBaseSize];
             interval.OffsetsDiff = new int[factorBaseSize];
@@ -1005,10 +1006,7 @@ namespace Decompose.Numerics
             if (config.IntervalSize != 0)
                 intervalSize = Math.Min(config.IntervalSize, maximumIntervalSize);
             else if (algorithm == Algorithm.SelfInitializingQuadraticSieve)
-            {
-                intervalSize = maximumIntervalSize;
-                intervalSize = IntegerMath.MultipleOfCeiling(intervalSize, subIntervalSize);
-            }
+                intervalSize = defaultIntervalSize;
             else
             {
                 intervalSize = (int)IntegerMath.Min((sqrtN + threads - 1) / threads, maximumIntervalSize);
