@@ -51,6 +51,7 @@ namespace Decompose.Numerics
 #if DEBUG
             matrixOrig = (IBitMatrix)Activator.CreateInstance(typeof(TMatrix), matrix);
 #endif
+
             if (diagnostics)
             {
                 Console.WriteLine("original matrix: {0} rows, {1} cols", matrix.Rows, matrix.Cols);
@@ -58,6 +59,14 @@ namespace Decompose.Numerics
                 timer = new Stopwatch();
                 timer.Restart();
             }
+
+            if (matrix.Rows < 1000)
+            {
+                foreach (var v in solver.Solve((IBitMatrix)Activator.CreateInstance(typeof(TMatrix), matrix)))
+                    yield return v;
+                yield break;
+            }
+
             colsOrig = matrix.Cols;
             this.matrix = matrix;
             var compactMatrix = CompactMatrix();

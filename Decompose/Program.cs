@@ -363,7 +363,9 @@ namespace Decompose
 
         static void QuadraticSieveDigitsTest()
         {
-            for (int i = 10; i <= 35; i++)
+            FactorTest(false, 1, samples[0].N, new QuadraticSieve(new QuadraticSieve.Config()));
+
+            for (int i = 20; i <= 35; i++)
             {
                 var sample = samples[i - 10];
                 var p = sample.P;
@@ -375,12 +377,13 @@ namespace Decompose
                 {
                     Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
                     Threads = 8,
-                    //Diagnostics = QuadraticSieve.Diag.Verbose,
+                    //Diagnostics = QuadraticSieve.Diag.Verbose | QuadraticSieve.Diag.Polynomials,
                     //FactorBaseSize = 190000,
                     //IntervalSize = 425984,
                     //ThresholdExponent = 2,
                     //CofactorCutoff = 1000000,
                     //ErrorLimit = 1,
+                    //NumberOfFactors = 13,
                     ReportingInterval = 60,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
