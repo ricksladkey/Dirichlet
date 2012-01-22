@@ -365,7 +365,7 @@ namespace Decompose
         {
             //FactorTest(false, 1, samples[0].N, new QuadraticSieve(new QuadraticSieve.Config()));
 
-            for (int i = 20; i <= 35; i++)
+            for (int i = 40; i <= 40; i++)
             {
                 var sample = samples[i - 10];
                 var p = sample.P;
@@ -377,7 +377,7 @@ namespace Decompose
                 {
                     Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
                     Threads = 8,
-                    //Diagnostics = QuadraticSieve.Diag.Verbose,
+                    Diagnostics = QuadraticSieve.Diag.Verbose,
                     //FactorBaseSize = 190000,
                     //BlockSize = 256 * 1024,
                     //IntervalSize = 256 * 1024,
@@ -385,7 +385,7 @@ namespace Decompose
                     //CofactorCutoff = 1000000,
                     //ErrorLimit = 1,
                     //NumberOfFactors = 13,
-                    //ReportingInterval = 60,
+                    ReportingInterval = 60,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
             }

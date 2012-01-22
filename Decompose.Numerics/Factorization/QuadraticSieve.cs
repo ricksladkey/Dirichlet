@@ -320,6 +320,7 @@ namespace Decompose.Numerics
 
         private Diag diag;
         private bool largePrimeOptimization;
+        private bool useCountTable;
         private int sieveTimeLimit;
         private Algorithm algorithm;
         private int multiplier;
@@ -587,6 +588,7 @@ namespace Decompose.Numerics
                 .ToArray();
 
             largePrimeOptimization = digits >= largePrimeOptimizationDigits;
+            useCountTable = false;
 
             if ((diag & Diag.Summary) != 0)
                 Console.WriteLine("number of factors of A = {0}, min = {1}, max = {2}", numberOfFactors, min, max);
@@ -1300,7 +1302,7 @@ namespace Decompose.Numerics
 
         private void SetupLargePrimesSieving(Interval interval, int size)
         {
-            if (!largePrimeOptimization)
+            if (!largePrimeOptimization || !useCountTable)
                 return;
             var counts = interval.Counts;
             var l = interval.Siqs.LargePrimes;
@@ -1338,42 +1340,110 @@ namespace Decompose.Numerics
         {
             if (largePrimeOptimization)
             {
-                interval.CountTable.AddToCounts(k0 / size);
-                return;
+                if (useCountTable)
+                {
+                    interval.CountTable.AddToCounts(k0 / size);
+                    return;
+                }
+                var counts = interval.Counts;
+                var l = interval.Siqs.LargePrimes;
+                var bainv2v = interval.Siqs.Bainv2v;
+                int intervalSize = interval.Size;
+                if (bainv2v == null || k0 != 0)
+                {
+                    var increments = interval.Increments;
+                    for (int i = largePrimeIndex; i < factorBaseSize; i++)
+                    {
+                        var j = i - largePrimeIndex;
+                        var p = l[j].P;
+                        var logP = l[j].LogP;
+                        int k1 = l[j].Offset1;
+                        int k2 = l[j].Offset2;
+                        if (k0 != 0)
+                        {
+                            var increment = increments[i];
+                            k1 += increment;
+                            if (k1 >= p)
+                                k1 -= p;
+                            k2 += increment;
+                            if (k2 >= p)
+                                k2 -= p;
+                        }
+                        if (k1 < intervalSize)
+                        {
+                            Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1) % p == 0);
+                            counts[k1] += logP;
+                        }
+                        if (k2 < intervalSize)
+                        {
+                            Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k2) % p == 0);
+                            counts[k2] += logP;
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = largePrimeIndex; i < factorBaseSize; i++)
+                    {
+                        var j = i - largePrimeIndex;
+                        var p = l[j].P;
+                        var logP = l[j].LogP;
+                        var step = bainv2v[i];
+                        int k1 = l[j].Offset1 + step;
+                        if (k1 >= p)
+                            k1 -= p;
+                        if (k1 < intervalSize)
+                        {
+                            Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1) % p == 0);
+                            counts[k1] += logP;
+                        }
+                        l[j].Offset1 = k1;
+                        int k2 = l[j].Offset2 + step;
+                        if (k2 >= p)
+                            k2 -= p;
+                        if (k2 < intervalSize)
+                        {
+                            Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k2) % p == 0);
+                            counts[k2] += logP;
+                        }
+                        l[j].Offset2 = k2;
+                    }
+                }
             }
-            var siqs = interval.Siqs;
-            var offsets1 = interval.Offsets1;
-            var offsets2 = interval.Offsets2;
-            var counts = interval.Counts;
-            var increments = interval.Increments;
-            for (int i = largePrimeIndex; i < factorBaseSize; i++)
+            else
             {
-                if (siqs.IsQIndex[i])
-                    continue;
-                var entry = factorBase[i];
-                int p = entry.P;
-                var logP = entry.LogP;
-                int k1 = offsets1[i];
-                int k2 = offsets2[i];
-                if (k0 != 0)
+                var siqs = interval.Siqs;
+                var offsets1 = interval.Offsets1;
+                var offsets2 = interval.Offsets2;
+                var counts = interval.Counts;
+                var increments = interval.Increments;
+                for (int i = largePrimeIndex; i < factorBaseSize; i++)
                 {
-                    var increment = increments[i];
-                    k1 += increment;
-                    if (k1 >= p)
-                        k1 -= p;
-                    k2 += increment;
-                    if (k2 >= p)
-                        k2 -= p;
-                }
-                if (k1 < size)
-                {
-                    Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k1) % p == 0);
-                    counts[k1] += logP;
-                }
-                if (k2 < size)
-                {
-                    Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k2) % p == 0);
-                    counts[k2] += logP;
+                    var entry = factorBase[i];
+                    int p = entry.P;
+                    var logP = entry.LogP;
+                    int k1 = offsets1[i];
+                    int k2 = offsets2[i];
+                    if (k0 != 0)
+                    {
+                        var increment = increments[i];
+                        k1 += increment;
+                        if (k1 >= p)
+                            k1 -= p;
+                        k2 += increment;
+                        if (k2 >= p)
+                            k2 -= p;
+                    }
+                    if (k1 < size)
+                    {
+                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k1) % p == 0);
+                        counts[k1] += logP;
+                    }
+                    if (k2 < size)
+                    {
+                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k2) % p == 0);
+                        counts[k2] += logP;
+                    }
                 }
             }
         }
