@@ -56,6 +56,11 @@ namespace Decompose.Numerics
             return product;
         }
 
+        public static int GetBitLength(this int x)
+        {
+            return GetBitLength((uint)x);
+        }
+
         public static int GetBitLength(this uint x)
         {
             int i = 0;

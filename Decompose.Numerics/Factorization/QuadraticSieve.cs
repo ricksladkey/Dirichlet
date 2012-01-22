@@ -55,6 +55,7 @@ namespace Decompose.Numerics
             public Diag Diagnostics { get; set; }
             public int Threads { get; set; }
             public int FactorBaseSize { get; set; }
+            public int BlockSize { get; set; }
             public int IntervalSize { get; set; }
             public double ThresholdExponent { get; set; }
             public int Multiplier { get; set; }
@@ -142,15 +143,13 @@ namespace Decompose.Numerics
             public CountInt LogP { get; set; }
             public int Root { get; set; }
             public int RootDiff { get; set; }
-            public int Offset { get; set; }
-            public FactorBaseEntry(int p, BigInteger n, BigInteger offsetX)
+            public FactorBaseEntry(int p, BigInteger n)
             {
                 P = p;
                 LogP = LogScale(p);
                 Root = n % p == 0 ? 0 : IntegerMath.ModularSquareRoot(n, p);
                 Debug.Assert(((BigInteger)Root * Root - n) % p == 0);
                 RootDiff = ((P - Root) - Root) % p;
-                Offset = ((int)((Root - offsetX) % P) + P) % P;
             }
             public override string ToString()
             {
@@ -164,6 +163,45 @@ namespace Decompose.Numerics
             public CountInt LogP { get; set; }
             public int Offset1 { get; set; }
             public int Offset2 { get; set; }
+        }
+
+        private struct CountEntry
+        {
+            public int Index { get; set; }
+            public CountInt Count { get; set; }
+        }
+
+        private class CountTable
+        {
+            int numberOfBlocks;
+            private CountEntry[][] lists;
+            private int[] used;
+            private CountInt[] counts;
+            public CountTable(int numberOfBlocks, int capacity, CountInt[] counts)
+            {
+                this.numberOfBlocks = numberOfBlocks;
+                var listCapacity = capacity / numberOfBlocks;
+                this.counts = counts;
+                lists = new CountEntry[numberOfBlocks][];
+                used = new int[numberOfBlocks];
+                for (int j = 0; j < numberOfBlocks; j++)
+                    lists[j] = new CountEntry[listCapacity];
+            }
+            public void AddEntry(int block, int index, CountInt count)
+            {
+                var list = lists[block];
+                var slot = used[block]++;
+                list[slot].Index = index;
+                list[slot].Count = count;
+            }
+            public void AddToCounts(int block)
+            {
+                var list = lists[block];
+                var length = used[block];
+                for (int i = 0; i < length; i++)
+                    counts[list[i].Index] += list[i].Count;
+                used[block] = 0;
+            }
         }
 
         private class Polynomial
@@ -188,13 +226,17 @@ namespace Decompose.Numerics
         private class Interval
         {
             public int Id { get; set; }
-            public long X { get; set; }
+            public int X { get; set; }
             public Polynomial Polynomial { get; set; }
             public int Size { get; set; }
             public byte[] Exponents { get; set; }
+            public CountInt[] Cycle { get; set; }
+            public int CycleOffset { get; set; }
             public CountInt[] Counts { get; set; }
+            public CountTable CountTable { get; set; }
             public int[] Offsets1 { get; set; }
             public int[] Offsets2 { get; set; }
+            public int[] Increments { get; set; }
             public int RelationsFound { get; set; }
             public int PartialRelationsFound { get; set; }
             public Siqs Siqs { get; set; }
@@ -233,9 +275,8 @@ namespace Decompose.Numerics
             public CountInt[] Threshold { get; set; }
         }
 
-        private const int defaultIntervalSize = 256 * 1024;
-        private const int subIntervalSize = 1024 * 1024;
-        private const int maximumIntervalSize = subIntervalSize;
+        private const int blockSizeDefault = 256 * 1024;
+        private const int intervalSizeDefault = 256 * 1024;
         private const int maximumCycleLenth = 32 * 1024;
         private const int thresholdInterval = 1024;
         private const int thresholdShift = 10;
@@ -249,7 +290,7 @@ namespace Decompose.Numerics
         private readonly BigInteger smallFactorCutoff = (BigInteger)int.MaxValue;
         private const int minimumAFactor = 2000;
         private const int maximumAfactor = 4000;
-        private const int largePrimeSiqsDigits = 80;
+        private const int largePrimeOptimizationDigits = 80;
 
         private readonly Tuple<int, int>[] sizePairs =
         {
@@ -277,9 +318,6 @@ namespace Decompose.Numerics
         private IEnumerable<int> allPrimes;
         private INullSpaceAlgorithm<IBitArray, IBitMatrix> solver;
 
-        private int intervalSize;
-        private int nextIntervalId;
-
         private Diag diag;
         private bool largePrimeOptimization;
         private int sieveTimeLimit;
@@ -305,6 +343,12 @@ namespace Decompose.Numerics
         private int reportingInterval;
         private int cofactorCutoff;
         private double errorLimit;
+        private int blockSize;
+        private int intervalSize;
+        private int[][] intervalIncrements;
+        private int numberOfBlocks;
+        private int blockShift;
+        private int blockMask;
 
         private int[] candidateMap;
         private double[] candidateSizes;
@@ -319,9 +363,6 @@ namespace Decompose.Numerics
         private Stopwatch timer;
 
         private int cycleLength;
-        private CountInt[] cycle;
-        private int[] cInv;
-        private int[] cProduct;
 
         private int intervalsProcessed;
         private int valuesChecked;
@@ -371,8 +412,8 @@ namespace Decompose.Numerics
             {
                 Console.WriteLine("algorithm = {0}", algorithm);
                 Console.WriteLine("digits = {0}; factorBaseSize = {1:N0}; desired = {2:N0}", digits, factorBaseSize, desired);
-                Console.WriteLine("interval size = {0:N0}; threads = {1}; threshold exponent = {2}", intervalSize, threads, thresholdExponent);
-                Console.WriteLine("error limit = {0}, cofactor cutoff = {1}", errorLimit, cofactorCutoff);
+                Console.WriteLine("block size = {0:N0}; interval size = {1:N0}; threads = {2}", blockSize, intervalSize, threads);
+                Console.WriteLine("error limit = {0}, cofactor cutoff = {1}; threshold exponent = {2}", errorLimit, cofactorCutoff, thresholdExponent);
                 Console.WriteLine("first few factors: {0}", string.Join(", ", primes.Take(15)));
                 Console.WriteLine("last few factors: {0}", string.Join(", ", primes.Skip(factorBaseSize - 5)));
                 Console.WriteLine("small prime cycle length = {0}, last small prime = {1}", cycleLength, primes[mediumPrimeIndex - 1]);
@@ -433,7 +474,7 @@ namespace Decompose.Numerics
             factorBase = allPrimes
                 .Where(p => p == 2 || multiplier % p == 0 || IntegerMath.JacobiSymbol(n, p) == 1)
                 .Take(factorBaseSize)
-                .Select(p => new FactorBaseEntry(p, n, sqrtN))
+                .Select(p => new FactorBaseEntry(p, n))
                 .ToArray();
             primes = factorBase.Select(entry => entry.P).ToArray();
             desired = factorBaseSize + 1 + surplusRelations;
@@ -463,7 +504,8 @@ namespace Decompose.Numerics
                     index >= mediumPrimeIndex && primes[index] >= intervalSize / 2)
                 .First();
             largePrimeIndex = Enumerable.Range(0, factorBaseSize + 1)
-                .Where(index => index == factorBaseSize || primes[index] >= intervalSize)
+                .Where(index => index == factorBaseSize ||
+                    index >= moderatePrimeIndex && primes[index] >= intervalSize)
                 .First();
         }
 
@@ -544,7 +586,7 @@ namespace Decompose.Numerics
                 .Select(index => Math.Log(primes[index]))
                 .ToArray();
 
-            largePrimeOptimization = digits >= largePrimeSiqsDigits;
+            largePrimeOptimization = digits >= largePrimeOptimizationDigits;
 
             if ((diag & Diag.Summary) != 0)
                 Console.WriteLine("number of factors of A = {0}, min = {1}, max = {2}", numberOfFactors, min, max);
@@ -652,6 +694,18 @@ namespace Decompose.Numerics
                 Debug.Assert(soln1[i] >= 0 && EvaluatePolynomial(polynomial, x + soln1[i]) % p == 0);
                 Debug.Assert(soln1[i] >= 0 && EvaluatePolynomial(polynomial, x + soln2[i]) % p == 0);
             }
+
+            var threshold = siqs.Threshold;
+            var logSqrtN = BigInteger.Log(n, 2) / 2;
+            var denominator = thresholdExponent * Math.Log(maximumDivisor, 2);
+            var m = intervalSize / 2;
+            for (int k = 0; k < intervalSize; k += thresholdInterval)
+            {
+                var y = EvaluatePolynomial(polynomial, x + k + thresholdInterval / 2);
+                var logY = BigInteger.Log(BigInteger.Abs(y), 2);
+                threshold[k >> thresholdShift] = (CountInt)Math.Round(logY - denominator);
+            }
+
             if (largePrimeOptimization)
             {
                 var l = new LargePrimeEntry[factorBaseSize - largePrimeIndex];
@@ -665,17 +719,6 @@ namespace Decompose.Numerics
                     l[j].Offset2 = soln2[i];
                 }
                 siqs.LargePrimes = l;
-            }
-
-            var threshold = siqs.Threshold;
-            var logSqrtN = BigInteger.Log(n, 2) / 2;
-            var denominator = thresholdExponent * Math.Log(maximumDivisor, 2);
-            var m = intervalSize / 2;
-            for (int k = 0; k < intervalSize; k += thresholdInterval)
-            {
-                var y = EvaluatePolynomial(polynomial, x + k + thresholdInterval / 2);
-                var logY = BigInteger.Log(BigInteger.Abs(y), 2);
-                threshold[k >> thresholdShift] = (CountInt)Math.Round(logY - denominator);
             }
 
             siqs.Index = 0;
@@ -986,7 +1029,9 @@ namespace Decompose.Numerics
         {
             var interval = new Interval();
             interval.Exponents = new byte[factorBaseSize + 1];
-            interval.Counts = new CountInt[Math.Min(intervalSize, subIntervalSize) + 1];
+            interval.Cycle = new CountInt[cycleLength];
+            interval.Counts = new CountInt[Math.Min(intervalSize, blockSize) + 1];
+            interval.CountTable = new CountTable(numberOfBlocks, intervalSize, interval.Counts);
             interval.Offsets1 = new int[factorBaseSize];
             interval.Offsets2 = new int[factorBaseSize];
             return interval;
@@ -994,10 +1039,24 @@ namespace Decompose.Numerics
 
         private void SetupIntervals()
         {
-            if (config.IntervalSize != 0)
-                intervalSize = Math.Min(config.IntervalSize, maximumIntervalSize);
-            else
-                intervalSize = defaultIntervalSize;
+            blockSize = config.BlockSize != 0 ? config.BlockSize : blockSizeDefault;
+            intervalSize = config.IntervalSize != 0 ? config.IntervalSize : intervalSizeDefault;
+            int numberOfIncrements = intervalSize / blockSize;
+            intervalIncrements = new int[numberOfIncrements + 1][];
+            for (int j = 1; j < numberOfIncrements; j++)
+            {
+                intervalIncrements[j] = new int[factorBaseSize];
+                var offset = -blockSize * j;
+                for (int i = 0; i < factorBaseSize; i++)
+                {
+                    var p = primes[i];
+                    intervalIncrements[j][i] = (offset % p + p) % p;
+                }
+            }
+            Debug.Assert(intervalSize % blockSize == 0);
+            numberOfBlocks = intervalSize / blockSize;
+            blockShift = (intervalSize / numberOfBlocks).GetBitLength() - 1;
+            blockMask = intervalSize / numberOfBlocks - 1;
         }
 
         private Interval GetNextInterval(Interval interval)
@@ -1024,65 +1083,61 @@ namespace Decompose.Numerics
         private void SetupSmallPrimeCycle()
         {
             int c = 1;
-            int j = 0;
-            while (j < factorBaseSize && c * factorBase[j].P < maximumCycleLenth)
-            {
-                var p = factorBase[j].P;
-                c *= p;
-                ++j;
-            }
-            mediumPrimeIndex = j;
-            cInv = new int[mediumPrimeIndex];
-            cProduct = new int[mediumPrimeIndex];
-            c = 1;
-            for (int i = 0; i < mediumPrimeIndex; i++)
+            int i = 0;
+            while (i < factorBaseSize && c * factorBase[i].P < maximumCycleLenth)
             {
                 var p = primes[i];
-                cInv[i] = IntegerMath.ModularInverse(c, p);
-                cProduct[i] = c;
                 c *= p;
+                ++i;
             }
+            mediumPrimeIndex = i;
             cycleLength = c;
-            cycle = new CountInt[cycleLength];
-            for (int i = 0; i < mediumPrimeIndex; i++)
-            {
-                var entry = factorBase[i];
-                var p = entry.P;
-                var p2 = entry.RootDiff;
-                var logP = entry.LogP;
-                for (int k = 0; k < cycleLength; k += p)
-                {
-                    cycle[k] += logP;
-                    if (p2 != 0)
-                        cycle[k + p2] += logP;
-                }
-            }
         }
 
         private void Sieve(Interval interval)
         {
             GetNextInterval(interval);
             int intervalSize = interval.Size;
-            for (int k0 = 0; k0 < intervalSize; k0 += subIntervalSize)
+            SetupLargePrimesSieving(interval, blockSize);
+            for (int k0 = 0; k0 < intervalSize; k0 += blockSize)
             {
-                int size = Math.Min(subIntervalSize, intervalSize - k0);
-                SieveSmallPrimes(interval, size);
-                SieveMediumPrimes(interval, size);
-                SieveModeratePrimes(interval, size);
-                SieveLargePrimes(interval, size);
-                CheckForSmooth(interval, size);
+                int size = Math.Min(blockSize, intervalSize - k0);
+                interval.Increments = intervalIncrements[k0 / blockSize];
+                SieveSmallPrimes(interval, k0, size);
+                SieveMediumPrimes(interval, k0, size);
+                SieveModeratePrimes(interval, k0, size);
+                SieveLargePrimes(interval, k0, size);
+                CheckForSmooth(interval, k0, size);
                 if (SievingCompleted)
                     break;
-                interval.X += subIntervalSize;
             }
         }
 
-        private void SieveSmallPrimes(Interval interval, int size)
+        private void SieveSmallPrimes(Interval interval, int k0, int size)
         {
-            var offsets1 = interval.Offsets1;
-            var offsets2 = interval.Offsets2;
+            var cycle = interval.Cycle;
             var counts = interval.Counts;
 
+            if (k0 == 0)
+                InitializeSmallPrimeCycle(interval);
+
+            // Initialize the remainder of the counts array with the cycle.
+            int k = interval.CycleOffset;
+            Array.Copy(cycle, cycleLength - k, counts, 0, Math.Min(k, size));
+            while (k < size)
+            {
+                Array.Copy(cycle, 0, counts, k, Math.Min(cycleLength, size - k));
+                k += cycleLength;
+            }
+            interval.CycleOffset = k - size;
+        }
+
+        private void InitializeSmallPrimeCycle(Interval interval)
+        {
+            var cycle = interval.Cycle;
+            var counts = interval.Counts;
+            var offsets1 = interval.Offsets1;
+            var offsets2 = interval.Offsets2;
             var log2 = factorBase[0].LogP;
             var count1 = (CountInt)(log2 * powerOfTwo);
             var count2 = (CountInt)(log2 * powerOfTwo);
@@ -1096,9 +1151,9 @@ namespace Decompose.Numerics
                     EvaluatePolynomial(interval.Polynomial, interval.X + k2) % IntegerMath.Pow(2, powerOfTwo) == 0));
             for (k = 0; k < cycleLength; k += 2)
             {
-                counts[k] = count1;
+                cycle[k] = count1;
                 Debug.Assert(count1 == 0 || EvaluatePolynomial(interval.Polynomial, interval.X + k) % 2 == 0);
-                counts[k + 1] = count2;
+                cycle[k + 1] = count2;
                 Debug.Assert(count2 == 0 || EvaluatePolynomial(interval.Polynomial, interval.X + k + 1) % 2 == 0);
             }
             for (int i = 1; i < mediumPrimeIndex; i++)
@@ -1110,24 +1165,24 @@ namespace Decompose.Numerics
                 var offset2 = offsets2[i];
                 for (k = 0; k < cycleLength; k += p)
                 {
-                    counts[k + offset1] += logP;
+                    cycle[k + offset1] += logP;
                     Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k + offset1) % p == 0);
-                    counts[k + offset2] += logP;
+                    if (offset1 == offset2)
+                        continue;
+                    cycle[k + offset2] += logP;
                     Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k + offset2) % p == 0);
                 }
             }
-
-            // Initialize the remainder of the counts array with the cycle.
-            for (k = cycleLength; k < size; k += cycleLength)
-                Array.Copy(counts, 0, counts, k, Math.Min(cycleLength, size - k));
+            interval.CycleOffset = 0;
         }
 
-        private void SieveMediumPrimes(Interval interval, int size)
+        private void SieveMediumPrimes(Interval interval, int k0, int size)
         {
             var siqs = interval.Siqs;
             var offsets1 = interval.Offsets1;
             var offsets2 = interval.Offsets2;
             var counts = interval.Counts;
+            var increments = interval.Increments;
             for (int i = mediumPrimeIndex; i < moderatePrimeIndex; i++)
             {
                 if (siqs.IsQIndex[i])
@@ -1137,15 +1192,27 @@ namespace Decompose.Numerics
                 var logP = entry.LogP;
                 int k1 = offsets1[i];
                 int k2 = offsets2[i];
+                Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1) % p == 0);
+                Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k2) % p == 0);
+                if (k0 != 0)
+                {
+                    var increment = increments[i];
+                    k1 += increment;
+                    if (k1 >= p)
+                        k1 -= p;
+                    k2 += increment;
+                    if (k2 >= p)
+                        k2 -= p;
+                }
                 if (k1 < k2)
                 {
                     var kDiff = k2 - k1;
                     int kLimit = size - kDiff;
                     while (k1 < kLimit)
                     {
-                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1) % p == 0);
+                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k1) % p == 0);
                         counts[k1] += logP;
-                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1 + kDiff) % p == 0);
+                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k1 + kDiff) % p == 0);
                         counts[k1 + kDiff] += logP;
                         k1 += p;
                     }
@@ -1161,9 +1228,9 @@ namespace Decompose.Numerics
                     int kLimit = size - kDiff;
                     while (k2 < kLimit)
                     {
-                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k2) % p == 0);
+                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k2) % p == 0);
                         counts[k2] += logP;
-                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k2 + kDiff) % p == 0);
+                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k2 + kDiff) % p == 0);
                         counts[k2 + kDiff] += logP;
                         k2 += p;
                     }
@@ -1177,7 +1244,7 @@ namespace Decompose.Numerics
                 {
                     while (k1 < size)
                     {
-                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1) % p == 0);
+                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k1) % p == 0);
                         counts[k1] += logP;
                         k1 += p;
                     }
@@ -1185,12 +1252,13 @@ namespace Decompose.Numerics
             }
         }
 
-        private void SieveModeratePrimes(Interval interval, int size)
+        private void SieveModeratePrimes(Interval interval, int k0, int size)
         {
             var siqs = interval.Siqs;
             var offsets1 = interval.Offsets1;
             var offsets2 = interval.Offsets2;
             var counts = interval.Counts;
+            var increments = interval.Increments;
             for (int i = moderatePrimeIndex; i < largePrimeIndex; i++)
             {
                 if (siqs.IsQIndex[i])
@@ -1199,9 +1267,20 @@ namespace Decompose.Numerics
                 int p = entry.P;
                 var logP = entry.LogP;
                 int k1 = offsets1[i];
+                int k2 = offsets2[i];
+                if (k0 != 0)
+                {
+                    var increment = increments[i];
+                    k1 += increment;
+                    if (k1 >= p)
+                        k1 -= p;
+                    k2 += increment;
+                    if (k2 >= p)
+                        k2 -= p;
+                }
                 while (k1 < size)
                 {
-                    Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1) % p == 0);
+                    Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k1) % p == 0);
                     counts[k1] += logP;
                     k1 += p;
                 }
@@ -1210,86 +1289,109 @@ namespace Decompose.Numerics
                     offsets2[i] = offsets1[i];
                     continue;
                 }
-                int k2 = offsets2[i];
                 while (k2 < size)
                 {
-                    Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k2) % p == 0);
+                    Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k2) % p == 0);
                     counts[k2] += logP;
                     k2 += p;
                 }
             }
         }
 
-        private void SieveLargePrimes(Interval interval, int size)
+        private void SetupLargePrimesSieving(Interval interval, int size)
         {
+            if (!largePrimeOptimization)
+                return;
             var counts = interval.Counts;
             var l = interval.Siqs.LargePrimes;
             var bainv2v = interval.Siqs.Bainv2v;
-            if (!largePrimeOptimization || bainv2v == null)
+            int intervalSize = interval.Size;
+            var countTable = interval.CountTable;
+            for (int i = largePrimeIndex; i < factorBaseSize; i++)
             {
-                var offsets1 = interval.Offsets1;
-                var offsets2 = interval.Offsets2;
-                for (int i = largePrimeIndex; i < factorBaseSize; i++)
+                var j = i - largePrimeIndex;
+                var p = l[j].P;
+                var logP = l[j].LogP;
+                var step = bainv2v != null ? bainv2v[i] : 0;
+                int k1 = l[j].Offset1 + step;
+                if (k1 >= p)
+                    k1 -= p;
+                if (k1 < intervalSize)
                 {
-                    var logP = factorBase[i].LogP;
-                    int k1 = offsets1[i];
-                    if (k1 < size)
-                    {
-                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1) % primes[i] == 0);
-                        counts[k1] += logP;
-                    }
-                    int k2 = offsets2[i];
-                    if (k2 < size)
-                    {
-                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k2) % primes[i] == 0);
-                        counts[k2] += logP;
-                    }
+                    Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1) % p == 0);
+                    countTable.AddEntry(k1 >> blockShift, k1 & blockMask, logP);
                 }
-            }
-            else
-            {
-                for (int i = largePrimeIndex; i < factorBaseSize; i++)
+                l[j].Offset1 = k1;
+                int k2 = l[j].Offset2 + step;
+                if (k2 >= p)
+                    k2 -= p;
+                if (k2 < intervalSize)
                 {
-                    var j = i - largePrimeIndex;
-                    var p = l[j].P;
-                    var logP = l[j].LogP;
-                    var step = bainv2v[i];
-                    int k1 = l[j].Offset1 + step;
+                    Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k2) % p == 0);
+                    countTable.AddEntry(k2 >> blockShift, k2 & blockMask, logP);
+                }
+                l[j].Offset2 = k2;
+            }
+        }
+
+        private void SieveLargePrimes(Interval interval, int k0, int size)
+        {
+            if (largePrimeOptimization)
+            {
+                interval.CountTable.AddToCounts(k0 / size);
+                return;
+            }
+            var siqs = interval.Siqs;
+            var offsets1 = interval.Offsets1;
+            var offsets2 = interval.Offsets2;
+            var counts = interval.Counts;
+            var increments = interval.Increments;
+            for (int i = largePrimeIndex; i < factorBaseSize; i++)
+            {
+                if (siqs.IsQIndex[i])
+                    continue;
+                var entry = factorBase[i];
+                int p = entry.P;
+                var logP = entry.LogP;
+                int k1 = offsets1[i];
+                int k2 = offsets2[i];
+                if (k0 != 0)
+                {
+                    var increment = increments[i];
+                    k1 += increment;
                     if (k1 >= p)
                         k1 -= p;
-                    if (k1 < size)
-                    {
-                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1) % p == 0);
-                        counts[k1] += logP;
-                    }
-                    l[j].Offset1 = k1;
-                    int k2 = l[j].Offset2 + step;
+                    k2 += increment;
                     if (k2 >= p)
                         k2 -= p;
-                    if (k2 < size)
-                    {
-                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k2) % p == 0);
-                        counts[k2] += logP;
-                    }
-                    l[j].Offset2 = k2;
+                }
+                if (k1 < size)
+                {
+                    Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k1) % p == 0);
+                    counts[k1] += logP;
+                }
+                if (k2 < size)
+                {
+                    Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k2) % p == 0);
+                    counts[k2] += logP;
                 }
             }
         }
 
-        private void CheckForSmooth(Interval interval, int size)
+        private void CheckForSmooth(Interval interval, int k0, int size)
         {
             var counts = interval.Counts;
             var threshold = interval.Siqs.Threshold;
             counts[size] = CountInt.MaxValue;
             for (int k = 0; k < size; k += thresholdInterval)
             {
-                var limit = threshold[k >> thresholdShift];
+                var limit = threshold[(k0 + k) >> thresholdShift];
                 int jMax = k + thresholdInterval;
                 for (int j = k; j < jMax; j++)
                 {
                     if (counts[j] >= limit)
                     {
-                        CheckValue(interval, j);
+                        CheckValue(interval, k0 + j);
                         if (SievingCompleted)
                             return;
                     }

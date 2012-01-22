@@ -281,7 +281,7 @@ namespace Decompose
             var sample = samples[i - 10];
             var p = sample.P;
             var q = sample.Q;
-            var n = p * q;
+            var n = sample.N;
             Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
 #if false
             for (int size = 100000; size <= 200000; size += 10000)
@@ -363,28 +363,29 @@ namespace Decompose
 
         static void QuadraticSieveDigitsTest()
         {
-            FactorTest(false, 1, samples[0].N, new QuadraticSieve(new QuadraticSieve.Config()));
+            //FactorTest(false, 1, samples[0].N, new QuadraticSieve(new QuadraticSieve.Config()));
 
             for (int i = 20; i <= 35; i++)
             {
                 var sample = samples[i - 10];
                 var p = sample.P;
                 var q = sample.Q;
-                var n = p * q;
+                var n = sample.N;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
                 //Console.WriteLine("n = {0}", n);
                 var config = new QuadraticSieve.Config
                 {
                     Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
                     Threads = 8,
-                    //Diagnostics = QuadraticSieve.Diag.Verbose | QuadraticSieve.Diag.Polynomials,
+                    //Diagnostics = QuadraticSieve.Diag.Verbose,
                     //FactorBaseSize = 190000,
-                    //IntervalSize = 425984,
+                    //BlockSize = 256 * 1024,
+                    //IntervalSize = 256 * 1024,
                     //ThresholdExponent = 2,
                     //CofactorCutoff = 1000000,
                     //ErrorLimit = 1,
                     //NumberOfFactors = 13,
-                    ReportingInterval = 60,
+                    //ReportingInterval = 60,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
             }
