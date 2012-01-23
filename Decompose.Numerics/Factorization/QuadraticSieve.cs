@@ -9,7 +9,7 @@ using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using CountInt = System.Byte;
-using ExponentInt = System.Byte;
+using ExponentInt = System.Int32;
 
 #if false
 using BitMatrix = Decompose.Numerics.Word64BitMatrix;
@@ -1081,8 +1081,17 @@ namespace Decompose.Numerics
             interval.Offsets1 = new int[factorBaseSize];
             interval.Offsets2 = new int[factorBaseSize];
             if (processPartialPartialRelations)
-                interval.CofactorFactorer = new QuadraticSieve(new Config());
+                interval.CofactorFactorer = CreateCofactorFactorer();
             return interval;
+        }
+
+        private IFactorizationAlgorithm<BigInteger> CreateCofactorFactorer()
+        {
+#if false
+            return new QuadraticSieve(new Config());
+#else
+            return new PollardRhoReduction(1, int.MaxValue, new MontgomeryReduction());
+#endif
         }
 
         private void SetupIntervals()
@@ -1681,12 +1690,18 @@ namespace Decompose.Numerics
         private void ProcessPartialRelation(Interval interval, int k, long cofactor)
         {
             Interlocked.Increment(ref partialRelationsProcessed);
+            if (processPartialPartialRelations)
+            {
+                ProcessPartialPartialRelation(interval, k, cofactor, 1);
+                return;
+            }
             var partialRelation = new PartialRelation
             {
                 X = interval.X + k,
                 Polynomial = interval.Polynomial,
                 Entries = GetEntries(interval.Exponents),
             };
+            CheckValidPartialRelation(partialRelation, cofactor);
             PartialRelation other;
             while (true)
             {
@@ -1716,6 +1731,10 @@ namespace Decompose.Numerics
             AddRelation(relation);
         }
 
+#if false
+        private List<PartialPartialRelation> pprs = new List<PartialPartialRelation>();
+#endif
+
         private void ProcessPartialPartialRelation(Interval interval, int k, long cofactor1, long cofactor2)
         {
             Interlocked.Increment(ref partialPartialRelationsProcessed);
@@ -1727,8 +1746,10 @@ namespace Decompose.Numerics
                 Cofactor1 = cofactor1,
                 Cofactor2 = cofactor2,
             };
+            CheckValidPartialPartialRelation(partialPartialRelation);
 #if false
-            Console.WriteLine("{0} {1}", cofactor1, cofactor2);
+            lock (pprs)
+                pprs.Add(partialPartialRelation);
 #endif
             var cycle = null as List<PartialPartialRelation>;
             lock (partialPartialRelations)
@@ -1776,7 +1797,7 @@ namespace Decompose.Numerics
                 Entries = entries,
                 Cofactor = cofactor,
             };
-            Debug.Assert((relation.X * relation.X - MultiplyFactors(relation)) % n == 0);
+            CheckValidRelation(relation);
             return relation;
         }
 
@@ -1795,6 +1816,19 @@ namespace Decompose.Numerics
 
         private void ProcessRelations()
         {
+#if false
+            if (pprs.Count != 0)
+            {
+                using (var stream = new StreamWriter(File.OpenWrite("pprs.txt")))
+                {
+                    for (int i = 0; i < pprs.Count; i++)
+                    {
+                        var ppr = pprs[i];
+                        stream.WriteLine("{0} {1}", ppr.Cofactor1, ppr.Cofactor2);
+                    }
+                }
+            }
+#endif
             matrix = new BitMatrix(factorBaseSize + 1, relations.Length);
             for (int j = 0; j < relations.Length; j++)
             {
@@ -1849,14 +1883,58 @@ namespace Decompose.Numerics
             return yPrime / polynomial.A;
         }
 
-        private BigInteger MultiplyFactors(Relation relation)
+        private BigInteger MultiplyFactors(ExponentEntries entries)
         {
-            var result = relation.Entries
+            return entries
                 .Select(entry => BigInteger.Pow(entry.Row == 0 ? -1 : factorBase[entry.Row - 1].P, entry.Exponent))
                 .ProductModulo(n);
+        }
+
+        private BigInteger MultiplyFactors(Relation relation)
+        {
+            var result = MultiplyFactors(relation.Entries);
             if (relation.Cofactor == 1)
                 return result;
             return result * BigInteger.ModPow(relation.Cofactor, 2, n) % n;
+        }
+
+        private BigInteger MultiplyFactors(PartialRelation partialRelation, BigInteger cofactor)
+        {
+            return MultiplyFactors(partialRelation.Entries) * cofactor % n;
+        }
+
+        private BigInteger MultiplyFactors(PartialPartialRelation partialPartialRelation)
+        {
+            var cofactor1 = partialPartialRelation.Cofactor1;
+            var cofactor2 = partialPartialRelation.Cofactor2;
+            return MultiplyFactors(partialPartialRelation.Entries) * cofactor1 % n * cofactor2 % n;
+        }
+
+        //[Conditional("DEBUG")]
+        private void CheckValidRelation(Relation relation)
+        {
+            var x = relation.X;
+            var y = MultiplyFactors(relation);
+            if ((x * x - y) % n != 0)
+                throw new InvalidOperationException("invalid relation");
+        }
+
+        //[Conditional("DEBUG")]
+        private void CheckValidPartialRelation(PartialRelation relation, long cofactor)
+        {
+            var x = EvaluateMapping(relation.Polynomial, relation.X);
+            var y = MultiplyFactors(relation, cofactor);
+            if ((x * x - y) % n != 0)
+                throw new InvalidOperationException("invalid partial relation");
+        }
+
+        //[Conditional("DEBUG")]
+        private void CheckValidPartialPartialRelation(PartialPartialRelation relation)
+        {
+            var x = EvaluateMapping(relation.Polynomial, relation.X);
+            var y = MultiplyFactors(relation);
+            if ((x * x - y) % n != 0)
+                throw new InvalidOperationException("invalid partial partial relation");
         }
     }
 }

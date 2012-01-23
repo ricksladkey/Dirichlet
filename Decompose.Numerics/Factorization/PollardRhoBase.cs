@@ -29,7 +29,9 @@ namespace Decompose.Numerics
             while (!IntegerMath.IsPrime(n))
             {
                 var divisor = GetDivisor(n);
-                if (divisor.IsZero || divisor.IsOne)
+                while (divisor.IsZero)
+                    divisor = GetDivisor(n);
+                if (divisor.IsOne)
                     yield break;
                 foreach (var factor in Factor(divisor))
                     yield return factor;

@@ -31,6 +31,7 @@ namespace Decompose
                 //CunninghamTest();
                 //GaussianEliminationTest1();
                 //CreateSamplesTest();
+                //GraphTest();
             }
             catch (Exception ex)
             {
@@ -460,6 +461,53 @@ namespace Decompose
             Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 
             Console.WriteLine("solutions = {0}", solutions.Length);
+        }
+
+        private static void GraphTest()
+        {
+            //var file = @"..\..\..\..\pprs-23906.txt.gz";
+            var file = @"..\..\..\..\pprs-42726.txt.gz";
+            var lines = GetLinesGzip(file);
+            var pprs = lines
+                .Select(line => line.Split(' ').Select(field => long.Parse(field)).ToArray())
+                .Select(pair => Tuple.Create(pair[0], pair[1]))
+                .ToArray();
+            //var algorithm = new QuadraticSieve(new QuadraticSieve.Config());
+            var algorithm = new PollardRhoReduction(1, int.MaxValue, new MontgomeryReduction());
+
+            var timer = new Stopwatch();
+            timer.Restart();
+            int processed = 0;
+            int found = 0;
+            int total = 0;
+            int failed = 0;
+            var graph = new Graph<long, Edge<long>>();
+            foreach (var ppr in pprs)
+            {
+                var cofactor1 = ppr.Item1;
+                var cofactor2 = ppr.Item2;
+                var cofactor = cofactor1 * cofactor2;
+                if (cofactor2 != 1)
+                {
+                    var factors = algorithm.Factor(cofactor).ToArray();
+                    if (factors.Length != 2 || factors[0] != cofactor1 && factors[0] != cofactor2)
+                        ++failed;
+                }
+                var cycle = graph.FindPath(cofactor1, cofactor2);
+                if (cycle == null)
+                    graph.AddEdge(cofactor1, cofactor2);
+                else
+                {
+                    total += cycle.Count + 1;
+                    foreach (var edge in cycle)
+                        graph.RemoveEdge(edge);
+                    ++found;
+                }
+                ++processed;
+            }
+            Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            Console.WriteLine("processed = {0}; found = {1}; total = {2}; average = {3:F3}", processed, found, total, (double)total / found);
+            Console.WriteLine("failed = {0}", failed);
         }
 
         private static string[] GetLinesGzip(string file)
