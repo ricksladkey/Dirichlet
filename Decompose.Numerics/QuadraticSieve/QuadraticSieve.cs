@@ -268,7 +268,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private class PartialPartialRelation : Edge<long>
+        private class PartialPartialRelation : PartialRelationEdge
         {
             public Polynomial Polynomial { get; set; }
             public long X { get; set; }
@@ -389,7 +389,7 @@ namespace Decompose.Numerics
         private Dictionary<ExponentEntries, Relation> relationBuffer;
         private Relation[] relations;
         private Dictionary<long, PartialRelation> partialRelations;
-        private Graph<long, PartialPartialRelation> partialPartialRelations;
+        private PartialRelationGraph<PartialPartialRelation> partialPartialRelations;
         private IBitMatrix matrix;
         private Stopwatch timer;
 
@@ -998,7 +998,7 @@ namespace Decompose.Numerics
             sievingAborted = false;
             relationBuffer = new Dictionary<ExponentEntries, Relation>();
             partialRelations = new Dictionary<long, PartialRelation>();
-            partialPartialRelations = new Graph<long, PartialPartialRelation>();
+            partialPartialRelations = new PartialRelationGraph<PartialPartialRelation>();
 
             if (threads == 1)
                 SieveTask();

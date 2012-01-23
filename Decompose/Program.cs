@@ -384,7 +384,7 @@ namespace Decompose
         {
             //new QuadraticSieve(new QuadraticSieve.Config()).Factor(samples[10].N).ToArray();
             //new QuadraticSieve(new QuadraticSieve.Config()).Factor(35095264073).ToArray();
-            for (int i = 20; i <= 35; i++)
+            for (int i = 25; i <= 25; i++)
             {
                 var sample = samples[i];
                 var p = sample.P;
@@ -396,7 +396,7 @@ namespace Decompose
                 {
                     Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
                     Threads = 8,
-                    //Diagnostics = QuadraticSieve.Diag.Verbose,
+                    Diagnostics = QuadraticSieve.Diag.Verbose,
                     //FactorBaseSize = 190000,
                     //BlockSize = 256 * 1024,
                     //IntervalSize = 256 * 1024,
@@ -404,8 +404,8 @@ namespace Decompose
                     //ErrorLimit = 1,
                     //NumberOfFactors = 13,
                     ReportingInterval = 10,
-                    //ThresholdExponent = 2.5,
-                    //ProcessPartialPartialRelations = true,
+                    ThresholdExponent = 2.5,
+                    ProcessPartialPartialRelations = true,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
             }
@@ -481,7 +481,11 @@ namespace Decompose
             int found = 0;
             int total = 0;
             int failed = 0;
-            var graph = new Graph<long, Edge<long>>();
+#if false
+            var referenceGraph = new Graph<long, Edge<long>>();
+#endif
+            //var graph = new Graph<long, Edge<long>>();
+            var graph = new PartialRelationGraph<PartialRelationEdge>();
             foreach (var ppr in pprs)
             {
                 var cofactor1 = ppr.Item1;
@@ -494,11 +498,55 @@ namespace Decompose
                         ++failed;
                 }
                 var cycle = graph.FindPath(cofactor1, cofactor2);
+#if false
+                var referenceCycle = referenceGraph.FindPath(cofactor1, cofactor2);
+                if ((referenceCycle == null) != (cycle == null))
+                {
+                    Debugger.Break();
+                    cycle = graph.FindPath(cofactor1, cofactor2);
+                }
+#endif
                 if (cycle == null)
+                {
+#if false
+                    referenceGraph.AddEdge(cofactor1, cofactor2);
+#endif
                     graph.AddEdge(cofactor1, cofactor2);
+                }
                 else
                 {
+#if false
+                    if (referenceCycle.Count != cycle.Count)
+                    {
+                        Debugger.Break();
+                        cycle = graph.FindPath(cofactor1, cofactor2);
+                    }
+                    var referenceCofactors = new[] { cofactor1, cofactor2 }
+                        .Concat(referenceCycle.SelectMany(edge => new[] { edge.Vertex1, edge.Vertex2 }))
+                        .Distinct()
+                        .OrderBy(vertex => vertex)
+                        .ToArray();
+                    var cofactors = new[] { cofactor1, cofactor2 }
+                        .Concat(cycle.SelectMany(edge => new[] { edge.Vertex1, edge.Vertex2 }))
+                        .Distinct()
+                        .OrderBy(vertex => vertex)
+                        .ToArray();
+                    if (cofactors.Length != cycle.Count + 1)
+                    {
+                        Debugger.Break();
+                        cycle = graph.FindPath(cofactor1, cofactor2);
+                    }
+                    else if (!referenceCofactors.SequenceEqual(cofactors))
+                    {
+                        Debugger.Break();
+                        cycle = graph.FindPath(cofactor1, cofactor2);
+                    }
+#endif
                     total += cycle.Count + 1;
+#if false
+                    foreach (var edge in referenceCycle)
+                        referenceGraph.RemoveEdge(edge);
+#endif
                     foreach (var edge in cycle)
                         graph.RemoveEdge(edge);
                     ++found;

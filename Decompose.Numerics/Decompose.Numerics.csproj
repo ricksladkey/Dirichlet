@@ -50,6 +50,7 @@
     <Compile Include="Collections\IntegerSet.cs" />
     <Compile Include="Factorization\PollardRhoLong.cs" />
     <Compile Include="Factorization\TrialDivisionFactorization.cs" />
+    <Compile Include="QuadraticSieve\PartialRelationGraph.cs" />
     <Compile Include="Reduction\BarrettReduction.cs" />
     <Compile Include="Core\BigIntegers.cs" />
     <Compile Include="Collections\BoolBitArray.cs" />
@@ -79,7 +80,7 @@
     <Compile Include="Factorization\PollardRhoBrent.cs" />
     <Compile Include="Factorization\PollardRhoReduction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Factorization\QuadraticSieve.cs" />
+    <Compile Include="QuadraticSieve\QuadraticSieve.cs" />
     <Compile Include="Collections\ByRowSetBitMatrix.cs" />
     <Compile Include="NullSpace\StructuredGaussianElimination.cs" />
     <Compile Include="Core\Word32Integer.cs" />

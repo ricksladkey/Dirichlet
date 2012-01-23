@@ -80,8 +80,9 @@ namespace Decompose.Numerics
 
         private void RemoveFromVertex(TEdge edge, TVertex vertex)
         {
-            var value = graph[vertex];
-            if (value.Count == 0)
+            var edges = graph[vertex];
+            edges.Remove(edge);
+            if (edges.Count == 0)
                 graph.Remove(vertex);
         }
 
