@@ -384,7 +384,7 @@ namespace Decompose
         {
             //new QuadraticSieve(new QuadraticSieve.Config()).Factor(samples[10].N).ToArray();
             //new QuadraticSieve(new QuadraticSieve.Config()).Factor(35095264073).ToArray();
-            for (int i = 25; i <= 25; i++)
+            for (int i = 35; i <= 35; i++)
             {
                 var sample = samples[i];
                 var p = sample.P;
@@ -404,7 +404,8 @@ namespace Decompose
                     //ErrorLimit = 1,
                     //NumberOfFactors = 13,
                     ReportingInterval = 10,
-                    ThresholdExponent = 2.5,
+                    ThresholdExponent = 2.25,
+                    CofactorCutoff = 1024,
                     ProcessPartialPartialRelations = true,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
