@@ -70,6 +70,18 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
+        public void TestPollardLong()
+        {
+            var expected = new[] { long.Parse("91739369"), long.Parse("266981831") };
+            var n = expected.Aggregate((long)1, (sofar, factor) => sofar * factor);
+            var algorithm = new PollardRhoLong();
+            var factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
+            var product = factors.Aggregate((sofar, current) => sofar * current);
+            Assert.AreEqual(n, product);
+            Assert.IsTrue(((IStructuralEquatable)factors).Equals(expected, EqualityComparer<long>.Default));
+        }
+
+        [TestMethod]
         public void TestQuadraticSieve1()
         {
             var expected = new[] { BigInteger.Parse("274177"), BigInteger.Parse("67280421310721") };

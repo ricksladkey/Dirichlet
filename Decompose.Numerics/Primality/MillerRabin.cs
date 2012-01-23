@@ -2,7 +2,7 @@
 
 namespace Decompose.Numerics
 {
-    public class MillerRabin : IPrimalityAlgorithm<BigInteger>
+    public class MillerRabin : IPrimalityAlgorithm<int>, IPrimalityAlgorithm<long>, IPrimalityAlgorithm<BigInteger>
     {
         private IRandomNumberAlgorithm<BigInteger> random = new MersenneTwisterBigInteger(0);
         private int k;
@@ -10,6 +10,16 @@ namespace Decompose.Numerics
         public MillerRabin(int k)
         {
             this.k = k;
+        }
+
+        public bool IsPrime(int n)
+        {
+            return IsPrime(n, k);
+        }
+
+        public bool IsPrime(long n)
+        {
+            return IsPrime(n, k);
         }
 
         public bool IsPrime(BigInteger n)

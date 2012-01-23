@@ -9,12 +9,12 @@ namespace Decompose.Numerics
     {
         public static int SumModulo(this IEnumerable<int> source, int n)
         {
-            return source.Aggregate((sofar, current) => sofar + current) % n;
+            return source.Aggregate(0, (sofar, current) => sofar + current) % n;
         }
 
         public static int Product(this IEnumerable<int> source)
         {
-            return source.Aggregate((sofar, current) => sofar * current);
+            return source.Aggregate(1, (sofar, current) => sofar * current);
         }
 
         public static int ProductModulo(this IEnumerable<int> source, int n)
@@ -24,17 +24,17 @@ namespace Decompose.Numerics
 
         public static BigInteger Sum(this IEnumerable<BigInteger> source)
         {
-            return source.Aggregate((sofar, current) => sofar + current);
+            return source.Aggregate(BigInteger.Zero, (sofar, current) => sofar + current);
         }
 
         public static BigInteger SumModulo(this IEnumerable<BigInteger> source, BigInteger n)
         {
-            return source.Aggregate((sofar, current) => sofar + current) % n;
+            return source.Aggregate(BigInteger.Zero, (sofar, current) => sofar + current) % n;
         }
 
         public static BigInteger Product(this IEnumerable<BigInteger> source)
         {
-            return source.Aggregate((sofar, current) => sofar * current);
+            return source.Aggregate(BigInteger.One, (sofar, current) => sofar * current);
         }
 
         public static BigInteger ProductModulo(this IEnumerable<BigInteger> source, BigInteger n)

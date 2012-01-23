@@ -173,8 +173,10 @@ namespace Decompose
         static void FactorTest1()
         {
             var n = BigInteger.Parse("10023859281455311421");
-            int threads = 4;
+            int threads = 1;
             bool debug = false;
+
+            Console.WriteLine("bits = {0}", n.GetBitLength());
 
             //FactorTest(debug, 25, n, new PollardRhoBrent(threads, 0));
             //FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new BigIntegerReduction()));
@@ -182,12 +184,28 @@ namespace Decompose
             //FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new BarrettReduction()));
             //FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
 
-            FactorTest(debug, 100, n, new PollardRhoBrent(threads, 0));
-            FactorTest(debug, 100, n, new PollardRhoReduction(threads, 0, new Word32IntegerReduction()));
-            FactorTest(debug, 100, n, new PollardRhoReduction(threads, 0, new BarrettReduction()));
-            FactorTest(debug, 100, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
-
-            //FactorTest(debug, 500, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
+            var config = new QuadraticSieve.Config
+            {
+                IntervalSize = 32 * 1024,
+                BlockSize = 32 * 1024,
+                Multiplier = 1,
+                Diagnostics = QuadraticSieve.Diag.Verbose,
+                ThresholdExponent = 1.05,
+                ErrorLimit = 1,
+                FactorBaseSize = 80,
+            };
+            for (int i = 0; i < 1; i++)
+            {
+                Console.WriteLine();
+                //FactorTest(debug, 100, n, new PollardRhoBrent(threads, 0));
+                //FactorTest(debug, 100, n, new PollardRhoReduction(threads, 0, new Word32IntegerReduction()));
+                //FactorTest(debug, 100, n, new PollardRhoReduction(threads, 0, new BarrettReduction()));
+                //FactorTest(debug, 100, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
+                FactorTest(debug, 1, n, new QuadraticSieve(config));
+            }
+            config.Diagnostics = QuadraticSieve.Diag.None;
+            FactorTest(debug, 1, n, new QuadraticSieve(config));
+            FactorTest(debug, 3000, n, new QuadraticSieve(config));
         }
 
         static void FactorTest2()
@@ -248,7 +266,7 @@ namespace Decompose
             //var n = BigInteger.Parse("87463");
             //var n = BigInteger.Parse("10023859281455311421");
             var n = BigInteger.Parse("5382000000735683358022919837657883000000078236999000000000000063"); // https://sites.google.com/site/shouthillgc/Home/gc1p8qn/factorizing-tool
-            //var sample = samples[20 - 10]; var n = sample.P * sample.Q;
+            //var sample = samples[20]; var n = sample.P * sample.Q;
 
             Console.WriteLine("n = {0}", n);
             //FactorTest(debug, 500, n, new PollardRhoReduction(pollardThreads, new MontgomeryReduction()));
@@ -278,7 +296,7 @@ namespace Decompose
         {
             var random = new MersenneTwisterBigInteger(0);
             int i = 40;
-            var sample = samples[i - 10];
+            var sample = samples[i];
             var p = sample.P;
             var q = sample.Q;
             var n = sample.N;
@@ -346,7 +364,7 @@ namespace Decompose
         static void CreateSamplesTest()
         {
             var random = new MersenneTwisterBigInteger(0);
-            for (int i = 51; i <= 60; i++)
+            for (int i = 1; i <= 10; i++)
             {
                 var limit = BigInteger.Pow(10, i);
                 var p = NextPrime(random, limit);
@@ -363,11 +381,11 @@ namespace Decompose
 
         static void QuadraticSieveDigitsTest()
         {
-            //FactorTest(false, 1, samples[0].N, new QuadraticSieve(new QuadraticSieve.Config()));
-
-            for (int i = 40; i <= 40; i++)
+            //new QuadraticSieve(new QuadraticSieve.Config()).Factor(samples[10].N).ToArray();
+            //new QuadraticSieve(new QuadraticSieve.Config()).Factor(35095264073).ToArray();
+            for (int i = 20; i <= 35; i++)
             {
-                var sample = samples[i - 10];
+                var sample = samples[i];
                 var p = sample.P;
                 var q = sample.Q;
                 var n = sample.N;
@@ -377,15 +395,16 @@ namespace Decompose
                 {
                     Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
                     Threads = 8,
-                    Diagnostics = QuadraticSieve.Diag.Verbose,
+                    //Diagnostics = QuadraticSieve.Diag.Verbose,
                     //FactorBaseSize = 190000,
                     //BlockSize = 256 * 1024,
                     //IntervalSize = 256 * 1024,
-                    //ThresholdExponent = 2,
                     //CofactorCutoff = 1000000,
                     //ErrorLimit = 1,
                     //NumberOfFactors = 13,
-                    ReportingInterval = 60,
+                    ReportingInterval = 10,
+                    //ThresholdExponent = 2.5,
+                    //ProcessPartialPartialRelations = true,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
             }
@@ -537,6 +556,61 @@ namespace Decompose
 
         private static SampleComposite[] samples =
         {
+            null,
+            new SampleComposite
+            {
+                Digits = 2,
+                P = BigInteger.Parse("5"),
+                Q = BigInteger.Parse("11"),
+            },
+            new SampleComposite
+            {
+                Digits = 4,
+                P = BigInteger.Parse("37"),
+                Q = BigInteger.Parse("61"),
+            },
+            new SampleComposite
+            {
+                Digits = 6,
+                P = BigInteger.Parse("967"),
+                Q = BigInteger.Parse("379"),
+            },
+            new SampleComposite
+            {
+                Digits = 8,
+                P = BigInteger.Parse("5431"),
+                Q = BigInteger.Parse("8513"),
+            },
+            new SampleComposite
+            {
+                Digits = 10,
+                P = BigInteger.Parse("83497"),
+                Q = BigInteger.Parse("85691"),
+            },
+            new SampleComposite
+            {
+                Digits = 12,
+                P = BigInteger.Parse("906869"),
+                Q = BigInteger.Parse("422759"),
+            },
+            new SampleComposite
+            {
+                Digits = 14,
+                P = BigInteger.Parse("7901401"),
+                Q = BigInteger.Parse("3580393"),
+            },
+            new SampleComposite
+            {
+                Digits = 16,
+                P = BigInteger.Parse("38900077"),
+                Q = BigInteger.Parse("71049871"),
+            },
+            new SampleComposite
+            {
+                Digits = 18,
+                P = BigInteger.Parse("646868797"),
+                Q = BigInteger.Parse("400433141"),
+            },
             new SampleComposite
             {
                 Digits = 20,

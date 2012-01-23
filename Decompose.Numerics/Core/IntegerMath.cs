@@ -136,6 +136,28 @@ namespace Decompose.Numerics
                 .All(grouping => grouping.Count() < 2);
         }
 
+        public static int GreatestCommonDivisor(int a, int b)
+        {
+             while (b != 0)
+            {
+                var t = b;
+                b = a % b;
+                a = t;
+            }
+            return Math.Abs(a);
+        }
+
+        public static long GreatestCommonDivisor(long a, long b)
+        {
+            while (b != 0)
+            {
+                var t = b;
+                b = a % b;
+                a = t;
+            }
+            return Math.Abs(a);
+        }
+
         public static void ExtendedGreatestCommonDivisor(int a, int b, out int c, out int d)
         {
             var x = 0;
@@ -196,18 +218,20 @@ namespace Decompose.Numerics
             return sqrt.Sqrt(n);
         }
 
-        private static IPrimalityAlgorithm<int> trialDivision = new TrialDivisionPrimality();
+        private static IPrimalityAlgorithm<int> primalityInt = new TrialDivisionPrimality();
 
         public static bool IsPrime(int n)
         {
-            return trialDivision.IsPrime(n);
+            return primalityInt.IsPrime(n);
         }
 
-        private static IPrimalityAlgorithm<BigInteger> millerRabin = new MillerRabin(16);
+        private static IPrimalityAlgorithm<BigInteger> primalityBigInteger = new MillerRabin(16);
 
         public static bool IsPrime(BigInteger n)
         {
-            return millerRabin.IsPrime(n);
+            if (n < int.MaxValue)
+                return primalityInt.IsPrime((int)n);
+            return primalityBigInteger.IsPrime(n);
         }
 
         public static BigInteger NextPrime(BigInteger n)

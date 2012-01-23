@@ -45,8 +45,10 @@
   <ItemGroup>
     <Compile Include="Collections\BitMatrixHelper.cs" />
     <Compile Include="Collections\ByColSetBitMatrix.cs" />
+    <Compile Include="Collections\Graph.cs" />
     <Compile Include="Collections\SetBitMatrix.cs" />
     <Compile Include="Collections\IntegerSet.cs" />
+    <Compile Include="Factorization\PollardRhoLong.cs" />
     <Compile Include="Factorization\TrialDivisionFactorization.cs" />
     <Compile Include="Reduction\BarrettReduction.cs" />
     <Compile Include="Core\BigIntegers.cs" />

@@ -9,6 +9,7 @@ using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using CountInt = System.Byte;
+using ExponentInt = System.Byte;
 
 #if false
 using BitMatrix = Decompose.Numerics.Word64BitMatrix;
@@ -65,6 +66,7 @@ namespace Decompose.Numerics
             public int CofactorCutoff { get; set; }
             public double ErrorLimit { get; set; }
             public int NumberOfFactors { get; set; }
+            public bool ProcessPartialPartialRelations { get; set; }
         }
 
         public QuadraticSieve(Config config)
@@ -74,8 +76,11 @@ namespace Decompose.Numerics
             sieveTimeLimit = config.SieveTimeLimit;
             random = new MersenneTwister32(0);
             smallIntegerFactorer = new TrialDivisionFactorization();
+            primality = new MillerRabin(16);
             allPrimes = new SieveOfErostothones();
             solver = new Solver(config.Threads, config.MergeLimit, (diag & Diag.Solving) != 0);
+            multiplierCandidates = Enumerable.Range(1, maximumMultiplier)
+                .Where(value => IntegerMath.IsSquareFree(smallIntegerFactorer.Factor(value))).ToArray();
         }
 
         public IEnumerable<BigInteger> Factor(BigInteger n)
@@ -87,6 +92,12 @@ namespace Decompose.Numerics
             }
             while (!IntegerMath.IsPrime(n))
             {
+                if (n <= int.MaxValue)
+                {
+                    foreach (var factor in smallIntegerFactorer.Factor((int)n))
+                        yield return factor;
+                    yield break;
+                }
                 var divisor = GetDivisor(n);
                 if (divisor.IsZero || divisor.IsOne)
                     yield break;
@@ -215,8 +226,7 @@ namespace Decompose.Numerics
             public BigInteger X { get; set; }
             public Polynomial Polynomial { get; set; }
             public ExponentEntries Entries { get; set; }
-            public long Cofactor { get; set; }
-            public int Exponent { get; set; }
+            public BigInteger Cofactor { get; set; }
             public override string ToString()
             {
                 return string.Format("X = {0}", X);
@@ -229,7 +239,7 @@ namespace Decompose.Numerics
             public int X { get; set; }
             public Polynomial Polynomial { get; set; }
             public int Size { get; set; }
-            public byte[] Exponents { get; set; }
+            public ExponentInt[] Exponents { get; set; }
             public CountInt[] Cycle { get; set; }
             public int CycleOffset { get; set; }
             public CountInt[] Counts { get; set; }
@@ -239,6 +249,7 @@ namespace Decompose.Numerics
             public int[] Increments { get; set; }
             public int RelationsFound { get; set; }
             public int PartialRelationsFound { get; set; }
+            public IFactorizationAlgorithm<BigInteger> CofactorFactorer { get; set; }
             public Siqs Siqs { get; set; }
             public override string ToString()
             {
@@ -254,6 +265,19 @@ namespace Decompose.Numerics
             public override string ToString()
             {
                 return string.Format("X = {0}", X);
+            }
+        }
+
+        private class PartialPartialRelation : Edge<long>
+        {
+            public Polynomial Polynomial { get; set; }
+            public long X { get; set; }
+            public ExponentEntries Entries { get; set; }
+            public long Cofactor1 { get { return Vertex1; } set { Vertex1 = value; } }
+            public long Cofactor2 { get { return Vertex2; } set { Vertex2 = value; } }
+            public override string ToString()
+            {
+                return string.Format("X = {0}, Cofactor1 = {1}, Cofactor2 = {2}", X, Cofactor1, Cofactor2);
             }
         }
 
@@ -283,7 +307,7 @@ namespace Decompose.Numerics
         private const double thresholdExponentDefault = 1.4;
         private const double errorLimitDefault = 0.1;
         private const int cofactorCutoffDefault = 4096;
-        private const int surplusRelations = 10;
+        private const int surplusRelations = 12;
         private const int reportingIntervalDefault = 10;
         private const int maximumMultiplier = 73;
         private const int maximumScorePrimes = 100;
@@ -291,6 +315,7 @@ namespace Decompose.Numerics
         private const int minimumAFactor = 2000;
         private const int maximumAfactor = 4000;
         private const int largePrimeOptimizationDigits = 80;
+        private const int partialPartialRelationsDigits = 30;
 
         private readonly Tuple<int, int>[] sizePairs =
         {
@@ -314,12 +339,15 @@ namespace Decompose.Numerics
 
         private Config config;
         private IRandomNumberAlgorithm<uint> random;
+        private IPrimalityAlgorithm<long> primality;
         private IFactorizationAlgorithm<int> smallIntegerFactorer;
         private IEnumerable<int> allPrimes;
         private INullSpaceAlgorithm<IBitArray, IBitMatrix> solver;
+        private int[] multiplierCandidates;
 
         private Diag diag;
         private bool largePrimeOptimization;
+        private bool processPartialPartialRelations;
         private bool useCountTable;
         private int sieveTimeLimit;
         private Algorithm algorithm;
@@ -336,6 +364,7 @@ namespace Decompose.Numerics
         private FactorBaseEntry[] factorBase;
         private int[] primes;
         private int maximumDivisor;
+        private long maximumDivisorSquared;
         private long maximumCofactorSize;
         private int mediumPrimeIndex;
         private int moderatePrimeIndex;
@@ -360,6 +389,7 @@ namespace Decompose.Numerics
         private Dictionary<ExponentEntries, Relation> relationBuffer;
         private Relation[] relations;
         private Dictionary<long, PartialRelation> partialRelations;
+        private Graph<long, PartialPartialRelation> partialPartialRelations;
         private IBitMatrix matrix;
         private Stopwatch timer;
 
@@ -367,10 +397,15 @@ namespace Decompose.Numerics
 
         private int intervalsProcessed;
         private int valuesChecked;
+        private int cofactorsPrimalityTested;
+        private int cofactorsFactored;
         private int partialRelationsProcessed;
         private int partialRelationsConverted;
+        private int partialPartialRelationsProcessed;
+        private int partialPartialRelationsConverted;
         private int duplicateRelationsFound;
         private int duplicatePartialRelationsFound;
+        private int duplicatePartialPartialRelationsFound;
 
         private void FactorCore(BigInteger n, List<BigInteger> factors)
         {
@@ -436,7 +471,9 @@ namespace Decompose.Numerics
             if ((diag & Diag.Summary) != 0)
             {
                 Console.WriteLine("intervals processed = {0:N0}; values processsed = {1:N0}; values checked = {2:N0}", intervalsProcessed, (long)intervalsProcessed * intervalSize, valuesChecked);
+                Console.WriteLine("cofactors primality tested = {0:N0}; factored = {1:N0}", cofactorsPrimalityTested, cofactorsFactored);
                 Console.WriteLine("partial relations processed = {0:N0}; partial relations converted = {1:N0}", partialRelationsProcessed, partialRelationsConverted);
+                Console.WriteLine("partial partial relations processed = {0:N0}; partial partial relations converted = {1:N0}", partialPartialRelationsProcessed, partialPartialRelationsConverted);
                 Console.WriteLine("duplicate relations found = {0:N0}; duplicate partial relations found = {1:N0}", duplicateRelationsFound, duplicatePartialRelationsFound);
             }
 
@@ -480,7 +517,7 @@ namespace Decompose.Numerics
             primes = factorBase.Select(entry => entry.P).ToArray();
             desired = factorBaseSize + 1 + surplusRelations;
             maximumDivisor = factorBase[factorBaseSize - 1].P;
-            long maximumDivisorSquared = (long)maximumDivisor * maximumDivisor;
+            maximumDivisorSquared = (long)maximumDivisor * maximumDivisor;
             cofactorCutoff = config.CofactorCutoff != 0 ? config.CofactorCutoff : cofactorCutoffDefault;
             maximumCofactorSize = Math.Min((long)maximumDivisor * cofactorCutoff, maximumDivisorSquared);
             thresholdExponent = config.ThresholdExponent != 0 ? config.ThresholdExponent : thresholdExponentDefault;
@@ -491,6 +528,8 @@ namespace Decompose.Numerics
             valuesChecked = 0;
             partialRelationsProcessed = 0;
             partialRelationsConverted = 0;
+            partialPartialRelationsProcessed = 0;
+            partialPartialRelationsConverted = 0;
             duplicateRelationsFound = 0;
             duplicatePartialRelationsFound = 0;
 
@@ -517,8 +556,7 @@ namespace Decompose.Numerics
                 multiplier = config.Multiplier;
                 return;
             }
-            multiplier = Enumerable.Range(1, maximumMultiplier)
-                .Where(value => IntegerMath.IsSquareFree(smallIntegerFactorer.Factor(value)))
+            multiplier = multiplierCandidates
                 .OrderByDescending(value => ScoreMultiplier(value))
                 .First();
         }
@@ -560,7 +598,7 @@ namespace Decompose.Numerics
         private void InitializeSiqs()
         {
             // Choose minum and maximum factors of A so that M is near
-            // the correct size for a multiple of those primes.
+            // the correct size for a product of those primes.
             var min = minimumAFactor;
             var max = maximumAfactor;
             if (min > maximumDivisor || max > maximumDivisor)
@@ -583,12 +621,15 @@ namespace Decompose.Numerics
             candidateMap = Enumerable.Range(0, factorBaseSize)
                 .Where(index => primes[index] >= min && primes[index] <= max)
                 .ToArray();
+            if (candidateMap.Length < 10)
+                candidateMap = Enumerable.Range(factorBaseSize / 2, factorBaseSize / 2).ToArray();
             candidateSizes = candidateMap
                 .Select(index => Math.Log(primes[index]))
                 .ToArray();
 
             largePrimeOptimization = digits >= largePrimeOptimizationDigits;
             useCountTable = false;
+            processPartialPartialRelations = config.ProcessPartialPartialRelations;
 
             if ((diag & Diag.Summary) != 0)
                 Console.WriteLine("number of factors of A = {0}, min = {1}, max = {2}", numberOfFactors, min, max);
@@ -599,7 +640,7 @@ namespace Decompose.Numerics
             var s = numberOfFactors;
             var permutation = null as int[];
             var error = 0.0;
-            while (true)
+            for (int i = 0; i < 10; i++)
             {
                 var numbers = random.Series((uint)candidateMap.Length)
                     .Take(candidateMap.Length)
@@ -703,8 +744,9 @@ namespace Decompose.Numerics
             var m = intervalSize / 2;
             for (int k = 0; k < intervalSize; k += thresholdInterval)
             {
-                var y = EvaluatePolynomial(polynomial, x + k + thresholdInterval / 2);
-                var logY = BigInteger.Log(BigInteger.Abs(y), 2);
+                var y1 = BigInteger.Abs(EvaluatePolynomial(polynomial, x + k + 0));
+                var y2 = BigInteger.Abs(EvaluatePolynomial(polynomial, x + k + thresholdInterval - 1));
+                var logY = BigInteger.Log(BigInteger.Max(y1, y2), 2);
                 threshold[k >> thresholdShift] = (CountInt)Math.Round(logY - denominator);
             }
 
@@ -956,6 +998,7 @@ namespace Decompose.Numerics
             sievingAborted = false;
             relationBuffer = new Dictionary<ExponentEntries, Relation>();
             partialRelations = new Dictionary<long, PartialRelation>();
+            partialPartialRelations = new Graph<long, PartialPartialRelation>();
 
             if (threads == 1)
                 SieveTask();
@@ -970,6 +1013,7 @@ namespace Decompose.Numerics
             relations = relationBuffer.Values.ToArray();
             relationBuffer = null;
             partialRelations = null;
+            partialPartialRelations = null;
         }
 
         private bool SievingCompleted
@@ -1030,12 +1074,14 @@ namespace Decompose.Numerics
         private Interval CreateInterval()
         {
             var interval = new Interval();
-            interval.Exponents = new byte[factorBaseSize + 1];
+            interval.Exponents = new ExponentInt[factorBaseSize + 1];
             interval.Cycle = new CountInt[cycleLength];
             interval.Counts = new CountInt[Math.Min(intervalSize, blockSize) + 1];
             interval.CountTable = new CountTable(numberOfBlocks, intervalSize, interval.Counts);
             interval.Offsets1 = new int[factorBaseSize];
             interval.Offsets2 = new int[factorBaseSize];
+            if (processPartialPartialRelations)
+                interval.CofactorFactorer = new QuadraticSieve(new Config());
             return interval;
         }
 
@@ -1043,6 +1089,11 @@ namespace Decompose.Numerics
         {
             blockSize = config.BlockSize != 0 ? config.BlockSize : blockSizeDefault;
             intervalSize = config.IntervalSize != 0 ? config.IntervalSize : intervalSizeDefault;
+            if (digits < 20)
+            {
+                blockSize = 32 * 1024;
+                intervalSize = blockSize;
+            }
             int numberOfIncrements = intervalSize / blockSize;
             intervalIncrements = new int[numberOfIncrements + 1][];
             for (int j = 1; j < numberOfIncrements; j++)
@@ -1482,7 +1533,7 @@ namespace Decompose.Numerics
                     EvaluateMapping(interval.Polynomial, interval.X + k),
                     interval.Polynomial,
                     GetEntries(interval.Exponents),
-                    1, 0);
+                    1);
                 ++interval.RelationsFound;
                 AddRelation(relation);
                 return;
@@ -1491,7 +1542,21 @@ namespace Decompose.Numerics
             {
                 ++interval.PartialRelationsFound;
                 ProcessPartialRelation(interval, k, cofactor);
+                return;
             }
+            if (!processPartialPartialRelations)
+                return;
+            if (cofactor < maximumDivisorSquared)
+                return;
+            Interlocked.Increment(ref cofactorsPrimalityTested);
+            if (primality.IsPrime(cofactor))
+                return;
+            Interlocked.Increment(ref cofactorsFactored);
+            var factors = interval.CofactorFactorer.Factor(cofactor).Select(factor => (long)factor).ToArray();
+            if (factors.Length != 2)
+                return;
+            if (factors[0] < maximumCofactorSize && factors[1] < maximumCofactorSize)
+                ProcessPartialPartialRelation(interval, k, factors[0], factors[1]);
         }
 
         private long FactorOverBase(Interval interval, long x)
@@ -1587,7 +1652,7 @@ namespace Decompose.Numerics
             return y < long.MaxValue ? (long)y : 0;
         }
 
-        private long FactorOverBase(byte[] exponents, Polynomial polynomial, long x)
+        private long FactorOverBase(ExponentInt[] exponents, Polynomial polynomial, long x)
         {
             var y = polynomial.A * EvaluatePolynomial(polynomial, x);
             if (y < 0)
@@ -1647,17 +1712,62 @@ namespace Decompose.Numerics
                 EvaluateMapping(interval.Polynomial, interval.X + k) * EvaluateMapping(other.Polynomial, other.X),
                 null,
                 GetEntries(interval.Exponents),
-                cofactor, 2);
+                cofactor);
             AddRelation(relation);
         }
 
-        private void AddEntries(byte[] exponents, ExponentEntries entries)
+        private void ProcessPartialPartialRelation(Interval interval, int k, long cofactor1, long cofactor2)
         {
-            for (int i = 0; i < entries.Count; i++)
-                exponents[entries[i].Row] += (byte)entries[i].Exponent;
+            Interlocked.Increment(ref partialPartialRelationsProcessed);
+            var partialPartialRelation = new PartialPartialRelation
+            {
+                X = interval.X + k,
+                Polynomial = interval.Polynomial,
+                Entries = GetEntries(interval.Exponents),
+                Cofactor1 = cofactor1,
+                Cofactor2 = cofactor2,
+            };
+#if false
+            Console.WriteLine("{0} {1}", cofactor1, cofactor2);
+#endif
+            var cycle = null as List<PartialPartialRelation>;
+            lock (partialPartialRelations)
+            {
+                cycle = partialPartialRelations.FindPath(cofactor1, cofactor2);
+                if (cycle == null)
+                {
+                    partialPartialRelations.AddEdge(partialPartialRelation);
+                    return;
+                }
+                foreach (var other in cycle)
+                    partialPartialRelations.RemoveEdge(other);
+            }
+            Interlocked.Increment(ref partialPartialRelationsConverted);
+            var x = EvaluateMapping(interval.Polynomial, interval.X + k);
+            var cofactors = new List<long> { cofactor1, cofactor2 };
+            foreach (var other in cycle)
+            {
+                x *= EvaluateMapping(other.Polynomial, other.X);
+                cofactors.Add(other.Cofactor1);
+                cofactors.Add(other.Cofactor2);
+                AddEntries(interval.Exponents, other.Entries);
+            }
+            var cofactor = cofactors.Distinct().Select(i => (BigInteger)i).Product();
+            var relation = CreateRelation(
+                x,
+                null,
+                GetEntries(interval.Exponents),
+                cofactor);
+            AddRelation(relation);
         }
 
-        private Relation CreateRelation(BigInteger x, Polynomial polynomial, ExponentEntries entries, long cofactor, int exponent)
+        private void AddEntries(ExponentInt[] exponents, ExponentEntries entries)
+        {
+            for (int i = 0; i < entries.Count; i++)
+                exponents[entries[i].Row] += (ExponentInt)entries[i].Exponent;
+        }
+
+        private Relation CreateRelation(BigInteger x, Polynomial polynomial, ExponentEntries entries, BigInteger cofactor)
         {
             var relation = new Relation
             {
@@ -1665,7 +1775,6 @@ namespace Decompose.Numerics
                 Polynomial = polynomial,
                 Entries = entries,
                 Cofactor = cofactor,
-                Exponent = exponent,
             };
             Debug.Assert((relation.X * relation.X - MultiplyFactors(relation)) % n == 0);
             return relation;
@@ -1686,7 +1795,6 @@ namespace Decompose.Numerics
 
         private void ProcessRelations()
         {
-            Debug.Assert(relations.GroupBy(relation => relation.X).Count() == relations.Length);
             matrix = new BitMatrix(factorBaseSize + 1, relations.Length);
             for (int j = 0; j < relations.Length; j++)
             {
@@ -1707,7 +1815,7 @@ namespace Decompose.Numerics
                 exponents[i] = 0;
         }
 
-        private ExponentEntries GetEntries(byte[] exponents)
+        private ExponentEntries GetEntries(ExponentInt[] exponents)
         {
             int size = 16;
             var entries = new ExponentEntry[size];
@@ -1746,7 +1854,9 @@ namespace Decompose.Numerics
             var result = relation.Entries
                 .Select(entry => BigInteger.Pow(entry.Row == 0 ? -1 : factorBase[entry.Row - 1].P, entry.Exponent))
                 .ProductModulo(n);
-            return result * BigInteger.ModPow(relation.Cofactor, relation.Exponent, n) % n;
+            if (relation.Cofactor == 1)
+                return result;
+            return result * BigInteger.ModPow(relation.Cofactor, 2, n) % n;
         }
     }
 }
