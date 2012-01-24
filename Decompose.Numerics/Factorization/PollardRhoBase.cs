@@ -40,7 +40,7 @@ namespace Decompose.Numerics
             yield return n;
         }
 
-        private BigInteger GetDivisor(BigInteger n)
+        public BigInteger GetDivisor(BigInteger n)
         {
             if (threads == 1)
             {

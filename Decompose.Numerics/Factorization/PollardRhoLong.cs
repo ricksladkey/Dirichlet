@@ -31,7 +31,7 @@ namespace Decompose.Numerics
             yield return n;
         }
 
-        private long GetDivisor(long n)
+        public long GetDivisor(long n)
         {
             var xInit = (long)random.Next((ulong)n);
             var c = (long)random.Next((ulong)n - 1) + 1;

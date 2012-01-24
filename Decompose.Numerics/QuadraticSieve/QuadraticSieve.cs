@@ -76,7 +76,6 @@ namespace Decompose.Numerics
             sieveTimeLimit = config.SieveTimeLimit;
             random = new MersenneTwister32(0);
             smallIntegerFactorer = new TrialDivisionFactorization();
-            primality = new MillerRabin(4);
             allPrimes = new SieveOfErostothones();
             solver = new Solver(config.Threads, config.MergeLimit, (diag & Diag.Solving) != 0);
             multiplierCandidates = Enumerable.Range(1, maximumMultiplier)
@@ -339,7 +338,6 @@ namespace Decompose.Numerics
 
         private Config config;
         private IRandomNumberAlgorithm<uint> random;
-        private IPrimalityAlgorithm<long> primality;
         private IFactorizationAlgorithm<int> smallIntegerFactorer;
         private IEnumerable<int> allPrimes;
         private INullSpaceAlgorithm<IBitArray, IBitMatrix> solver;
@@ -427,7 +425,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private BigInteger GetDivisor(BigInteger nOrig)
+        public BigInteger GetDivisor(BigInteger nOrig)
         {
             if (nOrig.IsEven)
                 return BigIntegers.Two;
@@ -1572,7 +1570,7 @@ namespace Decompose.Numerics
             if (cofactor > maximumCofactorSquared)
                 return;
             Interlocked.Increment(ref cofactorsPrimalityTested);
-            if (primality.IsPrime(cofactor))
+            if (IntegerMath.IsProbablePrime(cofactor))
                 return;
             Interlocked.Increment(ref cofactorsFactored);
             var factors = interval.CofactorFactorer.Factor(cofactor).Select(factor => (long)factor).ToArray();

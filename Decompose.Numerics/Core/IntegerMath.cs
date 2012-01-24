@@ -147,6 +147,17 @@ namespace Decompose.Numerics
             return Math.Abs(a);
         }
 
+        public static uint GreatestCommonDivisor(uint a, uint b)
+        {
+            while (b != 0)
+            {
+                var t = b;
+                b = a % b;
+                a = t;
+            }
+            return a;
+        }
+
         public static long GreatestCommonDivisor(long a, long b)
         {
             while (b != 0)
@@ -156,6 +167,17 @@ namespace Decompose.Numerics
                 a = t;
             }
             return Math.Abs(a);
+        }
+
+        public static ulong GreatestCommonDivisor(ulong a, ulong b)
+        {
+            while (b != 0)
+            {
+                var t = b;
+                b = a % b;
+                a = t;
+            }
+            return a;
         }
 
         public static void ExtendedGreatestCommonDivisor(int a, int b, out int c, out int d)
@@ -226,6 +248,11 @@ namespace Decompose.Numerics
         }
 
         private static IPrimalityAlgorithm<BigInteger> primalityBigInteger = new MillerRabin(16);
+
+        public static bool IsProbablePrime(BigInteger n)
+        {
+            return BigInteger.ModPow(BigIntegers.Two, n - BigInteger.One, n).IsOne;
+        }
 
         public static bool IsPrime(BigInteger n)
         {

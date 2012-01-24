@@ -26,5 +26,10 @@ namespace Decompose.Numerics
             var largeFactors = quadraticSieve.Factor(c);
             return smallFactors.Concat(largeFactors);
         }
+
+        public BigInteger GetDivisor(BigInteger n)
+        {
+            return Factor(n).First();
+        }
     }
 }

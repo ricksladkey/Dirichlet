@@ -90,9 +90,13 @@ namespace Decompose.Numerics
 
             if (hasStart && hasEnd)
                 return new List<TEdge> { prMap[end], prMap[start] };
-            var result = FindPathRecursive(start, end, null);
-            if (result != null)
-                return result;
+            var result = null as List<TEdge>;
+            if (pprMap.ContainsKey(end))
+            {
+                result  = FindPathRecursive(start, end, null);
+                if (result != null)
+                    return result;
+            }
             if (!hasStart && !hasEnd)
             {
                 var part1 = FindPathRecursive(start, 1, null);
@@ -102,7 +106,6 @@ namespace Decompose.Numerics
                     if (part2 != null)
                         return part1.Concat(part2).ToList();
                 }
-                return result;
             }
             if (hasStart)
             {

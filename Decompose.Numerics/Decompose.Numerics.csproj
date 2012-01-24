@@ -49,6 +49,7 @@
     <Compile Include="Collections\SetBitMatrix.cs" />
     <Compile Include="Collections\IntegerSet.cs" />
     <Compile Include="Factorization\PollardRhoLong.cs" />
+    <Compile Include="Factorization\ShanksSquareForms.cs" />
     <Compile Include="Factorization\TrialDivisionFactorization.cs" />
     <Compile Include="QuadraticSieve\PartialRelationGraph.cs" />
     <Compile Include="Reduction\BarrettReduction.cs" />

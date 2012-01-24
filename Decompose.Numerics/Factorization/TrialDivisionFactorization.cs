@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Decompose.Numerics
 {
@@ -44,6 +45,11 @@ namespace Decompose.Numerics
             }
         }
 
+        public int GetDivisor(int n)
+        {
+            return Factor(n).First();
+        }
+
         public IEnumerable<long> Factor(long n)
         {
             if (n < 2)
@@ -82,6 +88,11 @@ namespace Decompose.Numerics
                 p += i;
                 i = 6 - i;
             }
+        }
+
+        public long GetDivisor(long n)
+        {
+            return Factor(n).First();
         }
     }
 }

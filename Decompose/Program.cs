@@ -27,11 +27,11 @@ namespace Decompose
                 //MsieveTest();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                QuadraticSieveDigitsTest();
+                //QuadraticSieveDigitsTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
                 //CreateSamplesTest();
-                //GraphTest();
+                GraphTest();
             }
             catch (Exception ex)
             {
@@ -384,14 +384,14 @@ namespace Decompose
         {
             //new QuadraticSieve(new QuadraticSieve.Config()).Factor(samples[10].N).ToArray();
             //new QuadraticSieve(new QuadraticSieve.Config()).Factor(35095264073).ToArray();
-            for (int i = 35; i <= 35; i++)
+            for (int i = 40; i <= 40; i++)
             {
                 var sample = samples[i];
                 var p = sample.P;
                 var q = sample.Q;
                 var n = sample.N;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                //Console.WriteLine("n = {0}", n);
+                Console.WriteLine("n = {0}", n);
                 var config = new QuadraticSieve.Config
                 {
                     Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
@@ -404,9 +404,9 @@ namespace Decompose
                     //ErrorLimit = 1,
                     //NumberOfFactors = 13,
                     ReportingInterval = 10,
-                    ThresholdExponent = 2.25,
-                    CofactorCutoff = 1024,
-                    ProcessPartialPartialRelations = true,
+                    //ThresholdExponent = 2.25,
+                    //ProcessPartialPartialRelations = true,
+                    //CofactorCutoff = 1024,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
             }
@@ -473,8 +473,16 @@ namespace Decompose
                 .Select(line => line.Split(' ').Select(field => long.Parse(field)).ToArray())
                 .Select(pair => Tuple.Create(pair[0], pair[1]))
                 .ToArray();
+
+            for (int i = 0; i < 10; i++)
+                GraphTestCore(pprs);
+        }
+
+        private static void GraphTestCore(Tuple<long, long>[] pprs)
+        {
             //var algorithm = new QuadraticSieve(new QuadraticSieve.Config());
-            var algorithm = new PollardRhoReduction(1, int.MaxValue, new MontgomeryReduction());
+            //var algorithm = new PollardRhoReduction(1, int.MaxValue, new MontgomeryReduction());
+            var algorithm = new ShanksSquareForms();
 
             var timer = new Stopwatch();
             timer.Restart();
@@ -494,9 +502,11 @@ namespace Decompose
                 var cofactor = cofactor1 * cofactor2;
                 if (cofactor2 != 1)
                 {
-                    var factors = algorithm.Factor(cofactor).ToArray();
-                    if (factors.Length != 2 || factors[0] != cofactor1 && factors[0] != cofactor2)
+#if true
+                    var factor = algorithm.GetDivisor(cofactor);
+                    if (factor != cofactor1 && factor != cofactor2)
                         ++failed;
+#endif
                 }
                 var cycle = graph.FindPath(cofactor1, cofactor2);
 #if false
