@@ -150,12 +150,14 @@ namespace Decompose.Numerics
         private class FactorBaseEntry
         {
             public int P { get; set; }
+            public long PSquared { get; set; }
             public CountInt LogP { get; set; }
             public int Root { get; set; }
             public int RootDiff { get; set; }
             public FactorBaseEntry(int p, BigInteger n)
             {
                 P = p;
+                PSquared = (long)P * P;
                 LogP = LogScale(p);
                 Root = n % p == 0 ? 0 : IntegerMath.ModularSquareRoot(n, p);
                 Debug.Assert(((BigInteger)Root * Root - n) % p == 0);
@@ -246,7 +248,7 @@ namespace Decompose.Numerics
             public int this[int index]
             {
                 get { return exponents[index]; }
-                set { exponents[index] = value; used = Math.Max(used, index + 1); }
+                set { exponents[index] = (ExponentInt)value; used = Math.Max(used, index + 1); }
             }
             public void Clear()
             {
@@ -1645,6 +1647,7 @@ namespace Decompose.Numerics
                     y /= q;
                 }
             }
+#if false
             for (int i = 1; i < largePrimeIndex; i++)
             {
                 if (siqs.IsQIndex[i])
@@ -1663,6 +1666,42 @@ namespace Decompose.Numerics
                     y /= p;
                 }
             }
+#else
+            for (int i = 1; i < largePrimeIndex; i++)
+            {
+                if (siqs.IsQIndex[i])
+                    continue;
+                var p = primes[i];
+                var offset = k % p;
+                if (offset != offsets[i].Offset1 && offset != offsets[i].Offset2)
+                {
+                    Debug.Assert(y % p != 0);
+                    continue;
+                }
+                Debug.Assert(y % p == 0);
+                while ((y % p).IsZero)
+                {
+                    ++exponents[i + 1];
+                    y /= p;
+                }
+#if true
+                if (y < factorBase[i].PSquared)
+                {
+                    var cofactor = (long)y;
+                    for (int ii = i; ii < factorBaseSize; ii++)
+                    {
+                        if (cofactor == primes[ii])
+                        {
+                            ++exponents[ii + 1];
+                            cofactor = 1;
+                            break;
+                        }
+                    }
+                    return cofactor;
+                }
+#endif
+            }
+#endif
             if (!largePrimeOptimization)
             {
                 for (int i = largePrimeIndex; i < factorBaseSize; i++)
@@ -1679,6 +1718,22 @@ namespace Decompose.Numerics
                         ++exponents[i + 1];
                         y /= p;
                     }
+#if true
+                    if (y < factorBase[i].PSquared)
+                    {
+                        var cofactor = (long)y;
+                        for (int ii = i; ii < factorBaseSize; ii++)
+                        {
+                            if (cofactor == primes[ii])
+                            {
+                                ++exponents[ii + 1];
+                                cofactor = 1;
+                                break;
+                            }
+                        }
+                        return cofactor;
+                    }
+#endif
                 }
             }
             else
@@ -1700,6 +1755,22 @@ namespace Decompose.Numerics
                         ++exponents[i + 1];
                         y /= p;
                     }
+#if true
+                    if (y < factorBase[i].PSquared)
+                    {
+                        var cofactor = (long)y;
+                        for (int ii = i; ii < factorBaseSize; ii++)
+                        {
+                            if (cofactor == primes[ii])
+                            {
+                                ++exponents[ii + 1];
+                                cofactor = 1;
+                                break;
+                            }
+                        }
+                        return cofactor;
+                    }
+#endif
                 }
             }
             return y < long.MaxValue ? (long)y : 0;
@@ -1733,12 +1804,12 @@ namespace Decompose.Numerics
 
         private void ProcessPartialRelation(Interval interval, int k, long cofactor)
         {
-            Interlocked.Increment(ref partialRelationsProcessed);
             if (processPartialPartialRelations)
             {
                 ProcessPartialPartialRelation(interval, k, cofactor, 1);
                 return;
             }
+            Interlocked.Increment(ref partialRelationsProcessed);
             var relation = new PartialRelation
             {
                 X = interval.X + k,
@@ -1780,7 +1851,10 @@ namespace Decompose.Numerics
 
         private void ProcessPartialPartialRelation(Interval interval, int k, long cofactor1, long cofactor2)
         {
-            Interlocked.Increment(ref partialPartialRelationsProcessed);
+            if (cofactor2 == 1)
+                Interlocked.Increment(ref partialRelationsProcessed);
+            else
+                Interlocked.Increment(ref partialPartialRelationsProcessed);
             if (cofactor1 == cofactor2)
             {
                 Interlocked.Increment(ref partialPartialRelationsConverted);
