@@ -27,11 +27,11 @@ namespace Decompose
                 //MsieveTest();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                //QuadraticSieveDigitsTest();
+                QuadraticSieveDigitsTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
                 //CreateSamplesTest();
-                GraphTest();
+                //GraphTest();
             }
             catch (Exception ex)
             {
@@ -403,9 +403,9 @@ namespace Decompose
                     //CofactorCutoff = 1000000,
                     //ErrorLimit = 1,
                     //NumberOfFactors = 13,
-                    ReportingInterval = 10,
-                    //ThresholdExponent = 2.25,
-                    //ProcessPartialPartialRelations = true,
+                    ReportingInterval = 60,
+                    ThresholdExponent = 2.25,
+                    ProcessPartialPartialRelations = true,
                     //CofactorCutoff = 1024,
                 };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
