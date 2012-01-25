@@ -74,12 +74,14 @@ namespace Decompose.Numerics
         {
             public int Digits { get; private set; }
             public int FactorBaseSize { get; private set; }
+            public double PPRRatio { get; private set; }
             public int BlockSize { get; private set; }
             public int IntervalSize { get; private set; }
-            public Parameters(int digits, int factorBaseSize, int blockSize, int intervalSize)
+            public Parameters(int digits, int factorBaseSize, double pprRatio, int blockSize, int intervalSize)
             {
                 Digits = digits;
                 FactorBaseSize = factorBaseSize;
+                PPRRatio = pprRatio;
                 BlockSize = blockSize;
                 IntervalSize = intervalSize;
             }
@@ -440,8 +442,6 @@ namespace Decompose.Numerics
             public CountInt[] Threshold { get; set; }
         }
 
-        private const int blockSizeDefault = 256 * 1024;
-        private const int intervalSizeDefault = 256 * 1024;
         private const int maximumCycleLenth = 16 * 1024;
         private const int thresholdInterval = 1024;
         private const int thresholdShift = 10;
@@ -456,26 +456,26 @@ namespace Decompose.Numerics
         private readonly BigInteger smallFactorCutoff = (BigInteger)int.MaxValue;
         private const int minimumAFactor = 2000;
         private const int maximumAfactor = 4000;
-        private const int largePrimeOptimizationDigits = 50;
+        private const int maximumNumberOfFactors = 20;
 
         private readonly Parameters[] parameters =
         {
-            new Parameters(1, 2, 64 * 1024, 64 * 1024),
-            new Parameters(6, 5, 64 * 1024, 64 * 1024),
-            new Parameters(10, 30, 64 * 1024, 64 * 1024),
-            new Parameters(20, 60, 64 * 1024, 64 * 1024),
-            new Parameters(30, 300, 128 * 1024, 128 * 1024),
-            new Parameters(40, 900, 128 * 1024, 128 * 1024),
-            new Parameters(50, 2500, 128 * 1024, 128 * 1024),
-            new Parameters(60, 4000, 128 * 1024, 128 * 1024),
-            new Parameters(70, 15000, 128 * 1024, 128 * 1024),
-            new Parameters(80, 45000, 256 * 1024, 256 * 1024),
-            new Parameters(90, 100000, 256 * 1024, 256 * 1024),
-            new Parameters(100, 150000, 512 * 1024, 512 * 1024),
+            new Parameters(1, 2, 0.67, 64 * 1024, 64 * 1024),
+            new Parameters(6, 5, 0.67, 64 * 1024, 64 * 1024),
+            new Parameters(10, 30, 0.67, 64 * 1024, 64 * 1024),
+            new Parameters(20, 60, 0.67, 64 * 1024, 64 * 1024),
+            new Parameters(30, 300, 0.67, 128 * 1024, 128 * 1024),
+            new Parameters(40, 900, 0.67, 128 * 1024, 128 * 1024),
+            new Parameters(50, 2500, 0.67, 128 * 1024, 128 * 1024),
+            new Parameters(60, 4000, 0.67, 128 * 1024, 128 * 1024),
+            new Parameters(70, 15000, 0.67, 128 * 1024, 128 * 1024),
+            new Parameters(80, 45000, 0.67, 256 * 1024, 256 * 1024),
+            new Parameters(90, 100000, 0.67, 256 * 1024, 256 * 1024),
+            new Parameters(100, 150000, 0.94, 512 * 1024, 512 * 1024),
 
             // Untested.
-            new Parameters(110, 300000, 512 * 1024, 512 * 1024),
-            new Parameters(120, 600000, 512 * 1024, 512 * 1024),
+            new Parameters(110, 300000, 0.94, 512 * 1024, 512 * 1024),
+            new Parameters(120, 600000, 0.94, 512 * 1024, 512 * 1024),
         };
 
         private Config config;
@@ -759,7 +759,7 @@ namespace Decompose.Numerics
             var logSqrt2N = BigInteger.Log(n * 2) / 2;
             targetSize = logSqrt2N - Math.Log(m);
             var preliminaryAverageSize = (Math.Log(min) + Math.Log(max)) / 2;
-            var preliminaryNumberOfFactors = (int)Math.Ceiling(targetSize / preliminaryAverageSize);
+            var preliminaryNumberOfFactors = Math.Min((int)Math.Ceiling(targetSize / preliminaryAverageSize), maximumNumberOfFactors);
             numberOfFactors = config.NumberOfFactors != 0 ? config.NumberOfFactors : preliminaryNumberOfFactors;
             var averageSize = targetSize / numberOfFactors;
             var center = Math.Exp(averageSize);
@@ -1065,10 +1065,8 @@ namespace Decompose.Numerics
             if (config.FactorBaseSize != 0)
                 return config.FactorBaseSize;
             var size = LookupValue(parameters => parameters.FactorBaseSize);
-            if (size == 0)
-                throw new InvalidOperationException("table entry not found");
             if (processPartialPartialRelations)
-                size = size * 67 / 100;
+                size = (int)Math.Round(size * LookupValue(parameters => parameters.PPRRatio));
             return size;
         }
 
@@ -1896,19 +1894,38 @@ namespace Decompose.Numerics
             var cycle = null as List<PartialPartialRelation>;
             lock (partialPartialRelations)
             {
+                // Duplicate check.
+                var edge = partialPartialRelations.FindEdge(cofactor1, cofactor2);
+                if (edge != null)
+                {
+                    if (edge.Entries.Equals(relation.Entries))
+                    {
+                        Interlocked.Increment(ref duplicatePartialPartialRelationsFound);
+                        return;
+                    }
+                }
+
+                // See if this edge will complete a cycle.
                 cycle = partialPartialRelations.FindPath(cofactor1, cofactor2);
                 if (cycle == null)
                 {
+                    // Nope, add it.
                     partialPartialRelations.AddEdge(relation);
                     return;
                 }
+
+                // Remove the remainder of the cyle from the graph.
                 foreach (var other in cycle)
                     partialPartialRelations.RemoveEdge(other);
             }
+
+            // We have a relation; record it.
             if (cofactor2 == 1 && cycle.Count == 1)
                 Interlocked.Increment(ref partialRelationsConverted);
             else
                 Interlocked.Increment(ref partialPartialRelationsConverted);
+
+            // Create a relation from all the partial partials in the cycle.
             var x = EvaluateMapping(interval.Polynomial, interval.X + k);
             var allCofactors = new List<long> { cofactor1, cofactor2 };
             CheckValidPartialPartialRelation(relation);
@@ -1923,6 +1940,8 @@ namespace Decompose.Numerics
             var cofactors = allCofactors.Distinct().ToArray();
             Debug.Assert(cofactors.Length == cycle.Count + 1);
             var cofactor = cofactors.Select(i => (BigInteger)i).Product();
+
+            // Add the reation.
             AddRelation(CreateRelation(x, null, interval.Exponents.Entries, cofactor));
         }
 

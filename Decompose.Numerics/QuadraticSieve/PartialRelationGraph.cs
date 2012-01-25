@@ -56,21 +56,24 @@ namespace Decompose.Numerics
             }
         }
 
-        public bool ContainsEdge(long vertex1, long vertex2)
+        public TEdge FindEdge(long vertex1, long vertex2)
         {
             if (vertex2 == 1)
-                return prMap.ContainsKey(vertex1);
+            {
+                TEdge edge;
+                return prMap.TryGetValue(vertex1, out edge) ? edge : null;
+            }
             List<TEdge> edges;
             if (!pprMap.TryGetValue(vertex1, out edges))
-                return false;
+                return null;
             foreach (var edge in edges)
             {
                 if (comparer.Equals(edge.Vertex1, vertex2))
-                    return true;
+                    return edge;
                 if (comparer.Equals(edge.Vertex2, vertex2))
-                    return true;
+                    return edge;
             }
-            return false;
+            return null;
         }
 
         public List<TEdge> FindPath(long start, long end)
