@@ -38,7 +38,8 @@ namespace Decompose.Numerics
                     z = z * (x - y) % n;
                 }
                 divisor = BigInteger.GreatestCommonDivisor(z, n);
-            } while (divisor.IsOne);
+            }
+            while (divisor.IsOne);
 
             if (divisor == n)
             {
@@ -52,7 +53,8 @@ namespace Decompose.Numerics
                     y = F(y, c, n);
                     y = F(y, c, n);
                     divisor = BigInteger.GreatestCommonDivisor(y - x, n);
-                } while (divisor.IsOne);
+                }
+                while (divisor.IsOne);
             }
 
             return divisor;

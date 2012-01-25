@@ -58,7 +58,8 @@ namespace Decompose.Numerics
                     k += limit;
                 }
                 r <<= 1;
-            } while (g.IsOne);
+            }
+            while (g.IsOne);
 
             if (g.CompareTo(n) == 0)
             {
@@ -70,7 +71,8 @@ namespace Decompose.Numerics
                     AdvanceF(ys, cPrime);
                     AbsDiff(diff, ys, x);
                     g = BigInteger.GreatestCommonDivisor(diff.ToBigInteger(), n);
-                } while (g.IsOne);
+                }
+                while (g.IsOne);
             }
 
             if (g.CompareTo(n) == 0)

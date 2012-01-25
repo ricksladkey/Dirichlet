@@ -70,7 +70,8 @@ namespace Decompose.Numerics
                     k += limit;
                 }
                 r <<= 1;
-            } while (g == 1);
+            }
+            while (g == 1);
 
             if (g == n)
             {
@@ -78,7 +79,8 @@ namespace Decompose.Numerics
                 {
                     ys = F(ys, c, n);
                     g = IntegerMath.GreatestCommonDivisor(x - ys, n);
-                } while (g == 1);
+                }
+                while (g == 1);
             }
 
             return g;

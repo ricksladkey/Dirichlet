@@ -47,7 +47,8 @@ namespace Decompose.Numerics
                     k += limit;
                 }
                 r <<= 1;
-            } while (g.IsOne);
+            }
+            while (g.IsOne);
 
             if (g == n)
             {
@@ -57,7 +58,8 @@ namespace Decompose.Numerics
                         return BigInteger.Zero;
                     ys = F(ys, c, n);
                     g = BigInteger.GreatestCommonDivisor(x - ys, n);
-                } while (g.IsOne);
+                }
+                while (g.IsOne);
             }
 
             return g;

@@ -404,9 +404,10 @@ namespace Decompose
                     Threads = 8,
 #endif
                     Diagnostics = QuadraticSieve.Diag.Verbose,
-                    //FactorBaseSize = 125000,
-                    //BlockSize = 256 * 1024,
-                    //IntervalSize = 256  * 1024,
+                    MergeLimit = 10,
+                    //FactorBaseSize = 25000,
+                    //BlockSize = 128 * 1024,
+                    //IntervalSize = 128 * 1024,
                     //CofactorCutoff = 4096 * 4,
                     //ErrorLimit = 1,
                     //NumberOfFactors = 13,

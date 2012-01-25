@@ -297,7 +297,8 @@ namespace Decompose.Numerics
                     {
                         m >>= 1;
                         result *= toggle;
-                    } while (m.IsEven);
+                    }
+                    while (m.IsEven);
                 }
                 if (m.IsOne)
                     return result;
@@ -328,7 +329,8 @@ namespace Decompose.Numerics
                     {
                         m >>= 1;
                         result *= toggle;
-                    } while ((m & 1) == 0);
+                    }
+                    while ((m & 1) == 0);
                 }
                 if (m == 1)
                     return result;
