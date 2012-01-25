@@ -538,6 +538,9 @@ namespace Decompose.Numerics
 
         private int intervalsProcessed;
         private int valuesChecked;
+        private int cofactorsGreaterThan64Bits;
+        private int cofactorsExceedingCutoff1;
+        private int cofactorsExceedingCutoff2;
         private int cofactorsPrimalityTested;
         private int cofactorsFactored;
         private int partialRelationsProcessed;
@@ -595,7 +598,8 @@ namespace Decompose.Numerics
                 Console.WriteLine("last few factors: {0}", string.Join(", ", primes.Skip(factorBaseSize - 5)));
                 Console.WriteLine("small prime cycle length = {0}, last small prime = {1}", cycleLength, primes[mediumPrimeIndex - 1]);
                 Console.WriteLine("multiplier = {0}; power of two = {1}", multiplier, powerOfTwo);
-                Console.WriteLine("large prime optimization = {0}; use count table = {1}; PPPR = {2}", largePrimeOptimization, useCountTable, processPartialPartialRelations);
+                Console.WriteLine("large prime optimization = {0}; use count table = {1}", largePrimeOptimization, useCountTable);
+                Console.WriteLine("process partial partial relations = {0}", processPartialPartialRelations);
             }
 
             Sieve();
@@ -613,10 +617,12 @@ namespace Decompose.Numerics
             if ((diag & Diag.Summary) != 0)
             {
                 Console.WriteLine("intervals processed = {0:N0}; values processsed = {1:N0}; values checked = {2:N0}", intervalsProcessed, (long)intervalsProcessed * intervalSize, valuesChecked);
+                Console.WriteLine("cofactors: exceeding 64 bits = {0:N0}; exceeding cutoff1 = {1:N0}; exceeding cutoff2 = {2:N0}", cofactorsGreaterThan64Bits, cofactorsExceedingCutoff1, cofactorsExceedingCutoff2);
                 Console.WriteLine("cofactors primality tested = {0:N0}; factored = {1:N0}", cofactorsPrimalityTested, cofactorsFactored);
-                Console.WriteLine("partial relations processed = {0:N0}; partial relations converted = {1:N0}", partialRelationsProcessed, partialRelationsConverted);
-                Console.WriteLine("partial partial relations processed = {0:N0}; partial partial relations converted = {1:N0}", partialPartialRelationsProcessed, partialPartialRelationsConverted);
+                Console.WriteLine("partial relations processed = {0:N0}; converted = {1:N0}", partialRelationsProcessed, partialRelationsConverted);
+                Console.WriteLine("partial partial relations processed = {0:N0}; converted = {1:N0}", partialPartialRelationsProcessed, partialPartialRelationsConverted);
                 Console.WriteLine("duplicate relations found = {0:N0}; duplicate partial relations found = {1:N0}", duplicateRelationsFound, duplicatePartialRelationsFound);
+                Console.WriteLine("duplicate partial partial relations found = {0:N0}", duplicatePartialPartialRelationsFound);
             }
 
             ProcessRelations();
@@ -679,12 +685,21 @@ namespace Decompose.Numerics
 
             intervalsProcessed = 0;
             valuesChecked = 0;
+
             partialRelationsProcessed = 0;
             partialRelationsConverted = 0;
             partialPartialRelationsProcessed = 0;
             partialPartialRelationsConverted = 0;
+
             duplicateRelationsFound = 0;
             duplicatePartialRelationsFound = 0;
+            duplicatePartialPartialRelationsFound = 0;
+
+            cofactorsGreaterThan64Bits = 0;
+            cofactorsExceedingCutoff1 = 0;
+            cofactorsExceedingCutoff2 = 0;
+            cofactorsPrimalityTested = 0;
+            cofactorsFactored = 0;
 
             CalculateNumberOfThreads();
             SetupIntervals();
@@ -1638,7 +1653,10 @@ namespace Decompose.Numerics
             interval.Exponents.Clear();
             long cofactor = FactorOverBase(interval, k);
             if (cofactor == 0)
+            {
+                Interlocked.Increment(ref cofactorsGreaterThan64Bits);
                 return;
+            }
             if (cofactor == 1)
             {
                 var relation = CreateRelation(
@@ -1659,9 +1677,15 @@ namespace Decompose.Numerics
             if (!processPartialPartialRelations)
                 return;
             if (cofactor < maximumDivisorSquared)
+            {
+                Interlocked.Increment(ref cofactorsExceedingCutoff1);
                 return;
+            }
             if (cofactor > maximumCofactorSquared)
+            {
+                Interlocked.Increment(ref cofactorsExceedingCutoff2);
                 return;
+            }
             Interlocked.Increment(ref cofactorsPrimalityTested);
             if (IntegerMath.IsProbablePrime(cofactor))
                 return;
@@ -1670,8 +1694,8 @@ namespace Decompose.Numerics
             if (factor1 <= 1)
                 return;
             var factor2 = cofactor / factor1;
-            if (factor1 < maximumCofactor && factor2 < maximumCofactor)
-                ProcessPartialPartialRelation(interval, k, factor1, factor2);
+            Debug.Assert(factor1 < maximumCofactor && factor2 < maximumCofactor);
+            ProcessPartialPartialRelation(interval, k, factor1, factor2);
         }
 
         private long FactorOverBase(Interval interval, int k)
