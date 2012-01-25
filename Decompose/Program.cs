@@ -387,7 +387,7 @@ namespace Decompose
         {
             new QuadraticSieve(new QuadraticSieve.Config()).Factor(samples[10].N).ToArray();
             //new QuadraticSieve(new QuadraticSieve.Config()).Factor(35095264073).ToArray();
-            for (int i = 40; i <= 40; i++)
+            for (int i = 50; i <= 50; i++)
             {
                 var sample = samples[i];
                 var p = sample.P;
@@ -404,16 +404,16 @@ namespace Decompose
                     Threads = 8,
 #endif
                     Diagnostics = QuadraticSieve.Diag.Verbose,
-                    //FactorBaseSize = 160000,
+                    //FactorBaseSize = 125000,
                     //BlockSize = 256 * 1024,
                     //IntervalSize = 256  * 1024,
-                    //CofactorCutoff = 1000000,
+                    //CofactorCutoff = 4096 * 4,
                     //ErrorLimit = 1,
                     //NumberOfFactors = 13,
                     ReportingInterval = 60,
-                    //ThresholdExponent = 2.3,
+                    ThresholdExponent = 2.5,
                     //LargePrimeOptimization = true,
-                    //UseCountTable = false,
+                    UseCountTable = true,
                     ProcessPartialPartialRelations = true,
                     //CofactorCutoff = 1024,
                 };
