@@ -296,13 +296,13 @@ namespace Decompose
         static void QuadraticSieveParametersTest()
         {
             var random = new MersenneTwisterBigInteger(0);
-            int i = 40;
+            int i = 50;
             var sample = samples[i];
             var p = sample.P;
             var q = sample.Q;
             var n = sample.N;
             Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-#if false
+#if true
             for (int size = 100000; size <= 200000; size += 10000)
             {
                 var config = new QuadraticSieve.Config
@@ -312,7 +312,10 @@ namespace Decompose
                     FactorBaseSize = size,
                     //Diagnostics = QuadraticSieve.Diag.Verbose,
                     ReportingInterval = 60,
-                    SieveTimeLimit = 120,
+                    SieveTimeLimit = 60,
+                    ThresholdExponent = 2.25,
+                    //LargePrimeOptimization = true,
+                    ProcessPartialPartialRelations = true,
                 };
                 Console.WriteLine("size = {0}", size);
                 RunParameterTest(config, n);
@@ -332,7 +335,7 @@ namespace Decompose
                 RunParameterTest(config, n);
             }
 #endif
-#if true
+#if false
             var blockSize = 32 * 1024;
             for (int size = 4 * blockSize; size <= 32 * blockSize; size += blockSize)
             {
@@ -395,16 +398,22 @@ namespace Decompose
                 var config = new QuadraticSieve.Config
                 {
                     Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
+#if DEBUG
+                    Threads = 1,
+#else
                     Threads = 8,
+#endif
                     //Diagnostics = QuadraticSieve.Diag.Verbose,
-                    //FactorBaseSize = 190000,
-                    //BlockSize = 512 * 1024,
-                    //IntervalSize = 512 * 1024,
+                    //FactorBaseSize = 25000,
+                    //BlockSize = 128 * 1024,
+                    //IntervalSize = 128  * 1024,
                     //CofactorCutoff = 1000000,
                     //ErrorLimit = 1,
                     //NumberOfFactors = 13,
                     ReportingInterval = 60,
                     //ThresholdExponent = 2.25,
+                    //LargePrimeOptimization = true,
+                    //UseCountTable = false,
                     //ProcessPartialPartialRelations = true,
                     //CofactorCutoff = 1024,
                 };

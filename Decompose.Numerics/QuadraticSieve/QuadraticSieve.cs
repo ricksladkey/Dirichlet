@@ -65,7 +65,24 @@ namespace Decompose.Numerics
             public int CofactorCutoff { get; set; }
             public double ErrorLimit { get; set; }
             public int NumberOfFactors { get; set; }
-            public bool ProcessPartialPartialRelations { get; set; }
+            public bool? ProcessPartialPartialRelations { get; set; }
+            public bool? LargePrimeOptimization { get; set; }
+            public bool? UseCountTable { get; set; }
+        }
+
+        public class Parameters
+        {
+            public int Digits { get; private set; }
+            public int FactorBaseSize { get; private set; }
+            public int BlockSize { get; private set; }
+            public int IntervalSize { get; private set; }
+            public Parameters(int digits, int factorBaseSize, int blockSize, int intervalSize)
+            {
+                Digits = digits;
+                FactorBaseSize = factorBaseSize;
+                BlockSize = blockSize;
+                IntervalSize = intervalSize;
+            }
         }
 
         public QuadraticSieve(Config config)
@@ -186,34 +203,64 @@ namespace Decompose.Numerics
         private class CountTable
         {
             int numberOfBlocks;
+            int blockShift;
+            int blockMask;
             private CountEntry[][] lists;
             private int[] used;
-            private CountInt[] counts;
-            public CountTable(int numberOfBlocks, int capacity, CountInt[] counts)
+            public CountTable(int numberOfBlocks, int blockSize)
             {
                 this.numberOfBlocks = numberOfBlocks;
+                blockShift = blockSize.GetBitLength() - 1;
+                blockMask = blockSize - 1;
+                var capacity = blockSize * numberOfBlocks;
                 var listCapacity = capacity / numberOfBlocks;
-                this.counts = counts;
                 lists = new CountEntry[numberOfBlocks][];
                 used = new int[numberOfBlocks];
-                for (int j = 0; j < numberOfBlocks; j++)
-                    lists[j] = new CountEntry[listCapacity];
+                for (int block = 0; block < numberOfBlocks; block++)
+                    lists[block] = new CountEntry[listCapacity];
             }
-            public void AddEntry(int i, int block, int k, CountInt count)
+            public void Clear()
             {
+                for (int block = 0; block < numberOfBlocks; block++)
+                    used[block] = 0;
+            }
+            public void AddEntry(int i, int k, CountInt count)
+            {
+                var block = k >> blockShift;
                 var list = lists[block];
                 var slot = used[block]++;
                 list[slot].I = i;
-                list[slot].K = k;
+                list[slot].K = k & blockMask;
                 list[slot].Count = count;
             }
-            public void AddToCounts(int block)
+            public void AddToCounts(int k0, CountInt[] counts)
             {
+                var block = k0 >> blockShift;
                 var list = lists[block];
                 var length = used[block];
-                for (int i = 0; i < length; i++)
-                    counts[list[i].K] += list[i].Count;
-                used[block] = 0;
+                for (int l = 0; l < length; l++)
+                    counts[list[l].K] += list[l].Count;
+            }
+            public BigInteger AddExponents(BigInteger y, int k, Exponents exponents, int[] primes)
+            {
+                var block = k >> blockShift;
+                k &= blockMask;
+                var list = lists[block];
+                var length = used[block];
+                for (int l = 0; l < length; l++)
+                {
+                    if (list[l].K != k)
+                        continue;
+                    var i = list[l].I;
+                    var p = primes[i];
+                    Debug.Assert(y % p == 0);
+                    while ((y % p).IsZero)
+                    {
+                        exponents.Add(i + 1, 1);
+                        y /= p;
+                    }
+                }
+                return y;
             }
         }
 
@@ -399,6 +446,7 @@ namespace Decompose.Numerics
         private const int thresholdInterval = 1024;
         private const int thresholdShift = 10;
         private const double thresholdExponentDefault = 1.4;
+        private const double thresholdExponentPartialPartialRelationsDefault = 2.25;
         private const double errorLimitDefault = 0.1;
         private const int cofactorCutoffDefault = 4096;
         private const int surplusRelations = 12;
@@ -408,26 +456,26 @@ namespace Decompose.Numerics
         private readonly BigInteger smallFactorCutoff = (BigInteger)int.MaxValue;
         private const int minimumAFactor = 2000;
         private const int maximumAfactor = 4000;
-        private const int largePrimeOptimizationDigits = 80;
+        private const int largePrimeOptimizationDigits = 50;
 
-        private readonly Tuple<int, int>[] sizePairs =
+        private readonly Parameters[] parameters =
         {
-            Tuple.Create(1, 2),
-            Tuple.Create(6, 5),
-            Tuple.Create(10, 30),
-            Tuple.Create(20, 60),
-            Tuple.Create(30, 300),
-            Tuple.Create(40, 900),
-            Tuple.Create(50, 2500),
-            Tuple.Create(60, 4000),
-            Tuple.Create(70, 15000),
-            Tuple.Create(80, 45000),
-            Tuple.Create(90, 100000),
-            Tuple.Create(100, 150000),
+            new Parameters(1, 2, 64 * 1024, 64 * 1024),
+            new Parameters(6, 5, 64 * 1024, 64 * 1024),
+            new Parameters(10, 30, 64 * 1024, 64 * 1024),
+            new Parameters(20, 60, 64 * 1024, 64 * 1024),
+            new Parameters(30, 300, 128 * 1024, 128 * 1024),
+            new Parameters(40, 900, 128 * 1024, 128 * 1024),
+            new Parameters(50, 2500, 128 * 1024, 128 * 1024),
+            new Parameters(60, 4000, 128 * 1024, 128 * 1024),
+            new Parameters(70, 15000, 128 * 1024, 128 * 1024),
+            new Parameters(80, 45000, 256 * 1024, 256 * 1024),
+            new Parameters(90, 100000, 256 * 1024, 256 * 1024),
+            new Parameters(100, 150000, 512 * 1024, 512 * 1024),
 
             // Untested.
-            Tuple.Create(110, 300000),
-            Tuple.Create(120, 600000),
+            new Parameters(110, 300000, 512 * 1024, 512 * 1024),
+            new Parameters(120, 600000, 512 * 1024, 512 * 1024),
         };
 
         private Config config;
@@ -452,7 +500,7 @@ namespace Decompose.Numerics
         private int factorBaseSize;
         private int desired;
         private volatile bool sievingAborted;
-        private int digits;
+        private double digits;
         private FactorBaseEntry[] factorBase;
         private int[] primes;
         private Dictionary<int, int> primeMap;
@@ -472,8 +520,6 @@ namespace Decompose.Numerics
         private int intervalSize;
         private int[][] intervalIncrements;
         private int numberOfBlocks;
-        private int blockShift;
-        private int blockMask;
 
         private int[] candidateMap;
         private double[] candidateSizes;
@@ -542,13 +588,14 @@ namespace Decompose.Numerics
             if ((diag & Diag.Summary) != 0)
             {
                 Console.WriteLine("algorithm = {0}", algorithm);
-                Console.WriteLine("digits = {0}; factorBaseSize = {1:N0}; desired = {2:N0}", digits, factorBaseSize, desired);
+                Console.WriteLine("digits = {0:F1}; factorBaseSize = {1:N0}; desired = {2:N0}", digits, factorBaseSize, desired);
                 Console.WriteLine("block size = {0:N0}; interval size = {1:N0}; threads = {2}", blockSize, intervalSize, threads);
                 Console.WriteLine("error limit = {0}, cofactor cutoff = {1}; threshold exponent = {2}", errorLimit, cofactorCutoff, thresholdExponent);
                 Console.WriteLine("first few factors: {0}", string.Join(", ", primes.Take(15)));
                 Console.WriteLine("last few factors: {0}", string.Join(", ", primes.Skip(factorBaseSize - 5)));
                 Console.WriteLine("small prime cycle length = {0}, last small prime = {1}", cycleLength, primes[mediumPrimeIndex - 1]);
-                Console.WriteLine("multiplier = {0}, power of two = {1}", multiplier, powerOfTwo);
+                Console.WriteLine("multiplier = {0}; power of two = {1}", multiplier, powerOfTwo);
+                Console.WriteLine("large prime optimization = {0}; use count table = {1}; PPPR = {2}", largePrimeOptimization, useCountTable, processPartialPartialRelations);
             }
 
             Sieve();
@@ -596,13 +643,17 @@ namespace Decompose.Numerics
         private void Initialize(BigInteger nOrig)
         {
             algorithm = config.Algorithm != Algorithm.None ? config.Algorithm : Algorithm.SelfInitializingQuadraticSieve;
+            largePrimeOptimization = config.LargePrimeOptimization.HasValue ? config.LargePrimeOptimization.Value : true;
+            useCountTable = config.UseCountTable.HasValue ? config.UseCountTable.Value : false;
+            processPartialPartialRelations = config.ProcessPartialPartialRelations.HasValue ? config.ProcessPartialPartialRelations.Value : false;
+
             this.nOrig = nOrig;
             ChooseMultiplier();
             multiplierFactors = smallIntegerFactorer.Factor(multiplier).ToArray();
             n = nOrig * multiplier;
             sqrtN = IntegerMath.Sqrt(n);
             powerOfTwo = IntegerMath.Modulus(n, 8) == 1 ? 3 : IntegerMath.Modulus(n, 8) == 5 ? 2 : 1;
-            digits = (int)Math.Ceiling(BigInteger.Log(n, 10));
+            digits = BigInteger.Log(n, 10);
             factorBaseSize = CalculateFactorBaseSize();
             factorBase = allPrimes
                 .Where(p => p == 2 || multiplier % p == 0 || IntegerMath.JacobiSymbol(n, p) == 1)
@@ -617,7 +668,12 @@ namespace Decompose.Numerics
             cofactorCutoff = config.CofactorCutoff != 0 ? config.CofactorCutoff : cofactorCutoffDefault;
             maximumCofactor = Math.Min((long)maximumDivisor * cofactorCutoff, maximumDivisorSquared);
             maximumCofactorSquared = (long)BigInteger.Min((BigInteger)maximumCofactor * maximumCofactor, long.MaxValue);
-            thresholdExponent = config.ThresholdExponent != 0 ? config.ThresholdExponent : thresholdExponentDefault;
+            if (config.ThresholdExponent != 0)
+                thresholdExponent = config.ThresholdExponent;
+            else if (!processPartialPartialRelations)
+                thresholdExponent = thresholdExponentDefault;
+            else
+                thresholdExponent = thresholdExponentPartialPartialRelationsDefault;
             reportingInterval = config.ReportingInterval != 0 ? config.ReportingInterval : reportingIntervalDefault;
             errorLimit = config.ErrorLimit != 0 ? config.ErrorLimit : errorLimitDefault;
 
@@ -719,10 +775,6 @@ namespace Decompose.Numerics
             candidateSizes = candidateMap
                 .Select(index => Math.Log(primes[index]))
                 .ToArray();
-
-            largePrimeOptimization = digits >= largePrimeOptimizationDigits;
-            useCountTable = false;
-            processPartialPartialRelations = config.ProcessPartialPartialRelations;
 
             if ((diag & Diag.Summary) != 0)
                 Console.WriteLine("number of factors of A = {0}, min = {1}, max = {2}", numberOfFactors, min, max);
@@ -1012,18 +1064,28 @@ namespace Decompose.Numerics
         {
             if (config.FactorBaseSize != 0)
                 return config.FactorBaseSize;
-            for (int i = 0; i < sizePairs.Length - 1; i++)
+            var size = LookupValue(parameters => parameters.FactorBaseSize);
+            if (size == 0)
+                throw new InvalidOperationException("table entry not found");
+            if (processPartialPartialRelations)
+                size = size * 67 / 100;
+            return size;
+        }
+
+        private T LookupValue<T>(Func<Parameters, T> getter) where T : IConvertible
+        {
+            for (int i = 0; i < parameters.Length - 1; i++)
             {
-                var pair = sizePairs[i];
-                if (digits >= sizePairs[i].Item1 && digits <= sizePairs[i + 1].Item1)
+                var pair = parameters[i];
+                if (digits >= parameters[i].Digits && digits <= parameters[i + 1].Digits)
                 {
                     // Interpolate.
-                    double x0 = sizePairs[i].Item1;
-                    double y0 = sizePairs[i].Item2;
-                    double x1 = sizePairs[i + 1].Item1;
-                    double y1 = sizePairs[i + 1].Item2;
+                    double x0 = parameters[i].Digits;
+                    double y0 = getter(parameters[i]).ToDouble(null);
+                    double x1 = parameters[i + 1].Digits;
+                    double y1 = getter(parameters[i + 1]).ToDouble(null);
                     double x = y0 + (digits - x0) * (y1 - y0) / (x1 - x0);
-                    return (int)Math.Ceiling(x);
+                    return (T)Convert.ChangeType(x, typeof(T));
                 }
             }
             throw new InvalidOperationException("table entry not found");
@@ -1169,8 +1231,8 @@ namespace Decompose.Numerics
             var interval = new Interval();
             interval.Exponents = new Exponents(factorBaseSize + 1);
             interval.Cycle = new CountInt[cycleLength];
-            interval.Counts = new CountInt[Math.Min(intervalSize, blockSize) + 1];
-            interval.CountTable = new CountTable(numberOfBlocks, intervalSize, interval.Counts);
+            interval.Counts = new CountInt[Math.Min(intervalSize, blockSize)];
+            interval.CountTable = useCountTable ? new CountTable(numberOfBlocks, blockSize) : null;
             interval.Offsets = new Offset[factorBaseSize];
             if (processPartialPartialRelations)
                 interval.CofactorFactorer = CreateCofactorFactorer();
@@ -1184,13 +1246,16 @@ namespace Decompose.Numerics
 
         private void SetupIntervals()
         {
-            blockSize = config.BlockSize != 0 ? config.BlockSize : blockSizeDefault;
-            intervalSize = config.IntervalSize != 0 ? config.IntervalSize : intervalSizeDefault;
-            if (digits < 20)
-            {
-                blockSize = 32 * 1024;
-                intervalSize = blockSize;
-            }
+            if (config.BlockSize != 0)
+                blockSize = config.BlockSize;
+            else
+                blockSize = LookupValue(parameters => parameters.BlockSize);
+            if (config.IntervalSize != 0)
+                intervalSize = config.IntervalSize;
+            else
+                intervalSize = LookupValue(parameters => parameters.IntervalSize);
+            blockSize = IntegerMath.MultipleOfCeiling(blockSize, thresholdInterval);
+            intervalSize = IntegerMath.MultipleOfCeiling(intervalSize, blockSize);
             int numberOfIncrements = intervalSize / blockSize;
             intervalIncrements = new int[numberOfIncrements + 1][];
             for (int j = 1; j < numberOfIncrements; j++)
@@ -1205,8 +1270,6 @@ namespace Decompose.Numerics
             }
             Debug.Assert(intervalSize % blockSize == 0);
             numberOfBlocks = intervalSize / blockSize;
-            blockShift = (intervalSize / numberOfBlocks).GetBitLength() - 1;
-            blockMask = intervalSize / numberOfBlocks - 1;
         }
 
         private Interval GetNextInterval(Interval interval)
@@ -1407,6 +1470,7 @@ namespace Decompose.Numerics
             var bainv2v = interval.Siqs.Bainv2v;
             int intervalSize = interval.Size;
             var countTable = interval.CountTable;
+            countTable.Clear();
             for (int i = largePrimeIndex; i < factorBaseSize; i++)
             {
                 var j = i - largePrimeIndex;
@@ -1419,7 +1483,7 @@ namespace Decompose.Numerics
                 if (k1 < intervalSize)
                 {
                     Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1) % p == 0);
-                    countTable.AddEntry(i, k1 >> blockShift, k1 & blockMask, logP);
+                    countTable.AddEntry(i, k1, logP);
                 }
                 l[j].Offset1 = k1;
                 int k2 = l[j].Offset2 + step;
@@ -1428,7 +1492,7 @@ namespace Decompose.Numerics
                 if (k2 < intervalSize)
                 {
                     Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k2) % p == 0);
-                    countTable.AddEntry(i, k2 >> blockShift, k2 & blockMask, logP);
+                    countTable.AddEntry(i, k2, logP);
                 }
                 l[j].Offset2 = k2;
             }
@@ -1440,7 +1504,7 @@ namespace Decompose.Numerics
             {
                 if (useCountTable)
                 {
-                    interval.CountTable.AddToCounts(k0 / size);
+                    interval.CountTable.AddToCounts(k0, interval.Counts);
                     return;
                 }
                 var counts = interval.Counts;
@@ -1549,7 +1613,6 @@ namespace Decompose.Numerics
         {
             var counts = interval.Counts;
             var threshold = interval.Siqs.Threshold;
-            counts[size] = CountInt.MaxValue;
             for (int k = 0; k < size; k += thresholdInterval)
             {
                 var limit = threshold[(k0 + k) >> thresholdShift];
@@ -1682,7 +1745,7 @@ namespace Decompose.Numerics
                         return cofactor;
                 }
             }
-            else
+            else if (!useCountTable)
             {
                 var l = siqs.LargePrimes;
                 int jMax = factorBaseSize - largePrimeIndex;
@@ -1706,6 +1769,8 @@ namespace Decompose.Numerics
                         return cofactor;
                 }
             }
+            else
+                y = interval.CountTable.AddExponents(y, k, exponents, primes);
             return y < long.MaxValue ? (long)y : 0;
         }
 
@@ -1717,6 +1782,7 @@ namespace Decompose.Numerics
                 int index;
                 if (cofactor < int.MaxValue && primeMap.TryGetValue((int)cofactor, out index))
                 {
+                    Debug.Assert(cofactor == primes[index]);
                     interval.Exponents.Add(index + 1, 1);
                     cofactor = 1;
                 }
