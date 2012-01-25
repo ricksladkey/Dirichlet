@@ -9,7 +9,6 @@ using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using CountInt = System.Byte;
-using ExponentInt = System.Int32;
 
 #if false
 using BitMatrix = Decompose.Numerics.Word64BitMatrix;
@@ -239,12 +238,12 @@ namespace Decompose.Numerics
 #if false
         private class Exponents
         {
-            private ExponentInt[] exponents;
+            private int[] exponents;
             private int used;
             public Exponents(int size)
             {
                 used = 0;
-                exponents = new ExponentInt[size];
+                exponents = new int[size];
             }
             public void Add(int index, int increment)
             {
@@ -284,14 +283,14 @@ namespace Decompose.Numerics
 #else
         private class Exponents
         {
-            private Dictionary<int, ExponentInt> exponents;
+            private Dictionary<int, int> exponents;
             public Exponents(int size)
             {
-                exponents = new Dictionary<ExponentInt, ExponentInt>();
+                exponents = new Dictionary<int, int>();
             }
             public void Add(int index, int increment)
             {
-                ExponentInt value;
+                int value;
                 if (exponents.TryGetValue(index, out value))
                     exponents[index] = value + increment;
                 else
@@ -396,7 +395,7 @@ namespace Decompose.Numerics
 
         private const int blockSizeDefault = 256 * 1024;
         private const int intervalSizeDefault = 256 * 1024;
-        private const int maximumCycleLenth = 32 * 1024;
+        private const int maximumCycleLenth = 16 * 1024;
         private const int thresholdInterval = 1024;
         private const int thresholdShift = 10;
         private const double thresholdExponentDefault = 1.4;
@@ -456,6 +455,7 @@ namespace Decompose.Numerics
         private int digits;
         private FactorBaseEntry[] factorBase;
         private int[] primes;
+        private Dictionary<int, int> primeMap;
         private int maximumDivisor;
         private long maximumDivisorSquared;
         private long maximumCofactor;
@@ -463,7 +463,6 @@ namespace Decompose.Numerics
         private CountInt threshold1;
         private CountInt threshold2;
         private int mediumPrimeIndex;
-        private int moderatePrimeIndex;
         private int largePrimeIndex;
         private double thresholdExponent;
         private int reportingInterval;
@@ -611,6 +610,7 @@ namespace Decompose.Numerics
                 .Select(p => new FactorBaseEntry(p, n))
                 .ToArray();
             primes = factorBase.Select(entry => entry.P).ToArray();
+            primeMap = Enumerable.Range(0, factorBaseSize).ToDictionary(index => primes[index]);
             desired = factorBaseSize + 1 + surplusRelations;
             maximumDivisor = factorBase[factorBaseSize - 1].P;
             maximumDivisorSquared = (long)maximumDivisor * maximumDivisor;
@@ -636,13 +636,9 @@ namespace Decompose.Numerics
 
             InitializeSiqs();
 
-            moderatePrimeIndex = Enumerable.Range(0, factorBaseSize + 1)
-                .Where(index => index == factorBaseSize ||
-                    index >= mediumPrimeIndex && primes[index] >= intervalSize / 2)
-                .First();
             largePrimeIndex = Enumerable.Range(0, factorBaseSize + 1)
                 .Where(index => index == factorBaseSize ||
-                    index >= moderatePrimeIndex && primes[index] >= intervalSize)
+                    index >= mediumPrimeIndex && primes[index] >= intervalSize)
                 .First();
         }
 
@@ -1258,7 +1254,6 @@ namespace Decompose.Numerics
                 interval.Increments = intervalIncrements[k0 / blockSize];
                 SieveSmallPrimes(interval, k0, size);
                 SieveMediumPrimes(interval, k0, size);
-                SieveModeratePrimes(interval, k0, size);
                 SieveLargePrimes(interval, k0, size);
                 CheckForSmooth(interval, k0, size);
                 if (SievingCompleted)
@@ -1334,7 +1329,7 @@ namespace Decompose.Numerics
             var offsets = interval.Offsets;
             var counts = interval.Counts;
             var increments = interval.Increments;
-            for (int i = mediumPrimeIndex; i < moderatePrimeIndex; i++)
+            for (int i = mediumPrimeIndex; i < largePrimeIndex; i++)
             {
                 if (siqs.IsQIndex[i])
                     continue;
@@ -1399,51 +1394,6 @@ namespace Decompose.Numerics
                         counts[k1] += logP;
                         k1 += p;
                     }
-                }
-            }
-        }
-
-        private void SieveModeratePrimes(Interval interval, int k0, int size)
-        {
-            var siqs = interval.Siqs;
-            var offsets = interval.Offsets;
-            var counts = interval.Counts;
-            var increments = interval.Increments;
-            for (int i = moderatePrimeIndex; i < largePrimeIndex; i++)
-            {
-                if (siqs.IsQIndex[i])
-                    continue;
-                var entry = factorBase[i];
-                int p = entry.P;
-                var logP = entry.LogP;
-                int k1 = offsets[i].Offset1;
-                int k2 = offsets[i].Offset2;
-                if (k0 != 0)
-                {
-                    var increment = increments[i];
-                    k1 += increment;
-                    if (k1 >= p)
-                        k1 -= p;
-                    k2 += increment;
-                    if (k2 >= p)
-                        k2 -= p;
-                }
-                while (k1 < size)
-                {
-                    Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k1) % p == 0);
-                    counts[k1] += logP;
-                    k1 += p;
-                }
-                if (entry.RootDiff == 0)
-                {
-                    offsets[i].Offset2 = offsets[i].Offset1;
-                    continue;
-                }
-                while (k2 < size)
-                {
-                    Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k2) % p == 0);
-                    counts[k2] += logP;
-                    k2 += p;
                 }
             }
         }
@@ -1764,14 +1714,11 @@ namespace Decompose.Numerics
             if (y < factorBase[i].PSquared)
             {
                 var cofactor = (long)y;
-                for (int ii = i; ii < factorBaseSize; ii++)
+                int index;
+                if (cofactor < int.MaxValue && primeMap.TryGetValue((int)cofactor, out index))
                 {
-                    if (cofactor == primes[ii])
-                    {
-                        interval.Exponents.Add(ii + 1, 1);
-                        cofactor = 1;
-                        break;
-                    }
+                    interval.Exponents.Add(index + 1, 1);
+                    cofactor = 1;
                 }
                 return cofactor;
             }

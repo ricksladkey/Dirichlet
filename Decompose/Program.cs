@@ -382,7 +382,7 @@ namespace Decompose
 
         static void QuadraticSieveDigitsTest()
         {
-            //new QuadraticSieve(new QuadraticSieve.Config()).Factor(samples[10].N).ToArray();
+            new QuadraticSieve(new QuadraticSieve.Config()).Factor(samples[10].N).ToArray();
             //new QuadraticSieve(new QuadraticSieve.Config()).Factor(35095264073).ToArray();
             for (int i = 20; i <= 35; i++)
             {
