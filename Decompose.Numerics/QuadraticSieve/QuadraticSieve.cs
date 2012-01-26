@@ -1157,9 +1157,13 @@ namespace Decompose.Numerics
 
         private void CalculateNumberOfThreads()
         {
+#if DEBUG
+            threads = 0;
+#else
             threads = config.Threads != 0 ? config.Threads : 1;
             if (digits < 10)
                 threads = 1;
+#endif
         }
 
         private int CalculateFactorBaseSize()
@@ -1255,7 +1259,7 @@ namespace Decompose.Numerics
             partialRelations = new Dictionary<long, PartialRelation>();
             partialPartialRelations = new PartialRelationGraph<PartialPartialRelation>();
 
-            if (threads == 1)
+            if (threads == 0)
                 SieveTask();
             else
             {

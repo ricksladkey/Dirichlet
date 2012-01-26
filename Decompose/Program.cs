@@ -27,10 +27,10 @@ namespace Decompose
                 //FactorTest2();
                 //FactorTest3();
                 //FactorTest4();
-                //MsieveTest();
+                MsieveTest();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                QuadraticSieveDigitsTest();
+                //QuadraticSieveDigitsTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
                 //CreateSamplesTest();
@@ -290,7 +290,7 @@ namespace Decompose
             var config = new QuadraticSieve.Config
             {
                 Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
-                Threads = 8,
+                Threads = 1,
                 //FactorBaseSize = 5400,
                 //LowerBoundPercent = 65,
                 //IntervalSize = 12 * 32 * 1024,
