@@ -926,7 +926,7 @@ namespace Decompose.Numerics
                     for (int l = 0; l < s - 1; l++)
                         bainv2[l + s - 1][i] = (p - bainv2[l][i]) % p;
                 }
-                var root1 = (int)((entry.Root - b) % p);
+                var root1 = entry.Root - (int)(b % p);
                 if (root1 < 0)
                     root1 += p;
                 var root2 = root1 + entry.RootDiff;
@@ -1755,16 +1755,21 @@ namespace Decompose.Numerics
             var exponents = interval.Exponents;
             var siqs = interval.Siqs;
             var offsets = siqs.Solutions;
-            if (y < 0)
+
+            // Handle negative values.
+            if (y.Sign == -1)
             {
                 exponents.Add(0, 1);
                 y = -y;
             }
+
+            // Handle factors of two.
             while (y.IsEven)
             {
                 exponents.Add(1, 1);
                 y >>= 1;
             }
+
             for (int i = 0; i < siqs.S; i++)
             {
                 var j = siqs.QMap[i];

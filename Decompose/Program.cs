@@ -390,9 +390,7 @@ namespace Decompose
             var config = new QuadraticSieve.Config
             {
                 Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
-#if DEBUG
-                    Threads = 1,
-#else
+#if !DEBUG
                 Threads = 8,
 #endif
                 //Diagnostics = QuadraticSieve.Diag.Verbose,
@@ -418,7 +416,8 @@ namespace Decompose
                 var n = sample.N;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
                 //Console.WriteLine("n = {0}", n);
-                FactorTest(false, 1, n, new QuadraticSieve(config));
+                var algorithm = new QuadraticSieve(config);
+                FactorTest(false, 1, n, algorithm);
             }
         }
 
