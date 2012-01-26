@@ -356,7 +356,6 @@ namespace Decompose.Numerics
         private class Relation
         {
             public BigInteger X { get; set; }
-            public Polynomial Polynomial { get; set; }
             public ExponentEntries Entries { get; set; }
             public BigInteger Cofactor { get; set; }
             public override string ToString()
@@ -487,7 +486,7 @@ namespace Decompose.Numerics
         private struct PartialRelation
         {
             public Polynomial Polynomial { get; set; }
-            public long X { get; set; }
+            public int X { get; set; }
             public ExponentEntries Entries { get; set; }
             public override string ToString()
             {
@@ -498,7 +497,7 @@ namespace Decompose.Numerics
         private class PartialPartialRelation : PartialRelationEdge
         {
             public Polynomial Polynomial { get; set; }
-            public long X { get; set; }
+            public int X { get; set; }
             public ExponentEntries Entries { get; set; }
             public long Cofactor1 { get { return Vertex1; } set { Vertex1 = value; } }
             public long Cofactor2 { get { return Vertex2; } set { Vertex2 = value; } }
@@ -1300,7 +1299,7 @@ namespace Decompose.Numerics
 
             var timer = new Stopwatch();
             timer.Start();
-            double percentCompleteSofar = 0;
+            var percentCompleteSofar = 0.0;
             var totalTime = 0;
             var lastIntervalsProcessed = 0;
             while (!Task.WaitAll(tasks, reportingInterval * 1000))
@@ -1313,13 +1312,18 @@ namespace Decompose.Numerics
                 var timeRemainingSeconds = percentRate == 0 ? 0 : percentRemaining / percentRate;
                 var timeRemaining = TimeSpan.FromSeconds(Math.Ceiling(timeRemainingSeconds));
                 var intervals = intervalsProcessed - lastIntervalsProcessed;
-                lastIntervalsProcessed = intervalsProcessed;
+                var elapsed = (double)timer.ElapsedTicks / Stopwatch.Frequency;
+                var overallPercentRate = (double)relationBuffer.Count / desired * 100 / elapsed;
+                var pr = processPartialPartialRelations ? partialPartialRelations.PartialRelations : partialRelations.Count;
+                var ppr = processPartialPartialRelations ? partialPartialRelations.PartialPartialRelations : partialPartialRelations.Count;
                 if ((diag & Diag.Sieve) != 0)
                 {
-                    output.WriteLine("{0:F3}% complete, rate = {1:F6} %/sec, intervals = {2}, sieve time remaining = {3}",
-                        percentComplete, percentRate, intervals, timeRemaining);
+                    output.WriteLine("{0:F3}% complete, {1:F6}/{2:F6} %/sec, {3}/{4}/{5}, remaining = {6}",
+                        percentComplete, percentRate, overallPercentRate,
+                        current, pr, ppr, timeRemaining);
                 }
                 percentCompleteSofar = percentComplete;
+                lastIntervalsProcessed = intervalsProcessed;
                 totalTime += reportingInterval;
                 if (sieveTimeLimit != 0 && totalTime >= sieveTimeLimit)
                 {
@@ -1328,9 +1332,9 @@ namespace Decompose.Numerics
                     break;
                 }
             }
-            var elapsed = (double)timer.ElapsedTicks / Stopwatch.Frequency;
-            var overallPercentRate = (double)relationBuffer.Count / desired * 100 / elapsed;
-            output.WriteLine("overall rate = {0:F6} %/sec", overallPercentRate);
+            var finalElapsed = (double)timer.ElapsedTicks / Stopwatch.Frequency;
+            var finalOverallPercentRate = (double)relationBuffer.Count / desired * 100 / finalElapsed;
+            output.WriteLine("overall rate = {0:F6} %/sec", finalOverallPercentRate);
         }
 
         private Interval CreateInterval()
@@ -1796,7 +1800,6 @@ namespace Decompose.Numerics
             {
                 var relation = CreateRelation(
                     interval.Polynomial.EvaluateMapping(interval.X + k),
-                    interval.Polynomial,
                     interval.Exponents.Entries,
                     1);
                 ++interval.RelationsFound;
@@ -2027,7 +2030,6 @@ namespace Decompose.Numerics
                 FactorOverBase(interval.Exponents, other.Polynomial, other.X);
             AddRelation(CreateRelation(
                 interval.Polynomial.EvaluateMapping(interval.X + k) * other.Polynomial.EvaluateMapping(other.X),
-                null,
                 interval.Exponents.Entries,
                 cofactor));
         }
@@ -2047,7 +2049,6 @@ namespace Decompose.Numerics
                 Interlocked.Increment(ref partialPartialRelationsConverted);
                 AddRelation(CreateRelation(
                     interval.Polynomial.EvaluateMapping(interval.X + k),
-                    interval.Polynomial,
                     interval.Exponents.Entries,
                     cofactor1));
                 return;
@@ -2055,12 +2056,12 @@ namespace Decompose.Numerics
             var relation = new PartialPartialRelation
             {
                 X = interval.X + k,
-                Polynomial = interval.Polynomial,
                 Entries = interval.Exponents.Entries,
+                Polynomial = interval.Polynomial,
                 Cofactor1 = cofactor1,
                 Cofactor2 = cofactor2,
             };
-            CheckValidPartialPartialRelation(relation);
+            CheckValidPartialPartialRelation(relation, interval.Exponents);
 #if false
             lock (pprs)
                 pprs.Add(partialPartialRelation);
@@ -2072,7 +2073,7 @@ namespace Decompose.Numerics
                 var edge = partialPartialRelations.FindEdge(cofactor1, cofactor2);
                 if (edge != null)
                 {
-                    if (edge.Entries.Equals(relation.Entries))
+                    if (edge.Polynomial.Evaluate(edge.X) == interval.Polynomial.Evaluate(interval.X + k))
                     {
                         Interlocked.Increment(ref duplicatePartialPartialRelationsFound);
                         return;
@@ -2102,21 +2103,22 @@ namespace Decompose.Numerics
             // Create a relation from all the partial partials in the cycle.
             var x = interval.Polynomial.EvaluateMapping(interval.X + k);
             var allCofactors = new List<long> { cofactor1, cofactor2 };
-            CheckValidPartialPartialRelation(relation);
             foreach (var other in cycle)
             {
-                CheckValidPartialPartialRelation(other);
                 x *= other.Polynomial.EvaluateMapping(other.X);
                 allCofactors.Add(other.Cofactor1);
                 allCofactors.Add(other.Cofactor2);
-                AddEntries(interval.Exponents, other.Entries);
+                if (other.Entries != null)
+                    AddEntries(interval.Exponents, other.Entries);
+                else
+                    FactorOverBase(interval.Exponents, other.Polynomial, other.X);
             }
             var cofactors = allCofactors.Distinct().ToArray();
             Debug.Assert(cofactors.Length == cycle.Count + 1);
             var cofactor = cofactors.Select(i => (BigInteger)i).Product();
 
             // Add the reation.
-            AddRelation(CreateRelation(x, null, interval.Exponents.Entries, cofactor));
+            AddRelation(CreateRelation(x, interval.Exponents.Entries, cofactor));
         }
 
         private void AddEntries(Exponents exponents, ExponentEntries entries)
@@ -2125,12 +2127,11 @@ namespace Decompose.Numerics
                 exponents.Add(entries[i].Row, entries[i].Exponent);
         }
 
-        private Relation CreateRelation(BigInteger x, Polynomial polynomial, ExponentEntries entries, BigInteger cofactor)
+        private Relation CreateRelation(BigInteger x, ExponentEntries entries, BigInteger cofactor)
         {
             var relation = new Relation
             {
                 X = x,
-                Polynomial = polynomial,
                 Entries = entries,
                 Cofactor = cofactor,
             };
@@ -2199,11 +2200,11 @@ namespace Decompose.Numerics
             return MultiplyFactors(partialRelation.Entries) * cofactor % n;
         }
 
-        private BigInteger MultiplyFactors(PartialPartialRelation partialPartialRelation)
+        private BigInteger MultiplyFactors(PartialPartialRelation partialPartialRelation, ExponentEntries entries)
         {
             var cofactor1 = partialPartialRelation.Cofactor1;
             var cofactor2 = partialPartialRelation.Cofactor2;
-            return MultiplyFactors(partialPartialRelation.Entries) * cofactor1 % n * cofactor2 % n;
+            return MultiplyFactors(entries) * cofactor1 % n * cofactor2 % n;
         }
 
         [Conditional("DEBUG")]
@@ -2225,10 +2226,10 @@ namespace Decompose.Numerics
         }
 
         [Conditional("DEBUG")]
-        private void CheckValidPartialPartialRelation(PartialPartialRelation relation)
+        private void CheckValidPartialPartialRelation(PartialPartialRelation relation, Exponents exponents)
         {
             var x = relation.Polynomial.EvaluateMapping(relation.X);
-            var y = MultiplyFactors(relation);
+            var y = MultiplyFactors(relation, exponents.Entries);
             if ((x * x - y) % n != 0)
                 throw new InvalidOperationException("invalid partial partial relation");
         }

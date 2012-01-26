@@ -20,13 +20,16 @@ namespace Decompose.Numerics
     {
         private Dictionary<long, TEdge> prMap;
         private Dictionary<long, List<TEdge>> pprMap;
-        private IEqualityComparer<long> comparer;
+        private int count;
+
+        public int Count { get { return count; } }
+        public int PartialRelations { get { return prMap.Count; } }
+        public int PartialPartialRelations { get { return count - prMap.Count; } }
 
         public PartialRelationGraph()
         {
             prMap = new Dictionary<long, TEdge>();
             pprMap = new Dictionary<long, List<TEdge>>();
-            comparer = EqualityComparer<long>.Default;
         }
 
         public void AddEdge(long vertex1, long vertex2)
@@ -43,6 +46,7 @@ namespace Decompose.Numerics
                 AddToVertex(edge, edge.Vertex1);
                 AddToVertex(edge, edge.Vertex2);
             }
+            ++count;
         }
 
         public void RemoveEdge(TEdge edge)
@@ -54,6 +58,7 @@ namespace Decompose.Numerics
                 RemoveFromVertex(edge, edge.Vertex1);
                 RemoveFromVertex(edge, edge.Vertex2);
             }
+            --count;
         }
 
         public TEdge FindEdge(long vertex1, long vertex2)
@@ -68,9 +73,7 @@ namespace Decompose.Numerics
                 return null;
             foreach (var edge in edges)
             {
-                if (comparer.Equals(edge.Vertex1, vertex2))
-                    return edge;
-                if (comparer.Equals(edge.Vertex2, vertex2))
+                if (edge.Vertex1 == vertex2 || edge.Vertex2 == vertex2)
                     return edge;
             }
             return null;

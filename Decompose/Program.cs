@@ -27,10 +27,10 @@ namespace Decompose
                 //FactorTest2();
                 //FactorTest3();
                 //FactorTest4();
-                MsieveTest();
+                //MsieveTest();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                //QuadraticSieveDigitsTest();
+                QuadraticSieveDigitsTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
                 //CreateSamplesTest();
@@ -203,6 +203,7 @@ namespace Decompose
 
             var config = new QuadraticSieve.Config
             {
+                DiagnosticsOutput = output,
                 IntervalSize = 32 * 1024,
                 BlockSize = 32 * 1024,
                 Multiplier = 1,
@@ -289,7 +290,7 @@ namespace Decompose
             //FactorTest(debug, 500, n, new PollardRhoReduction(pollardThreads, new MontgomeryReduction()));
             var config = new QuadraticSieve.Config
             {
-                Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
+                DiagnosticsOutput = output,
                 Threads = 1,
                 //FactorBaseSize = 5400,
                 //LowerBoundPercent = 65,
@@ -323,7 +324,7 @@ namespace Decompose
             {
                 var config = new QuadraticSieve.Config
                 {
-                    Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
+                    DiagnosticsOutput = output,
                     Threads = 8,
                     FactorBaseSize = size,
                     //Diagnostics = QuadraticSieve.Diag.Verbose,
@@ -342,6 +343,7 @@ namespace Decompose
             {
                 var config = new QuadraticSieve.Config
                 {
+                    DiagnosticsOutput = output,
                     Threads = threads,
                     FactorBaseSize = size,
                     LowerBoundPercent = percent,
@@ -357,7 +359,7 @@ namespace Decompose
             {
                 var config = new QuadraticSieve.Config
                 {
-                    Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
+                    DiagnosticsOutput = output,
                     Threads = 1,
                     IntervalSize = size,
                     ReportingInterval = 60,
@@ -405,27 +407,26 @@ namespace Decompose
             //new QuadraticSieve(new QuadraticSieve.Config()).Factor(35095264073).ToArray();
             var config = new QuadraticSieve.Config
             {
-                Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
 #if !DEBUG
                 Threads = 8,
 #endif
                 Diagnostics = QuadraticSieve.Diag.Verbose,
                 DiagnosticsOutput = output,
-                MergeLimit = 10,
+                //MergeLimit = 10,
                 //FactorBaseSize = 25000,
                 //BlockSize = 1024 * 1024,
                 //IntervalSize = 1024 * 1024,
                 //CofactorCutoff = 4096 * 4,
                 //ErrorLimit = 1,
                 //NumberOfFactors = 8,
-                ReportingInterval = 60,
-                ThresholdExponent = 2.75,
+                //ReportingInterval = 60,
+                //ThresholdExponent = 2.75,
                 //LargePrimeOptimization = false,
                 //UseCountTable = true,
-                //ProcessPartialPartialRelations = true,
+                ProcessPartialPartialRelations = true,
                 //CofactorCutoff = 1024,
             };
-            for (int i = 50; i <= 50; i++)
+            for (int i = 35; i <= 35; i++)
             {
                 var sample = samples[i];
                 var p = sample.P;
