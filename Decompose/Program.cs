@@ -387,7 +387,30 @@ namespace Decompose
         {
             new QuadraticSieve(new QuadraticSieve.Config()).Factor(samples[10].N).ToArray();
             //new QuadraticSieve(new QuadraticSieve.Config()).Factor(35095264073).ToArray();
-            for (int i = 40; i <= 40; i++)
+            var config = new QuadraticSieve.Config
+            {
+                Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
+#if DEBUG
+                    Threads = 1,
+#else
+                Threads = 8,
+#endif
+                //Diagnostics = QuadraticSieve.Diag.Verbose,
+                //MergeLimit = 10,
+                //FactorBaseSize = 25000,
+                //BlockSize = 128 * 1024,
+                //IntervalSize = 128 * 1024,
+                //CofactorCutoff = 4096 * 4,
+                //ErrorLimit = 1,
+                //NumberOfFactors = 13,
+                ReportingInterval = 60,
+                //ThresholdExponent = 2.5,
+                //LargePrimeOptimization = false,
+                //UseCountTable = true,
+                //ProcessPartialPartialRelations = true,
+                //CofactorCutoff = 1024,
+            };
+            for (int i = 20; i <= 35; i++)
             {
                 var sample = samples[i];
                 var p = sample.P;
@@ -395,29 +418,6 @@ namespace Decompose
                 var n = sample.N;
                 Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
                 //Console.WriteLine("n = {0}", n);
-                var config = new QuadraticSieve.Config
-                {
-                    Algorithm = QuadraticSieve.Algorithm.SelfInitializingQuadraticSieve,
-#if DEBUG
-                    Threads = 1,
-#else
-                    Threads = 8,
-#endif
-                    Diagnostics = QuadraticSieve.Diag.Verbose,
-                    MergeLimit = 10,
-                    FactorBaseSize = 25000,
-                    BlockSize = 128 * 1024,
-                    IntervalSize = 128 * 1024,
-                    //CofactorCutoff = 4096 * 4,
-                    //ErrorLimit = 1,
-                    //NumberOfFactors = 13,
-                    ReportingInterval = 60,
-                    ThresholdExponent = 2.35,
-                    //LargePrimeOptimization = true,
-                    UseCountTable = true,
-                    ProcessPartialPartialRelations = true,
-                    //CofactorCutoff = 1024,
-                };
                 FactorTest(false, 1, n, new QuadraticSieve(config));
             }
         }

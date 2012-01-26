@@ -951,7 +951,7 @@ namespace Decompose.Numerics
                 threshold[k >> thresholdShift] = (CountInt)Math.Round(logY - denominator);
             }
 
-            if (largePrimeOptimization)
+            if (largePrimeOptimization && largePrimeIndex < factorBaseSize)
             {
                 var l = new LargePrimeEntry[factorBaseSize];
                 for (int i = largePrimeIndex; i < factorBaseSize; i++)
