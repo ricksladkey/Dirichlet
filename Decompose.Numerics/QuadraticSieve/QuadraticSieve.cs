@@ -514,11 +514,11 @@ namespace Decompose.Numerics
             new Parameters(70, 15000, 0.67, 128 * 1024, 128 * 1024),
             new Parameters(80, 50000, 0.67, 256 * 1024, 256 * 1024),
             new Parameters(90, 100000, 0.67, 256 * 1024, 256 * 1024),
-            new Parameters(100, 170000, 0.94, 512 * 1024, 512 * 1024),
+            new Parameters(100, 170000, 0.90, 512 * 1024, 512 * 1024),
 
             // Untested.
-            new Parameters(110, 300000, 0.94, 512 * 1024, 512 * 1024),
-            new Parameters(120, 600000, 0.94, 512 * 1024, 512 * 1024),
+            new Parameters(110, 300000, 0.85, 512 * 1024, 512 * 1024),
+            new Parameters(120, 600000, 0.85, 512 * 1024, 512 * 1024),
         };
 
         private Config config;
@@ -692,17 +692,26 @@ namespace Decompose.Numerics
         private void Initialize(BigInteger nOrig)
         {
             algorithm = config.Algorithm != Algorithm.None ? config.Algorithm : Algorithm.SelfInitializingQuadraticSieve;
-            largePrimeOptimization = config.LargePrimeOptimization.HasValue ? config.LargePrimeOptimization.Value : true;
-            useCountTable = config.UseCountTable.HasValue ? config.UseCountTable.Value : (digits >= minimumCounTableDigits);
-            processPartialPartialRelations = config.ProcessPartialPartialRelations.HasValue ? config.ProcessPartialPartialRelations.Value : false;
 
             this.nOrig = nOrig;
             ChooseMultiplier();
-            multiplierFactors = smallIntegerFactorer.Factor(multiplier).ToArray();
             n = nOrig * multiplier;
+            digits = BigInteger.Log(n, 10);
+
+            if (config.ThresholdExponent != 0)
+                thresholdExponent = config.ThresholdExponent;
+            else if (!processPartialPartialRelations)
+                thresholdExponent = thresholdExponentDefault;
+            else
+                thresholdExponent = thresholdExponentPartialPartialRelationsDefault;
+            reportingInterval = config.ReportingInterval != 0 ? config.ReportingInterval : reportingIntervalDefault;
+            errorLimit = config.ErrorLimit != 0 ? config.ErrorLimit : errorLimitDefault;
+            largePrimeOptimization = config.LargePrimeOptimization.HasValue ? config.LargePrimeOptimization.Value : true;
+            useCountTable = config.UseCountTable.HasValue ? config.UseCountTable.Value : (digits >= minimumCounTableDigits);
+            processPartialPartialRelations = config.ProcessPartialPartialRelations.HasValue ? config.ProcessPartialPartialRelations.Value : (thresholdExponent >= 2);
+
             sqrtN = IntegerMath.Sqrt(n);
             powerOfTwo = IntegerMath.Modulus(n, 8) == 1 ? 3 : IntegerMath.Modulus(n, 8) == 5 ? 2 : 1;
-            digits = BigInteger.Log(n, 10);
             factorBaseSize = CalculateFactorBaseSize();
             factorBase = allPrimes
                 .Where(p => p == 2 || multiplier % p == 0 || IntegerMath.JacobiSymbol(n, p) == 1)
@@ -717,14 +726,6 @@ namespace Decompose.Numerics
             cofactorCutoff = config.CofactorCutoff != 0 ? config.CofactorCutoff : cofactorCutoffDefault;
             maximumCofactor = Math.Min((long)maximumDivisor * cofactorCutoff, maximumDivisorSquared);
             maximumCofactorSquared = (long)BigInteger.Min((BigInteger)maximumCofactor * maximumCofactor, long.MaxValue);
-            if (config.ThresholdExponent != 0)
-                thresholdExponent = config.ThresholdExponent;
-            else if (!processPartialPartialRelations)
-                thresholdExponent = thresholdExponentDefault;
-            else
-                thresholdExponent = thresholdExponentPartialPartialRelationsDefault;
-            reportingInterval = config.ReportingInterval != 0 ? config.ReportingInterval : reportingIntervalDefault;
-            errorLimit = config.ErrorLimit != 0 ? config.ErrorLimit : errorLimitDefault;
 
             intervalsProcessed = 0;
             valuesChecked = 0;
@@ -766,6 +767,7 @@ namespace Decompose.Numerics
             multiplier = multiplierCandidates
                 .OrderByDescending(value => ScoreMultiplier(value))
                 .First();
+            multiplierFactors = smallIntegerFactorer.Factor(multiplier).ToArray();
         }
 
         private double ScoreMultiplier(int multiplier)
@@ -1253,20 +1255,23 @@ namespace Decompose.Numerics
             var timer = new Stopwatch();
             timer.Start();
             double percentCompleteSofar = 0;
-            int totalTime = 0;
+            var totalTime = 0;
+            var lastIntervalsProcessed = 0;
             while (!Task.WaitAll(tasks, reportingInterval * 1000))
             {
-                int current = relationBuffer.Count;
-                double percentComplete = (double)current / desired * 100;
-                double percentLatest = percentComplete - percentCompleteSofar;
-                double percentRemaining = 100 - percentComplete;
-                double percentRate = (double)percentLatest / reportingInterval;
-                double timeRemainingSeconds = percentRate == 0 ? 0 : percentRemaining / percentRate;
+                var current = relationBuffer.Count;
+                var percentComplete = (double)current / desired * 100;
+                var percentLatest = percentComplete - percentCompleteSofar;
+                var percentRemaining = 100 - percentComplete;
+                var percentRate = (double)percentLatest / reportingInterval;
+                var timeRemainingSeconds = percentRate == 0 ? 0 : percentRemaining / percentRate;
                 var timeRemaining = TimeSpan.FromSeconds(Math.Ceiling(timeRemainingSeconds));
+                var intervals = intervalsProcessed - lastIntervalsProcessed;
+                lastIntervalsProcessed = intervalsProcessed;
                 if ((diag & Diag.Sieve) != 0)
                 {
-                    Console.WriteLine("{0:F3}% complete, rate = {1:F6} %/sec, sieve time remaining = {2}",
-                        percentComplete, percentRate, timeRemaining);
+                    Console.WriteLine("{0:F3}% complete, rate = {1:F6} %/sec, intervals = {2}, sieve time remaining = {3}",
+                        percentComplete, percentRate, intervals, timeRemaining);
                 }
                 percentCompleteSofar = percentComplete;
                 totalTime += reportingInterval;
@@ -1277,8 +1282,8 @@ namespace Decompose.Numerics
                     break;
                 }
             }
-            double elapsed = (double)timer.ElapsedTicks / Stopwatch.Frequency;
-            double overallPercentRate = (double)relationBuffer.Count / desired * 100 / elapsed;
+            var elapsed = (double)timer.ElapsedTicks / Stopwatch.Frequency;
+            var overallPercentRate = (double)relationBuffer.Count / desired * 100 / elapsed;
             Console.WriteLine("overall rate = {0:F6} %/sec", overallPercentRate);
         }
 
@@ -1530,28 +1535,27 @@ namespace Decompose.Numerics
 #if false
             for (int i = largePrimeIndex; i < factorBaseSize; i++)
             {
-                var j = i - largePrimeIndex;
-                var p = l[j].P;
-                var logP = l[j].LogP;
+                var p = l[i].P;
+                var logP = l[i].LogP;
                 var step = bainv2v != null ? bainv2v[i] : 0;
-                int k1 = l[j].Offset1 + step;
+                int k1 = l[i].Offset1 + step;
                 if (k1 >= p)
                     k1 -= p;
                 if (k1 < intervalSize)
                 {
-                    Debug.Assert(Evaluate(interval.Polynomial, interval.X + k1) % p == 0);
+                    Debug.Assert(interval.Polynomial.Evaluate(interval.X + k1) % p == 0);
                     countTable.AddEntry(i, k1, logP);
                 }
-                l[j].Offset1 = k1;
-                int k2 = l[j].Offset2 + step;
+                l[i].Offset1 = k1;
+                int k2 = l[i].Offset2 + step;
                 if (k2 >= p)
                     k2 -= p;
                 if (k2 < intervalSize)
                 {
-                    Debug.Assert(Evaluate(interval.Polynomial, interval.X + k2) % p == 0);
+                    Debug.Assert(interval.Polynomial.Evaluate(interval.X + k2) % p == 0);
                     countTable.AddEntry(i, k2, logP);
                 }
-                l[j].Offset2 = k2;
+                l[i].Offset2 = k2;
             }
 #else
             if (bainv2v == null)

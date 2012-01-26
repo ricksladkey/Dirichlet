@@ -33,10 +33,23 @@ namespace Decompose
                 //CreateSamplesTest();
                 //GraphTest();
             }
+            catch (AggregateException ex)
+            {
+                HandleException(ex);
+                ex.Handle(HandleException);
+            }
             catch (Exception ex)
             {
-                Console.WriteLine("Exception: {0}", ex.Message);
+                HandleException(ex);
             }
+        }
+
+        static bool HandleException(Exception ex)
+        {
+            Console.WriteLine("Exception: {0}", ex.Message);
+            Console.WriteLine("Stack trace:");
+            Console.WriteLine(ex.StackTrace);
+            return true;
         }
 
         static void FindPrimeTest1()
@@ -393,7 +406,7 @@ namespace Decompose
 #if !DEBUG
                 Threads = 8,
 #endif
-                //Diagnostics = QuadraticSieve.Diag.Verbose,
+                Diagnostics = QuadraticSieve.Diag.Verbose,
                 //MergeLimit = 10,
                 //FactorBaseSize = 25000,
                 //BlockSize = 128 * 1024,
@@ -401,14 +414,14 @@ namespace Decompose
                 //CofactorCutoff = 4096 * 4,
                 //ErrorLimit = 1,
                 //NumberOfFactors = 13,
-                ReportingInterval = 60,
+                //ReportingInterval = 60,
                 //ThresholdExponent = 2.5,
                 //LargePrimeOptimization = false,
-                //UseCountTable = true,
+                UseCountTable = true,
                 //ProcessPartialPartialRelations = true,
                 //CofactorCutoff = 1024,
             };
-            for (int i = 20; i <= 35; i++)
+            for (int i = 40; i <= 40; i++)
             {
                 var sample = samples[i];
                 var p = sample.P;
