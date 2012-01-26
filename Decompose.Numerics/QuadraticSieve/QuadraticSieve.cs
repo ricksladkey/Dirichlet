@@ -499,6 +499,7 @@ namespace Decompose.Numerics
         private const int minimumAFactor = 2000;
         private const int maximumAfactor = 4000;
         private const int maximumNumberOfFactors = 20;
+        private const int minimumCounTableDigits = 90;
 
         private readonly Parameters[] parameters =
         {
@@ -511,9 +512,9 @@ namespace Decompose.Numerics
             new Parameters(50, 2500, 0.67, 128 * 1024, 128 * 1024),
             new Parameters(60, 4000, 0.67, 128 * 1024, 128 * 1024),
             new Parameters(70, 15000, 0.67, 128 * 1024, 128 * 1024),
-            new Parameters(80, 45000, 0.67, 256 * 1024, 256 * 1024),
+            new Parameters(80, 50000, 0.67, 256 * 1024, 256 * 1024),
             new Parameters(90, 100000, 0.67, 256 * 1024, 256 * 1024),
-            new Parameters(100, 150000, 0.94, 512 * 1024, 512 * 1024),
+            new Parameters(100, 170000, 0.94, 512 * 1024, 512 * 1024),
 
             // Untested.
             new Parameters(110, 300000, 0.94, 512 * 1024, 512 * 1024),
@@ -692,7 +693,7 @@ namespace Decompose.Numerics
         {
             algorithm = config.Algorithm != Algorithm.None ? config.Algorithm : Algorithm.SelfInitializingQuadraticSieve;
             largePrimeOptimization = config.LargePrimeOptimization.HasValue ? config.LargePrimeOptimization.Value : true;
-            useCountTable = config.UseCountTable.HasValue ? config.UseCountTable.Value : false;
+            useCountTable = config.UseCountTable.HasValue ? config.UseCountTable.Value : (digits >= minimumCounTableDigits);
             processPartialPartialRelations = config.ProcessPartialPartialRelations.HasValue ? config.ProcessPartialPartialRelations.Value : false;
 
             this.nOrig = nOrig;
