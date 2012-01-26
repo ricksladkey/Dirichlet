@@ -208,16 +208,23 @@ namespace Decompose.Numerics
             }
         }
 
-        private class CountTable
+        private interface ICountTable
         {
-            Interval interval;
-            int numberOfBlocks;
-            int blockShift;
-            int blockMask;
-            int intervalSize;
-            private CountEntry[][] lists;
-            private int[] used;
-            public CountTable(Interval interval, int numberOfBlocks, int blockSize, int intervalSize)
+            void Clear();
+            void AddEntry(int i, int k, CountInt count);
+            void AddToCounts(int k0, CountInt[] counts);
+            BigInteger AddExponents(BigInteger y, int k, Exponents exponents, int[] primes);
+        }
+
+        private class CountTableBase
+        {
+            protected Interval interval;
+            protected int numberOfBlocks;
+            protected int blockShift;
+            protected int blockMask;
+            protected int intervalSize;
+            protected int capacity;
+            public CountTableBase(Interval interval, int numberOfBlocks, int blockSize, int intervalSize)
             {
                 this.interval = interval;
                 this.intervalSize = intervalSize;
@@ -226,7 +233,58 @@ namespace Decompose.Numerics
                 if (1 << blockShift < blockSize)
                     ++blockShift;
                 blockMask = (1 << blockShift) - 1;
-                var capacity = blockSize * numberOfBlocks;
+                capacity = blockSize * numberOfBlocks;
+            }
+        }
+
+        private class SingleBlockCountTable : CountTableBase, ICountTable
+        {
+            private CountEntry[] list;
+            private int used;
+            public SingleBlockCountTable(Interval interval, int numberOfBlocks, int blockSize, int intervalSize)
+                : base(interval, numberOfBlocks, blockSize, intervalSize)
+            {
+                list = new CountEntry[capacity];
+            }
+            public void Clear()
+            {
+                used = 0;
+            }
+            public void AddEntry(int i, int k, CountInt count)
+            {
+                CountEntry.SetEntry(ref list[used++], i, k, count);
+            }
+            public void AddToCounts(int k0, CountInt[] counts)
+            {
+                for (int l = 0; l < used; l++)
+                    counts[list[l].K] += list[l].Count;
+            }
+            public BigInteger AddExponents(BigInteger y, int k, Exponents exponents, int[] primes)
+            {
+                for (int l = 0; l < used; l++)
+                {
+                    if (list[l].K != k)
+                        continue;
+                    var i = list[l].I;
+                    var p = primes[i];
+                    Debug.Assert(y % p == 0);
+                    while ((y % p).IsZero)
+                    {
+                        exponents.Add(i + 1, 1);
+                        y /= p;
+                    }
+                }
+                return y;
+            }
+        }
+
+        private class MultiBlockCountTable : CountTableBase, ICountTable
+        {
+            private CountEntry[][] lists;
+            private int[] used;
+            public MultiBlockCountTable(Interval interval, int numberOfBlocks, int blockSize, int intervalSize)
+                : base(interval, numberOfBlocks, blockSize, intervalSize)
+            {
                 var listCapacity = capacity / numberOfBlocks;
                 lists = new CountEntry[numberOfBlocks][];
                 used = new int[numberOfBlocks];
@@ -272,27 +330,6 @@ namespace Decompose.Numerics
                     }
                 }
                 return y;
-            }
-            public void SetupLargePrime(int i, ref LargePrimeEntry entry, int step)
-            {
-                int k1 = entry.Offset1 + step;
-                if (k1 >= entry.P)
-                    k1 -= entry.P;
-                entry.Offset1 = k1;
-                if (k1 < intervalSize)
-                {
-                    Debug.Assert(interval.Polynomial.Evaluate(interval.X + k1) % entry.P == 0);
-                    AddEntry(i, k1, entry.LogP);
-                }
-                int k2 = entry.Offset2 + step;
-                if (k2 >= entry.P)
-                    k2 -= entry.P;
-                entry.Offset2 = k2;
-                if (k2 < intervalSize)
-                {
-                    Debug.Assert(interval.Polynomial.Evaluate(interval.X + k2) % entry.P == 0);
-                    AddEntry(i, k2, entry.LogP);
-                }
             }
         }
 
@@ -430,7 +467,9 @@ namespace Decompose.Numerics
             public CountInt[] Cycle { get; set; }
             public int CycleOffset { get; set; }
             public CountInt[] Counts { get; set; }
-            public CountTable CountTable { get; set; }
+            public SingleBlockCountTable SingleBlockCountTable { get; set; }
+            public MultiBlockCountTable MultiBlockCountTable { get; set; }
+            public ICountTable CountTable { get; set; }
             public Offset[] Offsets { get; set; }
             public int[] Increments { get; set; }
             public int RelationsFound { get; set; }
@@ -1293,7 +1332,19 @@ namespace Decompose.Numerics
             interval.Exponents = new Exponents(factorBaseSize + 1);
             interval.Cycle = new CountInt[cycleLength];
             interval.Counts = new CountInt[Math.Min(intervalSize, blockSize)];
-            interval.CountTable = useCountTable ? new CountTable(interval, numberOfBlocks, blockSize, intervalSize) : null;
+            if (useCountTable)
+            {
+                if (blockSize == intervalSize)
+                {
+                    interval.SingleBlockCountTable = new SingleBlockCountTable(interval, numberOfBlocks, blockSize, intervalSize);
+                    interval.CountTable = interval.SingleBlockCountTable;
+                }
+                else
+                {
+                    interval.MultiBlockCountTable = new MultiBlockCountTable(interval, numberOfBlocks, blockSize, intervalSize);
+                    interval.CountTable = interval.MultiBlockCountTable;
+                }
+            }
             interval.Offsets = new Offset[factorBaseSize];
             if (processPartialPartialRelations)
                 interval.CofactorFactorer = CreateCofactorFactorer();
@@ -1530,45 +1581,64 @@ namespace Decompose.Numerics
             var l = interval.Siqs.LargePrimes;
             var bainv2v = interval.Siqs.Bainv2v;
             int intervalSize = interval.Size;
-            var countTable = interval.CountTable;
-            countTable.Clear();
-#if false
-            for (int i = largePrimeIndex; i < factorBaseSize; i++)
+            if (interval.SingleBlockCountTable != null)
             {
-                var p = l[i].P;
-                var logP = l[i].LogP;
-                var step = bainv2v != null ? bainv2v[i] : 0;
-                int k1 = l[i].Offset1 + step;
-                if (k1 >= p)
-                    k1 -= p;
-                if (k1 < intervalSize)
-                {
-                    Debug.Assert(interval.Polynomial.Evaluate(interval.X + k1) % p == 0);
-                    countTable.AddEntry(i, k1, logP);
-                }
-                l[i].Offset1 = k1;
-                int k2 = l[i].Offset2 + step;
-                if (k2 >= p)
-                    k2 -= p;
-                if (k2 < intervalSize)
-                {
-                    Debug.Assert(interval.Polynomial.Evaluate(interval.X + k2) % p == 0);
-                    countTable.AddEntry(i, k2, logP);
-                }
-                l[i].Offset2 = k2;
-            }
-#else
-            if (bainv2v == null)
-            {
+                var countTable = interval.SingleBlockCountTable;
+                countTable.Clear();
                 for (int i = largePrimeIndex; i < factorBaseSize; i++)
-                    countTable.SetupLargePrime(i, ref l[i], 0);
+                {
+                    var p = l[i].P;
+                    var logP = l[i].LogP;
+                    var step = bainv2v != null ? bainv2v[i] : 0;
+                    int k1 = l[i].Offset1 + step;
+                    if (k1 >= p)
+                        k1 -= p;
+                    if (k1 < intervalSize)
+                    {
+                        Debug.Assert(interval.Polynomial.Evaluate(interval.X + k1) % p == 0);
+                        countTable.AddEntry(i, k1, logP);
+                    }
+                    l[i].Offset1 = k1;
+                    int k2 = l[i].Offset2 + step;
+                    if (k2 >= p)
+                        k2 -= p;
+                    if (k2 < intervalSize)
+                    {
+                        Debug.Assert(interval.Polynomial.Evaluate(interval.X + k2) % p == 0);
+                        countTable.AddEntry(i, k2, logP);
+                    }
+                    l[i].Offset2 = k2;
+                }
             }
             else
             {
+                var countTable = interval.MultiBlockCountTable;
+                countTable.Clear();
                 for (int i = largePrimeIndex; i < factorBaseSize; i++)
-                    countTable.SetupLargePrime(i, ref l[i], bainv2v[i]);
+                {
+                    var p = l[i].P;
+                    var logP = l[i].LogP;
+                    var step = bainv2v != null ? bainv2v[i] : 0;
+                    int k1 = l[i].Offset1 + step;
+                    if (k1 >= p)
+                        k1 -= p;
+                    if (k1 < intervalSize)
+                    {
+                        Debug.Assert(interval.Polynomial.Evaluate(interval.X + k1) % p == 0);
+                        countTable.AddEntry(i, k1, logP);
+                    }
+                    l[i].Offset1 = k1;
+                    int k2 = l[i].Offset2 + step;
+                    if (k2 >= p)
+                        k2 -= p;
+                    if (k2 < intervalSize)
+                    {
+                        Debug.Assert(interval.Polynomial.Evaluate(interval.X + k2) % p == 0);
+                        countTable.AddEntry(i, k2, logP);
+                    }
+                    l[i].Offset2 = k2;
+                }
             }
-#endif
         }
 
         private void SieveLargePrimes(Interval interval, int k0, int size)

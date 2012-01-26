@@ -414,14 +414,14 @@ namespace Decompose
                 //CofactorCutoff = 4096 * 4,
                 //ErrorLimit = 1,
                 //NumberOfFactors = 13,
-                //ReportingInterval = 60,
-                //ThresholdExponent = 2.5,
+                ReportingInterval = 60,
+                ThresholdExponent = 2.5,
                 //LargePrimeOptimization = false,
-                UseCountTable = true,
+                //UseCountTable = true,
                 //ProcessPartialPartialRelations = true,
                 //CofactorCutoff = 1024,
             };
-            for (int i = 40; i <= 40; i++)
+            for (int i = 50; i <= 50; i++)
             {
                 var sample = samples[i];
                 var p = sample.P;
