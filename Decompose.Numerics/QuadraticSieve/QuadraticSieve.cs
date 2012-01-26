@@ -200,17 +200,27 @@ namespace Decompose.Numerics
             public int I { get; set; }
             public int K { get; set; }
             public CountInt Count { get; set; }
+            public static void SetEntry(ref CountEntry entry, int i, int k, CountInt count)
+            {
+                entry.I = i;
+                entry.K = k;
+                entry.Count = count;
+            }
         }
 
         private class CountTable
         {
+            Interval interval;
             int numberOfBlocks;
             int blockShift;
             int blockMask;
+            int intervalSize;
             private CountEntry[][] lists;
             private int[] used;
-            public CountTable(int numberOfBlocks, int blockSize)
+            public CountTable(Interval interval, int numberOfBlocks, int blockSize, int intervalSize)
             {
+                this.interval = interval;
+                this.intervalSize = intervalSize;
                 this.numberOfBlocks = numberOfBlocks;
                 blockShift = blockSize.GetBitLength() - 1;
                 blockMask = blockSize - 1;
@@ -230,13 +240,7 @@ namespace Decompose.Numerics
             {
                 var block = k >> blockShift;
                 var slot = used[block]++;
-                SetEntry(ref lists[block][slot], i, k & blockMask, count);
-            }
-            private void SetEntry(ref CountEntry entry, int i, int k, CountInt count)
-            {
-                entry.I = i;
-                entry.K = k;
-                entry.Count = count;
+                CountEntry.SetEntry(ref lists[block][slot], i, k & blockMask, count);
             }
             public void AddToCounts(int k0, CountInt[] counts)
             {
@@ -267,12 +271,45 @@ namespace Decompose.Numerics
                 }
                 return y;
             }
+            public void SetupLargePrime(int i, ref LargePrimeEntry entry, int step)
+            {
+                int k1 = entry.Offset1 + step;
+                if (k1 >= entry.P)
+                    k1 -= entry.P;
+                entry.Offset1 = k1;
+                if (k1 < intervalSize)
+                {
+                    Debug.Assert(interval.Polynomial.Evaluate(interval.X + k1) % entry.P == 0);
+                    AddEntry(i, k1, entry.LogP);
+                }
+                int k2 = entry.Offset2 + step;
+                if (k2 >= entry.P)
+                    k2 -= entry.P;
+                entry.Offset2 = k2;
+                if (k2 < intervalSize)
+                {
+                    Debug.Assert(interval.Polynomial.Evaluate(interval.X + k2) % entry.P == 0);
+                    AddEntry(i, k2, entry.LogP);
+                }
+            }
         }
 
         private class Polynomial
         {
             public BigInteger A { get; set; }
             public BigInteger B { get; set; }
+            public BigInteger N { get; set; }
+            public BigInteger EvaluateMapping(long x)
+            {
+                return A * x + B;
+            }
+            public BigInteger Evaluate(long x)
+            {
+                var xPrime = EvaluateMapping(x);
+                var yPrime = xPrime * xPrime - N;
+                Debug.Assert(yPrime % A == 0);
+                return yPrime / A;
+            }
         }
 
         private class Relation
@@ -868,7 +905,7 @@ namespace Decompose.Numerics
             }
             b %= a;
             Debug.Assert((b * b - n) % a == 0);
-            var polynomial = new Polynomial { A = a, B = b };
+            var polynomial = new Polynomial { A = a, B = b, N = n };
 
 
             var bainv2 = siqs.Bainv2;
@@ -895,8 +932,8 @@ namespace Decompose.Numerics
                 var root2 = root1 + entry.RootDiff;
                 solns[i].Offset1 = (int)((aInv * root1 - x) % p);
                 solns[i].Offset2 = (int)((aInv * root2 - x) % p);
-                Debug.Assert(solns[i].Offset1 >= 0 && EvaluatePolynomial(polynomial, x + solns[i].Offset1) % p == 0);
-                Debug.Assert(solns[i].Offset2 >= 0 && EvaluatePolynomial(polynomial, x + solns[i].Offset2) % p == 0);
+                Debug.Assert(solns[i].Offset1 >= 0 && polynomial.Evaluate(x + solns[i].Offset1) % p == 0);
+                Debug.Assert(solns[i].Offset2 >= 0 && polynomial.Evaluate(x + solns[i].Offset2) % p == 0);
             }
 
             var threshold = siqs.Threshold;
@@ -908,8 +945,8 @@ namespace Decompose.Numerics
             var m = intervalSize / 2;
             for (int k = 0; k < intervalSize; k += thresholdInterval)
             {
-                var y1 = BigInteger.Abs(EvaluatePolynomial(polynomial, x + k + 0));
-                var y2 = BigInteger.Abs(EvaluatePolynomial(polynomial, x + k + thresholdInterval - 1));
+                var y1 = BigInteger.Abs(polynomial.Evaluate(x + k + 0));
+                var y2 = BigInteger.Abs(polynomial.Evaluate(x + k + thresholdInterval - 1));
                 var logY = BigInteger.Log(BigInteger.Max(y1, y2), 2);
                 threshold[k >> thresholdShift] = (CountInt)Math.Round(logY - denominator);
             }
@@ -962,7 +999,7 @@ namespace Decompose.Numerics
 
             // Advance b and record new polynomial.
             b += 2 * e * capB[v];
-            var polynomial = new Polynomial { A = a, B = b };
+            var polynomial = new Polynomial { A = a, B = b, N = n };
             Debug.Assert((b * b - n) % a == 0);
 
             // Calculate new offsets.
@@ -984,12 +1021,12 @@ namespace Decompose.Numerics
                     if (s1 >= p)
                         s1 -= p;
                     solns[i].Offset1 = s1;
-                    Debug.Assert(s1 >= 0 && s1 < p && EvaluatePolynomial(polynomial, x + s1) % p == 0);
+                    Debug.Assert(s1 >= 0 && s1 < p && polynomial.Evaluate(x + s1) % p == 0);
                     var s2 = solns[i].Offset2 + step;
                     if (s2 >= p)
                         s2 -= p;
                     solns[i].Offset2 = s2;
-                    Debug.Assert(s2 >= 0 && s2 < p && EvaluatePolynomial(polynomial, x + s2) % p == 0);
+                    Debug.Assert(s2 >= 0 && s2 < p && polynomial.Evaluate(x + s2) % p == 0);
                 }
             }
             else
@@ -1005,12 +1042,12 @@ namespace Decompose.Numerics
                     if (s1 >= p)
                         s1 -= p;
                     solns[i].Offset1 = s1;
-                    Debug.Assert(s1 >= 0 && s1 < p && EvaluatePolynomial(polynomial, x + s1) % p == 0);
+                    Debug.Assert(s1 >= 0 && s1 < p && polynomial.Evaluate(x + s1) % p == 0);
                     var s2 = solns[i].Offset2 + step;
                     if (s2 >= p)
                         s2 -= p;
                     solns[i].Offset2 = s2;
-                    Debug.Assert(s2 >= 0 && s2 < p && EvaluatePolynomial(polynomial, x + s2) % p == 0);
+                    Debug.Assert(s2 >= 0 && s2 < p && polynomial.Evaluate(x + s2) % p == 0);
                 }
                 siqs.Bainv2v = bainv2v;
             }
@@ -1248,7 +1285,7 @@ namespace Decompose.Numerics
             interval.Exponents = new Exponents(factorBaseSize + 1);
             interval.Cycle = new CountInt[cycleLength];
             interval.Counts = new CountInt[Math.Min(intervalSize, blockSize)];
-            interval.CountTable = useCountTable ? new CountTable(numberOfBlocks, blockSize) : null;
+            interval.CountTable = useCountTable ? new CountTable(interval, numberOfBlocks, blockSize, intervalSize) : null;
             interval.Offsets = new Offset[factorBaseSize];
             if (processPartialPartialRelations)
                 interval.CofactorFactorer = CreateCofactorFactorer();
@@ -1374,13 +1411,13 @@ namespace Decompose.Numerics
             int k;
             Debug.Assert(Enumerable.Range(0, cycleLength)
                 .All(k2 => k2 % 2 != offsets[0].Offset1 ||
-                    EvaluatePolynomial(interval.Polynomial, interval.X + k2) % IntegerMath.Pow(2, powerOfTwo) == 0));
+                    interval.Polynomial.Evaluate(interval.X + k2) % IntegerMath.Pow(2, powerOfTwo) == 0));
             for (k = 0; k < cycleLength; k += 2)
             {
                 cycle[k] = count1;
-                Debug.Assert(count1 == 0 || EvaluatePolynomial(interval.Polynomial, interval.X + k) % 2 == 0);
+                Debug.Assert(count1 == 0 || interval.Polynomial.Evaluate(interval.X + k) % 2 == 0);
                 cycle[k + 1] = count2;
-                Debug.Assert(count2 == 0 || EvaluatePolynomial(interval.Polynomial, interval.X + k + 1) % 2 == 0);
+                Debug.Assert(count2 == 0 || interval.Polynomial.Evaluate(interval.X + k + 1) % 2 == 0);
             }
             for (int i = 1; i < mediumPrimeIndex; i++)
             {
@@ -1392,11 +1429,11 @@ namespace Decompose.Numerics
                 for (k = 0; k < cycleLength; k += p)
                 {
                     cycle[k + offset1] += logP;
-                    Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k + offset1) % p == 0);
+                    Debug.Assert(interval.Polynomial.Evaluate(interval.X + k + offset1) % p == 0);
                     if (offset1 == offset2)
                         continue;
                     cycle[k + offset2] += logP;
-                    Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k + offset2) % p == 0);
+                    Debug.Assert(interval.Polynomial.Evaluate(interval.X + k + offset2) % p == 0);
                 }
             }
             interval.CycleOffset = 0;
@@ -1417,8 +1454,8 @@ namespace Decompose.Numerics
                 var logP = entry.LogP;
                 int k1 = offsets[i].Offset1;
                 int k2 = offsets[i].Offset2;
-                Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1) % p == 0);
-                Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k2) % p == 0);
+                Debug.Assert(interval.Polynomial.Evaluate(interval.X + k1) % p == 0);
+                Debug.Assert(interval.Polynomial.Evaluate(interval.X + k2) % p == 0);
                 if (k0 != 0)
                 {
                     var increment = increments[i];
@@ -1435,9 +1472,9 @@ namespace Decompose.Numerics
                     int kLimit = size - kDiff;
                     while (k1 < kLimit)
                     {
-                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k1) % p == 0);
+                        Debug.Assert(interval.Polynomial.Evaluate(interval.X + k0 + k1) % p == 0);
                         counts[k1] += logP;
-                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k1 + kDiff) % p == 0);
+                        Debug.Assert(interval.Polynomial.Evaluate(interval.X + k0 + k1 + kDiff) % p == 0);
                         counts[k1 + kDiff] += logP;
                         k1 += p;
                     }
@@ -1453,9 +1490,9 @@ namespace Decompose.Numerics
                     int kLimit = size - kDiff;
                     while (k2 < kLimit)
                     {
-                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k2) % p == 0);
+                        Debug.Assert(interval.Polynomial.Evaluate(interval.X + k0 + k2) % p == 0);
                         counts[k2] += logP;
-                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k2 + kDiff) % p == 0);
+                        Debug.Assert(interval.Polynomial.Evaluate(interval.X + k0 + k2 + kDiff) % p == 0);
                         counts[k2 + kDiff] += logP;
                         k2 += p;
                     }
@@ -1469,7 +1506,7 @@ namespace Decompose.Numerics
                 {
                     while (k1 < size)
                     {
-                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k1) % p == 0);
+                        Debug.Assert(interval.Polynomial.Evaluate(interval.X + k0 + k1) % p == 0);
                         counts[k1] += logP;
                         k1 += p;
                     }
@@ -1499,7 +1536,7 @@ namespace Decompose.Numerics
                     k1 -= p;
                 if (k1 < intervalSize)
                 {
-                    Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1) % p == 0);
+                    Debug.Assert(Evaluate(interval.Polynomial, interval.X + k1) % p == 0);
                     countTable.AddEntry(i, k1, logP);
                 }
                 l[j].Offset1 = k1;
@@ -1508,7 +1545,7 @@ namespace Decompose.Numerics
                     k2 -= p;
                 if (k2 < intervalSize)
                 {
-                    Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k2) % p == 0);
+                    Debug.Assert(Evaluate(interval.Polynomial, interval.X + k2) % p == 0);
                     countTable.AddEntry(i, k2, logP);
                 }
                 l[j].Offset2 = k2;
@@ -1517,36 +1554,14 @@ namespace Decompose.Numerics
             if (bainv2v == null)
             {
                 for (int i = largePrimeIndex; i < factorBaseSize; i++)
-                    SetupLargePrime(interval, i, ref l[i], 0);
+                    countTable.SetupLargePrime(i, ref l[i], 0);
             }
             else
             {
                 for (int i = largePrimeIndex; i < factorBaseSize; i++)
-                    SetupLargePrime(interval, i, ref l[i], bainv2v[i]);
+                    countTable.SetupLargePrime(i, ref l[i], bainv2v[i]);
             }
 #endif
-        }
-
-        private void SetupLargePrime(Interval interval, int i, ref LargePrimeEntry entry, int step)
-        {
-            int k1 = entry.Offset1 + step;
-            if (k1 >= entry.P)
-                k1 -= entry.P;
-            entry.Offset1 = k1;
-            if (k1 < intervalSize)
-            {
-                Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1) % entry.P == 0);
-                interval.CountTable.AddEntry(i, k1, entry.LogP);
-            }
-            int k2 = entry.Offset2 + step;
-            if (k2 >= entry.P)
-                k2 -= entry.P;
-            entry.Offset2 = k2;
-            if (k2 < intervalSize)
-            {
-                Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k2) % entry.P == 0);
-                interval.CountTable.AddEntry(i, k2, entry.LogP);
-            }
         }
 
         private void SieveLargePrimes(Interval interval, int k0, int size)
@@ -1583,12 +1598,12 @@ namespace Decompose.Numerics
                         }
                         if (k1 < intervalSize)
                         {
-                            Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1) % p == 0);
+                            Debug.Assert(interval.Polynomial.Evaluate(interval.X + k1) % p == 0);
                             counts[k1] += logP;
                         }
                         if (k2 < intervalSize)
                         {
-                            Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k2) % p == 0);
+                            Debug.Assert(interval.Polynomial.Evaluate(interval.X + k2) % p == 0);
                             counts[k2] += logP;
                         }
                     }
@@ -1605,7 +1620,7 @@ namespace Decompose.Numerics
                             k1 -= p;
                         if (k1 < intervalSize)
                         {
-                            Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k1) % p == 0);
+                            Debug.Assert(interval.Polynomial.Evaluate(interval.X + k1) % p == 0);
                             counts[k1] += logP;
                         }
                         l[i].Offset1 = k1;
@@ -1614,7 +1629,7 @@ namespace Decompose.Numerics
                             k2 -= p;
                         if (k2 < intervalSize)
                         {
-                            Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k2) % p == 0);
+                            Debug.Assert(interval.Polynomial.Evaluate(interval.X + k2) % p == 0);
                             counts[k2] += logP;
                         }
                         l[i].Offset2 = k2;
@@ -1646,12 +1661,12 @@ namespace Decompose.Numerics
                     }
                     if (k1 < size)
                     {
-                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k1) % p == 0);
+                        Debug.Assert(interval.Polynomial.Evaluate(interval.X + k0 + k1) % p == 0);
                         counts[k1] += logP;
                     }
                     if (k2 < size)
                     {
-                        Debug.Assert(EvaluatePolynomial(interval.Polynomial, interval.X + k0 + k2) % p == 0);
+                        Debug.Assert(interval.Polynomial.Evaluate(interval.X + k0 + k2) % p == 0);
                         counts[k2] += logP;
                     }
                 }
@@ -1696,7 +1711,7 @@ namespace Decompose.Numerics
             if (cofactor == 1)
             {
                 var relation = CreateRelation(
-                    EvaluateMapping(interval.Polynomial, interval.X + k),
+                    interval.Polynomial.EvaluateMapping(interval.X + k),
                     interval.Polynomial,
                     interval.Exponents.Entries,
                     1);
@@ -1736,7 +1751,7 @@ namespace Decompose.Numerics
 
         private long FactorOverBase(Interval interval, int k)
         {
-            var y = EvaluatePolynomial(interval.Polynomial, interval.X + k);
+            var y = interval.Polynomial.Evaluate(interval.X + k);
             var exponents = interval.Exponents;
             var siqs = interval.Siqs;
             var offsets = siqs.Solutions;
@@ -1861,7 +1876,7 @@ namespace Decompose.Numerics
 
         private long FactorOverBase(Exponents exponents, Polynomial polynomial, long x)
         {
-            var y = polynomial.A * EvaluatePolynomial(polynomial, x);
+            var y = polynomial.A * polynomial.Evaluate(x);
             if (y < 0)
             {
                 exponents.Add(0, 1);
@@ -1922,7 +1937,7 @@ namespace Decompose.Numerics
             else
                 FactorOverBase(interval.Exponents, other.Polynomial, other.X);
             AddRelation(CreateRelation(
-                EvaluateMapping(interval.Polynomial, interval.X + k) * EvaluateMapping(other.Polynomial, other.X),
+                interval.Polynomial.EvaluateMapping(interval.X + k) * other.Polynomial.EvaluateMapping(other.X),
                 null,
                 interval.Exponents.Entries,
                 cofactor));
@@ -1942,7 +1957,7 @@ namespace Decompose.Numerics
             {
                 Interlocked.Increment(ref partialPartialRelationsConverted);
                 AddRelation(CreateRelation(
-                    EvaluateMapping(interval.Polynomial, interval.X + k),
+                    interval.Polynomial.EvaluateMapping(interval.X + k),
                     interval.Polynomial,
                     interval.Exponents.Entries,
                     cofactor1));
@@ -1996,13 +2011,13 @@ namespace Decompose.Numerics
                 Interlocked.Increment(ref partialPartialRelationsConverted);
 
             // Create a relation from all the partial partials in the cycle.
-            var x = EvaluateMapping(interval.Polynomial, interval.X + k);
+            var x = interval.Polynomial.EvaluateMapping(interval.X + k);
             var allCofactors = new List<long> { cofactor1, cofactor2 };
             CheckValidPartialPartialRelation(relation);
             foreach (var other in cycle)
             {
                 CheckValidPartialPartialRelation(other);
-                x *= EvaluateMapping(other.Polynomial, other.X);
+                x *= other.Polynomial.EvaluateMapping(other.X);
                 allCofactors.Add(other.Cofactor1);
                 allCofactors.Add(other.Cofactor2);
                 AddEntries(interval.Exponents, other.Entries);
@@ -2075,19 +2090,6 @@ namespace Decompose.Numerics
             }
         }
 
-        private BigInteger EvaluateMapping(Polynomial polynomial, long x)
-        {
-            return polynomial.A * x + polynomial.B;
-        }
-
-        private BigInteger EvaluatePolynomial(Polynomial polynomial, long x)
-        {
-            var xPrime = EvaluateMapping(polynomial, x);
-            var yPrime = xPrime * xPrime - n;
-            Debug.Assert(yPrime % polynomial.A == 0);
-            return yPrime / polynomial.A;
-        }
-
         private BigInteger MultiplyFactors(ExponentEntries entries)
         {
             return entries
@@ -2127,7 +2129,7 @@ namespace Decompose.Numerics
         [Conditional("DEBUG")]
         private void CheckValidPartialRelation(PartialRelation relation, long cofactor)
         {
-            var x = EvaluateMapping(relation.Polynomial, relation.X);
+            var x = relation.Polynomial.EvaluateMapping(relation.X);
             var y = MultiplyFactors(relation, cofactor);
             if ((x * x - y) % n != 0)
                 throw new InvalidOperationException("invalid partial relation");
@@ -2136,7 +2138,7 @@ namespace Decompose.Numerics
         [Conditional("DEBUG")]
         private void CheckValidPartialPartialRelation(PartialPartialRelation relation)
         {
-            var x = EvaluateMapping(relation.Polynomial, relation.X);
+            var x = relation.Polynomial.EvaluateMapping(relation.X);
             var y = MultiplyFactors(relation);
             if ((x * x - y) % n != 0)
                 throw new InvalidOperationException("invalid partial partial relation");
