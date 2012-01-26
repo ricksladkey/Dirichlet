@@ -223,7 +223,9 @@ namespace Decompose.Numerics
                 this.intervalSize = intervalSize;
                 this.numberOfBlocks = numberOfBlocks;
                 blockShift = blockSize.GetBitLength() - 1;
-                blockMask = blockSize - 1;
+                if (1 << blockShift < blockSize)
+                    ++blockShift;
+                blockMask = (1 << blockShift) - 1;
                 var capacity = blockSize * numberOfBlocks;
                 var listCapacity = capacity / numberOfBlocks;
                 lists = new CountEntry[numberOfBlocks][];
@@ -1596,12 +1598,12 @@ namespace Decompose.Numerics
                             if (k2 >= p)
                                 k2 -= p;
                         }
-                        if (k1 < intervalSize)
+                        if (k1 < size)
                         {
                             Debug.Assert(interval.Polynomial.Evaluate(interval.X + k1) % p == 0);
                             counts[k1] += logP;
                         }
-                        if (k2 < intervalSize)
+                        if (k2 < size)
                         {
                             Debug.Assert(interval.Polynomial.Evaluate(interval.X + k2) % p == 0);
                             counts[k2] += logP;
@@ -1618,7 +1620,7 @@ namespace Decompose.Numerics
                         int k1 = l[i].Offset1 + step;
                         if (k1 >= p)
                             k1 -= p;
-                        if (k1 < intervalSize)
+                        if (k1 < size)
                         {
                             Debug.Assert(interval.Polynomial.Evaluate(interval.X + k1) % p == 0);
                             counts[k1] += logP;
@@ -1627,7 +1629,7 @@ namespace Decompose.Numerics
                         int k2 = l[i].Offset2 + step;
                         if (k2 >= p)
                             k2 -= p;
-                        if (k2 < intervalSize)
+                        if (k2 < size)
                         {
                             Debug.Assert(interval.Polynomial.Evaluate(interval.X + k2) % p == 0);
                             counts[k2] += logP;
