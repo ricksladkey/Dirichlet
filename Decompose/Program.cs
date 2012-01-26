@@ -12,8 +12,11 @@ namespace Decompose
 {
     class Program
     {
+        static TextWriter output;
+
         static void Main(string[] args)
         {
+            output = new ConsoleLogger("Decompose.log");
             try
             {
                 //FindPrimeTest1();
@@ -46,9 +49,9 @@ namespace Decompose
 
         static bool HandleException(Exception ex)
         {
-            Console.WriteLine("Exception: {0}", ex.Message);
-            Console.WriteLine("Stack trace:");
-            Console.WriteLine(ex.StackTrace);
+            output.WriteLine("Exception: {0}", ex.Message);
+            output.WriteLine("Stack trace:");
+            output.WriteLine(ex.StackTrace);
             return true;
         }
 
@@ -59,7 +62,7 @@ namespace Decompose
             var x = random.Next(limit);
             while (!IntegerMath.IsPrime(x))
                 ++x;
-            Console.WriteLine("x = {0}", x);
+            output.WriteLine("x = {0}", x);
         }
 
         static void BarrettReductionTest1()
@@ -129,7 +132,7 @@ namespace Decompose
             }
             var elapsed2 = timer1.ElapsedMilliseconds;
 
-            Console.WriteLine("elapsed1 = {0}, elapsed2 = {1}", elapsed1, elapsed2);
+            output.WriteLine("elapsed1 = {0}, elapsed2 = {1}", elapsed1, elapsed2);
         }
 
         static void Radix32Test1()
@@ -181,7 +184,7 @@ namespace Decompose
             }
             var elapsed2 = timer1.ElapsedMilliseconds;
 
-            Console.WriteLine("{0}: elapsed1 = {1}, elapsed2 = {2}", label, elapsed1, elapsed2);
+            output.WriteLine("{0}: elapsed1 = {1}, elapsed2 = {2}", label, elapsed1, elapsed2);
         }
 
         static void FactorTest1()
@@ -190,7 +193,7 @@ namespace Decompose
             int threads = 1;
             bool debug = false;
 
-            Console.WriteLine("bits = {0}", n.GetBitLength());
+            output.WriteLine("bits = {0}", n.GetBitLength());
 
             //FactorTest(debug, 25, n, new PollardRhoBrent(threads, 0));
             //FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new BigIntegerReduction()));
@@ -210,7 +213,7 @@ namespace Decompose
             };
             for (int i = 0; i < 1; i++)
             {
-                Console.WriteLine();
+                output.WriteLine();
                 //FactorTest(debug, 100, n, new PollardRhoBrent(threads, 0));
                 //FactorTest(debug, 100, n, new PollardRhoReduction(threads, 0, new Word32IntegerReduction()));
                 //FactorTest(debug, 100, n, new PollardRhoReduction(threads, 0, new BarrettReduction()));
@@ -241,7 +244,7 @@ namespace Decompose
             {
                 var plus = true;
                 var n = (BigInteger.One << i) + (plus ? 1 : -1);
-                Console.WriteLine("i = {0}, n = {1}", i, n);
+                output.WriteLine("i = {0}, n = {1}", i, n);
                 if (IntegerMath.IsPrime(n))
                     continue;
                 int threads = 4;
@@ -251,7 +254,7 @@ namespace Decompose
                 //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, 0, new BarrettReduction()));
                 //factors = FactorTest(true, 5, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
                 foreach (var factor in factors)
-                    Console.WriteLine("{0}", factor);
+                    output.WriteLine("{0}", factor);
             }
 
         }
@@ -265,7 +268,7 @@ namespace Decompose
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
                 var n = p * q;
-                Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
+                output.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
                 int threads = 8;
                 var factors = null as BigInteger[];
                 //factors = FactorTest(true, 1, n, new PollardRho(threads, 0));
@@ -282,7 +285,7 @@ namespace Decompose
             var n = BigInteger.Parse("5382000000735683358022919837657883000000078236999000000000000063"); // https://sites.google.com/site/shouthillgc/Home/gc1p8qn/factorizing-tool
             //var sample = samples[20]; var n = sample.P * sample.Q;
 
-            Console.WriteLine("n = {0}", n);
+            output.WriteLine("n = {0}", n);
             //FactorTest(debug, 500, n, new PollardRhoReduction(pollardThreads, new MontgomeryReduction()));
             var config = new QuadraticSieve.Config
             {
@@ -296,7 +299,7 @@ namespace Decompose
             };
             var factors = FactorTest(false, 1, n, new QuadraticSieve(config));
             foreach (var factor in factors)
-                Console.WriteLine("{0}", factor);
+                output.WriteLine("{0}", factor);
         }
 
         static void FactorTest6()
@@ -314,7 +317,7 @@ namespace Decompose
             var p = sample.P;
             var q = sample.Q;
             var n = sample.N;
-            Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
+            output.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
 #if true
             for (int size = 100000; size <= 200000; size += 10000)
             {
@@ -330,7 +333,7 @@ namespace Decompose
                     //LargePrimeOptimization = true,
                     ProcessPartialPartialRelations = true,
                 };
-                Console.WriteLine("size = {0}", size);
+                output.WriteLine("size = {0}", size);
                 RunParameterTest(config, n);
             }
 #endif
@@ -344,7 +347,7 @@ namespace Decompose
                     LowerBoundPercent = percent,
                     //Diagnostics = QuadraticSieve.Diag.Verbose,
                 };
-                Console.WriteLine("percent = {0}", percent);
+                output.WriteLine("percent = {0}", percent);
                 RunParameterTest(config, n);
             }
 #endif
@@ -361,7 +364,7 @@ namespace Decompose
                     SieveTimeLimit = 60,
                     //Diagnostics = QuadraticSieve.Diag.Verbose,
                 };
-                Console.WriteLine("interval size = {0}", size);
+                output.WriteLine("interval size = {0}", size);
                 RunParameterTest(config, n);
             }
 #endif
@@ -387,12 +390,12 @@ namespace Decompose
                 var p = NextPrime(random, limit);
                 var q = NextPrime(random, limit);
                 var n = p * q;
-                Console.WriteLine("new SampleComposite");
-                Console.WriteLine("{");
-                Console.WriteLine("    Digits = {0},", 2 * i);
-                Console.WriteLine("    P = BigInteger.Parse(\"{0}\"),", p);
-                Console.WriteLine("    Q = BigInteger.Parse(\"{0}\"),", q);
-                Console.WriteLine("},");
+                output.WriteLine("new SampleComposite");
+                output.WriteLine("{");
+                output.WriteLine("    Digits = {0},", 2 * i);
+                output.WriteLine("    P = BigInteger.Parse(\"{0}\"),", p);
+                output.WriteLine("    Q = BigInteger.Parse(\"{0}\"),", q);
+                output.WriteLine("},");
             }
         }
 
@@ -407,15 +410,16 @@ namespace Decompose
                 Threads = 8,
 #endif
                 Diagnostics = QuadraticSieve.Diag.Verbose,
+                DiagnosticsOutput = output,
                 MergeLimit = 10,
                 //FactorBaseSize = 25000,
-                //BlockSize = 64 * 1024,
-                //IntervalSize = 64 * 1024,
+                //BlockSize = 1024 * 1024,
+                //IntervalSize = 1024 * 1024,
                 //CofactorCutoff = 4096 * 4,
                 //ErrorLimit = 1,
                 //NumberOfFactors = 8,
                 ReportingInterval = 60,
-                ThresholdExponent = 2.5,
+                ThresholdExponent = 2.75,
                 //LargePrimeOptimization = false,
                 //UseCountTable = true,
                 //ProcessPartialPartialRelations = true,
@@ -427,8 +431,8 @@ namespace Decompose
                 var p = sample.P;
                 var q = sample.Q;
                 var n = sample.N;
-                Console.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                //Console.WriteLine("n = {0}", n);
+                output.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
+                //output.WriteLine("n = {0}", n);
                 var algorithm = new QuadraticSieve(config);
                 FactorTest(false, 1, n, algorithm);
             }
@@ -437,10 +441,10 @@ namespace Decompose
         static void CunninghamTest()
         {
             var n = BigInteger.Pow(3, 225) - 1;
-            Console.WriteLine("n = {0}", n);
+            output.WriteLine("n = {0}", n);
             var algorithm = new HybridPollardRhoQuadraticSieve(4, 1000000, new QuadraticSieve.Config());
             foreach (var factor in algorithm.Factor(n))
-                Console.WriteLine("{0}", factor);
+                output.WriteLine("{0}", factor);
         }
 
         static void GaussianEliminationTest1()
@@ -476,14 +480,14 @@ namespace Decompose
 
             timer.Restart();
             var matrix = getter(lines);
-            Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-            Console.WriteLine("Rows = {0}, Cols = {1}", matrix.Rows, matrix.Cols);
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            output.WriteLine("Rows = {0}, Cols = {1}", matrix.Rows, matrix.Cols);
 
             timer.Restart();
             var solutions = solver.Solve(matrix).ToArray();
-            Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 
-            Console.WriteLine("solutions = {0}", solutions.Length);
+            output.WriteLine("solutions = {0}", solutions.Length);
         }
 
         private static void GraphTest()
@@ -496,7 +500,7 @@ namespace Decompose
                 .Select(pair => Tuple.Create(pair[0], pair[1]))
                 .ToArray();
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 1; i++)
                 GraphTestCore(pprs);
         }
 
@@ -576,6 +580,7 @@ namespace Decompose
                     }
 #endif
                     total += cycle.Count + 1;
+                    //output.WriteLine("cycle = {0}", cycle.Count + 1);
 #if false
                     foreach (var edge in referenceCycle)
                         referenceGraph.RemoveEdge(edge);
@@ -586,9 +591,9 @@ namespace Decompose
                 }
                 ++processed;
             }
-            Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-            Console.WriteLine("processed = {0}; found = {1}; total = {2}; average = {3:F3}", processed, found, total, (double)total / found);
-            Console.WriteLine("failed = {0}", failed);
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            output.WriteLine("processed = {0}; found = {1}; total = {2}; average = {3:F3}", processed, found, total, (double)total / found);
+            output.WriteLine("failed = {0}", failed);
         }
 
         private static string[] GetLinesGzip(string file)
@@ -671,7 +676,7 @@ namespace Decompose
                 if (n != product)
                     throw new InvalidOperationException("validation failure");
             }
-            Console.WriteLine("{0} iterations in {1:F0} msec, {2:F3} msec/iteration", iterations, elapsed, elapsed / iterations);
+            output.WriteLine("{0} iterations in {1:F0} msec, {2:F3} msec/iteration", iterations, elapsed, elapsed / iterations);
             return results[0];
         }
 

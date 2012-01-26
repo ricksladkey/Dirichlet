@@ -68,6 +68,7 @@ namespace Decompose.Numerics
             public bool? ProcessPartialPartialRelations { get; set; }
             public bool? LargePrimeOptimization { get; set; }
             public bool? UseCountTable { get; set; }
+            public TextWriter DiagnosticsOutput { get; set; }
         }
 
         public class Parameters
@@ -91,6 +92,7 @@ namespace Decompose.Numerics
         {
             this.config = config;
             diag = config.Diagnostics;
+            output = config.DiagnosticsOutput ?? Console.Out;
             sieveTimeLimit = config.SieveTimeLimit;
             random = new MersenneTwister32(0);
             smallIntegerFactorer = new TrialDivisionFactorization();
@@ -568,6 +570,7 @@ namespace Decompose.Numerics
         private int[] multiplierCandidates;
 
         private Diag diag;
+        private TextWriter output;
         private bool largePrimeOptimization;
         private bool processPartialPartialRelations;
         private bool useCountTable;
@@ -667,21 +670,21 @@ namespace Decompose.Numerics
             {
                 var elapsed = timer.ElapsedTicks;
                 timer.Restart();
-                Console.WriteLine("Initialization: {0:F3} msec", 1000.0 * elapsed / Stopwatch.Frequency);
+                output.WriteLine("Initialization: {0:F3} msec", 1000.0 * elapsed / Stopwatch.Frequency);
             }
 
             if ((diag & Diag.Summary) != 0)
             {
-                Console.WriteLine("algorithm = {0}", algorithm);
-                Console.WriteLine("digits = {0:F1}; factorBaseSize = {1:N0}; desired = {2:N0}", digits, factorBaseSize, desired);
-                Console.WriteLine("block size = {0:N0}; interval size = {1:N0}; threads = {2}", blockSize, intervalSize, threads);
-                Console.WriteLine("error limit = {0}, cofactor cutoff = {1}; threshold exponent = {2}", errorLimit, cofactorCutoff, thresholdExponent);
-                Console.WriteLine("first few factors: {0}", string.Join(", ", primes.Take(15)));
-                Console.WriteLine("last few factors: {0}", string.Join(", ", primes.Skip(factorBaseSize - 5)));
-                Console.WriteLine("small prime cycle length = {0}, last small prime = {1}", cycleLength, primes[mediumPrimeIndex - 1]);
-                Console.WriteLine("multiplier = {0}; power of two = {1}", multiplier, powerOfTwo);
-                Console.WriteLine("large prime optimization = {0}; use count table = {1}", largePrimeOptimization, useCountTable);
-                Console.WriteLine("process partial partial relations = {0}", processPartialPartialRelations);
+                output.WriteLine("algorithm = {0}", algorithm);
+                output.WriteLine("digits = {0:F1}; factorBaseSize = {1:N0}; desired = {2:N0}", digits, factorBaseSize, desired);
+                output.WriteLine("block size = {0:N0}; interval size = {1:N0}; threads = {2}", blockSize, intervalSize, threads);
+                output.WriteLine("error limit = {0}, cofactor cutoff = {1}; threshold exponent = {2}", errorLimit, cofactorCutoff, thresholdExponent);
+                output.WriteLine("first few factors: {0}", string.Join(", ", primes.Take(15)));
+                output.WriteLine("last few factors: {0}", string.Join(", ", primes.Skip(factorBaseSize - 5)));
+                output.WriteLine("small prime cycle length = {0}, last small prime = {1}", cycleLength, primes[mediumPrimeIndex - 1]);
+                output.WriteLine("multiplier = {0}; power of two = {1}", multiplier, powerOfTwo);
+                output.WriteLine("large prime optimization = {0}; use count table = {1}", largePrimeOptimization, useCountTable);
+                output.WriteLine("process partial partial relations = {0}", processPartialPartialRelations);
             }
 
             Sieve();
@@ -693,18 +696,18 @@ namespace Decompose.Numerics
             {
                 var elapsed = timer.ElapsedTicks;
                 timer.Restart();
-                Console.WriteLine("Sieving: {0:F3} msec", 1000.0 * elapsed / Stopwatch.Frequency);
+                output.WriteLine("Sieving: {0:F3} msec", 1000.0 * elapsed / Stopwatch.Frequency);
             }
 
             if ((diag & Diag.Summary) != 0)
             {
-                Console.WriteLine("intervals processed = {0:N0}; values processsed = {1:N0}; values checked = {2:N0}", intervalsProcessed, (long)intervalsProcessed * intervalSize, valuesChecked);
-                Console.WriteLine("cofactors: exceeding 64 bits = {0:N0}; exceeding cutoff1 = {1:N0}; exceeding cutoff2 = {2:N0}", cofactorsGreaterThan64Bits, cofactorsExceedingCutoff1, cofactorsExceedingCutoff2);
-                Console.WriteLine("cofactors primality tested = {0:N0}; factored = {1:N0}", cofactorsPrimalityTested, cofactorsFactored);
-                Console.WriteLine("partial relations processed = {0:N0}; converted = {1:N0}", partialRelationsProcessed, partialRelationsConverted);
-                Console.WriteLine("partial partial relations processed = {0:N0}; converted = {1:N0}", partialPartialRelationsProcessed, partialPartialRelationsConverted);
-                Console.WriteLine("duplicate relations found = {0:N0}; duplicate partial relations found = {1:N0}", duplicateRelationsFound, duplicatePartialRelationsFound);
-                Console.WriteLine("duplicate partial partial relations found = {0:N0}", duplicatePartialPartialRelationsFound);
+                output.WriteLine("intervals processed = {0:N0}; values processsed = {1:N0}; values checked = {2:N0}", intervalsProcessed, (long)intervalsProcessed * intervalSize, valuesChecked);
+                output.WriteLine("cofactors: exceeding 64 bits = {0:N0}; exceeding cutoff1 = {1:N0}; exceeding cutoff2 = {2:N0}", cofactorsGreaterThan64Bits, cofactorsExceedingCutoff1, cofactorsExceedingCutoff2);
+                output.WriteLine("cofactors primality tested = {0:N0}; factored = {1:N0}", cofactorsPrimalityTested, cofactorsFactored);
+                output.WriteLine("partial relations processed = {0:N0}; converted = {1:N0}", partialRelationsProcessed, partialRelationsConverted);
+                output.WriteLine("partial partial relations processed = {0:N0}; converted = {1:N0}", partialPartialRelationsProcessed, partialPartialRelationsConverted);
+                output.WriteLine("duplicate relations found = {0:N0}; duplicate partial relations found = {1:N0}", duplicateRelationsFound, duplicatePartialRelationsFound);
+                output.WriteLine("duplicate partial partial relations found = {0:N0}", duplicatePartialPartialRelationsFound);
             }
 
             ProcessRelations();
@@ -713,7 +716,7 @@ namespace Decompose.Numerics
             {
                 var elapsed = timer.ElapsedTicks;
                 timer.Restart();
-                Console.WriteLine("Processing relations: {0:F3} msec", 1000.0 * elapsed / Stopwatch.Frequency);
+                output.WriteLine("Processing relations: {0:F3} msec", 1000.0 * elapsed / Stopwatch.Frequency);
             }
 
             var result = Solve();
@@ -722,7 +725,7 @@ namespace Decompose.Numerics
             {
                 var elapsed = timer.ElapsedTicks;
                 timer.Stop();
-                Console.WriteLine("Solving: {0:F3} msec", 1000.0 * elapsed / Stopwatch.Frequency);
+                output.WriteLine("Solving: {0:F3} msec", 1000.0 * elapsed / Stopwatch.Frequency);
             }
 
             return result;
@@ -876,7 +879,7 @@ namespace Decompose.Numerics
                 .ToArray();
 
             if ((diag & Diag.Summary) != 0)
-                Console.WriteLine("number of factors of A = {0}, min = {1}, max = {2}", numberOfFactors, min, max);
+                output.WriteLine("number of factors of A = {0}, min = {1}, max = {2}", numberOfFactors, min, max);
         }
 
         private Siqs FirstPolynomial(Siqs siqs)
@@ -1128,27 +1131,27 @@ namespace Decompose.Numerics
             var solutions = solver.Solve(matrix).GetEnumerator();
             var next = solutions.MoveNext();
             var elapsed = (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000;
-            Console.WriteLine("first solution: {0:F3} msec", elapsed);
+            output.WriteLine("first solution: {0:F3} msec", elapsed);
             if (!next)
             {
-                Console.WriteLine("no solutions!");
+                output.WriteLine("no solutions!");
                 return BigInteger.Zero;
             }
             do
             {
                 var v = solutions.Current;
                 if ((diag & Diag.Solutions) != 0)
-                    Console.WriteLine("v = {0}", string.Join(", ", v.GetNonZeroIndices().ToArray()));
+                    output.WriteLine("v = {0}", string.Join(", ", v.GetNonZeroIndices().ToArray()));
                 int numberOfIndices = v.GetNonZeroIndices().Count();
                 timer.Restart();
                 var factor = ComputeFactor(v);
                 elapsed = (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000;
-                Console.WriteLine("compute factor: {0:F3} msec ({1} indices)", elapsed, numberOfIndices);
+                output.WriteLine("compute factor: {0:F3} msec ({1} indices)", elapsed, numberOfIndices);
                 if (!factor.IsZero)
                     return factor;
             }
             while (solutions.MoveNext());
-            Console.WriteLine("failed!");
+            output.WriteLine("failed!");
             return BigInteger.Zero;
         }
 
@@ -1309,7 +1312,7 @@ namespace Decompose.Numerics
                 lastIntervalsProcessed = intervalsProcessed;
                 if ((diag & Diag.Sieve) != 0)
                 {
-                    Console.WriteLine("{0:F3}% complete, rate = {1:F6} %/sec, intervals = {2}, sieve time remaining = {3}",
+                    output.WriteLine("{0:F3}% complete, rate = {1:F6} %/sec, intervals = {2}, sieve time remaining = {3}",
                         percentComplete, percentRate, intervals, timeRemaining);
                 }
                 percentCompleteSofar = percentComplete;
@@ -1323,7 +1326,7 @@ namespace Decompose.Numerics
             }
             var elapsed = (double)timer.ElapsedTicks / Stopwatch.Frequency;
             var overallPercentRate = (double)relationBuffer.Count / desired * 100 / elapsed;
-            Console.WriteLine("overall rate = {0:F6} %/sec", overallPercentRate);
+            output.WriteLine("overall rate = {0:F6} %/sec", overallPercentRate);
         }
 
         private Interval CreateInterval()
@@ -1388,14 +1391,14 @@ namespace Decompose.Numerics
         {
             if ((diag & Diag.Polynomials) != 0 && interval.Siqs != null && interval.Siqs.Index == (1 << (interval.Siqs.S - 1)) - 1)
             {
-                Console.WriteLine("polynomial results: relations found = {0}, partial relations found = {1}, error = {2:F3}",
+                output.WriteLine("polynomial results: relations found = {0}, partial relations found = {1}, error = {2:F3}",
                     interval.RelationsFound, interval.PartialRelationsFound, interval.Siqs.Error);
                 interval.RelationsFound = 0;
                 interval.PartialRelationsFound = 0;
             }
             interval.Siqs = ChangePolynomial(interval.Siqs);
             if ((diag & Diag.Polynomials) != 0 && interval.Siqs.Index == 0)
-                Console.WriteLine("A = {0}", interval.Siqs.Polynomial.A);
+                output.WriteLine("A = {0}", interval.Siqs.Polynomial.A);
             var x = -intervalSize / 2;
             interval.X = x;
             interval.Polynomial = interval.Siqs.Polynomial;
