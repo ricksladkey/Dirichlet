@@ -70,11 +70,11 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void TestPollardLong()
+        public void TestShanksSquareForms()
         {
             var expected = new[] { long.Parse("91739369"), long.Parse("266981831") };
             var n = expected.Aggregate((long)1, (sofar, factor) => sofar * factor);
-            var algorithm = new PollardRhoLong();
+            var algorithm = new ShanksSquareForms();
             var factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
             var product = factors.Aggregate((sofar, current) => sofar * current);
             Assert.AreEqual(n, product);

@@ -553,11 +553,11 @@ namespace Decompose.Numerics
             new Parameters(70, 15000, 0.67, 128 * 1024, 128 * 1024),
             new Parameters(80, 50000, 0.67, 256 * 1024, 256 * 1024),
             new Parameters(90, 100000, 0.67, 256 * 1024, 256 * 1024),
-            new Parameters(100, 170000, 0.90, 512 * 1024, 512 * 1024),
+            new Parameters(100, 170000, 0.80, 512 * 1024, 512 * 1024),
 
             // Untested.
-            new Parameters(110, 300000, 0.85, 512 * 1024, 512 * 1024),
-            new Parameters(120, 600000, 0.85, 512 * 1024, 512 * 1024),
+            new Parameters(110, 300000, 0.80, 512 * 1024, 512 * 1024),
+            new Parameters(120, 600000, 0.80, 512 * 1024, 512 * 1024),
         };
 
         private Config config;
@@ -737,6 +737,7 @@ namespace Decompose.Numerics
             n = nOrig * multiplier;
             digits = BigInteger.Log(n, 10);
 
+            processPartialPartialRelations = config.ProcessPartialPartialRelations.HasValue ? config.ProcessPartialPartialRelations.Value : (config.ThresholdExponent >= 2);
             if (config.ThresholdExponent != 0)
                 thresholdExponent = config.ThresholdExponent;
             else if (!processPartialPartialRelations)
@@ -747,7 +748,6 @@ namespace Decompose.Numerics
             errorLimit = config.ErrorLimit != 0 ? config.ErrorLimit : errorLimitDefault;
             largePrimeOptimization = config.LargePrimeOptimization.HasValue ? config.LargePrimeOptimization.Value : true;
             useCountTable = config.UseCountTable.HasValue ? config.UseCountTable.Value : (digits >= minimumCounTableDigits);
-            processPartialPartialRelations = config.ProcessPartialPartialRelations.HasValue ? config.ProcessPartialPartialRelations.Value : (thresholdExponent >= 2);
 
             sqrtN = IntegerMath.Sqrt(n);
             powerOfTwo = IntegerMath.Modulus(n, 8) == 1 ? 3 : IntegerMath.Modulus(n, 8) == 5 ? 2 : 1;
