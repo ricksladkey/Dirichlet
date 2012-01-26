@@ -418,12 +418,12 @@ namespace Decompose
                 //IntervalSize = 1024 * 1024,
                 //CofactorCutoff = 4096 * 4,
                 //ErrorLimit = 1,
-                //NumberOfFactors = 8,
+                //NumberOfFactors = 12,
                 //ReportingInterval = 60,
                 //ThresholdExponent = 2.75,
                 //LargePrimeOptimization = false,
                 //UseCountTable = true,
-                ProcessPartialPartialRelations = true,
+                //ProcessPartialPartialRelations = true,
                 //CofactorCutoff = 1024,
             };
             for (int i = 35; i <= 35; i++)

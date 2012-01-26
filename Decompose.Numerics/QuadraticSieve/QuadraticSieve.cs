@@ -127,10 +127,14 @@ namespace Decompose.Numerics
             yield return n;
         }
 
-        private struct ExponentEntry
+        private struct ExponentEntry : IComparable<ExponentEntry>
         {
             public int Row { get; set; }
             public int Exponent { get; set; }
+            public int CompareTo(ExponentEntry other)
+            {
+                return Row - other.Row;
+            }
             public override string ToString()
             {
                 return string.Format("Row[{0}] ^ {1}", Row, Exponent);
@@ -140,13 +144,16 @@ namespace Decompose.Numerics
         private class ExponentEntries : IEnumerable<ExponentEntry>, IEquatable<ExponentEntries>
         {
             private ExponentEntry[] entries;
+            bool sorted = false;
             public ExponentEntries(ExponentEntry[] entries) { this.entries = entries; }
             public int Count { get { return entries.Length; } }
-            public ExponentEntry this[int index] { get { return entries[index]; } }
-            public IEnumerator<ExponentEntry> GetEnumerator() { return (entries as IEnumerable<ExponentEntry>).GetEnumerator(); }
+            public ExponentEntry this[int index] { get { Sort(); return entries[index]; } }
+            public IEnumerator<ExponentEntry> GetEnumerator() { Sort(); return (entries as IEnumerable<ExponentEntry>).GetEnumerator(); }
             IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
             public bool Equals(ExponentEntries other)
             {
+                Sort();
+                other.Sort();
                 if (Count != other.Count)
                     return false;
                 for (int i = 0; i < Count; i++)
@@ -160,10 +167,18 @@ namespace Decompose.Numerics
             }
             public override int GetHashCode()
             {
+                Sort();
                 var hashCode = 0;
                 for (int i = 0; i < Count; i++)
                     hashCode = (hashCode << 5) ^ ((entries[i].Row << 8) | entries[i].Exponent);
                 return hashCode;
+            }
+            private void Sort()
+            {
+                if (sorted)
+                    return;
+                Array.Sort(entries);
+                sorted = true;
             }
         }
 
@@ -2073,7 +2088,15 @@ namespace Decompose.Numerics
                 var edge = partialPartialRelations.FindEdge(cofactor1, cofactor2);
                 if (edge != null)
                 {
-                    if (edge.Polynomial.Evaluate(edge.X) == interval.Polynomial.Evaluate(interval.X + k))
+                    if (edge.Entries != null && relation.Entries != null)
+                    {
+                        if (edge.Entries.Equals(relation.Entries))
+                        {
+                            Interlocked.Increment(ref duplicatePartialPartialRelationsFound);
+                            return;
+                        }
+                    }
+                    else if (edge.Polynomial.Evaluate(edge.X) == interval.Polynomial.Evaluate(interval.X + k))
                     {
                         Interlocked.Increment(ref duplicatePartialPartialRelationsFound);
                         return;
