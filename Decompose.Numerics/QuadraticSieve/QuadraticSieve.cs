@@ -144,7 +144,7 @@ namespace Decompose.Numerics
         private class ExponentEntries : IEnumerable<ExponentEntry>, IEquatable<ExponentEntries>
         {
             private ExponentEntry[] entries;
-            bool sorted = false;
+            private bool sorted = false;
             public ExponentEntries(ExponentEntry[] entries) { this.entries = entries; }
             public int Count { get { return entries.Length; } }
             public ExponentEntry this[int index] { get { Sort(); return entries[index]; } }
@@ -545,7 +545,7 @@ namespace Decompose.Numerics
         private const double thresholdExponentDefault = 1.4;
         private const double thresholdExponentPartialPartialRelationsDefault = 2.25;
         private const double errorLimitDefault = 0.1;
-        private const int cofactorCutoffDefault = 4096;
+        private const int cofactorCutoffDefault = 1024;
         private const int surplusRelations = 12;
         private const int reportingIntervalDefault = 10;
         private const int maximumMultiplier = 73;
@@ -588,6 +588,8 @@ namespace Decompose.Numerics
         private bool largePrimeOptimization;
         private bool processPartialPartialRelations;
         private bool useCountTable;
+        private bool savePartialRelationFactorizations;
+        private bool savePartialPartialRelationFactorizations;
         private int sieveTimeLimit;
         private Algorithm algorithm;
         private int multiplier;
@@ -699,6 +701,7 @@ namespace Decompose.Numerics
                 output.WriteLine("multiplier = {0}; power of two = {1}", multiplier, powerOfTwo);
                 output.WriteLine("large prime optimization = {0}; use count table = {1}", largePrimeOptimization, useCountTable);
                 output.WriteLine("process partial partial relations = {0}", processPartialPartialRelations);
+                output.WriteLine("save factorizations: partial = {0}; partial partial = {1}", savePartialRelationFactorizations, savePartialPartialRelationFactorizations);
             }
 
             Sieve();
@@ -765,6 +768,8 @@ namespace Decompose.Numerics
             errorLimit = config.ErrorLimit != 0 ? config.ErrorLimit : errorLimitDefault;
             largePrimeOptimization = config.LargePrimeOptimization.HasValue ? config.LargePrimeOptimization.Value : true;
             useCountTable = config.UseCountTable.HasValue ? config.UseCountTable.Value : (digits >= minimumCounTableDigits);
+            savePartialRelationFactorizations = true;
+            savePartialPartialRelationFactorizations = digits < 100;
 
             sqrtN = IntegerMath.Sqrt(n);
             powerOfTwo = IntegerMath.Modulus(n, 8) == 1 ? 3 : IntegerMath.Modulus(n, 8) == 5 ? 2 : 1;
@@ -2019,7 +2024,7 @@ namespace Decompose.Numerics
             {
                 X = interval.X + k,
                 Polynomial = interval.Polynomial,
-                Entries = interval.Exponents.Entries,
+                Entries = savePartialRelationFactorizations ? interval.Exponents.Entries : null,
             };
             CheckValidPartialRelation(relation, cofactor);
             PartialRelation other;
@@ -2068,11 +2073,12 @@ namespace Decompose.Numerics
                     cofactor1));
                 return;
             }
+            var saveFactorization = cofactor2 == 1 ? savePartialRelationFactorizations : savePartialPartialRelationFactorizations;
             var relation = new PartialPartialRelation
             {
-                X = interval.X + k,
-                Entries = interval.Exponents.Entries,
                 Polynomial = interval.Polynomial,
+                X = interval.X + k,
+                Entries = saveFactorization ? interval.Exponents.Entries : null,
                 Cofactor1 = cofactor1,
                 Cofactor2 = cofactor2,
             };
@@ -2085,23 +2091,8 @@ namespace Decompose.Numerics
             lock (partialPartialRelations)
             {
                 // Duplicate check.
-                var edge = partialPartialRelations.FindEdge(cofactor1, cofactor2);
-                if (edge != null)
-                {
-                    if (edge.Entries != null && relation.Entries != null)
-                    {
-                        if (edge.Entries.Equals(relation.Entries))
-                        {
-                            Interlocked.Increment(ref duplicatePartialPartialRelationsFound);
-                            return;
-                        }
-                    }
-                    else if (edge.Polynomial.Evaluate(edge.X) == interval.Polynomial.Evaluate(interval.X + k))
-                    {
-                        Interlocked.Increment(ref duplicatePartialPartialRelationsFound);
-                        return;
-                    }
-                }
+                if (IsDuplicate(relation))
+                    return;
 
                 // See if this edge will complete a cycle.
                 cycle = partialPartialRelations.FindPath(cofactor1, cofactor2);
@@ -2142,6 +2133,25 @@ namespace Decompose.Numerics
 
             // Add the reation.
             AddRelation(CreateRelation(x, interval.Exponents.Entries, cofactor));
+        }
+
+        private bool IsDuplicate(PartialPartialRelation relation)
+        {
+            var edge = partialPartialRelations.FindEdge(relation.Cofactor1, relation.Cofactor2);
+            if (edge == null)
+                return false;
+            if (edge.Entries != null && relation.Entries != null)
+            {
+                if (!edge.Entries.Equals(relation.Entries))
+                    return false;
+            }
+            else
+            {
+                if (edge.Polynomial.Evaluate(edge.X) != relation.Polynomial.Evaluate(relation.X))
+                    return false;
+            }
+            Interlocked.Increment(ref duplicatePartialPartialRelationsFound);
+            return true;
         }
 
         private void AddEntries(Exponents exponents, ExponentEntries entries)

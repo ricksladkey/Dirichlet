@@ -30,11 +30,11 @@ namespace Decompose
                 //MsieveTest();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                QuadraticSieveDigitsTest();
+                //QuadraticSieveDigitsTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
                 //CreateSamplesTest();
-                //GraphTest();
+                GraphTest();
             }
             catch (AggregateException ex)
             {
@@ -420,13 +420,13 @@ namespace Decompose
                 //ErrorLimit = 1,
                 //NumberOfFactors = 12,
                 //ReportingInterval = 60,
-                //ThresholdExponent = 2.75,
+                ThresholdExponent = 2.75,
                 //LargePrimeOptimization = false,
                 //UseCountTable = true,
-                //ProcessPartialPartialRelations = true,
+                ProcessPartialPartialRelations = true,
                 //CofactorCutoff = 1024,
             };
-            for (int i = 35; i <= 35; i++)
+            for (int i = 50; i <= 50; i++)
             {
                 var sample = samples[i];
                 var p = sample.P;
