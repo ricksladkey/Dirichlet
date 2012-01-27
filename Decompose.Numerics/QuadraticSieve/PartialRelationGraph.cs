@@ -30,14 +30,14 @@ namespace Decompose.Numerics
     public class PartialRelationGraph<TEdge> where TEdge : PartialRelationEdge, new()
     {
         /// <summary>
-        /// A vertex dictionary is a specialized dictionary
+        /// A vertex map is a specialized dictionary
         /// that can get very large.  The contents of the
-        /// dictionary are distributed across a number of
+        /// map are distributed across a number of
         /// smaller dictionaries.  This facilitates memory
         /// management and increases the maximum size.
         /// </summary>
         /// <typeparam name="TValue">The dictionary value type.</typeparam>
-        private class VertexDictionary<TValue>
+        private class VertexMap<TValue>
         {
             private const int n = 16;
             private const int shift = 1;
@@ -53,7 +53,7 @@ namespace Decompose.Numerics
                     return count;
                 }
             }
-            public VertexDictionary()
+            public VertexMap()
             {
                 dictionaries = new Dictionary<long, TValue>[n];
                 for (int i = 0; i < n; i++)
@@ -92,10 +92,10 @@ namespace Decompose.Numerics
         /// </summary>
         private class EdgeMap
         {
-            private VertexDictionary<object> map;
+            private VertexMap<object> map;
             public EdgeMap()
             {
-                map = new VertexDictionary<object>();
+                map = new VertexMap<object>();
             }
             public void Add(long vertex, TEdge edge)
             {
@@ -141,7 +141,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private VertexDictionary<TEdge> prMap;
+        private VertexMap<TEdge> prMap;
         private EdgeMap pprMap;
         private int count;
 
@@ -151,7 +151,7 @@ namespace Decompose.Numerics
 
         public PartialRelationGraph()
         {
-            prMap = new VertexDictionary<TEdge>();
+            prMap = new VertexMap<TEdge>();
             pprMap = new EdgeMap();
         }
 

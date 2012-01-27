@@ -30,11 +30,12 @@ namespace Decompose
                 //MsieveTest();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                //QuadraticSieveDigitsTest();
+                QuadraticSieveStandardTest();
+                //QuadraticSieveDebugTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
                 //CreateSamplesTest();
-                GraphTest();
+                //GraphTest();
             }
             catch (AggregateException ex)
             {
@@ -401,7 +402,32 @@ namespace Decompose
             }
         }
 
-        static void QuadraticSieveDigitsTest()
+        static void QuadraticSieveStandardTest()
+        {
+            new QuadraticSieve(new QuadraticSieve.Config()).Factor(samples[10].N).ToArray();
+            //new QuadraticSieve(new QuadraticSieve.Config()).Factor(35095264073).ToArray();
+            var config = new QuadraticSieve.Config
+            {
+#if !DEBUG
+                Threads = 8,
+#endif
+                DiagnosticsOutput = output,
+                //ProcessPartialPartialRelations = true,
+            };
+            for (int i = 20; i <= 35; i++)
+            {
+                var sample = samples[i];
+                var p = sample.P;
+                var q = sample.Q;
+                var n = sample.N;
+                output.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
+                //output.WriteLine("n = {0}", n);
+                var algorithm = new QuadraticSieve(config);
+                FactorTest(false, 1, n, algorithm);
+            }
+        }
+
+        static void QuadraticSieveDebugTest()
         {
             new QuadraticSieve(new QuadraticSieve.Config()).Factor(samples[10].N).ToArray();
             //new QuadraticSieve(new QuadraticSieve.Config()).Factor(35095264073).ToArray();
@@ -426,17 +452,15 @@ namespace Decompose
                 ProcessPartialPartialRelations = true,
                 //CofactorCutoff = 128,
             };
-            for (int i = 40; i <= 40; i++)
-            {
-                var sample = samples[i];
-                var p = sample.P;
-                var q = sample.Q;
-                var n = sample.N;
-                output.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
-                //output.WriteLine("n = {0}", n);
-                var algorithm = new QuadraticSieve(config);
-                FactorTest(false, 1, n, algorithm);
-            }
+            var i = 40;
+            var sample = samples[i];
+            var p = sample.P;
+            var q = sample.Q;
+            var n = sample.N;
+            output.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
+            output.WriteLine("n = {0}", n);
+            var algorithm = new QuadraticSieve(config);
+            FactorTest(false, 1, n, algorithm);
         }
 
         static void CunninghamTest()
