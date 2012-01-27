@@ -204,7 +204,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private struct LargePrimeEntry
+        private struct OffsetEntry
         {
             public int P { get; set; }
             public CountInt LogP { get; set; }
@@ -379,52 +379,6 @@ namespace Decompose.Numerics
             }
         }
 
-#if false
-        private class Exponents
-        {
-            private int[] exponents;
-            private int used;
-            public Exponents(int size)
-            {
-                used = 0;
-                exponents = new int[size];
-            }
-            public void Add(int index, int increment)
-            {
-                exponents[index] += increment;
-                used = Math.Max(used, index + 1);
-            }
-            public void Clear()
-            {
-                for (int i = 0; i < used; i++)
-                    exponents[i] = 0;
-                used = 0;
-            }
-            public ExponentEntries Entries
-            {
-                get
-                {
-                    int size = 16;
-                    var entries = new ExponentEntry[size];
-                    int k = 0;
-                    for (int i = 0; i < used; i++)
-                    {
-                        if (exponents[i] != 0)
-                        {
-                            entries[k++] = new ExponentEntry { Row = i, Exponent = exponents[i] };
-                            if (k == size)
-                            {
-                                size *= 2;
-                                Array.Resize(ref entries, size);
-                            }
-                        }
-                    }
-                    Array.Resize(ref entries, k);
-                    return new ExponentEntries(entries);
-                }
-            }
-        }
-#else
         private class Exponents
         {
             private Dictionary<int, int> exponents;
@@ -465,7 +419,6 @@ namespace Decompose.Numerics
                 }
             }
         }
-#endif
 
         private struct Offset
         {
@@ -486,7 +439,6 @@ namespace Decompose.Numerics
             public SingleBlockCountTable SingleBlockCountTable { get; set; }
             public MultiBlockCountTable MultiBlockCountTable { get; set; }
             public ICountTable CountTable { get; set; }
-            public Offset[] Offsets { get; set; }
             public int[] Increments { get; set; }
             public int RelationsFound { get; set; }
             public int PartialRelationsFound { get; set; }
@@ -518,11 +470,10 @@ namespace Decompose.Numerics
             public BigInteger[] CapB { get; set; }
             public int[][] Bainv2 { get; set; }
             public int[] Bainv2v { get; set; }
-            public LargePrimeEntry[] LargePrimes { get; set; }
+            public OffsetEntry[] Offsets { get; set; }
             public Polynomial Polynomial { get; set; }
             public int X { get; set; }
             public double Error { get; set; }
-            public Offset[] Solutions { get; set; }
             public CountInt[] Threshold { get; set; }
         }
 
@@ -915,8 +866,8 @@ namespace Decompose.Numerics
                 siqs = new Siqs
                 {
                     IsQIndex = new bool[factorBaseSize],
-                    Solutions = new Offset[factorBaseSize],
                     Threshold = new CountInt[intervalSize >> thresholdShift],
+                    Offsets = new OffsetEntry[factorBaseSize],
                 };
             }
             else
@@ -962,7 +913,7 @@ namespace Decompose.Numerics
 
 
             var bainv2 = siqs.Bainv2;
-            var solns = siqs.Solutions;
+            var offsets = siqs.Offsets;
             var x = -intervalSize / 2;
             for (int i = 0; i < factorBaseSize; i++)
             {
@@ -983,10 +934,12 @@ namespace Decompose.Numerics
                 if (root1 < 0)
                     root1 += p;
                 var root2 = root1 + entry.RootDiff;
-                solns[i].Offset1 = (int)((aInv * root1 - x) % p);
-                solns[i].Offset2 = (int)((aInv * root2 - x) % p);
-                Debug.Assert(solns[i].Offset1 >= 0 && polynomial.Evaluate(x + solns[i].Offset1) % p == 0);
-                Debug.Assert(solns[i].Offset2 >= 0 && polynomial.Evaluate(x + solns[i].Offset2) % p == 0);
+                offsets[i].P = entry.P;
+                offsets[i].LogP = entry.LogP;
+                offsets[i].Offset1 = (int)((aInv * root1 - x) % p);
+                offsets[i].Offset2 = (int)((aInv * root2 - x) % p);
+                Debug.Assert(offsets[i].Offset1 >= 0 && polynomial.Evaluate(x + offsets[i].Offset1) % p == 0);
+                Debug.Assert(offsets[i].Offset2 >= 0 && polynomial.Evaluate(x + offsets[i].Offset2) % p == 0);
             }
 
             var threshold = siqs.Threshold;
@@ -1002,20 +955,6 @@ namespace Decompose.Numerics
                 var y2 = BigInteger.Abs(polynomial.Evaluate(x + k + thresholdInterval - 1));
                 var logY = BigInteger.Log(BigInteger.Max(y1, y2), 2);
                 threshold[k >> thresholdShift] = (CountInt)Math.Round(logY - denominator);
-            }
-
-            if (largePrimeOptimization && largePrimeIndex < factorBaseSize)
-            {
-                var l = new LargePrimeEntry[factorBaseSize];
-                for (int i = largePrimeIndex; i < factorBaseSize; i++)
-                {
-                    var entry = factorBase[i];
-                    l[i].P = entry.P;
-                    l[i].LogP = entry.LogP;
-                    l[i].Offset1 = solns[i].Offset1;
-                    l[i].Offset2 = solns[i].Offset2;
-                }
-                siqs.LargePrimes = l;
             }
 
             siqs.Index = 0;
@@ -1058,7 +997,7 @@ namespace Decompose.Numerics
             // Calculate new offsets.
             var m = intervalSize;
             var x = -m / 2;
-            var solns = siqs.Solutions;
+            var solns = siqs.Offsets;
             if (!largePrimeOptimization)
             {
                 var bainv2v = siqs.Bainv2[v];
@@ -1363,7 +1302,6 @@ namespace Decompose.Numerics
                     interval.CountTable = interval.MultiBlockCountTable;
                 }
             }
-            interval.Offsets = new Offset[factorBaseSize];
             if (processPartialPartialRelations)
                 interval.CofactorFactorer = CreateCofactorFactorer();
             return interval;
@@ -1418,7 +1356,6 @@ namespace Decompose.Numerics
             interval.X = x;
             interval.Polynomial = interval.Siqs.Polynomial;
             interval.Size = intervalSize;
-            interval.Offsets = interval.Siqs.Solutions;
             return interval;
         }
 
@@ -1477,7 +1414,7 @@ namespace Decompose.Numerics
         {
             var cycle = interval.Cycle;
             var counts = interval.Counts;
-            var offsets = interval.Offsets;
+            var offsets = interval.Siqs.Offsets;
             var log2 = factorBase[0].LogP;
             var count1 = (CountInt)(log2 * powerOfTwo);
             var count2 = (CountInt)(log2 * powerOfTwo);
@@ -1519,7 +1456,7 @@ namespace Decompose.Numerics
         private void SieveMediumPrimes(Interval interval, int k0, int size)
         {
             var siqs = interval.Siqs;
-            var offsets = interval.Offsets;
+            var offsets = siqs.Offsets;
             var counts = interval.Counts;
             var increments = interval.Increments;
             for (int i = mediumPrimeIndex; i < largePrimeIndex; i++)
@@ -1596,7 +1533,7 @@ namespace Decompose.Numerics
             if (!largePrimeOptimization || !useCountTable)
                 return;
             var counts = interval.Counts;
-            var l = interval.Siqs.LargePrimes;
+            var l = interval.Siqs.Offsets;
             var bainv2v = interval.Siqs.Bainv2v;
             int intervalSize = interval.Size;
             if (interval.SingleBlockCountTable != null)
@@ -1669,7 +1606,7 @@ namespace Decompose.Numerics
                     return;
                 }
                 var counts = interval.Counts;
-                var l = interval.Siqs.LargePrimes;
+                var l = interval.Siqs.Offsets;
                 var bainv2v = interval.Siqs.Bainv2v;
                 int intervalSize = interval.Size;
                 if (bainv2v == null || k0 != 0)
@@ -1734,7 +1671,7 @@ namespace Decompose.Numerics
             else
             {
                 var siqs = interval.Siqs;
-                var offsets = interval.Offsets;
+                var offsets = siqs.Offsets;
                 var counts = interval.Counts;
                 var increments = interval.Increments;
                 for (int i = largePrimeIndex; i < factorBaseSize; i++)
@@ -1848,7 +1785,7 @@ namespace Decompose.Numerics
             var y = interval.Polynomial.Evaluate(interval.X + k);
             var exponents = interval.Exponents;
             var siqs = interval.Siqs;
-            var offsets = siqs.Solutions;
+            var offsets = siqs.Offsets;
 
             // Handle negative values.
             if (y.Sign == -1)
@@ -1930,7 +1867,7 @@ namespace Decompose.Numerics
             }
             else if (!useCountTable)
             {
-                var l = siqs.LargePrimes;
+                var l = siqs.Offsets;
                 for (int i = largePrimeIndex; i < factorBaseSize; i++)
                 {
                     if (k != l[i].Offset1 && k != l[i].Offset2)

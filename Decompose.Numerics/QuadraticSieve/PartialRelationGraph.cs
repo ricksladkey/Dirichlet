@@ -8,14 +8,16 @@ namespace Decompose.Numerics
 {
     /// <summary>
     /// A specialized graph that can contain either partial relations or
-    /// partial partial relations.  The data structure is optimized for
-    /// both kinds internally but exposes a unified interface.  It is
-    /// essential that the graph be maintained so that it doesn't contain
-    /// any cycles.  Instead of finding cycles, the client requests a
-    /// path between two vertices when it has the edge that will complete
-    /// the cycle.  If so, the client then removes that path from the
-    /// graph, always preserving the fact that the graph is acyclic.
+    /// partial partial relations.
     /// </summary>
+    /// <remarks>
+    /// The data structure is optimized for both kinds internally but exposes a
+    /// unified interface.  It is essential that the graph be maintained so
+    /// that it doesn't contain any cycles.  Instead of finding cycles, the
+    /// client requests a path between two vertices when it has the edge that
+    /// will complete the cycle.  If so, the client then removes that path from
+    /// the graph, always preserving the fact that the graph is acyclic.
+    /// </remarks>
     /// <typeparam name="Edge"></typeparam>
     public class PartialRelationGraph<TValue>
     {
