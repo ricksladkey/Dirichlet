@@ -2087,7 +2087,7 @@ namespace Decompose.Numerics
             lock (pprs)
                 pprs.Add(partialPartialRelation);
 #endif
-            var cycle = null as List<PartialPartialRelation>;
+            var cycle = null as ICollection<PartialPartialRelation>;
             lock (partialPartialRelations)
             {
                 // Duplicate check.

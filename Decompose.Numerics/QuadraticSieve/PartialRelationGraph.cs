@@ -16,6 +16,17 @@ namespace Decompose.Numerics
         }
     }
 
+    /// <summary>
+    /// A specialize graph that can contain either partial relations or
+    /// partial partial relations.  The data structure is optimized for
+    /// both kinds internally but exposes a unified interface.  It is
+    /// essential that the graph be maintained so that it doesn't contain
+    /// any cycles.  Instead of finding cycles, the client requests a
+    /// path between two vertices when it has the edge that will complete
+    /// the cycle.  If so, the client then removes that path from the
+    /// graph, always preserving the fact that the graph is acyclic.
+    /// </summary>
+    /// <typeparam name="TEdge"></typeparam>
     public class PartialRelationGraph<TEdge> where TEdge : PartialRelationEdge, new()
     {
         /// <summary>
@@ -26,7 +37,7 @@ namespace Decompose.Numerics
         /// management and increases the maximum size.
         /// </summary>
         /// <typeparam name="TValue">The dictionary value type.</typeparam>
-        public class VertexDictionary<TValue>
+        private class VertexDictionary<TValue>
         {
             private const int n = 16;
             private const int shift = 1;
@@ -189,19 +200,27 @@ namespace Decompose.Numerics
                     return edge;
                 return null;
             }
-            foreach (var other in edges)
+            for (int i = 0; i < edges.Count; i++)
             {
-                if (other.Vertex1 == vertex2 || other.Vertex2 == vertex2)
-                    return other;
+                edge = edges[i];
+                if (edge.Vertex1 == vertex2 || edge.Vertex2 == vertex2)
+                    return edge;
             }
             return null;
         }
 
-        public List<TEdge> FindPath(long start, long end)
+        /// <summary>
+        /// Find a path between two vertices of the graph.
+        /// </summary>
+        /// <param name="start">The starting vertex.</param>
+        /// <param name="end">The ending vertex.</param>
+        /// <returns>A collection of edges comprising the path.</returns>
+        public ICollection<TEdge> FindPath(long start, long end)
         {
+            // Handle the special case of partial relations.
             if (end == 1)
             {
-                // Look for a matching partial.
+                // Look for a matching partial relation.
                 if (prMap.ContainsKey(start))
                     return new List<TEdge> { prMap[start] };
 
@@ -209,19 +228,35 @@ namespace Decompose.Numerics
                 return FindPathRecursive(start, 1, null);
             }
 
-            var hasStart = prMap.ContainsKey(start);
-            var hasEnd = prMap.ContainsKey(end);
+            // Check whether the path start or ends in the
+            // partial relation map.
+            var prHasStart = prMap.ContainsKey(start);
+            var prHasEnd = prMap.ContainsKey(end);
 
-            if (hasStart && hasEnd)
+            // If both do so, then we have a path using the
+            // two partial relations.
+            if (prHasStart && prHasEnd)
                 return new List<TEdge> { prMap[end], prMap[start] };
+
             var result = null as List<TEdge>;
+
+            // First try to find a direct path from start to
+            // end just using the partial relation map, which
+            // is only possible if there are edges to the end
+            // vertex.
             if (pprMap.HasEdges(end))
             {
                 result  = FindPathRecursive(start, end, null);
                 if (result != null)
                     return result;
             }
-            if (!hasStart && !hasEnd)
+
+            // If the path neither starts nor ends in the
+            // partial relation map, try to find a path
+            // from the start the the partial relation map
+            // and another from the end to the partial
+            // relation map.  Then combine them.
+            if (!prHasStart && !prHasEnd)
             {
                 var part1 = FindPathRecursive(start, 1, null);
                 if (part1 != null)
@@ -231,13 +266,21 @@ namespace Decompose.Numerics
                         return part1.Concat(part2).ToList();
                 }
             }
-            if (hasStart)
+
+            // If the path starts in the partial relation map,
+            // try to find a path from the end to the partial
+            // relation map.
+            if (prHasStart)
             {
                 result = FindPathRecursive(end, 1, null);
                 if (result != null)
                     result.Add(prMap[start]);
             }
-            if (hasEnd)
+
+            // If the path ends in the partial relation map,
+            // try to find a path from the start to the partial
+            // relation map.
+            if (prHasEnd)
             {
                 result = FindPathRecursive(start, 1, null);
                 if (result != null)
@@ -258,33 +301,28 @@ namespace Decompose.Numerics
             if (!pprMap.GetEdges(start, out edge, out edges))
                 return null;
             if (edge != null)
+                return CheckEdge(start, end, previous, edge);
+            for (int i = 0; i < edges.Count; i++)
             {
-                if (edge == previous)
-                    return null;
-                var next = edge.Vertex1 == start ? edge.Vertex2 : edge.Vertex1;
-                if (next == end)
-                    return new List<TEdge> { edge };
-                var result = FindPathRecursive(next, end, edge);
+                var result = CheckEdge(start, end, previous, edges[i]);
                 if (result != null)
-                {
-                    result.Add(edge);
                     return result;
-                }
-                return null;
             }
-            foreach (var other in edges)
+            return null;
+        }
+
+        private List<TEdge> CheckEdge(long start, long end, TEdge previous, TEdge edge)
+        {
+            if (edge == previous)
+                return null;
+            var next = edge.Vertex1 == start ? edge.Vertex2 : edge.Vertex1;
+            if (next == end)
+                return new List<TEdge> { edge };
+            var result = FindPathRecursive(next, end, edge);
+            if (result != null)
             {
-                if (other == previous)
-                    continue;
-                var next = other.Vertex1 == start ? other.Vertex2 : other.Vertex1;
-                if (next == end)
-                    return new List<TEdge> { other };
-                var result = FindPathRecursive(next, end, other);
-                if (result != null)
-                {
-                    result.Add(other);
-                    return result;
-                }
+                result.Add(edge);
+                return result;
             }
             return null;
         }
