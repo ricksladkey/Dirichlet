@@ -18,12 +18,73 @@ namespace Decompose.Numerics
 
     public class PartialRelationGraph<TEdge> where TEdge : PartialRelationEdge, new()
     {
+        /// <summary>
+        /// A vertex dictionary is a specialized dictionary
+        /// that can get very large.  The contents of the
+        /// dictionary are distributed across a number of
+        /// smaller dictionaries.  This facilitates memory
+        /// management and increases the maximum size.
+        /// </summary>
+        /// <typeparam name="TValue">The dictionary value type.</typeparam>
+        public class VertexDictionary<TValue>
+        {
+            private const int n = 16;
+            private const int shift = 1;
+            private const int mask = (n - 1) << shift;
+            public Dictionary<long, TValue>[] dictionaries;
+            public int Count
+            {
+                get
+                {
+                    int count = 0;
+                    for (int i = 0; i < n; i++)
+                        count += dictionaries[i].Count;
+                    return count;
+                }
+            }
+            public VertexDictionary()
+            {
+                dictionaries = new Dictionary<long, TValue>[n];
+                for (int i = 0; i < n; i++)
+                    dictionaries[i] = new Dictionary<long, TValue>();
+            }
+            public bool ContainsKey(long vertex)
+            {
+                return dictionaries[GetSlot(vertex)].ContainsKey(vertex);
+            }
+            public void Add(long vertex, TValue value)
+            {
+                dictionaries[GetSlot(vertex)].Add(vertex, value);
+            }
+            public void Remove(long vertex)
+            {
+                dictionaries[GetSlot(vertex)].Remove(vertex);
+            }
+            public TValue this[long vertex]
+            {
+                get { return dictionaries[GetSlot(vertex)][vertex]; }
+                set { dictionaries[GetSlot(vertex)][vertex] = value; }
+            }
+            public bool TryGetValue(long vertex, out TValue value)
+            {
+                return dictionaries[GetSlot(vertex)].TryGetValue(vertex, out value);
+            }
+            private int GetSlot(long vertex)
+            {
+                return (int)(vertex & mask) >> shift;
+            }
+        }
+
+        /// <summary>
+        /// Dictionary mapping vertices to edges.  A vertex with a single
+        /// edge is treated specially to conserve memory.
+        /// </summary>
         private class EdgeMap
         {
-            private Dictionary<long, object> map;
+            private VertexDictionary<object> map;
             public EdgeMap()
             {
-                map = new Dictionary<long, object>();
+                map = new VertexDictionary<object>();
             }
             public void Add(long vertex, TEdge edge)
             {
@@ -69,7 +130,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private Dictionary<long, TEdge> prMap;
+        private VertexDictionary<TEdge> prMap;
         private EdgeMap pprMap;
         private int count;
 
@@ -79,7 +140,7 @@ namespace Decompose.Numerics
 
         public PartialRelationGraph()
         {
-            prMap = new Dictionary<long, TEdge>();
+            prMap = new VertexDictionary<TEdge>();
             pprMap = new EdgeMap();
         }
 
