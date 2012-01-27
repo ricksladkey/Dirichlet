@@ -545,7 +545,7 @@ namespace Decompose.Numerics
         private const double thresholdExponentDefault = 1.4;
         private const double thresholdExponentPartialPartialRelationsDefault = 2.25;
         private const double errorLimitDefault = 0.1;
-        private const int cofactorCutoffDefault = 1024;
+        private const int cofactorCutoffDefault = 256;
         private const int surplusRelations = 12;
         private const int reportingIntervalDefault = 10;
         private const int maximumMultiplier = 73;
