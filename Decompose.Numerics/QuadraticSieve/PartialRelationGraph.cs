@@ -6,18 +6,8 @@ using System.Text;
 
 namespace Decompose.Numerics
 {
-    public class PartialRelationEdge
-    {
-        public long Vertex1 { get; set; }
-        public long Vertex2 { get; set; }
-        public override string ToString()
-        {
-            return string.Format("Vertex1 = {0}, Vertex2 = {1}", Vertex1, Vertex2);
-        }
-    }
-
     /// <summary>
-    /// A specialize graph that can contain either partial relations or
+    /// A specialized graph that can contain either partial relations or
     /// partial partial relations.  The data structure is optimized for
     /// both kinds internally but exposes a unified interface.  It is
     /// essential that the graph be maintained so that it doesn't contain
@@ -26,9 +16,20 @@ namespace Decompose.Numerics
     /// the cycle.  If so, the client then removes that path from the
     /// graph, always preserving the fact that the graph is acyclic.
     /// </summary>
-    /// <typeparam name="TEdge"></typeparam>
-    public class PartialRelationGraph<TEdge> where TEdge : PartialRelationEdge, new()
+    /// <typeparam name="Edge"></typeparam>
+    public class PartialRelationGraph<TValue>
     {
+        public class Edge
+        {
+            public long Vertex1 { get; set; }
+            public long Vertex2 { get; set; }
+            public TValue Value { get; set; }
+            public override string ToString()
+            {
+                return string.Format("Vertex1 = {0}, Vertex2 = {1}", Vertex1, Vertex2);
+            }
+        }
+
         /// <summary>
         /// A vertex map is a specialized dictionary
         /// that can get very large.  The contents of the
@@ -36,13 +37,13 @@ namespace Decompose.Numerics
         /// smaller dictionaries.  This facilitates memory
         /// management and increases the maximum size.
         /// </summary>
-        /// <typeparam name="TValue">The dictionary value type.</typeparam>
-        private class VertexMap<TValue>
+        /// <typeparam name="T">The dictionary value type.</typeparam>
+        private class VertexMap<T>
         {
             private const int n = 16;
             private const int shift = 1;
             private const int mask = (n - 1) << shift;
-            public Dictionary<long, TValue>[] dictionaries;
+            public Dictionary<long, T>[] dictionaries;
             public int Count
             {
                 get
@@ -55,15 +56,15 @@ namespace Decompose.Numerics
             }
             public VertexMap()
             {
-                dictionaries = new Dictionary<long, TValue>[n];
+                dictionaries = new Dictionary<long, T>[n];
                 for (int i = 0; i < n; i++)
-                    dictionaries[i] = new Dictionary<long, TValue>();
+                    dictionaries[i] = new Dictionary<long, T>();
             }
             public bool ContainsKey(long vertex)
             {
                 return dictionaries[GetSlot(vertex)].ContainsKey(vertex);
             }
-            public void Add(long vertex, TValue value)
+            public void Add(long vertex, T value)
             {
                 dictionaries[GetSlot(vertex)].Add(vertex, value);
             }
@@ -71,12 +72,12 @@ namespace Decompose.Numerics
             {
                 dictionaries[GetSlot(vertex)].Remove(vertex);
             }
-            public TValue this[long vertex]
+            public T this[long vertex]
             {
                 get { return dictionaries[GetSlot(vertex)][vertex]; }
                 set { dictionaries[GetSlot(vertex)][vertex] = value; }
             }
-            public bool TryGetValue(long vertex, out TValue value)
+            public bool TryGetValue(long vertex, out T value)
             {
                 return dictionaries[GetSlot(vertex)].TryGetValue(vertex, out value);
             }
@@ -97,27 +98,27 @@ namespace Decompose.Numerics
             {
                 map = new VertexMap<object>();
             }
-            public void Add(long vertex, TEdge edge)
+            public void Add(long vertex, Edge edge)
             {
                 object value;
                 if (map.TryGetValue(vertex, out value))
                 {
-                    if (value is TEdge)
-                        map[vertex] = new List<TEdge> { (TEdge)value, edge };
+                    if (value is Edge)
+                        map[vertex] = new List<Edge> { (Edge)value, edge };
                     else
-                        (value as List<TEdge>).Add(edge);
+                        (value as List<Edge>).Add(edge);
                 }
                 else
                     map.Add(vertex, edge);
             }
-            public void Remove(long vertex, TEdge edge)
+            public void Remove(long vertex, Edge edge)
             {
                 var value = map[vertex];
-                if (value is TEdge)
+                if (value is Edge)
                     map.Remove(vertex);
                 else
                 {
-                    var list = value as List<TEdge>;
+                    var list = value as List<Edge>;
                     list.Remove(edge);
                     if (list.Count == 1)
                         map[vertex] = list[0];
@@ -127,7 +128,7 @@ namespace Decompose.Numerics
             {
                 return map.ContainsKey(vertex);
             }
-            public bool GetEdges(long vertex, out TEdge edge, out List<TEdge> edges)
+            public bool GetEdges(long vertex, out Edge edge, out List<Edge> edges)
             {
                 if (!map.ContainsKey(vertex))
                 {
@@ -135,13 +136,13 @@ namespace Decompose.Numerics
                     edges = null;
                     return false;
                 }
-                edge = map[vertex] as TEdge;
-                edges = map[vertex] as List<TEdge>;
+                edge = map[vertex] as Edge;
+                edges = map[vertex] as List<Edge>;
                 return true;
             }
         }
 
-        private VertexMap<TEdge> prMap;
+        private VertexMap<Edge> prMap;
         private EdgeMap pprMap;
         private int count;
 
@@ -151,28 +152,24 @@ namespace Decompose.Numerics
 
         public PartialRelationGraph()
         {
-            prMap = new VertexMap<TEdge>();
+            prMap = new VertexMap<Edge>();
             pprMap = new EdgeMap();
         }
 
-        public void AddEdge(long vertex1, long vertex2)
+        public void AddEdge(long vertex1, long vertex2, TValue value)
         {
-            AddEdge(new TEdge { Vertex1 = vertex1, Vertex2 = vertex2 });
-        }
-
-        public void AddEdge(TEdge edge)
-        {
-            if (edge.Vertex2 == 1)
-                prMap.Add(edge.Vertex1, edge);
+            var edge = new Edge { Vertex1 = vertex1, Vertex2 = vertex2, Value = value };
+            if (vertex2 == 1)
+                prMap.Add(vertex1, edge);
             else
             {
-                pprMap.Add(edge.Vertex1, edge);
-                pprMap.Add(edge.Vertex2, edge);
+                pprMap.Add(vertex1, edge);
+                pprMap.Add(vertex2, edge);
             }
             ++count;
         }
 
-        public void RemoveEdge(TEdge edge)
+        public void RemoveEdge(Edge edge)
         {
             if (edge.Vertex2 == 1)
                 prMap.Remove(edge.Vertex1);
@@ -184,10 +181,10 @@ namespace Decompose.Numerics
             --count;
         }
 
-        public TEdge FindEdge(long vertex1, long vertex2)
+        public Edge FindEdge(long vertex1, long vertex2)
         {
-            TEdge edge;
-            List<TEdge> edges;
+            Edge edge;
+            List<Edge> edges;
             if (vertex2 == 1)
             {
                 return prMap.TryGetValue(vertex1, out edge) ? edge : null;
@@ -215,14 +212,14 @@ namespace Decompose.Numerics
         /// <param name="start">The starting vertex.</param>
         /// <param name="end">The ending vertex.</param>
         /// <returns>A collection of edges comprising the path.</returns>
-        public ICollection<TEdge> FindPath(long start, long end)
+        public ICollection<Edge> FindPath(long start, long end)
         {
             // Handle the special case of partial relations.
             if (end == 1)
             {
                 // Look for a matching partial relation.
                 if (prMap.ContainsKey(start))
-                    return new List<TEdge> { prMap[start] };
+                    return new List<Edge> { prMap[start] };
 
                 // Look for a route that terminates with a partial.
                 return FindPathRecursive(start, 1, null);
@@ -236,9 +233,9 @@ namespace Decompose.Numerics
             // If both do so, then we have a path using the
             // two partial relations.
             if (prHasStart && prHasEnd)
-                return new List<TEdge> { prMap[end], prMap[start] };
+                return new List<Edge> { prMap[end], prMap[start] };
 
-            var result = null as List<TEdge>;
+            var result = null as List<Edge>;
 
             // First try to find a direct path from start to
             // end just using the partial relation map, which
@@ -289,14 +286,14 @@ namespace Decompose.Numerics
             return result;
         }
 
-        private List<TEdge> FindPathRecursive(long start, long end, TEdge previous)
+        private List<Edge> FindPathRecursive(long start, long end, Edge previous)
         {
-            TEdge edge;
-            List<TEdge> edges;
+            Edge edge;
+            List<Edge> edges;
             if (end == 1)
             {
                 if (prMap.TryGetValue(start, out edge) && edge != previous)
-                    return new List<TEdge> { prMap[start] };
+                    return new List<Edge> { prMap[start] };
             }
             if (!pprMap.GetEdges(start, out edge, out edges))
                 return null;
@@ -311,13 +308,13 @@ namespace Decompose.Numerics
             return null;
         }
 
-        private List<TEdge> CheckEdge(long start, long end, TEdge previous, TEdge edge)
+        private List<Edge> CheckEdge(long start, long end, Edge previous, Edge edge)
         {
             if (edge == previous)
                 return null;
             var next = edge.Vertex1 == start ? edge.Vertex2 : edge.Vertex1;
             if (next == end)
-                return new List<TEdge> { edge };
+                return new List<Edge> { edge };
             var result = FindPathRecursive(next, end, edge);
             if (result != null)
             {

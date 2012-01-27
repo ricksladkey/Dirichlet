@@ -545,7 +545,7 @@ namespace Decompose
             var referenceGraph = new Graph<long, Edge<long>>();
 #endif
             //var graph = new Graph<long, Edge<long>>();
-            var graph = new PartialRelationGraph<PartialRelationEdge>();
+            var graph = new PartialRelationGraph<int>();
             foreach (var ppr in pprs)
             {
                 var cofactor1 = ppr.Item1;
@@ -573,7 +573,7 @@ namespace Decompose
 #if false
                     referenceGraph.AddEdge(cofactor1, cofactor2);
 #endif
-                    graph.AddEdge(cofactor1, cofactor2);
+                    graph.AddEdge(cofactor1, cofactor2, processed);
                 }
                 else
                 {

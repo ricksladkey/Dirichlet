@@ -509,19 +509,6 @@ namespace Decompose.Numerics
             }
         }
 
-        private class PartialPartialRelation : PartialRelationEdge
-        {
-            public Polynomial Polynomial { get; set; }
-            public int X { get; set; }
-            public ExponentEntries Entries { get; set; }
-            public long Cofactor1 { get { return Vertex1; } set { Vertex1 = value; } }
-            public long Cofactor2 { get { return Vertex2; } set { Vertex2 = value; } }
-            public override string ToString()
-            {
-                return string.Format("X = {0}, Cofactor1 = {1}, Cofactor2 = {2}", X, Cofactor1, Cofactor2);
-            }
-        }
-
         private class Siqs
         {
             public int Index { get; set; }
@@ -631,7 +618,7 @@ namespace Decompose.Numerics
         private Dictionary<ExponentEntries, Relation> relationBuffer;
         private Relation[] relations;
         private Dictionary<long, PartialRelation> partialRelations;
-        private PartialRelationGraph<PartialPartialRelation> partialPartialRelations;
+        private PartialRelationGraph<PartialRelation> partialPartialRelations;
         private IBitMatrix matrix;
         private Stopwatch timer;
 
@@ -1276,7 +1263,7 @@ namespace Decompose.Numerics
             sievingAborted = false;
             relationBuffer = new Dictionary<ExponentEntries, Relation>();
             partialRelations = new Dictionary<long, PartialRelation>();
-            partialPartialRelations = new PartialRelationGraph<PartialPartialRelation>();
+            partialPartialRelations = new PartialRelationGraph<PartialRelation>();
 
             if (threads == 0)
                 SieveTask();
@@ -2055,7 +2042,7 @@ namespace Decompose.Numerics
         }
 
 #if false
-        private List<PartialPartialRelation> pprs = new List<PartialPartialRelation>();
+        private List<Tuple<long, long>> pprs = new List<Tuple<long, long>>();
 #endif
 
         private void ProcessPartialPartialRelation(Interval interval, int k, long cofactor1, long cofactor2)
@@ -2074,24 +2061,22 @@ namespace Decompose.Numerics
                 return;
             }
             var saveFactorization = cofactor2 == 1 ? savePartialRelationFactorizations : savePartialPartialRelationFactorizations;
-            var relation = new PartialPartialRelation
+            var relation = new PartialRelation
             {
                 Polynomial = interval.Polynomial,
                 X = interval.X + k,
                 Entries = saveFactorization ? interval.Exponents.Entries : null,
-                Cofactor1 = cofactor1,
-                Cofactor2 = cofactor2,
             };
-            CheckValidPartialPartialRelation(relation, interval.Exponents);
+            CheckValidPartialPartialRelation(relation, interval.Exponents, cofactor1, cofactor2);
 #if false
             lock (pprs)
                 pprs.Add(partialPartialRelation);
 #endif
-            var cycle = null as ICollection<PartialPartialRelation>;
+            var cycle = null as ICollection<PartialRelationGraph<PartialRelation>.Edge>;
             lock (partialPartialRelations)
             {
                 // Duplicate check.
-                if (IsDuplicate(relation))
+                if (IsDuplicate(relation, cofactor1, cofactor2))
                     return;
 
                 // See if this edge will complete a cycle.
@@ -2099,7 +2084,7 @@ namespace Decompose.Numerics
                 if (cycle == null)
                 {
                     // Nope, add it.
-                    partialPartialRelations.AddEdge(relation);
+                    partialPartialRelations.AddEdge(cofactor1, cofactor2, relation);
                     return;
                 }
 
@@ -2117,11 +2102,12 @@ namespace Decompose.Numerics
             // Create a relation from all the partial partials in the cycle.
             var x = interval.Polynomial.EvaluateMapping(interval.X + k);
             var allCofactors = new List<long> { cofactor1, cofactor2 };
-            foreach (var other in cycle)
+            foreach (var edge in cycle)
             {
+                var other = edge.Value;
                 x *= other.Polynomial.EvaluateMapping(other.X);
-                allCofactors.Add(other.Cofactor1);
-                allCofactors.Add(other.Cofactor2);
+                allCofactors.Add(edge.Vertex1);
+                allCofactors.Add(edge.Vertex2);
                 if (other.Entries != null)
                     AddEntries(interval.Exponents, other.Entries);
                 else
@@ -2135,19 +2121,20 @@ namespace Decompose.Numerics
             AddRelation(CreateRelation(x, interval.Exponents.Entries, cofactor));
         }
 
-        private bool IsDuplicate(PartialPartialRelation relation)
+        private bool IsDuplicate(PartialRelation relation, long cofactor1, long cofactor2)
         {
-            var edge = partialPartialRelations.FindEdge(relation.Cofactor1, relation.Cofactor2);
+            var edge = partialPartialRelations.FindEdge(cofactor1, cofactor2);
             if (edge == null)
                 return false;
-            if (edge.Entries != null && relation.Entries != null)
+            var other = edge.Value;
+            if (other.Entries != null && relation.Entries != null)
             {
-                if (!edge.Entries.Equals(relation.Entries))
+                if (!other.Entries.Equals(relation.Entries))
                     return false;
             }
             else
             {
-                if (edge.Polynomial.Evaluate(edge.X) != relation.Polynomial.Evaluate(relation.X))
+                if (other.Polynomial.Evaluate(other.X) != relation.Polynomial.Evaluate(relation.X))
                     return false;
             }
             Interlocked.Increment(ref duplicatePartialPartialRelationsFound);
@@ -2228,16 +2215,10 @@ namespace Decompose.Numerics
             return result * BigInteger.ModPow(relation.Cofactor, 2, n) % n;
         }
 
-        private BigInteger MultiplyFactors(PartialRelation partialRelation, BigInteger cofactor)
+        private BigInteger MultiplyFactors(ExponentEntries entries, params BigInteger[] cofactors)
         {
-            return MultiplyFactors(partialRelation.Entries) * cofactor % n;
-        }
-
-        private BigInteger MultiplyFactors(PartialPartialRelation partialPartialRelation, ExponentEntries entries)
-        {
-            var cofactor1 = partialPartialRelation.Cofactor1;
-            var cofactor2 = partialPartialRelation.Cofactor2;
-            return MultiplyFactors(entries) * cofactor1 % n * cofactor2 % n;
+            var result = MultiplyFactors(entries);
+            return result * cofactors.ProductModulo(n) % n;
         }
 
         [Conditional("DEBUG")]
@@ -2253,16 +2234,16 @@ namespace Decompose.Numerics
         private void CheckValidPartialRelation(PartialRelation relation, long cofactor)
         {
             var x = relation.Polynomial.EvaluateMapping(relation.X);
-            var y = MultiplyFactors(relation, cofactor);
+            var y = MultiplyFactors(relation.Entries, cofactor);
             if ((x * x - y) % n != 0)
                 throw new InvalidOperationException("invalid partial relation");
         }
 
         [Conditional("DEBUG")]
-        private void CheckValidPartialPartialRelation(PartialPartialRelation relation, Exponents exponents)
+        private void CheckValidPartialPartialRelation(PartialRelation relation, Exponents exponents, long cofactor1, long cofactor2)
         {
             var x = relation.Polynomial.EvaluateMapping(relation.X);
-            var y = MultiplyFactors(relation, exponents.Entries);
+            var y = MultiplyFactors(exponents.Entries, cofactor1, cofactor2);
             if ((x * x - y) % n != 0)
                 throw new InvalidOperationException("invalid partial partial relation");
         }
