@@ -482,7 +482,7 @@ namespace Decompose.Numerics
         private const double thresholdExponentDefault = 1.4;
         private const double thresholdExponentPartialPartialRelationsDefault = 2.25;
         private const double errorLimitDefault = 0.1;
-        private const int cofactorCutoffDefault = 256;
+        private const int cofactorCutoffDefault = 1024;
         private const int surplusRelations = 12;
         private const int reportingIntervalDefault = 10;
         private const int maximumMultiplier = 73;
@@ -1402,9 +1402,8 @@ namespace Decompose.Numerics
             }
             for (int i = 1; i < mediumPrimeIndex; i++)
             {
-                var entry = factorBase[i];
-                var p = entry.P;
-                var logP = entry.LogP;
+                var p = offsets[i].P;
+                var logP = offsets[i].LogP;
                 var offset1 = offsets[i].Offset1;
                 var offset2 = offsets[i].Offset2;
                 for (k = 0; k < cycleLength; k += p)
@@ -1788,7 +1787,7 @@ namespace Decompose.Numerics
             {
                 if (siqs.IsQIndex[i])
                     continue;
-                var p = primes[i];
+                var p = offsets[i].P;
                 var offset = k % p;
                 if (offset != offsets[i].Offset1 && offset != offsets[i].Offset2)
                 {
@@ -1963,7 +1962,7 @@ namespace Decompose.Numerics
                 if (cycle == null)
                 {
                     // Nope, add it.
-                    partialPartialRelations.AddEdge(cofactor1, cofactor2, relation);
+                    partialPartialRelations.AddEdge(cofactor1, cofactor2, ref relation);
                     return;
                 }
 

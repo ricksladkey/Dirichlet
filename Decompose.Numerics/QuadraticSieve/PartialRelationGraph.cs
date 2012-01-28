@@ -70,6 +70,10 @@ namespace Decompose.Numerics
             {
                 dictionaries[GetSlot(vertex)].Add(vertex, value);
             }
+            public void AddRef(long vertex, ref T value)
+            {
+                dictionaries[GetSlot(vertex)].Add(vertex, value);
+            }
             public void Remove(long vertex)
             {
                 dictionaries[GetSlot(vertex)].Remove(vertex);
@@ -85,7 +89,7 @@ namespace Decompose.Numerics
             }
             private int GetSlot(long vertex)
             {
-                return (int)(vertex & mask) >> shift;
+                return ((int)vertex & mask) >> shift;
             }
         }
 
@@ -144,7 +148,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private VertexMap<Edge> prMap;
+        private VertexMap<TValue> prMap;
         private EdgeMap pprMap;
         private int count;
 
@@ -154,17 +158,17 @@ namespace Decompose.Numerics
 
         public PartialRelationGraph()
         {
-            prMap = new VertexMap<Edge>();
+            prMap = new VertexMap<TValue>();
             pprMap = new EdgeMap();
         }
 
-        public void AddEdge(long vertex1, long vertex2, TValue value)
+        public void AddEdge(long vertex1, long vertex2, ref TValue value)
         {
-            var edge = new Edge { Vertex1 = vertex1, Vertex2 = vertex2, Value = value };
             if (vertex2 == 1)
-                prMap.Add(vertex1, edge);
+                prMap.AddRef(vertex1, ref value);
             else
             {
+                var edge = new Edge { Vertex1 = vertex1, Vertex2 = vertex2, Value = value };
                 pprMap.Add(vertex1, edge);
                 pprMap.Add(vertex2, edge);
             }
@@ -183,14 +187,20 @@ namespace Decompose.Numerics
             --count;
         }
 
+        public Edge FindEdge(long vertex)
+        {
+            TValue value;
+            if (prMap.TryGetValue(vertex, out value))
+                return new Edge { Vertex1 = vertex, Vertex2 = 1, Value = value };
+            return null;
+        }
+
         public Edge FindEdge(long vertex1, long vertex2)
         {
             Edge edge;
             List<Edge> edges;
             if (vertex2 == 1)
-            {
-                return prMap.TryGetValue(vertex1, out edge) ? edge : null;
-            }
+                return FindEdge(vertex1);
             if (!pprMap.GetEdges(vertex1, out edge, out edges))
                 return null;
             if (edge != null)
@@ -220,8 +230,9 @@ namespace Decompose.Numerics
             if (end == 1)
             {
                 // Look for a matching partial relation.
-                if (prMap.ContainsKey(start))
-                    return new List<Edge> { prMap[start] };
+                var edge = FindEdge(start);
+                if (edge != null)
+                    return new List<Edge> { edge };
 
                 // Look for a route that terminates with a partial.
                 return FindPathRecursive(start, 1, null);
@@ -235,7 +246,7 @@ namespace Decompose.Numerics
             // If both do so, then we have a path using the
             // two partial relations.
             if (prHasStart && prHasEnd)
-                return new List<Edge> { prMap[end], prMap[start] };
+                return new List<Edge> { FindEdge(start), FindEdge(end) };
 
             var result = null as List<Edge>;
 
@@ -273,7 +284,7 @@ namespace Decompose.Numerics
             {
                 result = FindPathRecursive(end, 1, null);
                 if (result != null)
-                    result.Add(prMap[start]);
+                    result.Add(FindEdge(start));
             }
 
             // If the path ends in the partial relation map,
@@ -283,7 +294,7 @@ namespace Decompose.Numerics
             {
                 result = FindPathRecursive(start, 1, null);
                 if (result != null)
-                    result.Add(prMap[end]);
+                    result.Add(FindEdge(end));
             }
             return result;
         }
@@ -294,8 +305,9 @@ namespace Decompose.Numerics
             List<Edge> edges;
             if (end == 1)
             {
-                if (prMap.TryGetValue(start, out edge) && edge != previous)
-                    return new List<Edge> { prMap[start] };
+                edge = FindEdge(start);
+                if (edge != null)
+                    return new List<Edge> { edge };
             }
             if (!pprMap.GetEdges(start, out edge, out edges))
                 return null;

@@ -32,6 +32,7 @@ namespace Decompose
                 //QuadraticSieveParametersTest();
                 QuadraticSieveStandardTest();
                 //QuadraticSieveDebugTest();
+                //QuadraticSieveFactorTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
                 //CreateSamplesTest();
@@ -438,21 +439,47 @@ namespace Decompose
 #endif
                 Diagnostics = QuadraticSieve.Diag.Verbose,
                 DiagnosticsOutput = output,
+                ReportingInterval = 60,
+                //ProcessPartialPartialRelations = true,
                 //MergeLimit = 10,
-                //FactorBaseSize = 25000,
+                //FactorBaseSize = 45000,
                 //BlockSize = 1024 * 1024,
                 //IntervalSize = 1024 * 1024,
                 //CofactorCutoff = 4096 * 4,
                 //ErrorLimit = 1,
                 //NumberOfFactors = 12,
-                //ReportingInterval = 60,
-                //ThresholdExponent = 2.75,
+                //ThresholdExponent = 2.5,
                 //LargePrimeOptimization = false,
                 //UseCountTable = true,
-                ProcessPartialPartialRelations = true,
-                //CofactorCutoff = 128,
+                //CofactorCutoff = 1024,
             };
-            var i = 40;
+            var i = 35;
+            var sample = samples[i];
+            var p = sample.P;
+            var q = sample.Q;
+            var n = sample.N;
+            output.WriteLine("i = {0}, p = {1}, q = {2}", i, p, q);
+            output.WriteLine("n = {0}", n);
+            var algorithm = new QuadraticSieve(config);
+            FactorTest(false, 1, n, algorithm);
+        }
+
+        static void QuadraticSieveFactorTest()
+        {
+            new QuadraticSieve(new QuadraticSieve.Config()).Factor(samples[10].N).ToArray();
+            //new QuadraticSieve(new QuadraticSieve.Config()).Factor(35095264073).ToArray();
+            var config = new QuadraticSieve.Config
+            {
+#if !DEBUG
+                Threads = 8,
+#endif
+                Diagnostics = QuadraticSieve.Diag.Verbose,
+                DiagnosticsOutput = output,
+                ReportingInterval = 60,
+                ThresholdExponent = 2.5,
+                MergeLimit = 10,
+            };
+            var i = 50;
             var sample = samples[i];
             var p = sample.P;
             var q = sample.Q;
@@ -475,10 +502,10 @@ namespace Decompose
         static void GaussianEliminationTest1()
         {
             var threads = 8;
-            var mergeLimit = 10;
+            var mergeLimit = 5;
             //var file = @"..\..\..\..\matrix-12001.txt.gz";
-            //var file = @"..\..\..\..\matrix-18401.txt.gz";
-            var file = @"..\..\..\..\matrix-150001.txt.gz";
+            var file = @"..\..\..\..\matrix-18401.txt.gz";
+            //var file = @"..\..\..\..\matrix-150001.txt.gz";
             var lines = GetLinesGzip(file);
             var timer = new Stopwatch();
 
@@ -573,7 +600,7 @@ namespace Decompose
 #if false
                     referenceGraph.AddEdge(cofactor1, cofactor2);
 #endif
-                    graph.AddEdge(cofactor1, cofactor2, processed);
+                    graph.AddEdge(cofactor1, cofactor2, ref processed);
                 }
                 else
                 {

@@ -40,3 +40,5 @@ b = 0
 f(x) = 2 x^2 - 1
 
 f(x) = (ax + b)^2 - n
+
+- merge add relation and create relation

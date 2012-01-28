@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Decompose.Numerics
@@ -83,6 +84,7 @@ namespace Decompose.Numerics
             }
         }
 
+#if false
         private void ZeroColumn(IBitMatrix matrix, int rows, int j, int k)
         {
             if (threads == 1 || rows < multiThreadedCutoff)
@@ -92,19 +94,49 @@ namespace Decompose.Numerics
                     if (i != j && matrix[i, k])
                         matrix.XorRows(i, j, k);
                 }
+                return;
             }
-            else
+            Parallel.For(0, threads, thread =>
             {
-                Parallel.For(0, threads, thread =>
+                for (int i = thread; i < rows; i += threads)
                 {
-                    for (int i = thread; i < rows; i += threads)
+                    if (i != j && matrix[i, k])
+                        matrix.XorRows(i, j, k);
+                }
+            });
+        }
+#else
+        private AutoResetEvent signal = new AutoResetEvent(false);
+
+        private void ZeroColumn(IBitMatrix matrix, int rows, int j, int k)
+        {
+            if (threads == 1 || rows < multiThreadedCutoff)
+            {
+                for (int i = 0; i < rows; i++)
+                {
+                    if (i != j && matrix[i, k])
+                        matrix.XorRows(i, j, k);
+                }
+                return;
+            }
+            signal.Reset();
+            int counter = threads;
+            for (int thread = 0; thread < threads; thread++)
+            {
+                ThreadPool.QueueUserWorkItem(delegate(Object o)
+                {
+                    for (int i = (int)o; i < rows; i += threads)
                     {
                         if (i != j && matrix[i, k])
                             matrix.XorRows(i, j, k);
                     }
-                });
+                    if (Interlocked.Decrement(ref counter) == 0)
+                        signal.Set();
+                }, thread);
             }
+            signal.WaitOne();
         }
+#endif
 
         public static bool IsSolutionValid(IBitMatrix matrix, IBitArray solution)
         {
