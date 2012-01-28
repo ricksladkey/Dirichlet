@@ -38,6 +38,10 @@ namespace Decompose.Numerics
         {
             return ((BigInteger)((ulong)r.r3 << 32 | r.r2) << 64) | ((ulong)r.r1 << 32 | r.r0);
         }
+        public static UInt128 operator <<(UInt128 r, int n)
+        {
+            return LeftShift(ref r, n);
+        }
         public static UInt128 operator *(UInt128 u, UInt128 v)
         {
             return Multiply(u.r0, u.r1, v.r0, v.r1);
@@ -101,13 +105,73 @@ namespace Decompose.Numerics
         }
         private static ulong Modulus96(ref UInt128 u, ulong v)
         {
-            int d = 32 - u.r3.GetBitLength();
-            //UInt128 uhat = LeftShfit(u, d);
-            return 0;
+            int d = 64 - v.GetBitLength();
+            var vPrime = v << d;
+            var v1 = (uint)(vPrime >> 32);
+            var v2 = (uint)vPrime;
+            UInt128 w = LeftShift(ref u, d);
+            ModulusStep(ref w.r3, ref w.r2, ref w.r1, v1, v2);
+            ModulusStep(ref w.r2, ref w.r1, ref w.r0, v1, v2);
+            return ((ulong)w.r1 << 32 | w.r0) >> d;
         }
         private static ulong Modulus128(ref UInt128 u, ulong v)
         {
-            return 0;
+            int d = 64 - v.GetBitLength();
+            var vPrime = v << d;
+            var v1 = (uint)(vPrime >> 32);
+            var v2 = (uint)vPrime;
+            var r4 = (uint)0;
+            UInt128 w = LeftShift(ref u, d);
+            ModulusStep(ref r4, ref w.r3, ref w.r2, v1, v2);
+            ModulusStep(ref w.r3, ref w.r2, ref w.r1, v1, v2);
+            ModulusStep(ref w.r2, ref w.r1, ref w.r0, v1, v2);
+            return ((ulong)w.r1 << 32 | w.r0) >> d;
+        }
+        private static UInt128 LeftShift(ref UInt128 u, int d)
+        {
+            int dneg = 32 - d;
+            return new UInt128
+            {
+                r0 = u.r0 << d,
+                r1 = u.r1 << d | u.r0 >> dneg,
+                r2 = u.r2 << d | u.r1 >> dneg,
+                r3 = u.r3 << d | u.r2 >> dneg,
+            };
+        }
+        private static void ModulusStep(ref uint u0, ref uint u1, ref uint u2, uint v1, uint v2)
+        {
+            ulong u0u1 = (ulong)u0 << 32 | u1;
+            ulong qhat = u0 == v1 ? (1ul << 32) - 1 : u0u1 / v1;
+            ulong r = u0u1 - qhat * v1;
+            if (r == (uint)r && v2 * qhat > (r << 32 | u2))
+            {
+                --qhat;
+                r = u0u1 - qhat * v1;
+                if (r == (uint)r && v2 * qhat > (r << 32 | u2))
+                    --qhat;
+            }
+            ulong carry = qhat * v2;
+            ulong borrow = (ulong)u2 - (uint)carry;
+            carry >>= 32;
+            u2 = (uint)borrow;
+            borrow = (ulong)((long)borrow >> 32);
+            carry += qhat * v1;
+            borrow += (ulong)u1 - (uint)carry;
+            carry >>= 32;
+            u1 = (uint)borrow;
+            borrow = (ulong)((long)borrow >> 32);
+            borrow += u0 - carry;
+            u0 = 0;
+            borrow = (ulong)((long)borrow >> 32);
+            if (borrow != 0)
+            {
+                --qhat;
+                carry = (ulong)u2 + v2;
+                u2 = (uint)carry;
+                carry >>= 32;
+                carry += (ulong)u1 + v1;
+                u1 = (uint)carry;
+            }
         }
     }
 }

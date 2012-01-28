@@ -927,14 +927,14 @@ namespace Decompose.Numerics
             }
             if (v.IsZero)
                 throw new InvalidOperationException("division by zero");
-            int dneg = v.bits[v.index + v.last].GetBitLength();
-            int d = 32 - dneg;
             int n = v.last + 1;
             if (n == 1)
             {
                 DivMod(u, v.bits[v.index], q);
                 return;
             }
+            int dneg = v.bits[v.index + v.last].GetBitLength();
+            int d = 32 - dneg;
             int m = u.last + 1 - n;
             fixed (uint* ubits = &u.bits[u.index], vbits = &v.bits[v.index])
             {

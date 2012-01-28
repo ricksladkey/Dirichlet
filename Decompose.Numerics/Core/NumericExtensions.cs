@@ -56,9 +56,25 @@ namespace Decompose.Numerics
             return product;
         }
 
+        public static int GetBitLength(this long x)
+        {
+            return GetBitLength((ulong)x);
+        }
+
         public static int GetBitLength(this int x)
         {
             return GetBitLength((uint)x);
+        }
+
+        public static int GetBitLength(this ulong x)
+        {
+            int i = 0;
+            if ((x & 0xffffffff00000000) != 0)
+            {
+                i += 32;
+                x >>= 32;
+            }
+            return i + GetBitLength((uint)x);
         }
 
         public static int GetBitLength(this uint x)

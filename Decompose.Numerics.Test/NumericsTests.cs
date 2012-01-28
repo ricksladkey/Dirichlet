@@ -447,14 +447,15 @@ namespace Decompose.Numerics.Test
         public void UInt128Test()
         {
             var random = new MersenneTwister64(0);
-            var max = (ulong)1 << 120;
+            var max = (ulong)1 << 40;
             for (int i = 0; i < 100000; i++)
             {
                 var a = random.Next(max);
                 var b = random.Next(max);
                 var c = (UInt128)a * b;
+                Assert.AreEqual(((BigInteger)a * b) << 25, (BigInteger)(c << 25));
                 Assert.AreEqual((BigInteger)a * b, (BigInteger)c);
-                var n = random.Next(int.MaxValue);
+                var n = random.Next((ulong)1 << 40);
                 Assert.AreEqual((BigInteger)a * b % n, c % n);
             }
         }
