@@ -273,7 +273,11 @@ namespace Decompose.Numerics
                 {
                     var part2 = FindPathRecursive(end, 1, null);
                     if (part2 != null)
-                        return part1.Concat(part2).ToList();
+                    {
+                        foreach (var edge in part2)
+                            part1.Add(edge);
+                        return part1;
+                    }
                 }
             }
 

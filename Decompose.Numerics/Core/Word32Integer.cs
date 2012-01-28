@@ -927,8 +927,8 @@ namespace Decompose.Numerics
             }
             if (v.IsZero)
                 throw new InvalidOperationException("division by zero");
-            int d = 32 - v.bits[v.index + v.last].GetBitLength();
-            int dneg = 32 - d;
+            int dneg = v.bits[v.index + v.last].GetBitLength();
+            int d = 32 - dneg;
             int n = v.last + 1;
             if (n == 1)
             {

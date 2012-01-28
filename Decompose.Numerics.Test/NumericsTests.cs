@@ -442,5 +442,21 @@ namespace Decompose.Numerics.Test
                 Assert.AreEqual(BigInteger.One, result);
             }
         }
+
+        [TestMethod]
+        public void UInt128Test()
+        {
+            var random = new MersenneTwister64(0);
+            var max = (ulong)1 << 120;
+            for (int i = 0; i < 100000; i++)
+            {
+                var a = random.Next(max);
+                var b = random.Next(max);
+                var c = (UInt128)a * b;
+                Assert.AreEqual((BigInteger)a * b, (BigInteger)c);
+                var n = random.Next(int.MaxValue);
+                Assert.AreEqual((BigInteger)a * b % n, c % n);
+            }
+        }
     }
 }

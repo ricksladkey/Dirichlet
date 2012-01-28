@@ -42,3 +42,12 @@ f(x) = 2 x^2 - 1
 f(x) = (ax + b)^2 - n
 
 - merge add relation and create relation
+- write integer mod/pow
+
+a * b % n
+
+         u1    u0
+         v1    v0
+-----------------
+      u1*v0 u0*v0
+u1*v1 u0*v1

@@ -30,8 +30,8 @@ namespace Decompose
                 //MsieveTest();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                QuadraticSieveStandardTest();
-                //QuadraticSieveDebugTest();
+                //QuadraticSieveStandardTest();
+                QuadraticSieveDebugTest();
                 //QuadraticSieveFactorTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
@@ -453,7 +453,7 @@ namespace Decompose
                 //UseCountTable = true,
                 //CofactorCutoff = 1024,
             };
-            var i = 35;
+            var i = 40;
             var sample = samples[i];
             var p = sample.P;
             var q = sample.Q;
