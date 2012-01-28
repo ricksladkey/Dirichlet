@@ -1094,12 +1094,13 @@ namespace Decompose.Numerics
             fixed (uint* ubits = &u.bits[u.index])
             {
                 var m = u.last;
-                ubits[m] %= v;
+                var u1 = ubits[m] % v;
                 for (int j = m - 1; j >= 0; j--)
                 {
-                    ubits[j] = (uint)(((ulong)ubits[j + 1] << 32 | ubits[j]) % v);
+                    u1 = (uint)(((ulong)u1 << 32 | ubits[j]) % v);
                     ubits[j + 1] = 0;
                 }
+                ubits[0] = u1;
             }
             u.last = 0;
         }
