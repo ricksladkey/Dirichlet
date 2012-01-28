@@ -446,18 +446,31 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void UInt128Test()
         {
+            UInt128Test(20, 20);
+            UInt128Test(20, 40);
+            UInt128Test(20, 60);
+            UInt128Test(40, 20);
+            UInt128Test(40, 40);
+            UInt128Test(40, 60);
+            UInt128Test(60, 20);
+            UInt128Test(60, 40);
+            UInt128Test(60, 60);
+        }
+
+        private void UInt128Test(int factorSize, int modulusSize)
+        {
             var random = new MersenneTwister64(0);
-            var max = (ulong)1 << 40;
-            for (int i = 0; i < 100000; i++)
+            var factorMax = (ulong)1 << factorSize;
+            var modulusMax = (ulong)1 << modulusSize;
+            for (int i = 0; i < 10000; i++)
             {
-                var a = random.Next(max);
-                var b = random.Next(max);
+                var a = random.Next(factorMax);
+                var b = random.Next(factorMax);
+                var n = random.Next(modulusMax - 1) + 1;
                 var c = (UInt128)a * b;
-                Assert.AreEqual(((BigInteger)a * b) << 25, (BigInteger)(c << 25));
                 Assert.AreEqual((BigInteger)a * b, (BigInteger)c);
-                var n = random.Next((ulong)1 << 40);
                 Assert.AreEqual((BigInteger)a * b % n, c % n);
-                Assert.AreEqual(BigInteger.ModPow(a, b, n), (BigInteger)UInt128.ModPow(a, b, n));
+                Assert.AreEqual(BigInteger.ModPow(a, b, n), (BigInteger)IntegerMath.ModPow(a, b, n));
             }
         }
     }

@@ -580,7 +580,7 @@ namespace Decompose
                 var cofactor = cofactor1 * cofactor2;
                 if (cofactor2 != 1)
                 {
-#if true
+#if false
                     var factor = algorithm.GetDivisor(cofactor);
                     if (factor != cofactor1 && factor != cofactor2)
                         ++failed;
@@ -588,8 +588,8 @@ namespace Decompose
                 }
                 var cycle = graph.FindPath(cofactor1, cofactor2);
 #if true
-                for (int i = 0; i < 100; i++)
-                    IntegerMath.IsProbablePrime((BigInteger)cofactor1);
+                for (int i = 0; i < 1000; i++)
+                    IntegerMath.IsProbablePrime(cofactor1);
 #endif
 #if false
                 var referenceCycle = referenceGraph.FindPath(cofactor1, cofactor2);

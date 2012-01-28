@@ -8,6 +8,28 @@ namespace Decompose.Numerics
         private uint r1;
         private uint r2;
         private uint r3;
+        public static UInt128 Parse(string value)
+        {
+            return (UInt128)BigInteger.Parse(value);
+        }
+        public override string ToString()
+        {
+            return ((BigInteger)this).ToString();
+        }
+        public int GetBitLength()
+        {
+            if (r3 != 0)
+                return r3.GetBitLength() + 96;
+            if (r2 != 0)
+                return r2.GetBitLength() + 64;
+            if (r1 != 0)
+                return r1.GetBitLength() + 32;
+            return r0.GetBitLength();
+        }
+        public int GetBitCount()
+        {
+            return r0.GetBitCount() + r1.GetBitCount() + r2.GetBitCount() + r3.GetBitCount();
+        }
         public static implicit operator UInt128(uint i)
         {
             return new UInt128 { r0 = i };
@@ -36,11 +58,13 @@ namespace Decompose.Numerics
         }
         public static implicit operator BigInteger(UInt128 r)
         {
-            return ((BigInteger)((ulong)r.r3 << 32 | r.r2) << 64) | ((ulong)r.r1 << 32 | r.r0);
+            return (BigInteger)((ulong)r.r3 << 32 | r.r2) << 64 | (ulong)r.r1 << 32 | r.r0;
         }
         public static UInt128 operator <<(UInt128 r, int n)
         {
-            return LeftShift(ref r, n);
+            UInt128 w;
+            LeftShift(out w, ref r, n);
+            return w;
         }
         public static UInt128 operator *(UInt128 u, UInt128 v)
         {
@@ -130,7 +154,8 @@ namespace Decompose.Numerics
             var vPrime = v << d;
             var v1 = (uint)(vPrime >> 32);
             var v2 = (uint)vPrime;
-            UInt128 w = LeftShift(ref u, d);
+            UInt128 w;
+            LeftShift(out w, ref u, d);
             ModulusStep(ref w.r3, ref w.r2, ref w.r1, v1, v2);
             ModulusStep(ref w.r2, ref w.r1, ref w.r0, v1, v2);
             return ((ulong)w.r1 << 32 | w.r0) >> d;
@@ -141,23 +166,21 @@ namespace Decompose.Numerics
             var vPrime = v << d;
             var v1 = (uint)(vPrime >> 32);
             var v2 = (uint)vPrime;
-            var r4 = (uint)0;
-            UInt128 w = LeftShift(ref u, d);
+            UInt128 w;
+            var r4 = LeftShift(out w, ref u, d);
             ModulusStep(ref r4, ref w.r3, ref w.r2, v1, v2);
             ModulusStep(ref w.r3, ref w.r2, ref w.r1, v1, v2);
             ModulusStep(ref w.r2, ref w.r1, ref w.r0, v1, v2);
             return ((ulong)w.r1 << 32 | w.r0) >> d;
         }
-        private static UInt128 LeftShift(ref UInt128 u, int d)
+        private static uint LeftShift(out UInt128 w, ref UInt128 u, int d)
         {
             int dneg = 32 - d;
-            return new UInt128
-            {
-                r0 = u.r0 << d,
-                r1 = u.r1 << d | u.r0 >> dneg,
-                r2 = u.r2 << d | u.r1 >> dneg,
-                r3 = u.r3 << d | u.r2 >> dneg,
-            };
+            w.r0 = u.r0 << d;
+            w.r1 = u.r1 << d | u.r0 >> dneg;
+            w.r2 = u.r2 << d | u.r1 >> dneg;
+            w.r3 = u.r3 << d | u.r2 >> dneg;
+            return u.r3 >> dneg;
         }
         private static void ModulusStep(ref uint u0, ref uint u1, ref uint u2, uint v1, uint v2)
         {

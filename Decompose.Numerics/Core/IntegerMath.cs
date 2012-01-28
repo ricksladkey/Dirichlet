@@ -240,6 +240,35 @@ namespace Decompose.Numerics
             return sqrt.Sqrt(n);
         }
 
+        public static int ModPow(int value, int exponent, int modulus)
+        {
+            return (int)ModPow((uint)value, (uint)exponent, (uint)modulus);
+        }
+
+        public static uint ModPow(uint value, uint exponent, uint modulus)
+        {
+            return ModPow(value, exponent, 1, modulus);
+        }
+
+        private static uint ModPow(uint b, uint e, uint p, uint modulus)
+        {
+            if (e == 0)
+                return p;
+            if ((e & 1) == 0)
+                return ModPow((uint)((ulong)b * b % modulus), e >> 1, p, modulus);
+            return ModPow(b, e - 1, (uint)((ulong)b * p % modulus), modulus);
+        }
+
+        public static long ModPow(long value, long exponent, long modulus)
+        {
+            return (long)ModPow((ulong)value, (ulong)exponent, (ulong)modulus);
+        }
+
+        public static ulong ModPow(ulong value, ulong exponent, ulong modulus)
+        {
+            return UInt128.ModPow(value, exponent, modulus);
+        }
+
         private static IPrimalityAlgorithm<int> primalityInt = new TrialDivisionPrimality();
 
         public static bool IsPrime(int n)
@@ -249,6 +278,16 @@ namespace Decompose.Numerics
 
         private static IPrimalityAlgorithm<BigInteger> primalityBigInteger = new MillerRabin(16);
 
+        public static bool IsProbablePrime(int n)
+        {
+            return IsProbablePrime((uint)n);
+        }
+
+        public static bool IsProbablePrime(uint n)
+        {
+            return IntegerMath.ModPow(2, n - 1, n) == 1;
+        }
+
         public static bool IsProbablePrime(long n)
         {
             return IsProbablePrime((ulong)n);
@@ -256,6 +295,8 @@ namespace Decompose.Numerics
 
         public static bool IsProbablePrime(ulong n)
         {
+            if (n <= uint.MaxValue)
+                return IsProbablePrime((uint)n);
             return UInt128.ModPow(2, n - 1, n) == 1;
         }
 
