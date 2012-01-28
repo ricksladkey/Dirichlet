@@ -406,6 +406,23 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
+        public void BitLengthTest()
+        {
+            for (int i = 0; i < 256; i++)
+            {
+                ulong value = (ulong)i;
+                int count = 0;
+                while (value != 0)
+                {
+                    value >>= 1;
+                    ++count;
+                }
+                Assert.AreEqual(count, i.GetBitLength());
+                count += 0;
+            }
+        }
+
+        [TestMethod]
         public void BitCountTest()
         {
             for (int i = 0; i < 256; i++)

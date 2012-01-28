@@ -150,28 +150,35 @@ namespace Decompose.Numerics
         }
         private static ulong Modulus96(ref UInt128 u, ulong v)
         {
-            var d = 64 - v.GetBitLength();
+            var dneg = ((uint)(v >> 32)).GetBitLength();
+            var d = 32 - dneg;
             var vPrime = v << d;
             var v1 = (uint)(vPrime >> 32);
             var v2 = (uint)vPrime;
-            UInt128 w;
-            LeftShift(out w, ref u, d);
-            ModulusStep(ref w.r3, ref w.r2, ref w.r1, v1, v2);
-            ModulusStep(ref w.r2, ref w.r1, ref w.r0, v1, v2);
-            return ((ulong)w.r1 << 32 | w.r0) >> d;
+            var r0 = u.r0 << d;
+            var r1 = u.r1 << d | u.r0 >> dneg;
+            var r2 = u.r2 << d | u.r1 >> dneg;
+            var r3 = u.r2 >> dneg;
+            ModulusStep(ref r3, ref r2, ref r1, v1, v2);
+            ModulusStep(ref r2, ref r1, ref r0, v1, v2);
+            return ((ulong)r1 << 32 | r0) >> d;
         }
         private static ulong Modulus128(ref UInt128 u, ulong v)
         {
-            var d = 64 - v.GetBitLength();
+            var dneg = ((uint)(v >> 32)).GetBitLength();
+            var d = 32 - dneg;
             var vPrime = v << d;
             var v1 = (uint)(vPrime >> 32);
             var v2 = (uint)vPrime;
-            UInt128 w;
-            var r4 = LeftShift(out w, ref u, d);
-            ModulusStep(ref r4, ref w.r3, ref w.r2, v1, v2);
-            ModulusStep(ref w.r3, ref w.r2, ref w.r1, v1, v2);
-            ModulusStep(ref w.r2, ref w.r1, ref w.r0, v1, v2);
-            return ((ulong)w.r1 << 32 | w.r0) >> d;
+            var r0 = u.r0 << d;
+            var r1 = u.r1 << d | u.r0 >> dneg;
+            var r2 = u.r2 << d | u.r1 >> dneg;
+            var r3 = u.r3 << d | u.r2 >> dneg;
+            var r4 = u.r3 >> dneg;
+            ModulusStep(ref r4, ref r3, ref r2, v1, v2);
+            ModulusStep(ref r3, ref r2, ref r1, v1, v2);
+            ModulusStep(ref r2, ref r1, ref r0, v1, v2);
+            return ((ulong)r1 << 32 | r0) >> d;
         }
         private static uint LeftShift(out UInt128 w, ref UInt128 u, int d)
         {

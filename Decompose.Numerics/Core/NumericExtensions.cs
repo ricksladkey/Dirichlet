@@ -56,59 +56,60 @@ namespace Decompose.Numerics
             return product;
         }
 
-        public static int GetBitLength(this long x)
+        public static int GetBitLength(this long value)
         {
-            return GetBitLength((ulong)x);
+            return GetBitLength((ulong)value);
         }
 
-        public static int GetBitLength(this int x)
+        public static int GetBitLength(this int value)
         {
-            return GetBitLength((uint)x);
+            return GetBitLength((uint)value);
         }
 
-        public static int GetBitLength(this ulong x)
+        public static int GetBitLength(this ulong value)
+        {
+            if ((value & 0xffffffff00000000) != 0)
+                return GetBitLength((uint)(value >> 32)) + 32;
+            return GetBitLength((uint)value);
+        }
+
+        public static int GetBitLength(this uint value)
+        {
+            if ((value & 0xffff0000) != 0)
+            {
+                if ((value & 0xff000000) != 0)
+                    return GetBitLength((byte)(value >> 24)) + 24;
+                return GetBitLength((byte)(value >> 16)) + 16;
+            }
+            if ((value & 0xff00) != 0)
+                return GetBitLength((byte)(value >> 8)) + 8;
+            return GetBitLength((byte)value);
+        }
+
+        public static int GetBitLength(this byte value)
+        {
+            return bitLength[value];
+        }
+
+        private static byte[] bitLength = Enumerable.Range(0, byte.MaxValue + 1)
+            .Select(value => (byte)GetBitLengthSlow((byte)value)).ToArray();
+
+        public static int GetBitLengthSlow(this byte value)
         {
             int i = 0;
-            if ((x & 0xffffffff00000000) != 0)
-            {
-                i += 32;
-                x >>= 32;
-            }
-            return i + GetBitLength((uint)x);
-        }
-
-        public static int GetBitLength(this uint x)
-        {
-            int i = 0;
-            if ((x & 0xffff0000) != 0)
-            {
-                i += 16;
-                x >>= 16;
-            }
-            if ((x & 0xff00) != 0)
-            {
-                i += 8;
-                x >>= 8;
-            }
-            return i + GetBitLength((byte)x);
-        }
-
-        public static int GetBitLength(this byte x)
-        {
-            int i = 0;
-            if ((x & 0xf0) != 0)
+            if ((value & 0xf0) != 0)
             {
                 i += 4;
-                x >>= 4;
+                value >>= 4;
             }
-            if ((x & 0xc) != 0)
+            if ((value & 0xc) != 0)
             {
                 i += 2;
-                x >>= 2;
+                value >>= 2;
             }
-            if ((x & 0x2) != 0)
+            if ((value & 0x2) != 0)
                 return i + 2;
-            if ((x & 0x1) != 0)
+            if ((value & 0x1) != 0)
                 return i + 1;
             return 0;
         }

@@ -1015,7 +1015,7 @@ namespace Decompose.Numerics
 
         public Word32Integer Modulo(uint a)
         {
-            DivMod(this, a, null);
+            Mod(this, a);
             return this;
         }
 
@@ -1059,6 +1059,11 @@ namespace Decompose.Numerics
 
         private static unsafe void DivMod(Word32Integer u, uint v, Word32Integer q)
         {
+            if (q == null)
+            {
+                Mod(u, v);
+                return;
+            }
             if (v == 0)
                 throw new InvalidOperationException("division by zero");
             int m = u.last;
@@ -1068,22 +1073,33 @@ namespace Decompose.Numerics
                 {
                     int left = 1 + m - j;
                     uint u0 = ubits[left];
-                    Debug.Assert(j != 0 || u0 == 0);
                     uint u1 = ubits[left - 1];
                     ulong u0u1 = (ulong)u0 << 32 | u1;
                     ulong qhat = u0 == v ? (1ul << 32) - 1 : u0u1 / v;
-                    ulong borrow = u0u1 - qhat * v;
-                    ubits[left - 1] = (uint)borrow;
+                    ubits[left - 1] = (uint)(u0u1 - qhat * v);
                     ubits[left] = 0;
-                    if (q != null)
-                        q.bits[q.index + m - j] = (uint)qhat;
+                    q.bits[q.index + m - j] = (uint)qhat;
                 }
             }
-            if (q != null)
+            for (int i = m + 1; i <= q.last; i++)
+                q.bits[q.index + i] = 0;
+            q.SetLast(m);
+            u.last = 0;
+        }
+
+        private static unsafe void Mod(Word32Integer u, uint v)
+        {
+            if (v == 0)
+                throw new InvalidOperationException("division by zero");
+            fixed (uint* ubits = &u.bits[u.index])
             {
-                for (int i = m + 1; i <= q.last; i++)
-                    q.bits[q.index + i] = 0;
-                q.SetLast(m);
+                var m = u.last;
+                ubits[m] %= v;
+                for (int j = m - 1; j >= 0; j--)
+                {
+                    ubits[j] = (uint)(((ulong)ubits[j + 1] << 32 | ubits[j]) % v);
+                    ubits[j + 1] = 0;
+                }
             }
             u.last = 0;
         }
