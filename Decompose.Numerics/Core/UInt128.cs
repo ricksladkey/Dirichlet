@@ -74,22 +74,22 @@ namespace Decompose.Numerics
         {
             return Modulus(ref u, v);
         }
-        public static ulong ModMul(ulong a, ulong b, ulong modulus)
+        public static ulong ModularProduct(ulong a, ulong b, ulong modulus)
         {
             var product = Multiply((uint)a, (uint)(a >> 32), (uint)b, (uint)(b >> 32));
             return Modulus(ref product, modulus);
         }
-        public static ulong ModPow(ulong value, ulong exponent, ulong modulus)
+        public static ulong ModularPower(ulong value, ulong exponent, ulong modulus)
         {
-            return ModPow(value, exponent, 1, modulus);
+            return ModularPower(value, exponent, 1, modulus);
         }
-        private static ulong ModPow(ulong b, ulong e, ulong p, ulong modulus)
+        private static ulong ModularPower(ulong b, ulong e, ulong p, ulong modulus)
         {
             if (e == 0)
                 return p;
             if ((e & 1) == 0)
-                return ModPow(ModMul(b, b, modulus), e >> 1, p, modulus);
-            return ModPow(b, e - 1, ModMul(b, p, modulus), modulus);
+                return ModularPower(ModularProduct(b, b, modulus), e >> 1, p, modulus);
+            return ModularPower(b, e - 1, ModularProduct(b, p, modulus), modulus);
         }
         private static UInt128 Multiply(uint u0, uint u1, uint v0, uint v1)
         {

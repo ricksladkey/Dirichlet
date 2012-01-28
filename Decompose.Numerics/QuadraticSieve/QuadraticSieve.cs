@@ -892,7 +892,7 @@ namespace Decompose.Numerics
             {
                 var j = qMap[l];
                 siqs.IsQIndex[j] = true;
-                var r = q.Where(p => p != q[l]).ProductModulo(q[l]);
+                var r = q.Where(p => p != q[l]).ModularProduct(q[l]);
                 var rInv = IntegerMath.ModularInverse(r, q[l]);
                 Debug.Assert((long)r * rInv % q[l] == 1);
                 var tSqrt = factorBase[j].Root;
@@ -1115,7 +1115,7 @@ namespace Decompose.Numerics
                 .All(relation => (relation.X * relation.X - MultiplyFactors(relation)) % n == 0));
             var xPrime = indices
                 .Select(index => relations[index].X)
-                .ProductModulo(n);
+                .ModularProduct(n);
             var exponents = SumExponents(indices);
             var yFactorBase = new[] { -1 }
                 .Concat(factorBase.Select(entry => entry.P))
@@ -1125,7 +1125,7 @@ namespace Decompose.Numerics
                 .Where(cofactor => cofactor != 1);
             var yPrime = yFactorBase
                 .Concat(yCofactors)
-                .ProductModulo(n);
+                .ModularProduct(n);
             var factor = BigInteger.GreatestCommonDivisor(xPrime + yPrime, n);
             foreach (var multiplierFactor in multiplierFactors)
             {
@@ -1392,7 +1392,7 @@ namespace Decompose.Numerics
             int k;
             Debug.Assert(Enumerable.Range(0, cycleLength)
                 .All(k2 => k2 % 2 != offsets[0].Offset1 ||
-                    interval.Polynomial.Evaluate(interval.X + k2) % IntegerMath.Pow(2, powerOfTwo) == 0));
+                    interval.Polynomial.Evaluate(interval.X + k2) % IntegerMath.Power(2, powerOfTwo) == 0));
             for (k = 0; k < cycleLength; k += 2)
             {
                 cycle[k] = count1;
@@ -2082,7 +2082,7 @@ namespace Decompose.Numerics
         {
             return entries
                 .Select(entry => BigInteger.Pow(entry.Row == 0 ? -1 : factorBase[entry.Row - 1].P, entry.Exponent))
-                .ProductModulo(n);
+                .ModularProduct(n);
         }
 
         private BigInteger MultiplyFactors(Relation relation)
@@ -2096,7 +2096,7 @@ namespace Decompose.Numerics
         private BigInteger MultiplyFactors(ExponentEntries entries, params BigInteger[] cofactors)
         {
             var result = MultiplyFactors(entries);
-            return result * cofactors.ProductModulo(n) % n;
+            return result * cofactors.ModularProduct(n) % n;
         }
 
         [Conditional("DEBUG")]

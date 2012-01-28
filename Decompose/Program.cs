@@ -36,7 +36,8 @@ namespace Decompose
                 //CunninghamTest();
                 //GaussianEliminationTest1();
                 //CreateSamplesTest();
-                GraphTest();
+                //GraphTest();
+                UInt128Test();
             }
             catch (AggregateException ex)
             {
@@ -581,16 +582,16 @@ namespace Decompose
                 if (cofactor2 != 1)
                 {
 #if false
+                for (int i = 0; i < 1000; i++)
+                    IntegerMath.IsProbablePrime(cofactor1);
+#endif
+#if false
                     var factor = algorithm.GetDivisor(cofactor);
                     if (factor != cofactor1 && factor != cofactor2)
                         ++failed;
 #endif
                 }
                 var cycle = graph.FindPath(cofactor1, cofactor2);
-#if true
-                for (int i = 0; i < 1000; i++)
-                    IntegerMath.IsProbablePrime(cofactor1);
-#endif
 #if false
                 var referenceCycle = referenceGraph.FindPath(cofactor1, cofactor2);
                 if ((referenceCycle == null) != (cycle == null))
@@ -650,6 +651,30 @@ namespace Decompose
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             output.WriteLine("processed = {0}; found = {1}; total = {2}; average = {3:F3}", processed, found, total, (double)total / found);
             output.WriteLine("failed = {0}", failed);
+        }
+
+        private static void UInt128Test()
+        {
+            var timer = new Stopwatch();
+            var random = new MersenneTwister64(0);
+            var max = (ulong)1 << 60;
+            timer.Start();
+            for (int i = 0; i < 500000; i++)
+            {
+                var value = random.Next(max);
+                var exponent = random.Next(max);
+                var modulus = random.Next(max);
+#if false
+                var result = BigInteger.ModularPower(value, exponent, modulus);
+#else
+                var result = IntegerMath.ModularPower(value, exponent, modulus);
+#endif
+#if false
+                if (result != BigInteger.ModPow(value, exponent, modulus))
+                    throw new InvalidOperationException("miscalculation");
+#endif
+            }
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
         }
 
         private static string[] GetLinesGzip(string file)

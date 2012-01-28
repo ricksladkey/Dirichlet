@@ -7,7 +7,7 @@ namespace Decompose.Numerics
 {
     public static class NumericExtensions
     {
-        public static int SumModulo(this IEnumerable<int> source, int n)
+        public static int ModularSum(this IEnumerable<int> source, int n)
         {
             return source.Aggregate(0, (sofar, current) => sofar + current) % n;
         }
@@ -17,7 +17,7 @@ namespace Decompose.Numerics
             return source.Aggregate(1, (sofar, current) => sofar * current);
         }
 
-        public static int ProductModulo(this IEnumerable<int> source, int n)
+        public static int ModularProduct(this IEnumerable<int> source, int n)
         {
             return (int)source.Aggregate((long)1, (sofar, current) => sofar * current % n);
         }
@@ -27,7 +27,7 @@ namespace Decompose.Numerics
             return source.Aggregate(BigInteger.Zero, (sofar, current) => sofar + current);
         }
 
-        public static BigInteger SumModulo(this IEnumerable<BigInteger> source, BigInteger n)
+        public static BigInteger ModularSum(this IEnumerable<BigInteger> source, BigInteger n)
         {
             return source.Aggregate(BigInteger.Zero, (sofar, current) => sofar + current) % n;
         }
@@ -37,7 +37,7 @@ namespace Decompose.Numerics
             return source.Aggregate(BigInteger.One, (sofar, current) => sofar * current);
         }
 
-        public static BigInteger ProductModulo(this IEnumerable<BigInteger> source, BigInteger n)
+        public static BigInteger ModularProduct(this IEnumerable<BigInteger> source, BigInteger n)
         {
             var product = BigInteger.One;
             foreach (var factor in source)

@@ -82,9 +82,19 @@ namespace Decompose.Numerics
             return (n % p + p) % p;
         }
 
-        public static int Pow(int n, int e)
+        public static int Power(int n, int e)
         {
             return (int)Math.Round(Math.Pow(n, e));
+        }
+
+        public static BigInteger Power(BigInteger n, int e)
+        {
+            return BigInteger.Pow(n, e);
+        }
+
+        public static BigInteger Power(BigInteger n, BigInteger e)
+        {
+            return BigInteger.Pow(n, (int)e);
         }
 
         public static int ModularInverse(int n, int p)
@@ -240,33 +250,38 @@ namespace Decompose.Numerics
             return sqrt.Sqrt(n);
         }
 
-        public static int ModPow(int value, int exponent, int modulus)
+        public static int ModularPower(int value, int exponent, int modulus)
         {
-            return (int)ModPow((uint)value, (uint)exponent, (uint)modulus);
+            return (int)ModularPower((uint)value, (uint)exponent, (uint)modulus);
         }
 
-        public static uint ModPow(uint value, uint exponent, uint modulus)
+        public static uint ModularPower(uint value, uint exponent, uint modulus)
         {
-            return ModPow(value, exponent, 1, modulus);
+            return ModularPower(value, exponent, 1, modulus);
         }
 
-        private static uint ModPow(uint b, uint e, uint p, uint modulus)
+        private static uint ModularPower(uint b, uint e, uint p, uint modulus)
         {
             if (e == 0)
                 return p;
             if ((e & 1) == 0)
-                return ModPow((uint)((ulong)b * b % modulus), e >> 1, p, modulus);
-            return ModPow(b, e - 1, (uint)((ulong)b * p % modulus), modulus);
+                return ModularPower((uint)((ulong)b * b % modulus), e >> 1, p, modulus);
+            return ModularPower(b, e - 1, (uint)((ulong)b * p % modulus), modulus);
         }
 
-        public static long ModPow(long value, long exponent, long modulus)
+        public static long ModularPower(long value, long exponent, long modulus)
         {
-            return (long)ModPow((ulong)value, (ulong)exponent, (ulong)modulus);
+            return (long)ModularPower((ulong)value, (ulong)exponent, (ulong)modulus);
         }
 
-        public static ulong ModPow(ulong value, ulong exponent, ulong modulus)
+        public static ulong ModularPower(ulong value, ulong exponent, ulong modulus)
         {
-            return UInt128.ModPow(value, exponent, modulus);
+            return UInt128.ModularPower(value, exponent, modulus);
+        }
+
+        public static BigInteger ModularPower(BigInteger value, BigInteger exponent, BigInteger modulus)
+        {
+            return BigInteger.ModPow(value, exponent, modulus);
         }
 
         private static IPrimalityAlgorithm<int> primalityInt = new TrialDivisionPrimality();
@@ -285,7 +300,7 @@ namespace Decompose.Numerics
 
         public static bool IsProbablePrime(uint n)
         {
-            return IntegerMath.ModPow(2, n - 1, n) == 1;
+            return IntegerMath.ModularPower(2, n - 1, n) == 1;
         }
 
         public static bool IsProbablePrime(long n)
@@ -297,12 +312,12 @@ namespace Decompose.Numerics
         {
             if (n <= uint.MaxValue)
                 return IsProbablePrime((uint)n);
-            return UInt128.ModPow(2, n - 1, n) == 1;
+            return UInt128.ModularPower(2, n - 1, n) == 1;
         }
 
         public static bool IsProbablePrime(BigInteger n)
         {
-            return BigInteger.ModPow(BigIntegers.Two, n - BigInteger.One, n).IsOne;
+            return ModularPower(BigIntegers.Two, n - BigInteger.One, n).IsOne;
         }
 
         public static bool IsPrime(BigInteger n)

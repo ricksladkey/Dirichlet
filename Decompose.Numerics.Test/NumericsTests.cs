@@ -470,7 +470,7 @@ namespace Decompose.Numerics.Test
                 var c = (UInt128)a * b;
                 Assert.AreEqual((BigInteger)a * b, (BigInteger)c);
                 Assert.AreEqual((BigInteger)a * b % n, c % n);
-                Assert.AreEqual(BigInteger.ModPow(a, b, n), (BigInteger)IntegerMath.ModPow(a, b, n));
+                Assert.AreEqual(BigInteger.ModPow(a, b, n), (BigInteger)IntegerMath.ModularPower(a, b, n));
             }
         }
     }
