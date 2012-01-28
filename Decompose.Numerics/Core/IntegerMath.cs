@@ -249,6 +249,16 @@ namespace Decompose.Numerics
 
         private static IPrimalityAlgorithm<BigInteger> primalityBigInteger = new MillerRabin(16);
 
+        public static bool IsProbablePrime(long n)
+        {
+            return IsProbablePrime((ulong)n);
+        }
+
+        public static bool IsProbablePrime(ulong n)
+        {
+            return UInt128.ModPow(2, n - 1, n) == 1;
+        }
+
         public static bool IsProbablePrime(BigInteger n)
         {
             return BigInteger.ModPow(BigIntegers.Two, n - BigInteger.One, n).IsOne;

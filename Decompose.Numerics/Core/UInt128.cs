@@ -48,24 +48,24 @@ namespace Decompose.Numerics
         }
         public static ulong operator %(UInt128 u, ulong v)
         {
-            var v0 = (uint)v;
-            if (v == v0)
-            {
-                if (u.r3 == 0)
-                {
-                    if (u.r2 == 0)
-                        return (ulong)u % v;
-                    return Modulus96(ref u, v0);
-                }
-                return Modulus128(ref u, v0);
-            }
-            if (u.r3 == 0)
-            {
-                if (u.r2 == 0)
-                    return (ulong)u % v;
-                return Modulus96(ref u, v);
-            }
-            return Modulus128(ref u, v);
+            return Modulus(ref u, v);
+        }
+        public static ulong ModMul(ulong a, ulong b, ulong modulus)
+        {
+            var product = Multiply((uint)a, (uint)(a >> 32), (uint)b, (uint)(b >> 32));
+            return Modulus(ref product, modulus);
+        }
+        public static ulong ModPow(ulong value, ulong exponent, ulong modulus)
+        {
+            return ModPow(value, exponent, 1, modulus);
+        }
+        private static ulong ModPow(ulong b, ulong e, ulong p, ulong modulus)
+        {
+            if (e == 0)
+                return p;
+            if ((e & 1) == 0)
+                return ModPow(ModMul(b, b, modulus), e >> 1, p, modulus);
+            return ModPow(b, e - 1, ModMul(b, p, modulus), modulus);
         }
         private static UInt128 Multiply(uint u0, uint u1, uint v0, uint v1)
         {
@@ -84,6 +84,27 @@ namespace Decompose.Numerics
             carry >>= 32;
             var w3 = (uint)carry;
             return new UInt128 { r0 = w0, r1 = w1, r2 = w2, r3 = w3 };
+        }
+        private static ulong Modulus(ref UInt128 u, ulong v)
+        {
+            var v0 = (uint)v;
+            if (v == v0)
+            {
+                if (u.r3 == 0)
+                {
+                    if (u.r2 == 0)
+                        return (ulong)u % v;
+                    return Modulus96(ref u, v0);
+                }
+                return Modulus128(ref u, v0);
+            }
+            if (u.r3 == 0)
+            {
+                if (u.r2 == 0)
+                    return (ulong)u % v;
+                return Modulus96(ref u, v);
+            }
+            return Modulus128(ref u, v);
         }
         private static ulong Modulus96(ref UInt128 u, uint v)
         {

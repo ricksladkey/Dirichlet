@@ -457,6 +457,7 @@ namespace Decompose.Numerics.Test
                 Assert.AreEqual((BigInteger)a * b, (BigInteger)c);
                 var n = random.Next((ulong)1 << 40);
                 Assert.AreEqual((BigInteger)a * b % n, c % n);
+                Assert.AreEqual(BigInteger.ModPow(a, b, n), (BigInteger)UInt128.ModPow(a, b, n));
             }
         }
     }

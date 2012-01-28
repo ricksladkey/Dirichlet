@@ -31,12 +31,12 @@ namespace Decompose
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
                 //QuadraticSieveStandardTest();
-                QuadraticSieveDebugTest();
+                //QuadraticSieveDebugTest();
                 //QuadraticSieveFactorTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
                 //CreateSamplesTest();
-                //GraphTest();
+                GraphTest();
             }
             catch (AggregateException ex)
             {
@@ -553,10 +553,10 @@ namespace Decompose
                 .ToArray();
 
             for (int i = 0; i < 1; i++)
-                GraphTestCore(pprs);
+                GraphTest(pprs);
         }
 
-        private static void GraphTestCore(Tuple<long, long>[] pprs)
+        private static void GraphTest(Tuple<long, long>[] pprs)
         {
             //var algorithm = new QuadraticSieve(new QuadraticSieve.Config());
             //var algorithm = new PollardRhoReduction(1, int.MaxValue, new MontgomeryReduction());
@@ -587,6 +587,10 @@ namespace Decompose
 #endif
                 }
                 var cycle = graph.FindPath(cofactor1, cofactor2);
+#if true
+                for (int i = 0; i < 100; i++)
+                    IntegerMath.IsProbablePrime((BigInteger)cofactor1);
+#endif
 #if false
                 var referenceCycle = referenceGraph.FindPath(cofactor1, cofactor2);
                 if ((referenceCycle == null) != (cycle == null))
