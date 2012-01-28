@@ -665,7 +665,7 @@ namespace Decompose
                 var exponent = random.Next(max);
                 var modulus = random.Next(max);
 #if false
-                var result = BigInteger.ModularPower(value, exponent, modulus);
+                var result = BigInteger.ModPow(value, exponent, modulus);
 #else
                 var result = IntegerMath.ModularPower(value, exponent, modulus);
 #endif

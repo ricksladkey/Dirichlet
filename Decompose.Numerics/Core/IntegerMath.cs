@@ -276,6 +276,8 @@ namespace Decompose.Numerics
 
         public static ulong ModularPower(ulong value, ulong exponent, ulong modulus)
         {
+            if (value <= uint.MaxValue && exponent <= uint.MaxValue && modulus <= uint.MaxValue)
+                return ModularPower((uint)value, (uint)exponent, (uint)modulus);
             return UInt128.ModularPower(value, exponent, modulus);
         }
 

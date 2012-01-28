@@ -980,9 +980,8 @@ namespace Decompose.Numerics
                         borrow = (ulong)((long)borrow >> 32);
                     }
                     borrow += ubits[left] - carry;
-
                     ubits[left] = 0;
-                    borrow = (ulong)((long)borrow >> 32);
+
                     if (borrow != 0)
                     {
                         --qhat;

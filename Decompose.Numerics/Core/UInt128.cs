@@ -150,7 +150,7 @@ namespace Decompose.Numerics
         }
         private static ulong Modulus96(ref UInt128 u, ulong v)
         {
-            int d = 64 - v.GetBitLength();
+            var d = 64 - v.GetBitLength();
             var vPrime = v << d;
             var v1 = (uint)(vPrime >> 32);
             var v2 = (uint)vPrime;
@@ -162,7 +162,7 @@ namespace Decompose.Numerics
         }
         private static ulong Modulus128(ref UInt128 u, ulong v)
         {
-            int d = 64 - v.GetBitLength();
+            var d = 64 - v.GetBitLength();
             var vPrime = v << d;
             var v1 = (uint)(vPrime >> 32);
             var v2 = (uint)vPrime;
@@ -175,7 +175,7 @@ namespace Decompose.Numerics
         }
         private static uint LeftShift(out UInt128 w, ref UInt128 u, int d)
         {
-            int dneg = 32 - d;
+            var dneg = 32 - d;
             w.r0 = u.r0 << d;
             w.r1 = u.r1 << d | u.r0 >> dneg;
             w.r2 = u.r2 << d | u.r1 >> dneg;
@@ -184,9 +184,9 @@ namespace Decompose.Numerics
         }
         private static void ModulusStep(ref uint u0, ref uint u1, ref uint u2, uint v1, uint v2)
         {
-            ulong u0u1 = (ulong)u0 << 32 | u1;
-            ulong qhat = u0 == v1 ? (1ul << 32) - 1 : u0u1 / v1;
-            ulong r = u0u1 - qhat * v1;
+            var u0u1 = (ulong)u0 << 32 | u1;
+            var qhat = u0 == v1 ? uint.MaxValue : u0u1 / v1;
+            var r = u0u1 - qhat * v1;
             if (r == (uint)r && v2 * qhat > (r << 32 | u2))
             {
                 --qhat;
@@ -194,19 +194,18 @@ namespace Decompose.Numerics
                 if (r == (uint)r && v2 * qhat > (r << 32 | u2))
                     --qhat;
             }
-            ulong carry = qhat * v2;
-            ulong borrow = (ulong)u2 - (uint)carry;
+            var carry = qhat * v2;
+            var borrow = (long)u2 - (uint)carry;
             carry >>= 32;
             u2 = (uint)borrow;
-            borrow = (ulong)((long)borrow >> 32);
+            borrow >>= 32;
             carry += qhat * v1;
-            borrow += (ulong)u1 - (uint)carry;
+            borrow += (long)u1 - (uint)carry;
             carry >>= 32;
             u1 = (uint)borrow;
-            borrow = (ulong)((long)borrow >> 32);
-            borrow += u0 - carry;
+            borrow >>= 32;
+            borrow += (long)u0 - (uint)carry;
             u0 = 0;
-            borrow = (ulong)((long)borrow >> 32);
             if (borrow != 0)
             {
                 --qhat;
