@@ -36,8 +36,8 @@ namespace Decompose
                 //CunninghamTest();
                 //GaussianEliminationTest1();
                 //CreateSamplesTest();
-                //GraphTest();
-                UInt128Test();
+                GraphTest();
+                //UInt128Test();
             }
             catch (AggregateException ex)
             {
@@ -560,8 +560,10 @@ namespace Decompose
         private static void GraphTest(Tuple<long, long>[] pprs)
         {
             //var algorithm = new QuadraticSieve(new QuadraticSieve.Config());
+            //var algorithm = new PollardRhoReduction(1, int.MaxValue, new Word32IntegerReduction());
             //var algorithm = new PollardRhoReduction(1, int.MaxValue, new MontgomeryReduction());
-            var algorithm = new ShanksSquareForms();
+            //var algorithm = new ShanksSquareForms();
+            var algorithm = new PollardRhoLong();
 
             var timer = new Stopwatch();
             timer.Restart();
@@ -585,7 +587,7 @@ namespace Decompose
                 for (int i = 0; i < 1000; i++)
                     IntegerMath.IsProbablePrime(cofactor1);
 #endif
-#if false
+#if true
                     var factor = algorithm.GetDivisor(cofactor);
                     if (factor != cofactor1 && factor != cofactor2)
                         ++failed;

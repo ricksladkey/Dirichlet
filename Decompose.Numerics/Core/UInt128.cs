@@ -69,7 +69,9 @@ namespace Decompose.Numerics
         }
         public static UInt128 operator *(UInt128 u, UInt128 v)
         {
-            return Multiply(u.r0, u.r1, v.r0, v.r1);
+            UInt128 result = default(UInt128);
+            Multiply(ref result, u.r0, u.r1, v.r0, v.r1);
+            return result;
         }
         public static ulong operator %(UInt128 u, ulong v)
         {
@@ -77,8 +79,9 @@ namespace Decompose.Numerics
         }
         public static ulong ModularProduct(ulong a, ulong b, ulong modulus)
         {
-            var product = Multiply((uint)a, (uint)(a >> 32), (uint)b, (uint)(b >> 32));
-            return Modulus(ref product, modulus);
+            UInt128 result = default(UInt128);
+            Multiply(ref result, (uint)a, (uint)(a >> 32), (uint)b, (uint)(b >> 32));
+            return Modulus(ref result, modulus);
         }
         public static ulong ModularPower(ulong value, ulong exponent, ulong modulus)
         {
@@ -98,23 +101,22 @@ namespace Decompose.Numerics
             }
             return result;
         }
-        private static UInt128 Multiply(uint u0, uint u1, uint v0, uint v1)
+        private static void Multiply(ref UInt128 w, uint u0, uint u1, uint v0, uint v1)
         {
             var carry = (ulong)u0 * v0;
-            var w0 = (uint)carry;
+            w.r0 = (uint)carry;
             carry >>= 32;
             carry += (ulong)u0 * v1;
-            var w1 = (uint)carry;
+            w.r1 = (uint)carry;
             carry >>= 32;
-            var w2 = (uint)carry;
-            carry = w1 + (ulong)u1 * v0;
-            w1 = (uint)carry;
+            w.r2 = (uint)carry;
+            carry = w.r1 + (ulong)u1 * v0;
+            w.r1 = (uint)carry;
             carry >>= 32;
-            carry += w2 + (ulong)u1 * v1;
-            w2 = (uint)carry;
+            carry += w.r2 + (ulong)u1 * v1;
+            w.r2 = (uint)carry;
             carry >>= 32;
-            var w3 = (uint)carry;
-            return new UInt128 { r0 = w0, r1 = w1, r2 = w2, r3 = w3 };
+            w.r3 = (uint)carry;
         }
         private static ulong Modulus(ref UInt128 u, ulong v)
         {
