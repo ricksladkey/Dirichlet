@@ -12,8 +12,6 @@ namespace Decompose.Numerics
 
         public IEnumerable<long> Factor(long n)
         {
-            if (n > int.MaxValue)
-                throw new InvalidOperationException("out of range");
             if (n == 1)
             {
                 yield return 1;
@@ -64,7 +62,7 @@ namespace Decompose.Numerics
                     for (int i = 0; i < limit; i++)
                     {
                         y = F(y, c, n);
-                        q = q * (x - y) % n;
+                        q = IntegerMath.ModularProduct(q, x - y, n);
                     }
                     g = IntegerMath.GreatestCommonDivisor(q, n);
                     k += limit;
@@ -88,7 +86,7 @@ namespace Decompose.Numerics
 
         protected static long F(long x, long c, long n)
         {
-            return (x * x % n + c) % n;
+            return (IntegerMath.ModularProduct(x, x, n) + c) % n;
         }
     }
 }

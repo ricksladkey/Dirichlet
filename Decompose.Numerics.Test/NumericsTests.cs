@@ -70,6 +70,18 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
+        public void TestPollardLong()
+        {
+            var expected = new[] { long.Parse("400433141"), long.Parse("646868797") };
+            var n = expected[0] * expected[1];
+            var algorithm = new PollardRhoLong();
+            var factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
+            var product = factors.Aggregate((sofar, current) => sofar * current);
+            Assert.AreEqual(n, product);
+            Assert.IsTrue(((IStructuralEquatable)factors).Equals(expected, EqualityComparer<long>.Default));
+        }
+
+        [TestMethod]
         public void TestShanksSquareForms()
         {
             var expected = new[] { long.Parse("91739369"), long.Parse("266981831") };
