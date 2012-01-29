@@ -4,11 +4,11 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public class MontgomeryReduction : IReductionAlgorithm
+    public class MontgomeryReduction : IReductionAlgorithm<BigInteger>
     {
-        private class Reducer : IReducer
+        private class Reducer : IReducer<BigInteger>
         {
-            private class Residue : IResidue
+            private class Residue : IResidue<BigInteger>
             {
                 private Reducer reducer;
                 private Word32Integer r;
@@ -32,20 +32,20 @@ namespace Decompose.Numerics
                     reducer.Reduce(r);
                 }
 
-                public IResidue Set(BigInteger x)
+                public IResidue<BigInteger> Set(BigInteger x)
                 {
                     r.Set(x).Multiply(reducer.rSquaredModNRep, reducer.reg3);
                     reducer.Reduce(r);
                     return this;
                 }
 
-                public IResidue Set(IResidue x)
+                public IResidue<BigInteger> Set(IResidue<BigInteger> x)
                 {
                     r.Set(((Residue)x).r);
                     return this;
                 }
 
-                public IResidue Copy()
+                public IResidue<BigInteger> Copy()
                 {
                     var residue = new Residue(reducer);
                     residue.r = reducer.CreateRep();
@@ -53,7 +53,7 @@ namespace Decompose.Numerics
                     return residue;
                 }
 
-                public IResidue Multiply(IResidue x)
+                public IResidue<BigInteger> Multiply(IResidue<BigInteger> x)
                 {
 #if false
                     // Use SOS for everything.
@@ -87,29 +87,29 @@ namespace Decompose.Numerics
 #endif
                 }
 
-                public IResidue Add(IResidue x)
+                public IResidue<BigInteger> Add(IResidue<BigInteger> x)
                 {
                     r.AddModulo(((Residue)x).r, reducer.nRep);
                     return this;
                 }
 
-                public IResidue Subtract(IResidue x)
+                public IResidue<BigInteger> Subtract(IResidue<BigInteger> x)
                 {
                     r.Subtract(((Residue)x).r);
                     return this;
                 }
 
-                public bool Equals(IResidue other)
+                public bool Equals(IResidue<BigInteger> other)
                 {
                     return r == ((Residue)other).r;
                 }
 
-                public int CompareTo(IResidue other)
+                public int CompareTo(IResidue<BigInteger> other)
                 {
                     return r.CompareTo(((Residue)other).r);
                 }
 
-                public BigInteger ToBigInteger()
+                public BigInteger ToInteger()
                 {
                     reducer.reg3.Set(r);
                     reducer.Reduce(reducer.reg3);
@@ -118,7 +118,7 @@ namespace Decompose.Numerics
 
                 public override string ToString()
                 {
-                    return ToBigInteger().ToString();
+                    return ToInteger().ToString();
                 }
             }
 
@@ -182,7 +182,7 @@ namespace Decompose.Numerics
                 oneRep.Set(new Residue(this, BigInteger.One).Rep);
             }
 
-            public IResidue ToResidue(BigInteger x)
+            public IResidue<BigInteger> ToResidue(BigInteger x)
             {
                 return new Residue(this, x);
             }
@@ -221,7 +221,7 @@ namespace Decompose.Numerics
             }
         }
 
-        public IReducer GetReducer(BigInteger n)
+        public IReducer<BigInteger> GetReducer(BigInteger n)
         {
             return new Reducer(n);
         }

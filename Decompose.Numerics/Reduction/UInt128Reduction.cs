@@ -3,56 +3,56 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class BigIntegerReduction : IReductionAlgorithm<BigInteger>
+    public class UInt128Reduction : IReductionAlgorithm<ulong>
     {
-        private class Reducer : IReducer<BigInteger>
+        private class Reducer : IReducer<ulong>
         {
-            private class Residue : IResidue<BigInteger>
+            private class Residue : IResidue<ulong>
             {
                 private Reducer reducer;
-                private BigInteger r;
+                private ulong r;
 
-                public bool IsZero { get { return r.IsZero; } }
+                public bool IsZero { get { return r == 0; } }
 
-                public bool IsOne { get { return r.IsOne; } }
+                public bool IsOne { get { return r == 1; } }
 
                 protected Residue(Reducer reducer)
                 {
                     this.reducer = reducer;
                 }
 
-                public Residue(Reducer reducer, BigInteger x)
+                public Residue(Reducer reducer, ulong x)
                     : this(reducer)
                 {
                     this.r = x % reducer.Modulus;
                 }
 
-                public IResidue<BigInteger> Set(BigInteger x)
+                public IResidue<ulong> Set(ulong x)
                 {
                     r = x;
                     return this;
                 }
 
-                public IResidue<BigInteger> Set(IResidue<BigInteger> x)
+                public IResidue<ulong> Set(IResidue<ulong> x)
                 {
                     r = ((Residue)x).r;
                     return this;
                 }
 
-                public IResidue<BigInteger> Copy()
+                public IResidue<ulong> Copy()
                 {
                     var residue = new Residue(reducer);
                     residue.r = r;
                     return residue;
                 }
 
-                public IResidue<BigInteger> Multiply(IResidue<BigInteger> x)
+                public IResidue<ulong> Multiply(IResidue<ulong> x)
                 {
-                    r = r * ((Residue)x).r % reducer.Modulus;
+                    r = UInt128.ModularProduct(r, ((Residue)x).r, reducer.Modulus);
                     return this;
                 }
 
-                public IResidue<BigInteger> Add(IResidue<BigInteger> x)
+                public IResidue<ulong> Add(IResidue<ulong> x)
                 {
                     r += ((Residue)x).r;
                     if (r > reducer.Modulus)
@@ -60,7 +60,7 @@ namespace Decompose.Numerics
                     return this;
                 }
 
-                public IResidue<BigInteger> Subtract(IResidue<BigInteger> x)
+                public IResidue<ulong> Subtract(IResidue<ulong> x)
                 {
                     r -= ((Residue)x).r;
                     if (r < reducer.Modulus)
@@ -68,7 +68,7 @@ namespace Decompose.Numerics
                     return this;
                 }
 
-                public BigInteger ToInteger()
+                public ulong ToInteger()
                 {
                     return r;
                 }
@@ -78,36 +78,36 @@ namespace Decompose.Numerics
                     return ToInteger().ToString();
                 }
 
-                public bool Equals(IResidue<BigInteger> other)
+                public bool Equals(IResidue<ulong> other)
                 {
                     return r == ((Residue)other).r;
                 }
 
-                public int CompareTo(IResidue<BigInteger> other)
+                public int CompareTo(IResidue<ulong> other)
                 {
                     return r.CompareTo(((Residue)other).r);
                 }
             }
 
-            private BigInteger n;
+            private ulong n;
 
-            public BigInteger Modulus
+            public ulong Modulus
             {
                 get { return n; }
             }
 
-            public Reducer(BigInteger n)
+            public Reducer(ulong n)
             {
                 this.n = n;
             }
 
-            public IResidue<BigInteger> ToResidue(BigInteger x)
+            public IResidue<ulong> ToResidue(ulong x)
             {
                 return new Residue(this, x);
             }
         }
 
-        public IReducer<BigInteger> GetReducer(BigInteger n)
+        public IReducer<ulong> GetReducer(ulong n)
         {
             return new Reducer(n);
         }

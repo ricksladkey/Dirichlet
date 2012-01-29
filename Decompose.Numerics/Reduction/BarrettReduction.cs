@@ -4,11 +4,11 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public class BarrettReduction : IReductionAlgorithm
+    public class BarrettReduction : IReductionAlgorithm<BigInteger>
     {
-        private class Reducer : IReducer
+        private class Reducer : IReducer<BigInteger>
         {
-            private class Residue : IResidue
+            private class Residue : IResidue<BigInteger>
             {
                 private Reducer reducer;
                 private Word32Integer r;
@@ -30,19 +30,19 @@ namespace Decompose.Numerics
                     reducer.Reduce(r);
                 }
 
-                public IResidue Set(BigInteger x)
+                public IResidue<BigInteger> Set(BigInteger x)
                 {
                     r.Set(x);
                     return this;
                 }
 
-                public IResidue Set(IResidue x)
+                public IResidue<BigInteger> Set(IResidue<BigInteger> x)
                 {
                     r.Set(((Residue)x).r);
                     return this;
                 }
 
-                public IResidue Copy()
+                public IResidue<BigInteger> Copy()
                 {
                     var residue = new Residue(reducer);
                     residue.r = reducer.CreateRep();
@@ -50,43 +50,43 @@ namespace Decompose.Numerics
                     return residue;
                 }
 
-                public IResidue Multiply(IResidue x)
+                public IResidue<BigInteger> Multiply(IResidue<BigInteger> x)
                 {
                     r.Multiply(((Residue)x).r, reducer.reg3);
                     reducer.Reduce(r);
                     return this;
                 }
 
-                public IResidue Add(IResidue x)
+                public IResidue<BigInteger> Add(IResidue<BigInteger> x)
                 {
                     r.AddModulo(((Residue)x).r, reducer.pRep);
                     return this;
                 }
 
-                public IResidue Subtract(IResidue x)
+                public IResidue<BigInteger> Subtract(IResidue<BigInteger> x)
                 {
                     r.Subtract(((Residue)x).r);
                     return this;
                 }
 
-                public bool Equals(IResidue other)
+                public bool Equals(IResidue<BigInteger> other)
                 {
                     return r == ((Residue)other).r;
                 }
 
-                public int CompareTo(IResidue other)
+                public int CompareTo(IResidue<BigInteger> other)
                 {
                     return r.CompareTo(((Residue)other).r);
                 }
 
-                public BigInteger ToBigInteger()
+                public BigInteger ToInteger()
                 {
                     return r.ToBigInteger();
                 }
 
                 public override string ToString()
                 {
-                    return ToBigInteger().ToString();
+                    return ToInteger().ToString();
                 }
             }
 
@@ -135,7 +135,7 @@ namespace Decompose.Numerics
                 bToTheKPlusOneLength = bLength * (k + 1);
             }
 
-            public IResidue ToResidue(BigInteger x)
+            public IResidue<BigInteger> ToResidue(BigInteger x)
             {
                 return new Residue(this, x);
             }
@@ -174,7 +174,7 @@ namespace Decompose.Numerics
             }
         }
 
-        public IReducer GetReducer(BigInteger n)
+        public IReducer<BigInteger> GetReducer(BigInteger n)
         {
             return new Reducer(n);
         }

@@ -92,7 +92,7 @@ namespace Decompose
                 throw new InvalidOperationException();
 
             var reducer = new BarrettReduction().GetReducer(p);
-            var actual = reducer.ToResidue(z).ToBigInteger();
+            var actual = reducer.ToResidue(z).ToInteger();
             if (actual != expected)
                 throw new InvalidOperationException();
         }

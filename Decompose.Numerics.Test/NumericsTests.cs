@@ -112,48 +112,59 @@ namespace Decompose.Numerics.Test
         public void TestBigIntegerReduction()
         {
             var p = BigInteger.Parse("10023859281455311421");
-            TestReduction(p, new BigIntegerReduction());
+            TestReduction(p, new BigIntegerReduction(),
+                new MersenneTwisterBigInteger(0), value => value);
         }
 
         [TestMethod]
         public void TestRadix32IntegerReduction()
         {
             var p = BigInteger.Parse("10023859281455311421");
-            TestReduction(p, new Word32IntegerReduction());
+            TestReduction(p, new Word32IntegerReduction(),
+                new MersenneTwisterBigInteger(0), value => value);
         }
 
         [TestMethod]
         public void TestMontgomeryReduction()
         {
             var p = BigInteger.Parse("10023859281455311421");
-            TestReduction(p, new MontgomeryReduction());
+            TestReduction(p, new MontgomeryReduction(),
+                new MersenneTwisterBigInteger(0), value => value);
         }
 
         [TestMethod]
         public void TestBarrettReduction()
         {
             var p = BigInteger.Parse("10023859281455311421");
-            TestReduction(p, new BarrettReduction());
+            TestReduction(p, new BarrettReduction(),
+                new MersenneTwisterBigInteger(0), value => value);
         }
 
-        private void TestReduction(BigInteger p, IReductionAlgorithm reduction)
+        [TestMethod]
+        public void TestUInt128Reduction()
+        {
+            var p = ulong.Parse("10023859281455311421");
+            TestReduction(p, new UInt128Reduction(),
+                new MersenneTwister64(0), value => (BigInteger)value);
+        }
+
+        private void TestReduction<TInteger>(TInteger p, IReductionAlgorithm<TInteger> reduction, IRandomNumberAlgorithm<TInteger> random, Func<TInteger, BigInteger> toBigInteger)
         {
             var reducer = reduction.GetReducer(p);
-            var xPrime = reducer.ToResidue(0);
-            var yPrime = reducer.ToResidue(0);
-            var zPrime = reducer.ToResidue(0);
-            var random = new MersenneTwisterBigInteger(0);
+            var xPrime = reducer.ToResidue(p);
+            var yPrime = reducer.ToResidue(p);
+            var zPrime = reducer.ToResidue(p);
             for (int i = 0; i < 100; i++)
             {
                 var x = random.Next(p);
                 var y = random.Next(p);
-                var z = x * y;
-                var expected = z % p;
+                var z = toBigInteger(x) * toBigInteger(y);
+                var expected = z % toBigInteger(p);
 
                 xPrime.Set(x);
                 yPrime.Set(y);
                 zPrime.Set(xPrime).Multiply(yPrime);
-                var actual = zPrime.ToBigInteger();
+                var actual = toBigInteger(zPrime.ToInteger());
                 Assert.AreEqual(expected, actual);
             }
         }

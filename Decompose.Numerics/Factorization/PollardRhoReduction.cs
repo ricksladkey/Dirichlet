@@ -8,9 +8,9 @@ namespace Decompose.Numerics
     public class PollardRhoReduction : PollardRhoBase
     {
         const int batchSize = 100;
-        IReductionAlgorithm reduction;
+        IReductionAlgorithm<BigInteger> reduction;
 
-        public PollardRhoReduction(int threads, int iterations, IReductionAlgorithm reduction)
+        public PollardRhoReduction(int threads, int iterations, IReductionAlgorithm<BigInteger> reduction)
             : base(threads, iterations)
         {
             this.reduction = reduction;
@@ -54,7 +54,7 @@ namespace Decompose.Numerics
                         AdvanceF(y, cPrime);
                         q.Multiply(AbsDiff(diff, x, y));
                     }
-                    g = BigInteger.GreatestCommonDivisor(q.ToBigInteger(), n);
+                    g = BigInteger.GreatestCommonDivisor(q.ToInteger(), n);
                     k += limit;
                 }
                 r <<= 1;
@@ -70,7 +70,7 @@ namespace Decompose.Numerics
                         return BigInteger.Zero;
                     AdvanceF(ys, cPrime);
                     AbsDiff(diff, ys, x);
-                    g = BigInteger.GreatestCommonDivisor(diff.ToBigInteger(), n);
+                    g = BigInteger.GreatestCommonDivisor(diff.ToInteger(), n);
                 }
                 while (g.IsOne);
             }
@@ -81,12 +81,12 @@ namespace Decompose.Numerics
             return g;
         }
 
-        private static void AdvanceF(IResidue x, IResidue c)
+        private static void AdvanceF(IResidue<BigInteger> x, IResidue<BigInteger> c)
         {
             x.Multiply(x).Add(c);
         }
 
-        private static IResidue AbsDiff(IResidue diff, IResidue x, IResidue y)
+        private static IResidue<BigInteger> AbsDiff(IResidue<BigInteger> diff, IResidue<BigInteger> x, IResidue<BigInteger> y)
         {
             if (x.CompareTo(y) <= 0)
                 diff.Set(y).Subtract(x);
