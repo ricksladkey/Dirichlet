@@ -111,17 +111,30 @@ namespace Decompose.Numerics
                 if ((n & 1) == 0)
                     throw new InvalidOperationException("not relatively prime");
                 rLength = (n.GetBitLength() + 31) / 32 * 32;
-                var r = (BigInteger)1 << rLength;
-                rSquaredModN = (ulong)(r * r % n);
-                BigInteger c;
-                BigInteger d;
-                IntegerMath.ExtendedGreatestCommonDivisor(r, n, out c, out d);
+                var rMinusOne = rLength == 64 ? ulong.MaxValue : ((ulong)1 << rLength) - 1;
+                var rDivN = rMinusOne / n;
+                var rModN = rMinusOne - rDivN * n + 1;
+                rSquaredModN = IntegerMath.ModularProduct(rModN, rModN, n);
+                long c;
+                long d;
+                IntegerMath.ExtendedGreatestCommonDivisor((long)rModN, (long)n, out c, out d);
+                d = d - (long)rDivN * c;
                 var rInverse = (ulong)(c < 0 ? c + (long)n : c);
-                var k = (ulong)(-d < 0 ? -d + r : -d);
-                Debug.Assert(r * rInverse == k * n + 1);
+                var k = (-d < 0 ? rMinusOne - (ulong)d + 1 : (ulong)-d);
+                Debug.Assert(((BigInteger)rMinusOne + 1) * rInverse == (BigInteger)k * n + 1);
                 k0 = (uint)k;
                 zeroRep = new Residue(this, 0).Rep;
                 oneRep = new Residue(this, 1).Rep;
+#if false
+                var r = BigInteger.One << rLength;
+                BigInteger cPrime;
+                BigInteger dPrime;
+                IntegerMath.ExtendedGreatestCommonDivisor(r, n, out cPrime, out dPrime);
+                var rInversePrime = cPrime < 0 ? cPrime + (long)n : cPrime;
+                var kPrime = -dPrime < 0 ? -dPrime + r : -dPrime;
+                Debug.Assert(k == kPrime);
+                Debug.Assert(rInversePrime == rInverse);
+#endif
             }
 
             public IResidue<ulong> ToResidue(ulong x)

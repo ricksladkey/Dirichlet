@@ -36,8 +36,8 @@ namespace Decompose
                 //CunninghamTest();
                 //GaussianEliminationTest1();
                 //CreateSamplesTest();
-                GraphTest();
-                //UInt128Test();
+                //GraphTest();
+                UInt128Test();
             }
             catch (AggregateException ex)
             {
@@ -661,11 +661,13 @@ namespace Decompose
             var random = new MersenneTwister64(0);
             var max = (ulong)1 << 60;
             timer.Start();
-            for (int i = 0; i < 500000; i++)
+            for (int i = 0; i < 2000000; i++)
             {
                 var value = random.Next(max);
                 var exponent = random.Next(max);
                 var modulus = random.Next(max);
+                if ((modulus & 1) == 0)
+                    ++modulus;
 #if false
                 var result = BigInteger.ModPow(value, exponent, modulus);
 #else
