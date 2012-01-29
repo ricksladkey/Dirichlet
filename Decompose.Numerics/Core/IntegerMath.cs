@@ -255,18 +255,23 @@ namespace Decompose.Numerics
             return (int)ModularPower((uint)value, (uint)exponent, (uint)modulus);
         }
 
-        public static uint ModularPower(uint value, uint exponent, uint modulus)
+        public static ulong ModularPower(uint value, uint exponent, uint modulus)
         {
-            return ModularPower(value, exponent, 1, modulus);
-        }
-
-        private static uint ModularPower(uint b, uint e, uint p, uint modulus)
-        {
-            if (e == 0)
-                return p;
-            if ((e & 1) == 0)
-                return ModularPower((uint)((ulong)b * b % modulus), e >> 1, p, modulus);
-            return ModularPower(b, e - 1, (uint)((ulong)b * p % modulus), modulus);
+            var result = (uint)1;
+            while (exponent != 0)
+            {
+                if ((exponent & 1) == 0)
+                {
+                    value = (uint)((ulong)value * value % modulus);
+                    exponent >>= 1;
+                }
+                else
+                {
+                    result = (uint)((ulong)result * value % modulus);
+                    --exponent;
+                }
+            }
+            return result;
         }
 
         public static long ModularPower(long value, long exponent, long modulus)

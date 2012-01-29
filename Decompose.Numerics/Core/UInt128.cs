@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics;
+using System.Numerics;
 
 namespace Decompose.Numerics
 {
@@ -81,15 +82,21 @@ namespace Decompose.Numerics
         }
         public static ulong ModularPower(ulong value, ulong exponent, ulong modulus)
         {
-            return ModularPower(value, exponent, 1, modulus);
-        }
-        private static ulong ModularPower(ulong b, ulong e, ulong p, ulong modulus)
-        {
-            if (e == 0)
-                return p;
-            if ((e & 1) == 0)
-                return ModularPower(ModularProduct(b, b, modulus), e >> 1, p, modulus);
-            return ModularPower(b, e - 1, ModularProduct(b, p, modulus), modulus);
+            var result = (ulong)1;
+            while (exponent != 0)
+            {
+                if ((exponent & 1) == 0)
+                {
+                    value = ModularProduct(value, value, modulus);
+                    exponent >>= 1;
+                }
+                else
+                {
+                    result = ModularProduct(result, value, modulus);
+                    --exponent;
+                }
+            }
+            return result;
         }
         private static UInt128 Multiply(uint u0, uint u1, uint v0, uint v1)
         {
@@ -155,12 +162,19 @@ namespace Decompose.Numerics
             var vPrime = v << d;
             var v1 = (uint)(vPrime >> 32);
             var v2 = (uint)vPrime;
-            var r0 = u.r0 << d;
-            var r1 = u.r1 << d | u.r0 >> dneg;
-            var r2 = u.r2 << d | u.r1 >> dneg;
-            var r3 = u.r2 >> dneg;
-            ModulusStep(ref r3, ref r2, ref r1, v1, v2);
-            ModulusStep(ref r2, ref r1, ref r0, v1, v2);
+            var r0 = u.r0;
+            var r1 = u.r1;
+            var r2 = u.r2;
+            var r3 = (uint)0;
+            if (d != 0)
+            {
+                r3 = r2 >> dneg;
+                r2 = r2 << d | r1 >> dneg;
+                r1 = r1 << d | r0 >> dneg;
+                r0 = r0 << d;
+            }
+            ModulusStep(r3, ref r2, ref r1, v1, v2);
+            ModulusStep(r2, ref r1, ref r0, v1, v2);
             return ((ulong)r1 << 32 | r0) >> d;
         }
         private static ulong Modulus128(ref UInt128 u, ulong v)
@@ -170,26 +184,25 @@ namespace Decompose.Numerics
             var vPrime = v << d;
             var v1 = (uint)(vPrime >> 32);
             var v2 = (uint)vPrime;
-            var r0 = u.r0 << d;
-            var r1 = u.r1 << d | u.r0 >> dneg;
-            var r2 = u.r2 << d | u.r1 >> dneg;
-            var r3 = u.r3 << d | u.r2 >> dneg;
-            var r4 = u.r3 >> dneg;
-            ModulusStep(ref r4, ref r3, ref r2, v1, v2);
-            ModulusStep(ref r3, ref r2, ref r1, v1, v2);
-            ModulusStep(ref r2, ref r1, ref r0, v1, v2);
+            var r0 = u.r0;
+            var r1 = u.r1;
+            var r2 = u.r2;
+            var r3 = u.r3;
+            var r4 = (uint)0;
+            if (d != 0)
+            {
+                r4 = r3 >> dneg;
+                r3 = r3 << d | r2 >> dneg;
+                r2 = r2 << d | r1 >> dneg;
+                r1 = r1 << d | r0 >> dneg;
+                r0 = r0 << d;
+            }
+            ModulusStep(r4, ref r3, ref r2, v1, v2);
+            ModulusStep(r3, ref r2, ref r1, v1, v2);
+            ModulusStep(r2, ref r1, ref r0, v1, v2);
             return ((ulong)r1 << 32 | r0) >> d;
         }
-        private static uint LeftShift(out UInt128 w, ref UInt128 u, int d)
-        {
-            var dneg = 32 - d;
-            w.r0 = u.r0 << d;
-            w.r1 = u.r1 << d | u.r0 >> dneg;
-            w.r2 = u.r2 << d | u.r1 >> dneg;
-            w.r3 = u.r3 << d | u.r2 >> dneg;
-            return u.r3 >> dneg;
-        }
-        private static void ModulusStep(ref uint u0, ref uint u1, ref uint u2, uint v1, uint v2)
+        private static void ModulusStep(uint u0, ref uint u1, ref uint u2, uint v1, uint v2)
         {
             var u0u1 = (ulong)u0 << 32 | u1;
             var qhat = u0 == v1 ? uint.MaxValue : u0u1 / v1;
@@ -197,9 +210,9 @@ namespace Decompose.Numerics
             if (r == (uint)r && v2 * qhat > (r << 32 | u2))
             {
                 --qhat;
-                r = u0u1 - qhat * v1;
+                r += v1;
                 if (r == (uint)r && v2 * qhat > (r << 32 | u2))
-                    --qhat;
+                    r += v1;
             }
             var carry = qhat * v2;
             var borrow = (long)u2 - (uint)carry;
@@ -212,16 +225,23 @@ namespace Decompose.Numerics
             u1 = (uint)borrow;
             borrow >>= 32;
             borrow += (long)u0 - (uint)carry;
-            u0 = 0;
             if (borrow != 0)
             {
-                --qhat;
                 carry = (ulong)u2 + v2;
                 u2 = (uint)carry;
                 carry >>= 32;
                 carry += (ulong)u1 + v1;
                 u1 = (uint)carry;
             }
+        }
+        private static uint LeftShift(out UInt128 w, ref UInt128 u, int d)
+        {
+            var dneg = 32 - d;
+            w.r0 = u.r0 << d;
+            w.r1 = u.r1 << d | u.r0 >> dneg;
+            w.r2 = u.r2 << d | u.r1 >> dneg;
+            w.r3 = u.r3 << d | u.r2 >> dneg;
+            return u.r3 >> dneg;
         }
     }
 }

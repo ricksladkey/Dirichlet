@@ -926,7 +926,7 @@ namespace Decompose.Numerics
                 return;
             }
             if (v.IsZero)
-                throw new InvalidOperationException("division by zero");
+                throw new DivideByZeroException();
             int n = v.last + 1;
             if (n == 1)
             {
@@ -1015,7 +1015,7 @@ namespace Decompose.Numerics
 
         public Word32Integer Modulo(uint a)
         {
-            Mod(this, a);
+            DivMod(this, a, null);
             return this;
         }
 
@@ -1040,18 +1040,13 @@ namespace Decompose.Numerics
 
         public unsafe uint GetRemainder(uint v)
         {
-            if (v == 0)
-                throw new InvalidOperationException("division by zero");
             fixed (uint* wbits = &bits[index])
             {
-                ulong u0 = 0;
-                for (int j = last; j >= 0; j--)
-                {
-                    uint u1 = wbits[j];
-                    ulong u0u1 = (ulong)u0 << 32 | u1;
-                    ulong qhat = u0 == v ? (1ul << 32) - 1 : u0u1 / v;
-                    u0 = (uint)(u0u1 - qhat * v);
-                }
+                if (v == 0)
+                    throw new DivideByZeroException();
+                var u0 = (ulong)(wbits[last] % v);
+                for (int j = last - 1; j >= 0; j--)
+                    u0 = (u0 << 32 | wbits[j]) % v;
                 Debug.Assert(ToBigInteger() % v == u0);
                 return (uint)u0;
             }
@@ -1061,11 +1056,13 @@ namespace Decompose.Numerics
         {
             if (q == null)
             {
-                Mod(u, v);
+                var result = u.GetRemainder(v);
+                u.Clear();
+                u.bits[u.index + 0] = result;
                 return;
             }
             if (v == 0)
-                throw new InvalidOperationException("division by zero");
+                throw new DivideByZeroException();
             int m = u.last;
             fixed (uint* ubits = &u.bits[u.index])
             {
@@ -1084,24 +1081,6 @@ namespace Decompose.Numerics
             for (int i = m + 1; i <= q.last; i++)
                 q.bits[q.index + i] = 0;
             q.SetLast(m);
-            u.last = 0;
-        }
-
-        private static unsafe void Mod(Word32Integer u, uint v)
-        {
-            if (v == 0)
-                throw new InvalidOperationException("division by zero");
-            fixed (uint* ubits = &u.bits[u.index])
-            {
-                var m = u.last;
-                var u1 = ubits[m] % v;
-                for (int j = m - 1; j >= 0; j--)
-                {
-                    u1 = (uint)(((ulong)u1 << 32 | ubits[j]) % v);
-                    ubits[j + 1] = 0;
-                }
-                ubits[0] = u1;
-            }
             u.last = 0;
         }
 
