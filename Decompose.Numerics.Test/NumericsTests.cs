@@ -160,6 +160,16 @@ namespace Decompose.Numerics.Test
                 new MersenneTwister64(0), value => (BigInteger)value);
         }
 
+        [TestMethod]
+        public void TestUInt128MontgomeryReduction()
+        {
+            var p = ulong.Parse("259027704197601377");
+            TestReduction(p, new MontgomeryReduction(),
+                new MersenneTwisterBigInteger(0), value => value);
+            TestReduction(p, new UInt128MontgomeryReduction(),
+                new MersenneTwister64(0), value => (BigInteger)value);
+        }
+
         private void TestReduction<TInteger>(TInteger p, IReductionAlgorithm<TInteger> reduction, IRandomNumberAlgorithm<TInteger> random, Func<TInteger, BigInteger> toBigInteger)
         {
             var reducer = reduction.GetReducer(p);

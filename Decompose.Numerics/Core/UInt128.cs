@@ -101,6 +101,68 @@ namespace Decompose.Numerics
             }
             return result;
         }
+        public static ulong Montgomery(ulong u, ulong v, ulong n, uint k0)
+        {
+            var u0 = (uint)u;
+            var u1 = (uint)(u >> 32);
+            var v0 = (uint)v;
+            var v1 = (uint)(v >> 32);
+            var n0 = (uint)n;
+            var n1 = (uint)(n >> 32);
+
+            var carry = (ulong)u0 * v0;
+            var t0 = (uint)carry;
+            carry >>= 32;
+            carry += (ulong)u1 * v0;
+            var t1 = (uint)carry;
+            carry >>= 32;
+            var t2 = (uint)carry;
+
+            var m = (ulong)(t0 * k0);
+            carry = t0 + m * n0;
+            carry >>= 32;
+            carry += t1 + m * n1;
+            t0 = (uint)carry;
+            carry >>= 32;
+            carry += t2;
+            t1 = (uint)carry;
+            carry >>= 32;
+            t2 = (uint)carry;
+
+            carry = t0 + (ulong)u0 * v1;
+            t0 = (uint)carry;
+            carry >>= 32;
+            carry += t1 + (ulong)u1 * v1;
+            t1 = (uint)carry;
+            carry >>= 32;
+            carry += t2;
+            t2 = (uint)carry;
+            carry >>= 32;
+            var t3 = (uint)carry;
+
+            m = (ulong)(t0 * k0);
+            carry = t0 + m * n0;
+            carry >>= 32;
+            carry += t1 + m * n1;
+            t0 = (uint)carry;
+            carry >>= 32;
+            carry += t2;
+            t1 = (uint)carry;
+            carry >>= 32;
+            t2 = t3 + (uint)carry;
+
+            if (t2 != 0)
+            {
+                var borrow = (ulong)t0 - n0;
+                t0 = (uint)borrow;
+                borrow = (ulong)((long)borrow >> 32);
+                borrow += (ulong)t1 - n1;
+                t1 = (uint)borrow;
+                borrow = (ulong)((long)borrow >> 32);
+            }
+            var result = (ulong)t1 << 32 | t0;
+            return result >= n ? result - n : result;
+        }
         private static void Multiply(ref UInt128 w, uint u0, uint u1, uint v0, uint v1)
         {
             var carry = (ulong)u0 * v0;

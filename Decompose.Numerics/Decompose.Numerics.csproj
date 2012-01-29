@@ -87,6 +87,7 @@
     <Compile Include="NullSpace\StructuredGaussianElimination.cs" />
     <Compile Include="Core\Word32Integer.cs" />
     <Compile Include="Reduction\IResidue.cs" />
+    <Compile Include="Reduction\UInt128MontgomeryReduction.cs" />
     <Compile Include="Reduction\UInt128Reduction.cs" />
     <Compile Include="Reduction\Word32IntegerReduction.cs" />
     <Compile Include="Core\Word32IntegerStore.cs" />

@@ -214,6 +214,30 @@ namespace Decompose.Numerics
             d = lasty;
         }
 
+        public static void ExtendedGreatestCommonDivisor(long a, long b, out long c, out long d)
+        {
+            var x = (long)0;
+            var lastx = (long)1;
+            var y = (long)1;
+            var lasty = (long)0;
+
+            while (b != 0)
+            {
+                var quotient = a / b;
+                var tmpa = a;
+                a = b;
+                b = tmpa % b;
+                var tmpx = x;
+                x = lastx - quotient * x;
+                lastx = tmpx;
+                var tmpy = y;
+                y = lasty - quotient * y;
+                lasty = tmpy;
+            }
+            c = lastx;
+            d = lasty;
+        }
+
         public static void ExtendedGreatestCommonDivisor(BigInteger a, BigInteger b, out BigInteger c, out BigInteger d)
         {
             var x = BigInteger.Zero;
