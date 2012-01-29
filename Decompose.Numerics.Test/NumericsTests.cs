@@ -163,10 +163,9 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void TestUInt128MontgomeryReduction()
         {
-            var p = ulong.Parse("259027704197601377");
-            TestReduction(p, new MontgomeryReduction(),
-                new MersenneTwisterBigInteger(0), value => value);
-            TestReduction(p, new UInt128MontgomeryReduction(),
+            TestReduction(ulong.Parse("46234103"), new UInt128MontgomeryReduction(),
+                new MersenneTwister64(0), value => (BigInteger)value);
+            TestReduction(ulong.Parse("259027704197601377"), new UInt128MontgomeryReduction(),
                 new MersenneTwister64(0), value => (BigInteger)value);
         }
 
@@ -517,6 +516,8 @@ namespace Decompose.Numerics.Test
                 var a = random.Next(factorMax);
                 var b = random.Next(factorMax);
                 var n = random.Next(modulusMax - 1) + 1;
+                if ((n & 1) == 0)
+                    ++n;
                 var c = (UInt128)a * b;
                 Assert.AreEqual((BigInteger)a * b, (BigInteger)c);
                 Assert.AreEqual((BigInteger)a * b % n, c % n);

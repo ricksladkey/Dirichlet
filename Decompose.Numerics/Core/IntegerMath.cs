@@ -305,16 +305,10 @@ namespace Decompose.Numerics
             var result = (uint)1;
             while (exponent != 0)
             {
-                if ((exponent & 1) == 0)
-                {
-                    value = (uint)((ulong)value * value % modulus);
-                    exponent >>= 1;
-                }
-                else
-                {
+                if ((exponent & 1) != 0)
                     result = (uint)((ulong)result * value % modulus);
-                    --exponent;
-                }
+                value = (uint)((ulong)value * value % modulus);
+                exponent >>= 1;
             }
             return result;
         }
@@ -324,12 +318,31 @@ namespace Decompose.Numerics
             return (long)ModularPower((ulong)value, (ulong)exponent, (ulong)modulus);
         }
 
+#if false
         public static ulong ModularPower(ulong value, ulong exponent, ulong modulus)
         {
             if (value <= uint.MaxValue && exponent <= uint.MaxValue && modulus <= uint.MaxValue)
                 return ModularPower((uint)value, (uint)exponent, (uint)modulus);
             return UInt128.ModularPower(value, exponent, modulus);
         }
+#else
+        public static ulong ModularPower(ulong value, ulong exponent, ulong modulus)
+        {
+            if (value <= uint.MaxValue && exponent <= uint.MaxValue && modulus <= uint.MaxValue)
+                return ModularPower((uint)value, (uint)exponent, (uint)modulus);
+            var reducer = new UInt128MontgomeryReduction().GetReducer(modulus);
+            var b = reducer.ToResidue(value);
+            var result = reducer.ToResidue(1);
+            while (exponent != 0)
+            {
+                if ((exponent & 1) != 0)
+                    result.Multiply(b);
+                b.Multiply(b);
+                exponent >>= 1;
+            }
+            return result.ToInteger();
+        }
+#endif
 
         public static BigInteger ModularPower(BigInteger value, BigInteger exponent, BigInteger modulus)
         {

@@ -88,21 +88,17 @@ namespace Decompose.Numerics
             var result = (ulong)1;
             while (exponent != 0)
             {
-                if ((exponent & 1) == 0)
-                {
-                    value = ModularProduct(value, value, modulus);
-                    exponent >>= 1;
-                }
-                else
-                {
+                if ((exponent & 1) != 0)
                     result = ModularProduct(result, value, modulus);
-                    --exponent;
-                }
+                value = ModularProduct(value, value, modulus);
+                exponent >>= 1;
             }
             return result;
         }
         public static ulong Montgomery(ulong u, ulong v, ulong n, uint k0)
         {
+            if (n == (uint)n)
+                return Montgomery32((uint)u, (uint)v, (uint)n, k0);
             var u0 = (uint)u;
             var u1 = (uint)(u >> 32);
             var v0 = (uint)v;
@@ -162,6 +158,24 @@ namespace Decompose.Numerics
             }
             var result = (ulong)t1 << 32 | t0;
             return result >= n ? result - n : result;
+        }
+        private static uint Montgomery32(uint u0, uint v0, uint n0, uint k0)
+        {
+            var carry = (ulong)u0 * v0;
+            var t0 = (uint)carry;
+            carry >>= 32;
+            var t1 = (uint)carry;
+
+            var m = (ulong)(t0 * k0);
+            carry = t0 + m * n0;
+            carry >>= 32;
+            carry += t1;
+            t0 = (uint)carry;
+            carry >>= 32;
+            t1 = (uint)carry;
+
+            var result = (ulong)t1 << 32 | t0;
+            return (uint)(result >= n0 ? result - n0 : result);
         }
         private static void Multiply(ref UInt128 w, uint u0, uint u1, uint v0, uint v1)
         {

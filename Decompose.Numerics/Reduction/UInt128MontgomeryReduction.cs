@@ -27,12 +27,12 @@ namespace Decompose.Numerics
                 public Residue(Reducer reducer, ulong x)
                     : this(reducer)
                 {
-                    r = reducer.Reduce(x, reducer.rSquaredModN);
+                    r = reducer.Reduce(x % reducer.n, reducer.rSquaredModN);
                 }
 
                 public IResidue<ulong> Set(ulong x)
                 {
-                    r = reducer.Reduce(x, reducer.rSquaredModN);
+                    r = reducer.Reduce(x % reducer.n, reducer.rSquaredModN);
                     return this;
                 }
 
@@ -94,7 +94,6 @@ namespace Decompose.Numerics
 
             private ulong n;
             private int rLength;
-            private int length;
             private ulong k;
             private uint k0;
             private ulong rSquaredModN;
@@ -112,14 +111,13 @@ namespace Decompose.Numerics
                 if ((n & 1) == 0)
                     throw new InvalidOperationException("not relatively prime");
                 rLength = (n.GetBitLength() + 31) / 32 * 32;
-                length = 2 * rLength / 32 + 1;
                 var r = (BigInteger)1 << rLength;
                 rSquaredModN = (ulong)(r * r % n);
                 BigInteger c;
                 BigInteger d;
                 IntegerMath.ExtendedGreatestCommonDivisor(r, n, out c, out d);
                 var rInverse = (ulong)(c < 0 ? c + (long)n : c);
-                var k = (ulong)(-d < 0 ? -d + (long)r : -d);
+                var k = (ulong)(-d < 0 ? -d + r : -d);
                 Debug.Assert(r * rInverse == k * n + 1);
                 k0 = (uint)k;
                 zeroRep = new Residue(this, 0).Rep;
@@ -133,11 +131,7 @@ namespace Decompose.Numerics
 
             private ulong Reduce(ulong u, ulong v)
             {
-                var t = UInt128.Montgomery(u, v, n, k0);
-                if (t >= n)
-                    t -= n;
-                Debug.Assert(t < n);
-                return t;
+                return UInt128.Montgomery(u, v, n, k0);
             }
         }
 
