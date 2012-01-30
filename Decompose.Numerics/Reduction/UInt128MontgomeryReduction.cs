@@ -17,7 +17,15 @@ namespace Decompose.Numerics
 
                 public bool IsZero { get { return r == 0; } }
 
-                public bool IsOne { get { return r == reducer.oneRep; } }
+                public bool IsOne
+                {
+                    get
+                    {
+                        if (reducer.oneRep == 0)
+                            reducer.oneRep = reducer.Reduce(1, reducer.rSquaredModN);
+                        return r == reducer.oneRep;
+                    }
+                }
 
                 protected Residue(Reducer reducer)
                 {
@@ -124,7 +132,6 @@ namespace Decompose.Numerics
 #else
                 k0 = (uint)(((UInt128)IntegerMath.ModularInverse(rModN, n) << rLength) / n);
 #endif
-                oneRep = Reduce(1, rSquaredModN);
 #if false
                 var r = BigInteger.One << rLength;
                 BigInteger cPrime;
