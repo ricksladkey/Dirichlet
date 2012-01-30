@@ -108,7 +108,7 @@ namespace Decompose.Numerics
                 if ((n & 1) == 0)
                     throw new InvalidOperationException("not relatively prime");
                 var rLength = n == (uint)n ? 32 : 64;
-                var rMinusOne = rLength == 64 ? ulong.MaxValue : uint.MaxValue;
+                var rMinusOne = rLength == 32 ? uint.MaxValue : ulong.MaxValue;
                 var rDivN = rMinusOne / n;
                 var rModN = rMinusOne - rDivN * n + 1;
                 rSquaredModN = IntegerMath.ModularProduct(rModN, rModN, n);

@@ -453,13 +453,16 @@ namespace Decompose.Numerics
                 w.r3 = u.r2;
                 return;
             }
-            if (d >= 32)
-                throw new NotImplementedException();
-            var dneg = 32 - d;
-            w.r0 = u.r0 << d;
-            w.r1 = u.r1 << d | u.r0 >> dneg;
-            w.r2 = u.r2 << d | u.r1 >> dneg;
-            w.r3 = u.r3 << d | u.r2 >> dneg;
+            if (d < 32)
+            {
+                var dneg = 32 - d;
+                w.r0 = u.r0 << d;
+                w.r1 = u.r1 << d | u.r0 >> dneg;
+                w.r2 = u.r2 << d | u.r1 >> dneg;
+                w.r3 = u.r3 << d | u.r2 >> dneg;
+                return;
+            }
+            throw new NotImplementedException();
         }
         private void Set(ulong value)
         {

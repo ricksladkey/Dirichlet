@@ -661,7 +661,7 @@ namespace Decompose
             var random = new MersenneTwister64(0);
             var max = (ulong)1 << 60;
             timer.Start();
-            for (int i = 0; i < 2000000; i++)
+            for (int i = 0; i < 5000000; i++)
             {
                 var value = random.Next(max);
                 var exponent = random.Next(max);
