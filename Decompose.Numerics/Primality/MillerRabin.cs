@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics;
+using System.Numerics;
 
 namespace Decompose.Numerics
 {
@@ -47,7 +48,7 @@ namespace Decompose.Numerics
                 var mod = IntegerMath.ModularPower(a, temp, n);
                 while (temp != nMinusOne && mod != 1 && mod != nMinusOne)
                 {
-                    mod = mod * mod % n;
+                    mod = IntegerMath.ModularProduct(mod, mod, n);
                     temp <<= 1;
                 }
                 if (mod != nMinusOne && (temp & 1) == 0)
