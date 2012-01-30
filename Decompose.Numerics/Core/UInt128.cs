@@ -102,6 +102,10 @@ namespace Decompose.Numerics
         {
             return Modulus(ref u, v);
         }
+        public static UInt128 operator %(UInt128 u, UInt128 v)
+        {
+            return Modulus(ref u, (ulong)v.r1 << 32 | v.r0);
+        }
         public static ulong ModularProduct(ulong a, ulong b, ulong modulus)
         {
             UInt128 result = default(UInt128);

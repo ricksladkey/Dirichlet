@@ -6,16 +6,16 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public interface IResidue<TInteger> : IComparable<IResidue<TInteger>>, IEquatable<IResidue<TInteger>>
+    public interface IResidue<T> : IComparable<IResidue<T>>, IEquatable<IResidue<T>>
     {
         bool IsZero { get; }
         bool IsOne { get; }
-        IResidue<TInteger> Set(TInteger x);
-        IResidue<TInteger> Set(IResidue<TInteger> x);
-        IResidue<TInteger> Copy();
-        IResidue<TInteger> Multiply(IResidue<TInteger> x);
-        IResidue<TInteger> Add(IResidue<TInteger> x);
-        IResidue<TInteger> Subtract(IResidue<TInteger> x);
-        TInteger ToInteger();
+        IResidue<T> Set(T x);
+        IResidue<T> Set(IResidue<T> x);
+        IResidue<T> Copy();
+        IResidue<T> Multiply(IResidue<T> x);
+        IResidue<T> Add(IResidue<T> x);
+        IResidue<T> Subtract(IResidue<T> x);
+        T ToInteger();
     }
 }

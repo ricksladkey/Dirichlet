@@ -82,5 +82,34 @@ namespace Decompose.Numerics
             }
             return true;
         }
+
+        private bool IsPrime<T>(T n, int k, IReductionAlgorithm<T> ops)
+        {
+            var one = ops.Convert(1);
+            var two = ops.Convert(2);
+            var four = ops.Convert(4);
+            if (ops.Compare(n, two) < 0)
+                return false;
+            if (!ops.Equals(n, two) && ops.IsEven(n))
+                return false;
+            var nMinusOne = ops.Subtract(n, one);
+            var s = nMinusOne;
+            while (ops.IsEven(s))
+                s = ops.RightShift(s, 1);
+            for (int i = 0; i < k; i++)
+            {
+                var a = ops.Add(ops.Random.Next(ops.Subtract(n, four)), two);
+                var temp = s;
+                var mod = ops.ModularPower(a, temp, n);
+                while (!ops.Equals(temp, nMinusOne) && !ops.Equals(mod, one) && !ops.Equals(mod, nMinusOne))
+                {
+                    mod = ops.ModularProduct(mod, mod, n);
+                    temp = ops.LeftShift(temp, 1);
+                }
+                if (!ops.Equals(mod, nMinusOne) && ops.IsEven(temp))
+                    return false;
+            }
+            return true;
+        }
     }
 }

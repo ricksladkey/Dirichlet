@@ -2,9 +2,9 @@
 
 namespace Decompose.Numerics
 {
-    public interface IReducer<TInteger>
+    public interface IReducer<T>
     {
-        TInteger Modulus { get; }
-        IResidue<TInteger> ToResidue(TInteger x);
+        T Modulus { get; }
+        IResidue<T> ToResidue(T x);
     }
 }

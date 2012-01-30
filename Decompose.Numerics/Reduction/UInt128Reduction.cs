@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class UInt128Reduction : IReductionAlgorithm<ulong>
+    public class UInt128Reduction : UInt64Operations, IReductionAlgorithm<ulong>
     {
         private class Reducer : IReducer<ulong>
         {

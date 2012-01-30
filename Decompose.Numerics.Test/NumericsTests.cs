@@ -124,52 +124,45 @@ namespace Decompose.Numerics.Test
         public void TestBigIntegerReduction()
         {
             var p = BigInteger.Parse("10023859281455311421");
-            TestReduction(p, new BigIntegerReduction(),
-                new MersenneTwisterBigInteger(0), value => value);
+            TestReduction(p, new BigIntegerReduction());
         }
 
         [TestMethod]
         public void TestRadix32IntegerReduction()
         {
             var p = BigInteger.Parse("10023859281455311421");
-            TestReduction(p, new Word32IntegerReduction(),
-                new MersenneTwisterBigInteger(0), value => value);
+            TestReduction(p, new Word32IntegerReduction());
         }
 
         [TestMethod]
         public void TestMontgomeryReduction()
         {
             var p = BigInteger.Parse("10023859281455311421");
-            TestReduction(p, new MontgomeryReduction(),
-                new MersenneTwisterBigInteger(0), value => value);
+            TestReduction(p, new MontgomeryReduction());
         }
 
         [TestMethod]
         public void TestBarrettReduction()
         {
             var p = BigInteger.Parse("10023859281455311421");
-            TestReduction(p, new BarrettReduction(),
-                new MersenneTwisterBigInteger(0), value => value);
+            TestReduction(p, new BarrettReduction());
         }
 
         [TestMethod]
         public void TestUInt128Reduction()
         {
             var p = ulong.Parse("10023859281455311421");
-            TestReduction(p, new UInt128Reduction(),
-                new MersenneTwister64(0), value => (BigInteger)value);
+            TestReduction(p, new UInt128Reduction());
         }
 
         [TestMethod]
         public void TestUInt128MontgomeryReduction()
         {
-            TestReduction(ulong.Parse("46234103"), new UInt128MontgomeryReduction(),
-                new MersenneTwister64(0), value => (BigInteger)value);
-            TestReduction(ulong.Parse("259027704197601377"), new UInt128MontgomeryReduction(),
-                new MersenneTwister64(0), value => (BigInteger)value);
+            TestReduction(ulong.Parse("46234103"), new UInt128MontgomeryReduction());
+            TestReduction(ulong.Parse("259027704197601377"), new UInt128MontgomeryReduction());
         }
 
-        private void TestReduction<TInteger>(TInteger p, IReductionAlgorithm<TInteger> reduction, IRandomNumberAlgorithm<TInteger> random, Func<TInteger, BigInteger> toBigInteger)
+        private void TestReduction<T>(T p, IReductionAlgorithm<T> reduction)
         {
             var reducer = reduction.GetReducer(p);
             var xPrime = reducer.ToResidue(p);
@@ -177,15 +170,15 @@ namespace Decompose.Numerics.Test
             var zPrime = reducer.ToResidue(p);
             for (int i = 0; i < 100; i++)
             {
-                var x = random.Next(p);
-                var y = random.Next(p);
-                var z = toBigInteger(x) * toBigInteger(y);
-                var expected = z % toBigInteger(p);
+                var x = reduction.Random.Next(p);
+                var y = reduction.Random.Next(p);
+                var z = reduction.ToBigInteger(x) * reduction.ToBigInteger(y);
+                var expected = z % reduction.ToBigInteger(p);
 
                 xPrime.Set(x);
                 yPrime.Set(y);
                 zPrime.Set(xPrime).Multiply(yPrime);
-                var actual = toBigInteger(zPrime.ToInteger());
+                var actual = reduction.ToBigInteger(zPrime.ToInteger());
                 Assert.AreEqual(expected, actual);
             }
         }
