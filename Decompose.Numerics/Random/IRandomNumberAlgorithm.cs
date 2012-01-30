@@ -8,6 +8,6 @@ namespace Decompose.Numerics
     public interface IRandomNumberAlgorithm<T>
     {
         T Next(T n);
-        IEnumerable<T> Series(T n);
+        IEnumerable<T> Sequence(T n);
     }
 }

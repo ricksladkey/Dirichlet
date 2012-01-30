@@ -842,7 +842,7 @@ namespace Decompose.Numerics
             var error = 0.0;
             for (int i = 0; i < 10; i++)
             {
-                var numbers = random.Series((uint)candidateMap.Length)
+                var numbers = random.Sequence((uint)candidateMap.Length)
                     .Take(candidateMap.Length)
                     .ToArray();
                 permutation = Enumerable.Range(0, candidateMap.Length)

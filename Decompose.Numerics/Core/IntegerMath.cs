@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using System.Collections.Generic;
 
 namespace Decompose.Numerics
 {
@@ -241,18 +242,110 @@ namespace Decompose.Numerics
             var y = (long)1;
             var lasty = (long)0;
 
-            while (b != 0)
+            if (a < b)
             {
-                var quotient = a / b;
                 var tmpa = a;
                 a = b;
-                b = tmpa - quotient * b;
-                var tmpx = x;
-                x = lastx - quotient * x;
-                lastx = tmpx;
-                var tmpy = y;
-                y = lasty - quotient * y;
-                lasty = tmpy;
+                b = tmpa;
+                x = 1;
+                lastx = 0;
+                y = 0;
+                lasty = 1;
+            }
+            while (b != 0)
+            {
+                Debug.Assert(a >= b);
+                var b2 = b << 1;
+                if (a < b2)
+                {
+                    Debug.Assert(a / b == 1);
+                    var tmpa = a;
+                    a = b;
+                    b = tmpa - b;
+                    var tmpx = x;
+                    x = lastx - x;
+                    lastx = tmpx;
+                    var tmpy = y;
+                    y = lasty - y;
+                    lasty = tmpy;
+                }
+                else if (a < b2 + b)
+                {
+                    Debug.Assert(a / b == 2);
+                    var tmpa = a;
+                    a = b;
+                    b = tmpa - (b << 1);
+                    var tmpx = x;
+                    x = lastx - (x << 1);
+                    lastx = tmpx;
+                    var tmpy = y;
+                    y = lasty - (y << 1);
+                    lasty = tmpy;
+                }
+                else
+                {
+                    if (a < int.MaxValue)
+                        break;
+                    var quotient = a / b;
+                    var tmpa = a;
+                    a = b;
+                    b = tmpa - quotient * b;
+                    var tmpx = x;
+                    x = lastx - quotient * x;
+                    lastx = tmpx;
+                    var tmpy = y;
+                    y = lasty - quotient * y;
+                    lasty = tmpy;
+                }
+            }
+            if (b != 0)
+            {
+                var aa = (uint)a;
+                var bb = (uint)b;
+                while (bb != 0)
+                {
+                    Debug.Assert(aa >= bb);
+                    var bb2 = bb << 1;
+                    if (aa < bb2)
+                    {
+                        Debug.Assert(aa / bb == 1);
+                        var tmpa = aa;
+                        aa = bb;
+                        bb = tmpa - bb;
+                        var tmpx = x;
+                        x = lastx - x;
+                        lastx = tmpx;
+                        var tmpy = y;
+                        y = lasty - y;
+                        lasty = tmpy;
+                    }
+                    else if (aa < bb2 + bb)
+                    {
+                        Debug.Assert(aa / bb == 2);
+                        var tmpa = aa;
+                        aa = bb;
+                        bb = tmpa - (bb << 1);
+                        var tmpx = x;
+                        x = lastx - (x << 1);
+                        lastx = tmpx;
+                        var tmpy = y;
+                        y = lasty - (y << 1);
+                        lasty = tmpy;
+                    }
+                    else
+                    {
+                        var quotient = aa / bb;
+                        var tmpa = aa;
+                        aa = bb;
+                        bb = tmpa - quotient * bb;
+                        var tmpx = x;
+                        x = lastx - quotient * x;
+                        lastx = tmpx;
+                        var tmpy = y;
+                        y = lasty - quotient * y;
+                        lasty = tmpy;
+                    }
+                }
             }
             c = lastx;
             d = lasty;

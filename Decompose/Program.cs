@@ -38,6 +38,7 @@ namespace Decompose
                 //CreateSamplesTest();
                 //GraphTest();
                 UInt128Test();
+                //ModularInverseTest();
             }
             catch (AggregateException ex)
             {
@@ -414,7 +415,7 @@ namespace Decompose
                 Threads = 8,
 #endif
                 DiagnosticsOutput = output,
-                ProcessPartialPartialRelations = true,
+                //ProcessPartialPartialRelations = true,
             };
             for (int i = 20; i <= 35; i++)
             {
@@ -661,7 +662,7 @@ namespace Decompose
             var random = new MersenneTwister64(0);
             var max = (ulong)1 << 60;
             timer.Start();
-            for (int i = 0; i < 2000000; i++)
+            for (int i = 0; i < 5000000; i++)
             {
                 var value = random.Next(max);
                 var exponent = random.Next(max);
@@ -679,6 +680,381 @@ namespace Decompose
 #endif
             }
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+        }
+
+        static void ModularInverseTest()
+        {
+            var random = new MersenneTwister64(0);
+            //var inverse = new Func<long, long, long>(HybridRSSModularInverse);
+            //var inverse = new Func<long, long, long>(RSSSimpleModularInverse);
+            var inverse = new Func<long, long, long>(RSSModularInverse);
+            //var a = (long)43760554345460349;
+            //var m = (long)76055434546034911;
+            //var aInv = IntegerMath.ModularInverse(a, m);
+            //Console.WriteLine("a = {0}, n = {1}, aInv = {2}, a * aInv % n = {3}", a, m, aInv, IntegerMath.ModularProduct(a, aInv, m));
+            //var aInv2 = inverse(a, m);
+            //Console.WriteLine("aInv2 = {0}", aInv2);
+
+            var max = (ulong)1 << 60;
+            var pairs = random.Sequence(max)
+                .Zip(random.Sequence(max), (a, b) => new { A = (long)a, B = (long)b })
+                .Where(pair => IntegerMath.GreatestCommonDivisor(pair.A, pair.B) == 1)
+                .Take(1000)
+                .ToArray();
+            int count = 20000;
+
+            var timer = new Stopwatch();
+            timer.Start();
+            for (int i = 0; i < count; i++)
+            {
+                foreach (var pair in pairs)
+                    IntegerMath.ModularInverse(pair.A, pair.B);
+            }
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+
+#if false
+            timer.Restart();
+            for (int i = 0; i < count; i++)
+            {
+                foreach (var pair in pairs)
+                    inverse(pair.A, pair.B);
+            }
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
+
+            Console.WriteLine();
+        }
+
+        private static long RSSModularInverse(long a, long m)
+        {
+            long u = m;
+            long v = a;
+            long r = 0;
+            long s = 1;
+            while (v > 0)
+            {
+                while ((u & 1) == 0)
+                {
+                    u >>= 1;
+                    if ((r & 1) == 0)
+                        r >>= 1;
+                    else
+                        r = (r + m) >> 1;
+                }
+                while ((v & 1) == 0)
+                {
+                    v >>= 1;
+                    if ((s & 1) == 0)
+                        s >>= 1;
+                    else
+                        s = (s + m) >> 1;
+                }
+                if (u > v)
+                {
+                    u -= v;
+                    r -= s;
+                }
+                else
+                {
+                    v -= u;
+                    s -= r;
+                }
+            }
+            if (u > 1)
+                return 0;
+            while (r < 0)
+                r += m;
+            while (r >= m)
+                r -= m;
+            return r;
+        }
+
+        private static long HybridRSSModularInverse(long a, long m)
+        {
+            long u = m;
+            long v = a;
+            long r = 0;
+            long s = 1;
+            while (v > int.MaxValue)
+            {
+                if ((u & 1) == 0)
+                {
+                    u >>= 1;
+                    if ((r & 1) == 0)
+                        r >>= 1;
+                    else
+                        r = (r + m) >> 1;
+                }
+                else if ((v & 1) == 0)
+                {
+                    v >>= 1;
+                    if ((s & 1) == 0)
+                        s >>= 1;
+                    else
+                        s = (s + m) >> 1;
+                }
+                else if (u > v)
+                {
+                    u -= v;
+                    r -= s;
+                }
+                else
+                {
+                    v -= u;
+                    s -= r;
+                }
+            }
+            while (v > 0 && u > int.MaxValue)
+            {
+                if ((u & 1) == 0)
+                {
+                    u >>= 1;
+                    if ((r & 1) == 0)
+                        r >>= 1;
+                    else
+                        r = (r + m) >> 1;
+                }
+                else if ((v & 1) == 0)
+                {
+                    v >>= 1;
+                    if ((s & 1) == 0)
+                        s >>= 1;
+                    else
+                        s = (s + m) >> 1;
+                }
+                else if (u > v)
+                {
+                    u -= v;
+                    r -= s;
+                }
+                else
+                {
+                    v -= u;
+                    s -= r;
+                }
+            }
+            return HybridRSSModularInverse((int)u, (int)v, r, s, m);
+        }
+
+        private static long HybridRSSModularInverse(int u, int v, long r, long s, long m)
+        {
+            while (v > 0)
+            {
+                if ((u & 1) == 0)
+                {
+                    u >>= 1;
+                    if ((r & 1) == 0)
+                        r >>= 1;
+                    else
+                        r = (r + m) >> 1;
+                }
+                else if ((v & 1) == 0)
+                {
+                    v >>= 1;
+                    if ((s & 1) == 0)
+                        s >>= 1;
+                    else
+                        s = (s + m) >> 1;
+                }
+                else if (u > v)
+                {
+                    u -= v;
+                    r -= s;
+                }
+                else
+                {
+                    v -= u;
+                    s -= r;
+                }
+            }
+            if (u > 1)
+                return 0;
+            while (r < 0)
+                r += m;
+            while (r >= m)
+                r -= m;
+            return r;
+        }
+
+        private static long RSSSimpleModularInverse(long a, long m)
+        {
+            long u = m;
+            long v = a;
+            long r = 0;
+            long s = 1;
+            while (v > 0)
+            {
+                if ((u & 1) == 0)
+                {
+                    u >>= 1;
+                    if ((r & 1) == 0)
+                        r >>= 1;
+                    else
+                        r = (r + m) >> 1;
+                }
+                else if ((v & 1) == 0)
+                {
+                    v >>= 1;
+                    if ((s & 1) == 0)
+                        s >>= 1;
+                    else
+                        s = (s + m) >> 1;
+                }
+                else if (u > v)
+                {
+                    u -= v;
+                    r -= s;
+                }
+                else
+                {
+                    v -= u;
+                    s -= r;
+                }
+            }
+            if (u > 1)
+                return 0;
+            while (r < 0)
+                r += m;
+            while (r >= m)
+                r -= m;
+            return r;
+        }
+
+        private static int RSSSimpleModularInverse(int a, int m)
+        {
+            int u = m;
+            int v = a;
+            int r = 0;
+            int s = 1;
+            while (v > 0)
+            {
+                if ((u & 1) == 0)
+                {
+                    u >>= 1;
+                    if ((r & 1) == 0)
+                        r >>= 1;
+                    else
+                        r = (r + m) >> 1;
+                }
+                else if ((v & 1) == 0)
+                {
+                    v >>= 1;
+                    if ((s & 1) == 0)
+                        s >>= 1;
+                    else
+                        s = (s + m) >> 1;
+                }
+                else if (u > v)
+                {
+                    u -= v;
+                    r -= s;
+                }
+                else
+                {
+                    v -= u;
+                    s -= r;
+                }
+            }
+            if (u > 1)
+                return 0;
+            while (r < 0)
+                r += m;
+            while (r >= m)
+                r -= m;
+            return r;
+        }
+
+        private static ulong RSUModularInverse(ulong a, ulong m)
+        {
+            ulong u = m;
+            ulong v = a;
+            ulong r = 0;
+            ulong s = 1;
+            while (v > 0)
+            {
+                if ((u & 1) == 0)
+                {
+                    u >>= 1;
+                    if ((r & 1) == 0)
+                        r >>= 1;
+                    else
+                        r = (r + m) >> 1;
+                }
+                else if ((v & 1) == 0)
+                {
+                    v >>= 1;
+                    if ((s & 1) == 0)
+                        s >>= 1;
+                    else
+                        s = (s + m) >> 1;
+                }
+                else if (u > v)
+                {
+                    u -= v;
+                    if (r < s)
+                        r += m - s;
+                    else
+                        r -= s;
+                }
+                else
+                {
+                    v -= u;
+                    if (s < r)
+                        s += m - r;
+                    else
+                        s -= r;
+                }
+            }
+            if (u > 1)
+                return 0;
+            return r;
+        }
+
+        private static ulong SEUModularInverse(ulong a, ulong m)
+        {
+            ulong u;
+            ulong v;
+            ulong s;
+            ulong r;
+            if (a < m)
+            {
+                u = m;
+                v = a;
+                r = 0;
+                s = 1;
+            }
+            else
+            {
+                v = m;
+                u = a;
+                s = 0;
+                r = 1;
+            }
+            while (v > 1)
+            {
+                var f = u.GetBitLength() - v.GetBitLength();
+                if (u < v << f)
+                    --f;
+                u -= v << f;
+                var t = s;
+                for (int i = 0; i < f; i++)
+                {
+                    t <<= 1;
+                    if (t > m)
+                        t -= m;
+                }
+                if (r < t)
+                    r += m;
+                r -= t;
+                if (u < v)
+                {
+                    t = u; u = v; v = t;
+                    t = r; r = s; s = t;
+                }
+            }
+            if (v == 0)
+                s = 0;
+            return s;
         }
 
         private static string[] GetLinesGzip(string file)

@@ -83,7 +83,7 @@ namespace Decompose.Numerics
             }
         }
 
-        public IEnumerable<uint> Series(uint n)
+        public IEnumerable<uint> Sequence(uint n)
         {
             while (true)
                 yield return Next(n);
@@ -108,7 +108,7 @@ namespace Decompose.Numerics
             }
         }
 
-        public IEnumerable<ulong> Series(ulong n)
+        public IEnumerable<ulong> Sequence(ulong n)
         {
             while (true)
                 yield return Next(n);
@@ -136,7 +136,7 @@ namespace Decompose.Numerics
             }
         }
 
-        public IEnumerable<BigInteger> Series(BigInteger n)
+        public IEnumerable<BigInteger> Sequence(BigInteger n)
         {
             while (true)
                 yield return Next(n);
