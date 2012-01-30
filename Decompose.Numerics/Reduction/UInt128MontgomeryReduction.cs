@@ -15,7 +15,7 @@ namespace Decompose.Numerics
 
                 public ulong Rep { get { return r; } }
 
-                public bool IsZero { get { return r == reducer.zeroRep; } }
+                public bool IsZero { get { return r == 0; } }
 
                 public bool IsOne { get { return r == reducer.oneRep; } }
 
@@ -93,11 +93,8 @@ namespace Decompose.Numerics
             }
 
             private ulong n;
-            private int rLength;
-            private ulong k;
             private uint k0;
             private ulong rSquaredModN;
-            private ulong zeroRep;
             private ulong oneRep;
 
             public ulong Modulus
@@ -110,11 +107,12 @@ namespace Decompose.Numerics
                 this.n = n;
                 if ((n & 1) == 0)
                     throw new InvalidOperationException("not relatively prime");
-                rLength = (n.GetBitLength() + 31) / 32 * 32;
-                var rMinusOne = rLength == 64 ? ulong.MaxValue : ((ulong)1 << rLength) - 1;
+                var rLength = n == (uint)n ? 32 : 64;
+                var rMinusOne = rLength == 64 ? ulong.MaxValue : uint.MaxValue;
                 var rDivN = rMinusOne / n;
                 var rModN = rMinusOne - rDivN * n + 1;
                 rSquaredModN = IntegerMath.ModularProduct(rModN, rModN, n);
+#if true
                 long c;
                 long d;
                 IntegerMath.ExtendedGreatestCommonDivisor((long)rModN, (long)n, out c, out d);
@@ -123,8 +121,10 @@ namespace Decompose.Numerics
                 var k = (-d < 0 ? rMinusOne - (ulong)d + 1 : (ulong)-d);
                 Debug.Assert(((BigInteger)rMinusOne + 1) * rInverse == (BigInteger)k * n + 1);
                 k0 = (uint)k;
-                zeroRep = new Residue(this, 0).Rep;
-                oneRep = new Residue(this, 1).Rep;
+#else
+                k0 = (uint)(((UInt128)IntegerMath.ModularInverse(rModN, n) << rLength) / n);
+#endif
+                oneRep = Reduce(1, rSquaredModN);
 #if false
                 var r = BigInteger.One << rLength;
                 BigInteger cPrime;

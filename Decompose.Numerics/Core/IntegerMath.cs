@@ -107,6 +107,26 @@ namespace Decompose.Numerics
             return x;
         }
 
+        public static uint ModularInverse(uint n, uint p)
+        {
+            return (uint)ModularInverse((int)n, (int)p);
+        }
+
+        public static long ModularInverse(long n, long p)
+        {
+            long x;
+            long y;
+            ExtendedGreatestCommonDivisor(n, p, out x, out y);
+            if (x < 0)
+                x += p;
+            return x;
+        }
+
+        public static ulong ModularInverse(ulong n, ulong p)
+        {
+            return (ulong)ModularInverse((long)n, (long)p);
+        }
+
         public static int ModularInverse(BigInteger n, int p)
         {
             if (p == 0)
@@ -202,7 +222,7 @@ namespace Decompose.Numerics
                 var quotient = a / b;
                 var tmpa = a;
                 a = b;
-                b = tmpa % b;
+                b = tmpa - quotient * b;
                 var tmpx = x;
                 x = lastx - quotient * x;
                 lastx = tmpx;
@@ -226,7 +246,7 @@ namespace Decompose.Numerics
                 var quotient = a / b;
                 var tmpa = a;
                 a = b;
-                b = tmpa % b;
+                b = tmpa - quotient * b;
                 var tmpx = x;
                 x = lastx - quotient * x;
                 lastx = tmpx;
@@ -250,7 +270,7 @@ namespace Decompose.Numerics
                 var quotient = a / b;
                 var tmpa = a;
                 a = b;
-                b = tmpa % b;
+                b = tmpa - quotient * b;
                 var tmpx = x;
                 x = lastx - quotient * x;
                 lastx = tmpx;
@@ -318,19 +338,14 @@ namespace Decompose.Numerics
             return (long)ModularPower((ulong)value, (ulong)exponent, (ulong)modulus);
         }
 
-#if false
+        private static IReductionAlgorithm<ulong> reduction = new UInt128MontgomeryReduction();
         public static ulong ModularPower(ulong value, ulong exponent, ulong modulus)
         {
             if (value <= uint.MaxValue && exponent <= uint.MaxValue && modulus <= uint.MaxValue)
                 return ModularPower((uint)value, (uint)exponent, (uint)modulus);
-            return UInt128.ModularPower(value, exponent, modulus);
-        }
-#else
-        public static ulong ModularPower(ulong value, ulong exponent, ulong modulus)
-        {
-            if (value <= uint.MaxValue && exponent <= uint.MaxValue && modulus <= uint.MaxValue)
-                return ModularPower((uint)value, (uint)exponent, (uint)modulus);
-            var reducer = new UInt128MontgomeryReduction().GetReducer(modulus);
+            if ((modulus & 1) == 0)
+                return UInt128.ModularPower(value, exponent, modulus);
+            var reducer = reduction.GetReducer(modulus);
             var b = reducer.ToResidue(value);
             var result = reducer.ToResidue(1);
             while (exponent != 0)
@@ -342,7 +357,6 @@ namespace Decompose.Numerics
             }
             return result.ToInteger();
         }
-#endif
 
         public static BigInteger ModularPower(BigInteger value, BigInteger exponent, BigInteger modulus)
         {
@@ -377,7 +391,7 @@ namespace Decompose.Numerics
         {
             if (n <= uint.MaxValue)
                 return IsProbablePrime((uint)n);
-            return UInt128.ModularPower(2, n - 1, n) == 1;
+            return ModularPower(2, n - 1, n) == 1;
         }
 
         public static bool IsProbablePrime(BigInteger n)

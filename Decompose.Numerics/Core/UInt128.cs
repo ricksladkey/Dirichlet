@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace Decompose.Numerics
@@ -67,11 +68,35 @@ namespace Decompose.Numerics
             LeftShift(out w, ref r, n);
             return w;
         }
+        public static UInt128 operator *(ulong u, UInt128 v)
+        {
+            UInt128 result = default(UInt128);
+            Multiply(ref result, (uint)u, (uint)(u >> 32), v.r0, v.r1);
+            return result;
+        }
+        public static UInt128 operator *(UInt128 u, ulong v)
+        {
+            UInt128 result = default(UInt128);
+            Multiply(ref result, u.r0, u.r1, (uint)v, (uint)(v >> 32));
+            return result;
+        }
         public static UInt128 operator *(UInt128 u, UInt128 v)
         {
             UInt128 result = default(UInt128);
             Multiply(ref result, u.r0, u.r1, v.r0, v.r1);
             return result;
+        }
+        public static UInt128 operator /(UInt128 u, ulong v)
+        {
+            UInt128 w = default(UInt128);
+            Divide(ref w, ref u, v);
+            return w;
+        }
+        public static UInt128 operator /(UInt128 u, UInt128 v)
+        {
+            UInt128 w = default(UInt128);
+            Divide(ref w, ref u, (ulong)v);
+            return w;
         }
         public static ulong operator %(UInt128 u, ulong v)
         {
@@ -194,6 +219,31 @@ namespace Decompose.Numerics
             carry >>= 32;
             w.r3 = (uint)carry;
         }
+        private static void Divide(ref UInt128 w, ref UInt128 u, ulong v)
+        {
+            var v0 = (uint)v;
+            if (v == v0)
+            {
+                if (u.r3 == 0)
+                {
+                    if (u.r2 == 0)
+                        w.Set((ulong)u / v);
+                    else
+                        Division96(ref w, ref u, v0);
+                }
+                else
+                    Division128(ref w, ref u, v0);
+            }
+            else if (u.r3 == 0)
+            {
+                if (u.r2 == 0)
+                    w.Set((ulong)u / v);
+                else
+                    Division96(ref w, ref u, v);
+            }
+            else
+                Division128(ref w, ref u, v);
+        }
         private static ulong Modulus(ref UInt128 u, ulong v)
         {
             var v0 = (uint)v;
@@ -214,6 +264,74 @@ namespace Decompose.Numerics
                 return Modulus96(ref u, v);
             }
             return Modulus128(ref u, v);
+        }
+        private static void Division96(ref UInt128 w, ref UInt128 u, uint v)
+        {
+            w.r2 = u.r2 / v;
+            var u0 = (ulong)(u.r2 - w.r2 * v);
+            var u0u1 = u0 << 32 | u.r1;
+            w.r1 = (uint)(u0u1 / v);
+            u0 = u0u1 - w.r1 * v;
+            u0u1 = u0 << 32 | u.r0;
+            w.r0 = (uint)(u0u1 / v);
+        }
+        private static void Division128(ref UInt128 w, ref UInt128 u, uint v)
+        {
+            w.r3 = u.r3 / v;
+            var u0 = (ulong)(u.r3 - w.r3 * v);
+            var u0u1 = u0 << 32 | u.r2;
+            w.r2 = (uint)(u0u1 / v);
+            u0 = u0u1 - w.r2 * v;
+            u0u1 = u0 << 32 | u.r1;
+            w.r1 = (uint)(u0u1 / v);
+            u0 = u0u1 - w.r1 * v;
+            u0u1 = u0 << 32 | u.r0;
+            w.r0 = (uint)(u0u1 / v);
+        }
+        private static void Division96(ref UInt128 w, ref UInt128 u, ulong v)
+        {
+            var dneg = ((uint)(v >> 32)).GetBitLength();
+            var d = 32 - dneg;
+            var vPrime = v << d;
+            var v1 = (uint)(vPrime >> 32);
+            var v2 = (uint)vPrime;
+            var r0 = u.r0;
+            var r1 = u.r1;
+            var r2 = u.r2;
+            var r3 = (uint)0;
+            if (d != 0)
+            {
+                r3 = r2 >> dneg;
+                r2 = r2 << d | r1 >> dneg;
+                r1 = r1 << d | r0 >> dneg;
+                r0 = r0 << d;
+            }
+            w.r1 = ModDiv(r3, ref r2, ref r1, v1, v2);
+            w.r0 = ModDiv(r2, ref r1, ref r0, v1, v2);
+        }
+        private static void Division128(ref UInt128 w, ref UInt128 u, ulong v)
+        {
+            var dneg = ((uint)(v >> 32)).GetBitLength();
+            var d = 32 - dneg;
+            var vPrime = v << d;
+            var v1 = (uint)(vPrime >> 32);
+            var v2 = (uint)vPrime;
+            var r0 = u.r0;
+            var r1 = u.r1;
+            var r2 = u.r2;
+            var r3 = u.r3;
+            var r4 = (uint)0;
+            if (d != 0)
+            {
+                r4 = r3 >> dneg;
+                r3 = r3 << d | r2 >> dneg;
+                r2 = r2 << d | r1 >> dneg;
+                r1 = r1 << d | r0 >> dneg;
+                r0 = r0 << d;
+            }
+            w.r2 = ModDiv(r4, ref r3, ref r2, v1, v2);
+            w.r1 = ModDiv(r3, ref r2, ref r1, v1, v2);
+            w.r0 = ModDiv(r2, ref r1, ref r0, v1, v2);
         }
         private static ulong Modulus96(ref UInt128 u, uint v)
         {
@@ -251,8 +369,8 @@ namespace Decompose.Numerics
                 r1 = r1 << d | r0 >> dneg;
                 r0 = r0 << d;
             }
-            ModulusStep(r3, ref r2, ref r1, v1, v2);
-            ModulusStep(r2, ref r1, ref r0, v1, v2);
+            ModDiv(r3, ref r2, ref r1, v1, v2);
+            ModDiv(r2, ref r1, ref r0, v1, v2);
             return ((ulong)r1 << 32 | r0) >> d;
         }
         private static ulong Modulus128(ref UInt128 u, ulong v)
@@ -275,12 +393,12 @@ namespace Decompose.Numerics
                 r1 = r1 << d | r0 >> dneg;
                 r0 = r0 << d;
             }
-            ModulusStep(r4, ref r3, ref r2, v1, v2);
-            ModulusStep(r3, ref r2, ref r1, v1, v2);
-            ModulusStep(r2, ref r1, ref r0, v1, v2);
+            ModDiv(r4, ref r3, ref r2, v1, v2);
+            ModDiv(r3, ref r2, ref r1, v1, v2);
+            ModDiv(r2, ref r1, ref r0, v1, v2);
             return ((ulong)r1 << 32 | r0) >> d;
         }
-        private static void ModulusStep(uint u0, ref uint u1, ref uint u2, uint v1, uint v2)
+        private static uint ModDiv(uint u0, ref uint u1, ref uint u2, uint v1, uint v2)
         {
             var u0u1 = (ulong)u0 << 32 | u1;
             var qhat = u0 == v1 ? uint.MaxValue : u0u1 / v1;
@@ -290,7 +408,10 @@ namespace Decompose.Numerics
                 --qhat;
                 r += v1;
                 if (r == (uint)r && v2 * qhat > (r << 32 | u2))
+                {
+                    --qhat;
                     r += v1;
+                }
             }
             var carry = qhat * v2;
             var borrow = (long)u2 - (uint)carry;
@@ -305,21 +426,45 @@ namespace Decompose.Numerics
             borrow += (long)u0 - (uint)carry;
             if (borrow != 0)
             {
+                --qhat;
                 carry = (ulong)u2 + v2;
                 u2 = (uint)carry;
                 carry >>= 32;
                 carry += (ulong)u1 + v1;
                 u1 = (uint)carry;
             }
+            return (uint)qhat;
         }
-        private static uint LeftShift(out UInt128 w, ref UInt128 u, int d)
+        private static void LeftShift(out UInt128 w, ref UInt128 u, int d)
         {
+            if (d == 64)
+            {
+                w.r0 = 0;
+                w.r1 = 0;
+                w.r2 = u.r0;
+                w.r3 = u.r1;
+                return;
+            }
+            if (d == 32)
+            {
+                w.r0 = 0;
+                w.r1 = u.r0;
+                w.r2 = u.r1;
+                w.r3 = u.r2;
+                return;
+            }
+            if (d >= 32)
+                throw new NotImplementedException();
             var dneg = 32 - d;
             w.r0 = u.r0 << d;
             w.r1 = u.r1 << d | u.r0 >> dneg;
             w.r2 = u.r2 << d | u.r1 >> dneg;
             w.r3 = u.r3 << d | u.r2 >> dneg;
-            return u.r3 >> dneg;
+        }
+        private void Set(ulong value)
+        {
+            r0 = (uint)value;
+            r1 = (uint)(value >> 32);
         }
     }
 }

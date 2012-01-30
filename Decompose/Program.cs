@@ -414,7 +414,7 @@ namespace Decompose
                 Threads = 8,
 #endif
                 DiagnosticsOutput = output,
-                //ProcessPartialPartialRelations = true,
+                ProcessPartialPartialRelations = true,
             };
             for (int i = 20; i <= 35; i++)
             {
@@ -441,7 +441,7 @@ namespace Decompose
                 Diagnostics = QuadraticSieve.Diag.Verbose,
                 DiagnosticsOutput = output,
                 ReportingInterval = 60,
-                //ProcessPartialPartialRelations = true,
+                ProcessPartialPartialRelations = true,
                 //MergeLimit = 10,
                 //FactorBaseSize = 45000,
                 //BlockSize = 1024 * 1024,
@@ -454,7 +454,7 @@ namespace Decompose
                 //UseCountTable = true,
                 //CofactorCutoff = 1024,
             };
-            var i = 40;
+            var i = 35;
             var sample = samples[i];
             var p = sample.P;
             var q = sample.Q;

@@ -496,13 +496,15 @@ namespace Decompose.Numerics.Test
         public void UInt128Test()
         {
             UInt128Test(20, 20);
-            UInt128Test(20, 40);
-            UInt128Test(20, 60);
             UInt128Test(40, 20);
-            UInt128Test(40, 40);
-            UInt128Test(40, 60);
             UInt128Test(60, 20);
+
+            UInt128Test(20, 40);
+            UInt128Test(40, 40);
             UInt128Test(60, 40);
+
+            UInt128Test(20, 60);
+            UInt128Test(40, 60);
             UInt128Test(60, 60);
         }
 
@@ -519,9 +521,11 @@ namespace Decompose.Numerics.Test
                 if ((n & 1) == 0)
                     ++n;
                 var c = (UInt128)a * b;
-                Assert.AreEqual((BigInteger)a * b, (BigInteger)c);
-                Assert.AreEqual((BigInteger)a * b % n, c % n);
-                Assert.AreEqual(BigInteger.ModPow(a, b, n), (BigInteger)IntegerMath.ModularPower(a, b, n));
+                Assert.AreEqual((BigInteger)a * b, c);
+                Assert.AreEqual((BigInteger)a * b % n, (UInt128)a * b % n);
+                Assert.AreEqual((BigInteger)a * b / n, (UInt128)a * b / n);
+                Assert.AreEqual((BigInteger)a * b % n, UInt128.ModularProduct(a, b, n));
+                Assert.AreEqual(BigInteger.ModPow(a, b, n), IntegerMath.ModularPower(a, b, n));
             }
         }
     }
