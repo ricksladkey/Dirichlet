@@ -27,11 +27,11 @@ namespace Decompose
                 //FactorTest2();
                 //FactorTest3();
                 //FactorTest4();
-                //MsieveTest();
+                MsieveTest();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
                 //QuadraticSieveStandardTest();
-                QuadraticSieveDebugTest();
+                //QuadraticSieveDebugTest();
                 //QuadraticSieveFactorTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
@@ -295,7 +295,7 @@ namespace Decompose
             var config = new QuadraticSieve.Config
             {
                 DiagnosticsOutput = output,
-                Threads = 1,
+                Threads = 8,
                 //FactorBaseSize = 5400,
                 //LowerBoundPercent = 65,
                 //IntervalSize = 12 * 32 * 1024,
