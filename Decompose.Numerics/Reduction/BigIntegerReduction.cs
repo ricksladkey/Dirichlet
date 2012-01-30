@@ -55,7 +55,7 @@ namespace Decompose.Numerics
                 public IResidue<BigInteger> Add(IResidue<BigInteger> x)
                 {
                     r += ((Residue)x).r;
-                    if (r > reducer.Modulus)
+                    if (r >= reducer.Modulus)
                         r -= reducer.Modulus;
                     return this;
                 }
@@ -63,7 +63,7 @@ namespace Decompose.Numerics
                 public IResidue<BigInteger> Subtract(IResidue<BigInteger> x)
                 {
                     r -= ((Residue)x).r;
-                    if (r < reducer.Modulus)
+                    if (r < 0)
                         r += reducer.Modulus;
                     return this;
                 }

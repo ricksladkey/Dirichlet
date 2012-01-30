@@ -68,7 +68,7 @@ namespace Decompose.Numerics
 
                 public IResidue<BigInteger> Subtract(IResidue<BigInteger> x)
                 {
-                    r.Subtract(((Residue)x).r);
+                    r.SubtractModulo(((Residue)x).r, reducer.nRep);
                     return this;
                 }
 

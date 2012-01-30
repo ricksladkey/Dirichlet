@@ -66,16 +66,18 @@ namespace Decompose.Numerics
                 public IResidue<ulong> Add(IResidue<ulong> x)
                 {
                     r += ((Residue)x).r;
-                    if (r > reducer.Modulus)
+                    if (r >= reducer.Modulus)
                         r -= reducer.Modulus;
                     return this;
                 }
 
                 public IResidue<ulong> Subtract(IResidue<ulong> x)
                 {
-                    r -= ((Residue)x).r;
-                    if (r < reducer.Modulus)
-                        r += reducer.Modulus;
+                    var xr = ((Residue)x).r;
+                    if (r < xr)
+                        r += reducer.Modulus - xr;
+                    else
+                        r -= xr;
                     return this;
                 }
 
