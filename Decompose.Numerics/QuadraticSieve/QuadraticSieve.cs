@@ -526,6 +526,7 @@ namespace Decompose.Numerics
         private bool useCountTable;
         private bool savePartialRelationFactorizations;
         private bool savePartialPartialRelationFactorizations;
+        private bool useSingleThreshold;
         private int sieveTimeLimit;
         private Algorithm algorithm;
         private int multiplier;
@@ -545,8 +546,6 @@ namespace Decompose.Numerics
         private long maximumDivisorSquared;
         private long maximumCofactor;
         private long maximumCofactorSquared;
-        private CountInt threshold1;
-        private CountInt threshold2;
         private int mediumPrimeIndex;
         private int largePrimeIndex;
         private double thresholdExponent;
@@ -704,6 +703,7 @@ namespace Decompose.Numerics
             useCountTable = config.UseCountTable.HasValue ? config.UseCountTable.Value : (digits >= minimumCounTableDigits);
             savePartialRelationFactorizations = true;
             savePartialPartialRelationFactorizations = digits < 100;
+            useSingleThreshold = thresholdExponent >= 2;
 
             sqrtN = IntegerMath.Sqrt(n);
             powerOfTwo = IntegerMath.Modulus(n, 8) == 1 ? 3 : IntegerMath.Modulus(n, 8) == 5 ? 2 : 1;
@@ -907,6 +907,10 @@ namespace Decompose.Numerics
             Debug.Assert((b * b - n) % a == 0);
             var polynomial = new Polynomial { A = a, B = b, N = n };
 
+#if true
+            var words = IntegerMath.MultipleOfCeiling(a.GetBitLength(), Word32Integer.WordLength) / Word32Integer.WordLength;
+            var capBRep = capB.Select(value => new Word32Integer(words).Set(value)).ToArray();
+#endif
 
             var bainv2 = siqs.Bainv2;
             var offsets = siqs.Offsets;
@@ -919,8 +923,13 @@ namespace Decompose.Numerics
                 var p = entry.P;
                 var aInv = (long)IntegerMath.ModularInverse(a, p);
                 Debug.Assert(a * aInv % p == 1);
+#if false
                 for (int l = 0; l < s - 1; l++)
                     bainv2[l][i] = (int)(2 * (long)(capB[l] % p) * aInv % p);
+#else
+                for (int l = 0; l < s - 1; l++)
+                    bainv2[l][i] = (int)(2 * (long)capBRep[l].GetRemainder((uint)p) * aInv % p);
+#endif
                 for (int l = 0; l < s - 1; l++)
                     bainv2[l + s - 1][i] = (p - bainv2[l][i]) % p;
                 var root1 = entry.Root - (int)(b % p);
@@ -939,8 +948,6 @@ namespace Decompose.Numerics
             var logMaximumDivisor = Math.Log(maximumDivisor, 2);
             var numerator = Math.Log(intervalSize / 2, 2) + BigInteger.Log(n, 2) / 2;
             var denominator = thresholdExponent * logMaximumDivisor;
-            threshold1 = (CountInt)Math.Round(numerator - 2 * logMaximumDivisor);
-            threshold2 = (CountInt)Math.Round(numerator - 1.5 * logMaximumDivisor);
             var m = intervalSize / 2;
             for (int k = 0; k < intervalSize; k += thresholdInterval)
             {
@@ -1673,6 +1680,20 @@ namespace Decompose.Numerics
         {
             var counts = interval.Counts;
             var threshold = interval.Siqs.Threshold;
+            if (useSingleThreshold)
+            {
+                var limit = threshold[0];
+                for (int k = 0; k < size; k++)
+                {
+                    if (counts[k] >= limit)
+                    {
+                        CheckValue(interval, k0 + k);
+                        if (SievingCompleted)
+                            return;
+                    }
+                }
+                return;
+            }
             for (int k = 0; k < size; k += thresholdInterval)
             {
                 var limit = threshold[(k0 + k) >> thresholdShift];

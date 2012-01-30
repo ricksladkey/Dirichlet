@@ -31,13 +31,13 @@ namespace Decompose
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
                 //QuadraticSieveStandardTest();
-                //QuadraticSieveDebugTest();
+                QuadraticSieveDebugTest();
                 //QuadraticSieveFactorTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
                 //CreateSamplesTest();
                 //GraphTest();
-                UInt128Test();
+                //UInt128Test();
                 //ModularInverseTest();
             }
             catch (AggregateException ex)
@@ -442,7 +442,7 @@ namespace Decompose
                 Diagnostics = QuadraticSieve.Diag.Verbose,
                 DiagnosticsOutput = output,
                 ReportingInterval = 60,
-                ProcessPartialPartialRelations = true,
+                //ProcessPartialPartialRelations = true,
                 //MergeLimit = 10,
                 //FactorBaseSize = 45000,
                 //BlockSize = 1024 * 1024,
@@ -450,12 +450,12 @@ namespace Decompose
                 //CofactorCutoff = 4096 * 4,
                 //ErrorLimit = 1,
                 //NumberOfFactors = 12,
-                //ThresholdExponent = 2.5,
+                //ThresholdExponent = 2.6,
                 //LargePrimeOptimization = false,
-                //UseCountTable = true,
+                //UseCountTable = false,
                 //CofactorCutoff = 1024,
             };
-            var i = 35;
+            var i = 40;
             var sample = samples[i];
             var p = sample.P;
             var q = sample.Q;
