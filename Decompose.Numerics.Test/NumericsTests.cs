@@ -156,9 +156,14 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
+        public void TestUInt64MontgomeryReduction()
+        {
+            TestReduction(uint.Parse("46234103"), new UInt32MontgomeryReduction());
+        }
+
+        [TestMethod]
         public void TestUInt128MontgomeryReduction()
         {
-            TestReduction(ulong.Parse("46234103"), new UInt128MontgomeryReduction());
             TestReduction(ulong.Parse("259027704197601377"), new UInt128MontgomeryReduction());
         }
 

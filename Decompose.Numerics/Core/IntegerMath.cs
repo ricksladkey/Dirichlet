@@ -413,7 +413,7 @@ namespace Decompose.Numerics
             return (int)ModularPower((uint)value, (uint)exponent, (uint)modulus);
         }
 
-        public static ulong ModularPower(uint value, uint exponent, uint modulus)
+        public static uint ModularPower(uint value, uint exponent, uint modulus)
         {
             var result = (uint)1;
             while (exponent != 0)

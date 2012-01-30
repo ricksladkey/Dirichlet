@@ -2,85 +2,85 @@
 
 namespace Decompose.Numerics
 {
-    public class UInt64Operations : IOperations<ulong>
+    public class UInt32Operations : IOperations<uint>
     {
-        private IRandomNumberAlgorithm<ulong> random;
-        public IRandomNumberAlgorithm<ulong> Random
+        private IRandomNumberAlgorithm<uint> random;
+        public IRandomNumberAlgorithm<uint> Random
         {
             get
             {
                 if (random == null)
-                    random = new MersenneTwister64(0);
+                    random = new MersenneTwister32(0);
                 return random;
             }
         }
 
-        public ulong Convert(int a)
+        public uint Convert(int a)
         {
-            return (ulong)a;
+            return (uint)a;
         }
 
-        public BigInteger ToBigInteger(ulong a)
+        public BigInteger ToBigInteger(uint a)
         {
             return a;
         }
 
-        public ulong Add(ulong a, ulong b)
+        public uint Add(uint a, uint b)
         {
             return a + b;
         }
 
-        public ulong Subtract(ulong a, ulong b)
+        public uint Subtract(uint a, uint b)
         {
             return a - b;
         }
 
-        public ulong Multiply(ulong a, ulong b)
+        public uint Multiply(uint a, uint b)
         {
             return a * b;
         }
 
-        public ulong Divide(ulong a, ulong b)
+        public uint Divide(uint a, uint b)
         {
             return a / b;
         }
 
-        public ulong LeftShift(ulong a, int n)
+        public uint LeftShift(uint a, int n)
         {
             return a << n;
         }
 
-        public ulong RightShift(ulong a, int n)
+        public uint RightShift(uint a, int n)
         {
             return a >> n;
         }
 
-        public ulong ModularProduct(ulong a, ulong b, ulong modulus)
+        public uint ModularProduct(uint a, uint b, uint modulus)
         {
             return a * b % modulus;
         }
 
-        public ulong ModularPower(ulong value, ulong exponent, ulong modulus)
+        public uint ModularPower(uint value, uint exponent, uint modulus)
         {
             return IntegerMath.ModularPower(value, exponent, modulus);
         }
 
-        public bool IsEven(ulong a)
+        public bool IsEven(uint a)
         {
             return (a & 1) == 0;
         }
 
-        public bool Equals(ulong x, ulong y)
+        public bool Equals(uint x, uint y)
         {
             return x.Equals(y);
         }
 
-        public int GetHashCode(ulong obj)
+        public int GetHashCode(uint obj)
         {
             return obj.GetHashCode();
         }
 
-        public int Compare(ulong x, ulong y)
+        public int Compare(uint x, uint y)
         {
             return x.CompareTo(y);
         }

@@ -4,16 +4,16 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public class UInt128MontgomeryReduction : UInt64Operations, IReductionAlgorithm<ulong>
+    public class UInt32MontgomeryReduction : UInt32Operations, IReductionAlgorithm<uint>
     {
-        private class Reducer : IReducer<ulong>
+        private class Reducer : IReducer<uint>
         {
-            private class Residue : IResidue<ulong>
+            private class Residue : IResidue<uint>
             {
                 private Reducer reducer;
-                private ulong r;
+                private uint r;
 
-                public ulong Rep { get { return r; } }
+                public uint Rep { get { return r; } }
 
                 public bool IsZero { get { return r == 0; } }
 
@@ -32,38 +32,38 @@ namespace Decompose.Numerics
                     this.reducer = reducer;
                 }
 
-                public Residue(Reducer reducer, ulong x)
+                public Residue(Reducer reducer, uint x)
                     : this(reducer)
                 {
                     r = reducer.Reduce(x % reducer.n, reducer.rSquaredModN);
                 }
 
-                public IResidue<ulong> Set(ulong x)
+                public IResidue<uint> Set(uint x)
                 {
                     r = reducer.Reduce(x % reducer.n, reducer.rSquaredModN);
                     return this;
                 }
 
-                public IResidue<ulong> Set(IResidue<ulong> x)
+                public IResidue<uint> Set(IResidue<uint> x)
                 {
                     r = ((Residue)x).r;
                     return this;
                 }
 
-                public IResidue<ulong> Copy()
+                public IResidue<uint> Copy()
                 {
                     var residue = new Residue(reducer);
                     residue.r = r;
                     return residue;
                 }
 
-                public IResidue<ulong> Multiply(IResidue<ulong> x)
+                public IResidue<uint> Multiply(IResidue<uint> x)
                 {
                     r = reducer.Reduce(r, ((Residue)x).r);
                     return this;
                 }
 
-                public IResidue<ulong> Add(IResidue<ulong> x)
+                public IResidue<uint> Add(IResidue<uint> x)
                 {
                     r += ((Residue)x).r;
                     if (r >= reducer.Modulus)
@@ -71,7 +71,7 @@ namespace Decompose.Numerics
                     return this;
                 }
 
-                public IResidue<ulong> Subtract(IResidue<ulong> x)
+                public IResidue<uint> Subtract(IResidue<uint> x)
                 {
                     var xr = ((Residue)x).r;
                     if (r < xr)
@@ -81,7 +81,7 @@ namespace Decompose.Numerics
                     return this;
                 }
 
-                public ulong ToInteger()
+                public uint ToInteger()
                 {
                     return reducer.Reduce(r, 1);
                 }
@@ -91,60 +91,58 @@ namespace Decompose.Numerics
                     return ToInteger().ToString();
                 }
 
-                public bool Equals(IResidue<ulong> other)
+                public bool Equals(IResidue<uint> other)
                 {
                     return r == ((Residue)other).r;
                 }
 
-                public int CompareTo(IResidue<ulong> other)
+                public int CompareTo(IResidue<uint> other)
                 {
                     return r.CompareTo(((Residue)other).r);
                 }
             }
 
-            private ulong n;
+            private uint n;
             private uint k0;
-            private ulong rSquaredModN;
-            private ulong oneRep;
+            private uint rSquaredModN;
+            private uint oneRep;
 
-            public ulong Modulus
+            public uint Modulus
             {
                 get { return n; }
             }
 
-            public Reducer(ulong n)
+            public Reducer(uint n)
             {
                 this.n = n;
                 if ((n & 1) == 0)
                     throw new InvalidOperationException("not relatively prime");
-                if (n == (uint)n)
-                    throw new NotSupportedException("single word modulus");
-                var rMinusOne = ulong.MaxValue;
+                var rMinusOne = uint.MaxValue;
                 var rDivN = rMinusOne / n;
                 var rModN = rMinusOne - rDivN * n + 1;
                 rSquaredModN = IntegerMath.ModularProduct(rModN, rModN, n);
 
-                //k0 = (uint)(((UInt128)IntegerMath.ModularInverse(rModN, n) << 64) / n);
+                //k0 = (uint)(((UInt128)IntegerMath.ModularInverse(rModN, n) << 32) / n);
                 long c;
                 long d;
                 IntegerMath.ExtendedGreatestCommonDivisor((long)rModN, (long)n, out c, out d);
                 d -= (long)rDivN * c;
-                var k = (-d < 0 ? rMinusOne - (ulong)d + 1 : (ulong)-d);
+                var k = (-d < 0 ? rMinusOne - (uint)d + 1 : (uint)-d);
                 k0 = (uint)k;
             }
 
-            public IResidue<ulong> ToResidue(ulong x)
+            public IResidue<uint> ToResidue(uint x)
             {
                 return new Residue(this, x);
             }
 
-            private ulong Reduce(ulong u, ulong v)
+            private uint Reduce(uint u, uint v)
             {
                 return UInt128.Montgomery(u, v, n, k0);
             }
         }
 
-        public IReducer<ulong> GetReducer(ulong n)
+        public IReducer<uint> GetReducer(uint n)
         {
             return new Reducer(n);
         }

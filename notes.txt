@@ -51,3 +51,7 @@ a * b % n
 -----------------
       u1*v0 u0*v0
 u1*v1 u0*v1
+
+
+- add integer reducer
+- remove check from Montgomery for Montgomery32

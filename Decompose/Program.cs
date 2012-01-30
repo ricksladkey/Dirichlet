@@ -30,14 +30,14 @@ namespace Decompose
                 //MsieveTest();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                QuadraticSieveStandardTest();
+                //QuadraticSieveStandardTest();
                 //QuadraticSieveDebugTest();
                 //QuadraticSieveFactorTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
                 //CreateSamplesTest();
                 //GraphTest();
-                //UInt128Test();
+                UInt128Test();
                 //ModularInverseTest();
             }
             catch (AggregateException ex)
@@ -672,9 +672,9 @@ namespace Decompose
 #if false
                 var result = BigInteger.ModPow(value, exponent, modulus);
 #else
-                //var result = IntegerMath.ModularPower(value, exponent, modulus);
+                var result = IntegerMath.ModularPower(value, exponent, modulus);
 #endif
-                var result = IntegerMath.IsPrime(value);
+                //var result = IntegerMath.IsPrime(value);
 #if false
                 if (result != BigInteger.ModPow(value, exponent, modulus))
                     throw new InvalidOperationException("miscalculation");
