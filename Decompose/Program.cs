@@ -672,8 +672,9 @@ namespace Decompose
 #if false
                 var result = BigInteger.ModPow(value, exponent, modulus);
 #else
-                var result = IntegerMath.ModularPower(value, exponent, modulus);
+                //var result = IntegerMath.ModularPower(value, exponent, modulus);
 #endif
+                var result = IntegerMath.IsPrime(value);
 #if false
                 if (result != BigInteger.ModPow(value, exponent, modulus))
                     throw new InvalidOperationException("miscalculation");
