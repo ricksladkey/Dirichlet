@@ -1082,8 +1082,8 @@ namespace Decompose
                 int count = 20000;
                 var random = new MersenneTwister(0).CreateInstance<BigInteger>();
                 //var algorithm = new OldMillerRabin(16);
-                var algorithm = MillerRabin.CreateInstance(16, new BigIntegerReduction());
-                //var algorithm = MillerRabin.CreateInstance(16, new MontgomeryReduction());
+                //var algorithm = MillerRabin.CreateInstance(16, new BigIntegerReduction());
+                var algorithm = MillerRabin.CreateInstance(16, new MontgomeryReduction());
                 //var algorithm = MillerRabin.CreateInstance(16, new Word32IntegerReduction());
                 var max = BigInteger.One << 256;
                 var timer = new Stopwatch();

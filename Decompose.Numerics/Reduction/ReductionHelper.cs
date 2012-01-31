@@ -7,7 +7,7 @@ namespace Decompose.Numerics
 {
     public static class ReductionHelper
     {
-        public static void ModularPower<T>(IResidue<T> value, T exponent)
+        public static void Power<T>(IResidue<T> value, T exponent)
         {
             var reducer = value.Reducer;
             var ops = reducer.Reduction;

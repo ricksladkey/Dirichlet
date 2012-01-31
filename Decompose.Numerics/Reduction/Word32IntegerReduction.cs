@@ -74,7 +74,7 @@ namespace Decompose.Numerics
 
                 public IResidue<BigInteger> Power(BigInteger x)
                 {
-                    ReductionHelper.ModularPower(this, x);
+                    ReductionHelper.Power(this, x);
                     return this;
                 }
 

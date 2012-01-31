@@ -49,6 +49,7 @@
     <Compile Include="Collections\SetBitMatrix.cs" />
     <Compile Include="Collections\IntegerSet.cs" />
     <Compile Include="Core\BigIntegerOperations.cs" />
+    <Compile Include="Core\Core.cs" />
     <Compile Include="Core\Int32Operations.cs" />
     <Compile Include="Core\IOperations.cs" />
     <Compile Include="Core\UInt128.cs" />

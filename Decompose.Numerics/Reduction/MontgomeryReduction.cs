@@ -100,7 +100,7 @@ namespace Decompose.Numerics
 
                 public IResidue<BigInteger> Power(BigInteger x)
                 {
-                    ReductionHelper.ModularPower(this, x);
+                    ReductionHelper.Power(this, x);
                     return this;
                 }
 
@@ -159,7 +159,11 @@ namespace Decompose.Numerics
                 var rSquaredModN = r * r % n;
                 BigInteger c;
                 BigInteger d;
+#if false
                 IntegerMath.ExtendedGreatestCommonDivisor(r, n, out c, out d);
+#else
+                Core.ExtendedGreatestCommonDivisor(reduction, r, n, out c, out d);
+#endif
                 var rInverse = c;
                 k = -d;
                 if (rInverse.Sign == -1)
