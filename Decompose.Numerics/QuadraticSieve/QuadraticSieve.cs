@@ -93,7 +93,7 @@ namespace Decompose.Numerics
             diag = config.Diagnostics;
             output = config.DiagnosticsOutput ?? Console.Out;
             sieveTimeLimit = config.SieveTimeLimit;
-            random = new MersenneTwister(0).CreateInstance<uint>();
+            random = new MersenneTwister(0).CreateInstance<int>();
             smallIntegerFactorer = new TrialDivisionFactorization();
             allPrimes = new SieveOfErostothones();
             solver = new Solver(config.Threads, config.MergeLimit, (diag & Diag.Solving) != 0);
@@ -514,7 +514,7 @@ namespace Decompose.Numerics
         };
 
         private Config config;
-        private IRandomNumberAlgorithm<uint> random;
+        private IRandomNumberAlgorithm<int> random;
         private IFactorizationAlgorithm<int> smallIntegerFactorer;
         private IEnumerable<int> allPrimes;
         private INullSpaceAlgorithm<IBitArray, IBitMatrix> solver;
@@ -842,7 +842,7 @@ namespace Decompose.Numerics
             var error = 0.0;
             for (int i = 0; i < 10; i++)
             {
-                var numbers = random.Sequence((uint)candidateMap.Length)
+                var numbers = random.Sequence(candidateMap.Length)
                     .Take(candidateMap.Length)
                     .ToArray();
                 permutation = Enumerable.Range(0, candidateMap.Length)

@@ -70,6 +70,12 @@ namespace Decompose.Numerics
                     return this;
                 }
 
+                public IResidue<uint> Power(uint x)
+                {
+                    r = IntegerMath.ModularPower(r, x, reducer.Modulus);
+                    return this;
+                }
+
                 public uint Value()
                 {
                     return r;

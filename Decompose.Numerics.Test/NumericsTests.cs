@@ -37,7 +37,7 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void TestPrimality()
         {
-            var algorithm = new MillerRabin<int>(16, new Int32Reduction());
+            var algorithm = MillerRabin.CreateInstance(16, new Int32Reduction());
             var primes = Enumerable.Range(937, 1000 - 937)
                 .Where(n => algorithm.IsPrime(n))
                 .ToArray();
@@ -193,8 +193,9 @@ namespace Decompose.Numerics.Test
         public void TestRadix32()
         {
             var n = BigInteger.Parse("10023859281455311421");
-            var random = new MersenneTwister(0).CreateInstance<BigInteger>();
-            var smallRandom = new MersenneTwister(0).CreateInstance<uint>();
+            var generator = new MersenneTwister(0);
+            var random = generator.CreateInstance<BigInteger>();
+            var smallRandom = generator.CreateInstance<uint>();
             var length = (n.GetBitLength() * 2 + 31) / 32 + 3;
             var store = new Word32IntegerStore(length);
             var a = store.Create();

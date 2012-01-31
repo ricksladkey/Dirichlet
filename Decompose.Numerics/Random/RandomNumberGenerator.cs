@@ -6,7 +6,7 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public abstract class Random : IRandomNumberGenerator
+    public abstract class RandomNumberGenerator : IRandomNumberGenerator
     {
         private abstract class RandomNumberAlgorithm<T> : IRandomNumberAlgorithm<T>
         {

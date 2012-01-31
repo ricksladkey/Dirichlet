@@ -69,6 +69,12 @@ namespace Decompose.Numerics
                     return this;
                 }
 
+                public IResidue<BigInteger> Power(BigInteger x)
+                {
+                    ResidueHelper.ModularPower(this, x);
+                    return this;
+                }
+
                 public bool Equals(IResidue<BigInteger> other)
                 {
                     return r == ((Residue)other).r;

@@ -60,7 +60,7 @@
     <Compile Include="Primality\OldMillerRabin.cs" />
     <Compile Include="QuadraticSieve\PartialRelationGraph.cs" />
     <Compile Include="Random\IRandomNumberGenerator.cs" />
-    <Compile Include="Random\Random.cs" />
+    <Compile Include="Random\RandomNumberGenerator.cs" />
     <Compile Include="Reduction\BarrettReduction.cs" />
     <Compile Include="Core\BigIntegers.cs" />
     <Compile Include="Collections\BoolBitArray.cs" />
@@ -96,7 +96,7 @@
     <Compile Include="NullSpace\StructuredGaussianElimination.cs" />
     <Compile Include="Core\Word32Integer.cs" />
     <Compile Include="Reduction\IResidue.cs" />
-    <Compile Include="Reduction\Residue.cs" />
+    <Compile Include="Reduction\ResidueHelper.cs" />
     <Compile Include="Reduction\UInt32Reduction.cs" />
     <Compile Include="Reduction\UInt64MontgomeryReduction.cs" />
     <Compile Include="Reduction\UInt64Reduction.cs" />

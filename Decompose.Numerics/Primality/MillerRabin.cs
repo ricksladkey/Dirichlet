@@ -3,54 +3,62 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public class MillerRabin<T> : IPrimalityAlgorithm<T>
+    public class MillerRabin
     {
-        private IReductionAlgorithm<T> reduction;
-        private IRandomNumberGenerator generator = new MersenneTwister(0);
-        private int k;
-
-        public MillerRabin(int k, IReductionAlgorithm<T> reduction)
+        private class PrimalityAlgorithm<T> : IPrimalityAlgorithm<T>
         {
-            this.k = k;
-            this.reduction = reduction;
+            private IReductionAlgorithm<T> reduction;
+            private IRandomNumberGenerator generator = new MersenneTwister(0);
+            private int k;
+
+            public PrimalityAlgorithm(int k, IReductionAlgorithm<T> reduction)
+            {
+                this.k = k;
+                this.reduction = reduction;
+            }
+
+            public bool IsPrime(T n)
+            {
+                if (reduction.Compare(n, reduction.Two) < 0)
+                    return false;
+                if (!reduction.Equals(n, reduction.Two) && reduction.IsEven(n))
+                    return false;
+                var random = generator.CreateInstance<T>();
+                var reducer = reduction.GetReducer(n);
+                var four = reduction.Convert(4);
+                var s = 0;
+                var d = reduction.Subtract(n, reduction.One);
+                while (reduction.IsEven(d))
+                {
+                    d = reduction.RightShift(d, 1);
+                    ++s;
+                }
+                var nMinusOne = reducer.ToResidue(reduction.Subtract(n, reduction.One));
+                var x = reducer.ToResidue(reduction.Zero);
+                for (int i = 0; i < k; i++)
+                {
+                    var a = reduction.Add(random.Next(reduction.Subtract(n, four)), reduction.Two);
+                    x.Set(a).Power(d);
+                    if (x.IsOne || x.Equals(nMinusOne))
+                        continue;
+                    for (int r = 1; r < s; r++)
+                    {
+                        x.Multiply(x);
+                        if (x.IsOne)
+                            return false;
+                        if (x.Equals(nMinusOne))
+                            break;
+                    }
+                    if (!x.Equals(nMinusOne))
+                        return false;
+                }
+                return true;
+            }
         }
 
-        public bool IsPrime(T n)
+        public static IPrimalityAlgorithm<T> CreateInstance<T>(int k, IReductionAlgorithm<T> reduction)
         {
-            if (reduction.Compare(n, reduction.Two) < 0)
-                return false;
-            if (!reduction.Equals(n, reduction.Two) && reduction.IsEven(n))
-                return false;
-            var random = generator.CreateInstance<T>();
-            var reducer = reduction.GetReducer(n);
-            var four = reduction.Convert(4);
-            var s = 0;
-            var d = reduction.Subtract(n, reduction.One);
-            while (reduction.IsEven(d))
-            {
-                d = reduction.RightShift(d, 1);
-                ++s;
-            }
-            var nMinusOne = reducer.ToResidue(reduction.Subtract(n, reduction.One));
-            var x = reducer.ToResidue(reduction.Zero);
-            for (int i = 0; i < k; i++)
-            {
-                x.Set(reduction.Add(random.Next(reduction.Subtract(n, four)), reduction.Two));
-                Residue<T>.ModularPower(x, d);
-                if (x.IsOne || x.Equals(nMinusOne))
-                    continue;
-                for (int r = 1; r < s; r++)
-                {
-                    x.Multiply(x);
-                    if (x.IsOne)
-                        return false;
-                    if (x.Equals(nMinusOne))
-                        break;
-                }
-                if (!x.Equals(nMinusOne))
-                    return false;
-            }
-            return true;
+            return new PrimalityAlgorithm<T>(k, reduction);
         }
     }
 }

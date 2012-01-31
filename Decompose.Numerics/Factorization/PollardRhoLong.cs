@@ -8,7 +8,7 @@ namespace Decompose.Numerics
     public class PollardRhoLong : IFactorizationAlgorithm<long>
     {
         const int batchSize = 100;
-        private IRandomNumberAlgorithm<ulong> random = new MersenneTwister(0).CreateInstance<ulong>();
+        private IRandomNumberAlgorithm<long> random = new MersenneTwister(0).CreateInstance<long>();
 
         public IEnumerable<long> Factor(long n)
         {
@@ -31,8 +31,8 @@ namespace Decompose.Numerics
 
         public long GetDivisor(long n)
         {
-            var xInit = (long)random.Next((ulong)n);
-            var c = (long)random.Next((ulong)n - 1) + 1;
+            var xInit = random.Next(n);
+            var c = random.Next(n - 1) + 1;
             return Rho(n, xInit, c);
         }
 

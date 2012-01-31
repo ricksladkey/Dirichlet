@@ -68,6 +68,12 @@ namespace Decompose.Numerics
                     return this;
                 }
 
+                public IResidue<BigInteger> Power(BigInteger x)
+                {
+                    r = BigInteger.ModPow(r, x, reducer.Modulus);
+                    return this;
+                }
+
                 public BigInteger Value()
                 {
                     return r;

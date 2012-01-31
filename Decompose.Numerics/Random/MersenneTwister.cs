@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Decompose.Numerics
 {
-    public class MersenneTwister : Random
+    public class MersenneTwister : RandomNumberGenerator
     {
         private const int N = 624;
         private uint[] MT;

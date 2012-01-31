@@ -37,8 +37,9 @@ namespace Decompose
                 //GaussianEliminationTest1();
                 //CreateSamplesTest();
                 //GraphTest();
-                UInt128Test();
+                //UInt128Test();
                 //ModularInverseTest();
+                PrimalityTest();
             }
             catch (AggregateException ex)
             {
@@ -1056,6 +1057,44 @@ namespace Decompose
             if (v == 0)
                 s = 0;
             return s;
+        }
+
+        static void PrimalityTest()
+        {
+#if false
+            {
+                int count = 1000000;
+                var random = new MersenneTwister(0).CreateInstance<ulong>();
+                //var algorithm = new OldMillerRabin(16);
+                var algorithm = MillerRabin.CreateInstance(16, new UInt64MontgomeryReduction());
+                var max = (ulong)1 << 60;
+                var timer = new Stopwatch();
+                timer.Start();
+                for (int i = 0; i < count; i++)
+                {
+                    var result = algorithm.IsPrime(random.Next(max));
+                }
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
+#endif
+#if true
+            {
+                int count = 20000;
+                var random = new MersenneTwister(0).CreateInstance<BigInteger>();
+                //var algorithm = new OldMillerRabin(16);
+                var algorithm = MillerRabin.CreateInstance(16, new BigIntegerReduction());
+                //var algorithm = MillerRabin.CreateInstance(16, new MontgomeryReduction());
+                //var algorithm = MillerRabin.CreateInstance(16, new Word32IntegerReduction());
+                var max = BigInteger.One << 256;
+                var timer = new Stopwatch();
+                timer.Start();
+                for (int i = 0; i < count; i++)
+                {
+                    var result = algorithm.IsPrime(random.Next(max));
+                }
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
+#endif
         }
 
         private static string[] GetLinesGzip(string file)

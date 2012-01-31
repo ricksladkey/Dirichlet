@@ -477,7 +477,7 @@ namespace Decompose.Numerics
             return primalityInt.IsPrime(n);
         }
 
-        private static IPrimalityAlgorithm<BigInteger> primalityBigInteger = new MillerRabin<BigInteger>(16, new BigIntegerReduction());
+        private static IPrimalityAlgorithm<BigInteger> primalityBigInteger = MillerRabin.CreateInstance(16, new BigIntegerReduction());
 
         public static bool IsProbablePrime(int n)
         {
