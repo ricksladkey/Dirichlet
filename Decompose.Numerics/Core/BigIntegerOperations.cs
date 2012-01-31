@@ -4,13 +4,15 @@ namespace Decompose.Numerics
 {
     public class BigIntegerOperations : IOperations<BigInteger>
     {
-        private IRandomNumberAlgorithm<BigInteger> random;
-        public IRandomNumberAlgorithm<BigInteger> Random
+        public bool IsUnsigned { get { return false; } }
+
+        private IRandomNumberGenerator<BigInteger> random;
+        public IRandomNumberGenerator<BigInteger> Random
         {
             get
             {
                 if (random == null)
-                    random = new MersenneTwisterBigInteger(0);
+                    random = new MersenneTwister(0).CreateInstance<BigInteger>();
                 return random;
             }
         }
@@ -45,6 +47,16 @@ namespace Decompose.Numerics
             return a / b;
         }
 
+        public BigInteger Modulus(BigInteger a, BigInteger b)
+        {
+            return a % b;
+        }
+
+        public BigInteger Negate(BigInteger a)
+        {
+            return -a;
+        }
+
         public BigInteger LeftShift(BigInteger a, int n)
         {
             return a << n;
@@ -53,6 +65,21 @@ namespace Decompose.Numerics
         public BigInteger RightShift(BigInteger a, int n)
         {
             return a >> n;
+        }
+
+        public BigInteger And(BigInteger a, BigInteger b)
+        {
+            return a & b;
+        }
+
+        public BigInteger Or(BigInteger a, BigInteger b)
+        {
+            return a | b;
+        }
+
+        public BigInteger ExclusiveOr(BigInteger a, BigInteger b)
+        {
+            return a ^ b;
         }
 
         public BigInteger ModularProduct(BigInteger a, BigInteger b, BigInteger modulus)

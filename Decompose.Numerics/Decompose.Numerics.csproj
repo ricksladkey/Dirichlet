@@ -49,6 +49,7 @@
     <Compile Include="Collections\SetBitMatrix.cs" />
     <Compile Include="Collections\IntegerSet.cs" />
     <Compile Include="Core\BigIntegerOperations.cs" />
+    <Compile Include="Core\Int32Operations.cs" />
     <Compile Include="Core\IOperations.cs" />
     <Compile Include="Core\UInt128.cs" />
     <Compile Include="Core\Uint32Operations.cs" />
@@ -57,6 +58,8 @@
     <Compile Include="Factorization\ShanksSquareForms.cs" />
     <Compile Include="Factorization\TrialDivisionFactorization.cs" />
     <Compile Include="QuadraticSieve\PartialRelationGraph.cs" />
+    <Compile Include="Random\IRandomNumberGenerator.cs" />
+    <Compile Include="Random\Random.cs" />
     <Compile Include="Reduction\BarrettReduction.cs" />
     <Compile Include="Core\BigIntegers.cs" />
     <Compile Include="Collections\BoolBitArray.cs" />

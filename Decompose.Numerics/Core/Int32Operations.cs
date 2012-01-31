@@ -2,112 +2,112 @@
 
 namespace Decompose.Numerics
 {
-    public class UInt32Operations : IOperations<uint>
+    public class Int32Operations : IOperations<int>
     {
-        public bool IsUnsigned { get { return true; } }
+        public bool IsUnsigned { get { return false; } }
 
-        private IRandomNumberGenerator<uint> random;
-        public IRandomNumberGenerator<uint> Random
+        private IRandomNumberGenerator<int> random;
+        public IRandomNumberGenerator<int> Random
         {
             get
             {
                 if (random == null)
-                    random = new MersenneTwister(0).CreateInstance<uint>();
+                    random = new MersenneTwister(0).CreateInstance<int>();
                 return random;
             }
         }
 
-        public uint Convert(int a)
+        public int Convert(int a)
         {
-            return (uint)a;
+            return (int)a;
         }
 
-        public BigInteger ToBigInteger(uint a)
+        public BigInteger ToBigInteger(int a)
         {
             return a;
         }
 
-        public uint Add(uint a, uint b)
+        public int Add(int a, int b)
         {
             return a + b;
         }
 
-        public uint Subtract(uint a, uint b)
+        public int Subtract(int a, int b)
         {
             return a - b;
         }
 
-        public uint Multiply(uint a, uint b)
+        public int Multiply(int a, int b)
         {
             return a * b;
         }
 
-        public uint Divide(uint a, uint b)
+        public int Divide(int a, int b)
         {
             return a / b;
         }
 
-        public uint Modulus(uint a, uint b)
+        public int Modulus(int a, int b)
         {
             return a % b;
         }
 
-        public uint Negate(uint a)
+        public int Negate(int a)
         {
             return 0 - a;
         }
 
-        public uint LeftShift(uint a, int n)
+        public int LeftShift(int a, int n)
         {
             return a << n;
         }
 
-        public uint RightShift(uint a, int n)
+        public int RightShift(int a, int n)
         {
             return a >> n;
         }
 
-        public uint And(uint a, uint b)
+        public int And(int a, int b)
         {
             return a & b;
         }
 
-        public uint Or(uint a, uint b)
+        public int Or(int a, int b)
         {
             return a | b;
         }
 
-        public uint ExclusiveOr(uint a, uint b)
+        public int ExclusiveOr(int a, int b)
         {
             return a ^ b;
         }
 
-        public uint ModularProduct(uint a, uint b, uint modulus)
+        public int ModularProduct(int a, int b, int modulus)
         {
             return a * b % modulus;
         }
 
-        public uint ModularPower(uint value, uint exponent, uint modulus)
+        public int ModularPower(int value, int exponent, int modulus)
         {
             return IntegerMath.ModularPower(value, exponent, modulus);
         }
 
-        public bool IsEven(uint a)
+        public bool IsEven(int a)
         {
             return (a & 1) == 0;
         }
 
-        public bool Equals(uint x, uint y)
+        public bool Equals(int x, int y)
         {
             return x.Equals(y);
         }
 
-        public int GetHashCode(uint obj)
+        public int GetHashCode(int obj)
         {
             return obj.GetHashCode();
         }
 
-        public int Compare(uint x, uint y)
+        public int Compare(int x, int y)
         {
             return x.CompareTo(y);
         }

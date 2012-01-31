@@ -192,8 +192,8 @@ namespace Decompose.Numerics.Test
         public void TestRadix32()
         {
             var n = BigInteger.Parse("10023859281455311421");
-            var random = new MersenneTwisterBigInteger(0);
-            var smallRandom = new MersenneTwister32(0);
+            var random = new MersenneTwister(0).CreateInstance<BigInteger>();
+            var smallRandom = new MersenneTwister(0).CreateInstance<uint>();
             var length = (n.GetBitLength() * 2 + 31) / 32 + 3;
             var store = new Word32IntegerStore(length);
             var a = store.Create();
@@ -267,7 +267,7 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void ModularSquareRootTest1()
         {
-            var random = new MersenneTwisterBigInteger(0);
+            var random = new MersenneTwister(0).CreateInstance<BigInteger>();
             var limit = BigInteger.Parse("10023859281455311421");
             for (int i = 0; i < 100; i++)
             {
@@ -474,7 +474,7 @@ namespace Decompose.Numerics.Test
         public void ModularInverseTest()
         {
             var n = BigInteger.Parse("10023859281455311421");
-            var random = new MersenneTwisterBigInteger(0);
+            var random = new MersenneTwister(0).CreateInstance<BigInteger>();
             for (int i = 0; i < 1000; i++)
             {
                 var p = random.Next(n);
@@ -508,7 +508,7 @@ namespace Decompose.Numerics.Test
 
         private void UInt128Test(int factorSize, int modulusSize)
         {
-            var random = new MersenneTwister64(0);
+            var random = new MersenneTwister(0).CreateInstance<ulong>();
             var factorMax = (ulong)1 << factorSize;
             var modulusMax = (ulong)1 << modulusSize;
             for (int i = 0; i < 10000; i++)

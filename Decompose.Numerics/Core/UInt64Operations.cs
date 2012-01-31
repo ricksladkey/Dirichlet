@@ -4,13 +4,15 @@ namespace Decompose.Numerics
 {
     public class UInt64Operations : IOperations<ulong>
     {
-        private IRandomNumberAlgorithm<ulong> random;
-        public IRandomNumberAlgorithm<ulong> Random
+        public bool IsUnsigned { get { return true; } }
+
+        private IRandomNumberGenerator<ulong> random;
+        public IRandomNumberGenerator<ulong> Random
         {
             get
             {
                 if (random == null)
-                    random = new MersenneTwister64(0);
+                    random = new MersenneTwister(0).CreateInstance<ulong>();
                 return random;
             }
         }
@@ -45,6 +47,16 @@ namespace Decompose.Numerics
             return a / b;
         }
 
+        public ulong Modulus(ulong a, ulong b)
+        {
+            return a % b;
+        }
+
+        public ulong Negate(ulong a)
+        {
+            return 0 - a;
+        }
+
         public ulong LeftShift(ulong a, int n)
         {
             return a << n;
@@ -53,6 +65,21 @@ namespace Decompose.Numerics
         public ulong RightShift(ulong a, int n)
         {
             return a >> n;
+        }
+
+        public ulong And(ulong a, ulong b)
+        {
+            return a & b;
+        }
+
+        public ulong Or(ulong a, ulong b)
+        {
+            return a | b;
+        }
+
+        public ulong ExclusiveOr(ulong a, ulong b)
+        {
+            return a ^ b;
         }
 
         public ulong ModularProduct(ulong a, ulong b, ulong modulus)

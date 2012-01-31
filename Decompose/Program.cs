@@ -61,7 +61,7 @@ namespace Decompose
 
         static void FindPrimeTest1()
         {
-            var random = new MersenneTwisterBigInteger(0);
+            var random = new MersenneTwister(0).CreateInstance<BigInteger>();
             var limit = BigInteger.One << (32 * 4);
             var x = random.Next(limit);
             while (!IntegerMath.IsPrime(x))
@@ -72,7 +72,7 @@ namespace Decompose
         static void BarrettReductionTest1()
         {
             var p = BigInteger.Parse("10023859281455311421");
-            var random = new MersenneTwisterBigInteger(0);
+            var random = new MersenneTwister(0).CreateInstance<BigInteger>();
             var x = random.Next(p);
             var y = random.Next(p);
             var z = x * y;
@@ -101,8 +101,8 @@ namespace Decompose
         static void BarrettReductionTest2()
         {
             var n = BigInteger.Parse("10023859281455311421");
-            var random1 = new MersenneTwisterBigInteger(0);
-            var random2 = new MersenneTwisterBigInteger(0);
+            var random1 = new MersenneTwister(0).CreateInstance<BigInteger>();
+            var random2 = new MersenneTwister(0).CreateInstance<BigInteger>();
             var timer1 = new Stopwatch();
             var timer2 = new Stopwatch();
             var iterations1 = 1000;
@@ -154,8 +154,8 @@ namespace Decompose
         {
             var n = BigInteger.Parse("10023859281455311421");
             var length = (n.GetBitLength() * 2 + 31) / 32;
-            var random1 = new MersenneTwisterBigInteger(0);
-            var random2 = new MersenneTwisterBigInteger(0);
+            var random1 = new MersenneTwister(0).CreateInstance<BigInteger>();
+            var random2 = new MersenneTwister(0).CreateInstance<BigInteger>();
             var timer1 = new Stopwatch();
             var timer2 = new Stopwatch();
             var iterations1 = 1000;
@@ -266,7 +266,7 @@ namespace Decompose
 
         static void FactorTest4()
         {
-            var random = new MersenneTwisterBigInteger(0);
+            var random = new MersenneTwister(0).CreateInstance<BigInteger>();
             for (int i = 5; i <= 16; i++)
             {
                 var limit = BigInteger.Pow(new BigInteger(10), i);
@@ -316,7 +316,7 @@ namespace Decompose
 
         static void QuadraticSieveParametersTest()
         {
-            var random = new MersenneTwisterBigInteger(0);
+            var random = new MersenneTwister(0).CreateInstance<BigInteger>();
             int i = 50;
             var sample = samples[i];
             var p = sample.P;
@@ -389,7 +389,7 @@ namespace Decompose
 
         static void CreateSamplesTest()
         {
-            var random = new MersenneTwisterBigInteger(0);
+            var random = new MersenneTwister(0).CreateInstance<BigInteger>();
             for (int i = 1; i <= 10; i++)
             {
                 var limit = BigInteger.Pow(10, i);
@@ -659,7 +659,7 @@ namespace Decompose
         private static void UInt128Test()
         {
             var timer = new Stopwatch();
-            var random = new MersenneTwister64(0);
+            var random = new MersenneTwister(0).CreateInstance<ulong>();
             var max = (ulong)1 << 60;
             timer.Start();
             for (int i = 0; i < 5000000; i++)
@@ -685,7 +685,7 @@ namespace Decompose
 
         static void ModularInverseTest()
         {
-            var random = new MersenneTwister64(0);
+            var random = new MersenneTwister(0).CreateInstance<ulong>();
             //var inverse = new Func<long, long, long>(HybridRSSModularInverse);
             //var inverse = new Func<long, long, long>(RSSSimpleModularInverse);
             var inverse = new Func<long, long, long>(RSSModularInverse);
@@ -1110,7 +1110,7 @@ namespace Decompose
             }
         }
 
-        private static BigInteger NextPrime(IRandomNumberAlgorithm<BigInteger> random, BigInteger limit)
+        private static BigInteger NextPrime(IRandomNumberGenerator<BigInteger> random, BigInteger limit)
         {
             var digits = IntegerMath.GetDigitLength(limit - 1, 10);
             var n = random.Next(limit);
