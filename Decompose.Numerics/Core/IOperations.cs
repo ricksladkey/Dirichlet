@@ -6,7 +6,9 @@ namespace Decompose.Numerics
     public interface IOperations<T> : IEqualityComparer<T>, IComparer<T>
     {
         bool IsUnsigned { get; }
-        IRandomNumberGenerator<T> Random { get; }
+        T Zero { get; }
+        T One { get; }
+        T Two { get; }
         T Convert(int a);
         BigInteger ToBigInteger(T a);
         T Add(T a, T b);
@@ -20,8 +22,10 @@ namespace Decompose.Numerics
         T And(T a, T b);
         T Or(T a, T b);
         T ExclusiveOr(T a, T b);
+        bool IsZero(T a);
+        bool IsOne(T a);
+        bool IsEven(T a);
         T ModularProduct(T a, T b, T modulus);
         T ModularPower(T value, T exponent, T modulus);
-        bool IsEven(T a);
     }
 }

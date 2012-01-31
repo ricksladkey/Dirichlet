@@ -82,14 +82,14 @@ namespace Decompose.Numerics
                     return r.CompareTo(((Residue)other).r);
                 }
 
-                public BigInteger ToInteger()
+                public BigInteger Value()
                 {
                     return r.ToBigInteger();
                 }
 
                 public override string ToString()
                 {
-                    return ToInteger().ToString();
+                    return Value().ToString();
                 }
             }
 

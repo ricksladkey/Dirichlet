@@ -93,7 +93,7 @@ namespace Decompose
                 throw new InvalidOperationException();
 
             var reducer = new BarrettReduction().GetReducer(p);
-            var actual = reducer.ToResidue(z).ToInteger();
+            var actual = reducer.ToResidue(z).Value();
             if (actual != expected)
                 throw new InvalidOperationException();
         }
@@ -1110,7 +1110,7 @@ namespace Decompose
             }
         }
 
-        private static BigInteger NextPrime(IRandomNumberGenerator<BigInteger> random, BigInteger limit)
+        private static BigInteger NextPrime(IRandomNumberAlgorithm<BigInteger> random, BigInteger limit)
         {
             var digits = IntegerMath.GetDigitLength(limit - 1, 10);
             var n = random.Next(limit);

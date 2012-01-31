@@ -6,13 +6,13 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public abstract class Random : IRandomNumberAlgorithm
+    public abstract class Random : IRandomNumberGenerator
     {
-        private abstract class RandomNumberGenerator<T> : IRandomNumberGenerator<T>
+        private abstract class RandomNumberAlgorithm<T> : IRandomNumberAlgorithm<T>
         {
-            protected IRandomNumberAlgorithm random;
+            protected IRandomNumberGenerator random;
 
-            protected RandomNumberGenerator(IRandomNumberAlgorithm random)
+            protected RandomNumberAlgorithm(IRandomNumberGenerator random)
             {
                 this.random = random;
             }
@@ -26,9 +26,9 @@ namespace Decompose.Numerics
             }
         }
 
-        private class Int32RandomNumberGenerator : RandomNumberGenerator<int>
+        private class Int32RandomNumberAlgorithm : RandomNumberAlgorithm<int>
         {
-            public Int32RandomNumberGenerator(IRandomNumberAlgorithm random)
+            public Int32RandomNumberAlgorithm(IRandomNumberGenerator random)
                 : base(random)
             {
             }
@@ -43,9 +43,9 @@ namespace Decompose.Numerics
             }
         }
 
-        private class UInt32RandomNumberGenerator : RandomNumberGenerator<uint>
+        private class UInt32RandomNumberAlgorithm : RandomNumberAlgorithm<uint>
         {
-            public UInt32RandomNumberGenerator(IRandomNumberAlgorithm random)
+            public UInt32RandomNumberAlgorithm(IRandomNumberGenerator random)
                 : base(random)
             {
             }
@@ -60,9 +60,9 @@ namespace Decompose.Numerics
             }
         }
 
-        private class Int64RandomNumberGenerator : RandomNumberGenerator<long>
+        private class Int64RandomNumberAlgorithm : RandomNumberAlgorithm<long>
         {
-            public Int64RandomNumberGenerator(IRandomNumberAlgorithm random)
+            public Int64RandomNumberAlgorithm(IRandomNumberGenerator random)
                 : base(random)
             {
             }
@@ -77,9 +77,9 @@ namespace Decompose.Numerics
             }
         }
 
-        private class UInt64RandomNumberGenerator : RandomNumberGenerator<ulong>
+        private class UInt64RandomNumberAlgorithm : RandomNumberAlgorithm<ulong>
         {
-            public UInt64RandomNumberGenerator(IRandomNumberAlgorithm random)
+            public UInt64RandomNumberAlgorithm(IRandomNumberGenerator random)
                 : base(random)
             {
             }
@@ -94,9 +94,9 @@ namespace Decompose.Numerics
             }
         }
 
-        private class BigIntegerRandomNumberGenerator : RandomNumberGenerator<BigInteger>
+        private class BigIntegerRandomNumberAlgorithm : RandomNumberAlgorithm<BigInteger>
         {
-            public BigIntegerRandomNumberGenerator(IRandomNumberAlgorithm random)
+            public BigIntegerRandomNumberAlgorithm(IRandomNumberGenerator random)
                 : base(random)
             {
             }
@@ -120,19 +120,19 @@ namespace Decompose.Numerics
 
         public abstract uint Next();
 
-        public IRandomNumberGenerator<T> CreateInstance<T>()
+        public IRandomNumberAlgorithm<T> CreateInstance<T>()
         {
             var type = typeof(T);
             if (type == typeof(int))
-                return (IRandomNumberGenerator<T>)new Int32RandomNumberGenerator(this);
+                return (IRandomNumberAlgorithm<T>)new Int32RandomNumberAlgorithm(this);
             if (type == typeof(uint))
-                return (IRandomNumberGenerator<T>)new UInt32RandomNumberGenerator(this);
+                return (IRandomNumberAlgorithm<T>)new UInt32RandomNumberAlgorithm(this);
             if (type == typeof(long))
-                return (IRandomNumberGenerator<T>)new Int64RandomNumberGenerator(this);
+                return (IRandomNumberAlgorithm<T>)new Int64RandomNumberAlgorithm(this);
             if (type == typeof(ulong))
-                return (IRandomNumberGenerator<T>)new UInt64RandomNumberGenerator(this);
+                return (IRandomNumberAlgorithm<T>)new UInt64RandomNumberAlgorithm(this);
             if (type == typeof(BigInteger))
-                return (IRandomNumberGenerator<T>)new BigIntegerRandomNumberGenerator(this);
+                return (IRandomNumberAlgorithm<T>)new BigIntegerRandomNumberAlgorithm(this);
             throw new NotImplementedException("type not supported");
         }
     }

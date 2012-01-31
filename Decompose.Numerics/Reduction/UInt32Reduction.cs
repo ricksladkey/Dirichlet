@@ -70,14 +70,14 @@ namespace Decompose.Numerics
                     return this;
                 }
 
-                public uint ToInteger()
+                public uint Value()
                 {
                     return r;
                 }
 
                 public override string ToString()
                 {
-                    return ToInteger().ToString();
+                    return Value().ToString();
                 }
 
                 public bool Equals(IResidue<uint> other)

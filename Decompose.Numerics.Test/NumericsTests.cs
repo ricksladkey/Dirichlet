@@ -169,21 +169,22 @@ namespace Decompose.Numerics.Test
 
         private void TestReduction<T>(T p, IReductionAlgorithm<T> reduction)
         {
+            var random = new MersenneTwister(0).CreateInstance<T>();
             var reducer = reduction.GetReducer(p);
             var xPrime = reducer.ToResidue(p);
             var yPrime = reducer.ToResidue(p);
             var zPrime = reducer.ToResidue(p);
             for (int i = 0; i < 100; i++)
             {
-                var x = reduction.Random.Next(p);
-                var y = reduction.Random.Next(p);
+                var x = random.Next(p);
+                var y = random.Next(p);
                 var z = reduction.ToBigInteger(x) * reduction.ToBigInteger(y);
                 var expected = z % reduction.ToBigInteger(p);
 
                 xPrime.Set(x);
                 yPrime.Set(y);
                 zPrime.Set(xPrime).Multiply(yPrime);
-                var actual = reduction.ToBigInteger(zPrime.ToInteger());
+                var actual = reduction.ToBigInteger(zPrime.Value());
                 Assert.AreEqual(expected, actual);
             }
         }

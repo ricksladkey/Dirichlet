@@ -68,14 +68,14 @@ namespace Decompose.Numerics
                     return this;
                 }
 
-                public BigInteger ToInteger()
+                public BigInteger Value()
                 {
                     return r;
                 }
 
                 public override string ToString()
                 {
-                    return ToInteger().ToString();
+                    return Value().ToString();
                 }
 
                 public bool Equals(IResidue<BigInteger> other)

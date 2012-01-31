@@ -53,7 +53,7 @@ namespace Decompose.Numerics
                             return BigInteger.One;
                         q.Multiply(diff.Set(x).Subtract(y));
                     }
-                    g = BigInteger.GreatestCommonDivisor(q.ToInteger(), n);
+                    g = BigInteger.GreatestCommonDivisor(q.Value(), n);
                     k += limit;
                 }
                 r <<= 1;
@@ -68,7 +68,7 @@ namespace Decompose.Numerics
                     if (cancellationToken.IsCancellationRequested)
                         return BigInteger.Zero;
                     AdvanceF(ys, cPrime);
-                    g = BigInteger.GreatestCommonDivisor(diff.Set(x).Subtract(y).ToInteger(), n);
+                    g = BigInteger.GreatestCommonDivisor(diff.Set(x).Subtract(y).Value(), n);
                 }
                 while (g.IsOne);
             }

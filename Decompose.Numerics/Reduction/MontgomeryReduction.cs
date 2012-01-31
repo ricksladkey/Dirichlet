@@ -109,7 +109,7 @@ namespace Decompose.Numerics
                     return r.CompareTo(((Residue)other).r);
                 }
 
-                public BigInteger ToInteger()
+                public BigInteger Value()
                 {
                     reducer.reg3.Set(r);
                     reducer.Reduce(reducer.reg3);
@@ -118,7 +118,7 @@ namespace Decompose.Numerics
 
                 public override string ToString()
                 {
-                    return ToInteger().ToString();
+                    return Value().ToString();
                 }
             }
 

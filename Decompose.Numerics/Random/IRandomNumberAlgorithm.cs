@@ -5,10 +5,9 @@ using System.Text;
 
 namespace Decompose.Numerics
 {
-    public interface IRandomNumberAlgorithm
+    public interface IRandomNumberAlgorithm<T>
     {
-        object SyncRoot { get; }
-        uint Next();
-        IRandomNumberGenerator<T> CreateInstance<T>();
+        T Next(T n);
+        IEnumerable<T> Sequence(T n);
     }
 }

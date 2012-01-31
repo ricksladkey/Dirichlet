@@ -514,7 +514,7 @@ namespace Decompose.Numerics
         };
 
         private Config config;
-        private IRandomNumberGenerator<uint> random;
+        private IRandomNumberAlgorithm<uint> random;
         private IFactorizationAlgorithm<int> smallIntegerFactorer;
         private IEnumerable<int> allPrimes;
         private INullSpaceAlgorithm<IBitArray, IBitMatrix> solver;

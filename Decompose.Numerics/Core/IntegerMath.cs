@@ -462,7 +462,7 @@ namespace Decompose.Numerics
                 b.Multiply(b);
                 exponent >>= 1;
             }
-            return result.ToInteger();
+            return result.Value();
         }
 
         public static BigInteger ModularPower(BigInteger value, BigInteger exponent, BigInteger modulus)

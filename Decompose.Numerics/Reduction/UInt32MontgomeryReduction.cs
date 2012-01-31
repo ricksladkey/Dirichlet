@@ -81,14 +81,14 @@ namespace Decompose.Numerics
                     return this;
                 }
 
-                public uint ToInteger()
+                public uint Value()
                 {
                     return reducer.Reduce(r, 1);
                 }
 
                 public override string ToString()
                 {
-                    return ToInteger().ToString();
+                    return Value().ToString();
                 }
 
                 public bool Equals(IResidue<uint> other)

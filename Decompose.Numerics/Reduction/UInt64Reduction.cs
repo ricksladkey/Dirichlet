@@ -70,14 +70,14 @@ namespace Decompose.Numerics
                     return this;
                 }
 
-                public ulong ToInteger()
+                public ulong Value()
                 {
                     return r;
                 }
 
                 public override string ToString()
                 {
-                    return ToInteger().ToString();
+                    return Value().ToString();
                 }
 
                 public bool Equals(IResidue<ulong> other)
