@@ -13,10 +13,9 @@ namespace Decompose.Numerics
                 private Reducer reducer;
                 private Word32Integer r;
 
+                public IReducer<BigInteger> Reducer { get { return reducer; } }
                 public Word32Integer Rep { get { return r; } }
-
                 public bool IsZero { get { return r == reducer.zeroRep; } }
-
                 public bool IsOne { get { return r == reducer.oneRep; } }
 
                 protected Residue(Reducer reducer)
@@ -122,6 +121,7 @@ namespace Decompose.Numerics
                 }
             }
 
+            private IReductionAlgorithm<BigInteger> reduction;
             private BigInteger n;
             private int rLength;
             private int length;
@@ -138,13 +138,12 @@ namespace Decompose.Numerics
             private Word32Integer zeroRep;
             private Word32Integer oneRep;
 
-            public BigInteger Modulus
-            {
-                get { return n; }
-            }
+            public IReductionAlgorithm<BigInteger> Reduction { get { return reduction; } }
+            public BigInteger Modulus { get { return n; } }
 
-            public Reducer(BigInteger n)
+            public Reducer(IReductionAlgorithm<BigInteger> reduction, BigInteger n)
             {
+                this.reduction = reduction;
                 this.n = n;
                 if (n.IsEven)
                     throw new InvalidOperationException("not relatively prime");
@@ -223,7 +222,7 @@ namespace Decompose.Numerics
 
         public IReducer<BigInteger> GetReducer(BigInteger n)
         {
-            return new Reducer(n);
+            return new Reducer(this, n);
         }
     }
 }

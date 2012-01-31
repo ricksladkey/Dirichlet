@@ -37,7 +37,7 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void TestPrimality()
         {
-            var algorithm = new MillerRabin(16);
+            var algorithm = new MillerRabin<int>(16, new Int32Reduction());
             var primes = Enumerable.Range(937, 1000 - 937)
                 .Where(n => algorithm.IsPrime(n))
                 .ToArray();

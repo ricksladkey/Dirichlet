@@ -3,110 +3,51 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public class MillerRabin : IPrimalityAlgorithm<int>, IPrimalityAlgorithm<long>, IPrimalityAlgorithm<BigInteger>
+    public class MillerRabin<T> : IPrimalityAlgorithm<T>
     {
+        private IReductionAlgorithm<T> reduction;
         private IRandomNumberGenerator generator = new MersenneTwister(0);
         private int k;
 
-        public MillerRabin(int k)
+        public MillerRabin(int k, IReductionAlgorithm<T> reduction)
         {
             this.k = k;
+            this.reduction = reduction;
         }
 
-        public bool IsPrime(int n)
+        public bool IsPrime(T n)
         {
-            return IsPrime(n, k);
-        }
-
-        public bool IsPrime(long n)
-        {
-            return IsPrime(n, k);
-        }
-
-        public bool IsPrime(BigInteger n)
-        {
-            if (n <= long.MaxValue)
-                return IsPrime((long)n, k);
-            return IsPrime(n, k);
-        }
-
-        private bool IsPrime(long n, int k)
-        {
-            if (n < 2)
+            if (reduction.Compare(n, reduction.Two) < 0)
                 return false;
-            if (n != 2 && (n & 1) == 0)
+            if (!reduction.Equals(n, reduction.Two) && reduction.IsEven(n))
                 return false;
-            var nMinusOne = n - 1;
-            var s = nMinusOne;
-            while ((s & 1) == 0)
-                s >>= 1;
-            var random = generator.CreateInstance<long>();
-            for (int i = 0; i < k; i++)
-            {
-                var a = random.Next(n - 4) + 2;
-                var temp = s;
-                var mod = IntegerMath.ModularPower(a, temp, n);
-                while (temp != nMinusOne && mod != 1 && mod != nMinusOne)
-                {
-                    mod = IntegerMath.ModularProduct(mod, mod, n);
-                    temp <<= 1;
-                }
-                if (mod != nMinusOne && (temp & 1) == 0)
-                    return false;
-            }
-            return true;
-        }
-
-        private bool IsPrime(BigInteger n, int k)
-        {
-            if (n < BigIntegers.Two)
-                return false;
-            if (n != BigIntegers.Two && n.IsEven)
-                return false;
-            var nMinusOne = n - 1;
-            var s = nMinusOne;
-            while (s.IsEven)
-                s >>= 1;
-            var random = generator.CreateInstance<BigInteger>();
-            for (int i = 0; i < k; i++)
-            {
-                var a = random.Next(n - 4) + 2;
-                var temp = s;
-                var mod = BigInteger.ModPow(a, temp, n);
-                while (temp != nMinusOne && mod != 1 && mod != nMinusOne)
-                {
-                    mod = mod * mod % n;
-                    temp = temp * BigIntegers.Two;
-                }
-                if (mod != nMinusOne && temp.IsEven)
-                    return false;
-            }
-            return true;
-        }
-
-        private bool IsPrime<T>(T n, int k, IReductionAlgorithm<T> ops)
-        {
-            var four = ops.Convert(4);
-            if (ops.Compare(n, ops.Two) < 0)
-                return false;
-            if (!ops.Equals(n, ops.Two) && ops.IsEven(n))
-                return false;
-            var nMinusOne = ops.Subtract(n, ops.One);
-            var s = nMinusOne;
-            while (ops.IsEven(s))
-                s = ops.RightShift(s, 1);
             var random = generator.CreateInstance<T>();
+            var reducer = reduction.GetReducer(n);
+            var four = reduction.Convert(4);
+            var s = 0;
+            var d = reduction.Subtract(n, reduction.One);
+            while (reduction.IsEven(d))
+            {
+                d = reduction.RightShift(d, 1);
+                ++s;
+            }
+            var nMinusOne = reducer.ToResidue(reduction.Subtract(n, reduction.One));
+            var x = reducer.ToResidue(reduction.Zero);
             for (int i = 0; i < k; i++)
             {
-                var a = ops.Add(random.Next(ops.Subtract(n, four)), ops.Two);
-                var temp = s;
-                var mod = ops.ModularPower(a, temp, n);
-                while (!ops.Equals(temp, nMinusOne) && !ops.IsOne(mod) && !ops.Equals(mod, nMinusOne))
+                x.Set(reduction.Add(random.Next(reduction.Subtract(n, four)), reduction.Two));
+                Residue<T>.ModularPower(x, d);
+                if (x.IsOne || x.Equals(nMinusOne))
+                    continue;
+                for (int r = 1; r < s; r++)
                 {
-                    mod = ops.ModularProduct(mod, mod, n);
-                    temp = ops.LeftShift(temp, 1);
+                    x.Multiply(x);
+                    if (x.IsOne)
+                        return false;
+                    if (x.Equals(nMinusOne))
+                        break;
                 }
-                if (!ops.Equals(mod, nMinusOne) && ops.IsEven(temp))
+                if (!x.Equals(nMinusOne))
                     return false;
             }
             return true;

@@ -12,8 +12,8 @@ namespace Decompose.Numerics
                 private Reducer reducer;
                 private uint r;
 
+                public IReducer<uint> Reducer { get { return reducer; } }
                 public bool IsZero { get { return r == 0; } }
-
                 public bool IsOne { get { return r == 1; } }
 
                 protected Residue(Reducer reducer)
@@ -91,15 +91,15 @@ namespace Decompose.Numerics
                 }
             }
 
+            private IReductionAlgorithm<uint> reduction;
             private uint n;
 
-            public uint Modulus
-            {
-                get { return n; }
-            }
+            public IReductionAlgorithm<uint> Reduction { get { return reduction; } }
+            public uint Modulus { get { return n; } }
 
-            public Reducer(uint n)
+            public Reducer(IReductionAlgorithm<uint> reduction, uint n)
             {
+                this.reduction = reduction;
                 this.n = n;
             }
 
@@ -111,7 +111,7 @@ namespace Decompose.Numerics
 
         public IReducer<uint> GetReducer(uint n)
         {
-            return new Reducer(n);
+            return new Reducer(this, n);
         }
     }
 }

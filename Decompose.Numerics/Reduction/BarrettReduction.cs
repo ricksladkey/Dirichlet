@@ -13,8 +13,8 @@ namespace Decompose.Numerics
                 private Reducer reducer;
                 private Word32Integer r;
 
+                public IReducer<BigInteger> Reducer { get { return reducer; } }
                 public bool IsZero { get { return r.IsZero; } }
-
                 public bool IsOne { get { return r.IsOne; } }
 
                 protected Residue(Reducer reducer)
@@ -90,6 +90,7 @@ namespace Decompose.Numerics
                 }
             }
 
+            private IReductionAlgorithm<BigInteger> reduction;
             private BigInteger p;
             private int bLength;
             private BigInteger b;
@@ -107,13 +108,12 @@ namespace Decompose.Numerics
             private Word32Integer reg1;
             private Word32Integer reg3;
 
-            public BigInteger Modulus
-            {
-                get { return p; }
-            }
+            public IReductionAlgorithm<BigInteger> Reduction { get { return reduction; } }
+            public BigInteger Modulus { get { return p; } }
 
-            public Reducer(BigInteger p)
+            public Reducer(IReductionAlgorithm<BigInteger> reduction, BigInteger p)
             {
+                this.reduction = reduction;
                 this.p = p;
                 bLength = 32;
                 b = BigInteger.One << bLength;
@@ -176,7 +176,7 @@ namespace Decompose.Numerics
 
         public IReducer<BigInteger> GetReducer(BigInteger n)
         {
-            return new Reducer(n);
+            return new Reducer(this, n);
         }
     }
 }

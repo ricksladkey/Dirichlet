@@ -57,6 +57,7 @@
     <Compile Include="Factorization\PollardRhoLong.cs" />
     <Compile Include="Factorization\ShanksSquareForms.cs" />
     <Compile Include="Factorization\TrialDivisionFactorization.cs" />
+    <Compile Include="Primality\OldMillerRabin.cs" />
     <Compile Include="QuadraticSieve\PartialRelationGraph.cs" />
     <Compile Include="Random\IRandomNumberGenerator.cs" />
     <Compile Include="Random\Random.cs" />
@@ -75,6 +76,7 @@
     <Compile Include="Factorization\IFactorizationAlgorithm.cs" />
     <Compile Include="Primality\IPrimalityAlgorithm.cs" />
     <Compile Include="Random\IRandomNumberAlgorithm.cs" />
+    <Compile Include="Reduction\Int32Reduction.cs" />
     <Compile Include="Reduction\IReducer.cs" />
     <Compile Include="Reduction\IReductionAlgorithm.cs" />
     <Compile Include="Core\IntegerMath.cs" />
@@ -94,6 +96,7 @@
     <Compile Include="NullSpace\StructuredGaussianElimination.cs" />
     <Compile Include="Core\Word32Integer.cs" />
     <Compile Include="Reduction\IResidue.cs" />
+    <Compile Include="Reduction\Residue.cs" />
     <Compile Include="Reduction\UInt32Reduction.cs" />
     <Compile Include="Reduction\UInt64MontgomeryReduction.cs" />
     <Compile Include="Reduction\UInt64Reduction.cs" />

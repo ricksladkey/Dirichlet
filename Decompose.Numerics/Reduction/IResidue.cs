@@ -8,6 +8,7 @@ namespace Decompose.Numerics
 {
     public interface IResidue<T> : IComparable<IResidue<T>>, IEquatable<IResidue<T>>
     {
+        IReducer<T> Reducer { get; }
         bool IsZero { get; }
         bool IsOne { get; }
         IResidue<T> Set(T x);

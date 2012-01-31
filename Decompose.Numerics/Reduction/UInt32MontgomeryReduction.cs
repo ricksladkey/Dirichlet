@@ -13,8 +13,8 @@ namespace Decompose.Numerics
                 private Reducer reducer;
                 private uint r;
 
+                public IReducer<uint> Reducer { get { return reducer; } }
                 public uint Rep { get { return r; } }
-
                 public bool IsZero { get { return r == 0; } }
 
                 public bool IsOne
@@ -102,18 +102,18 @@ namespace Decompose.Numerics
                 }
             }
 
+            private IReductionAlgorithm<uint> reduction;
             private uint n;
             private uint k0;
             private uint rSquaredModN;
             private uint oneRep;
 
-            public uint Modulus
-            {
-                get { return n; }
-            }
+            public IReductionAlgorithm<uint> Reduction { get { return reduction; } }
+            public uint Modulus { get { return n; } }
 
-            public Reducer(uint n)
+            public Reducer(IReductionAlgorithm<uint> reduction, uint n)
             {
+                this.reduction = reduction;
                 this.n = n;
                 if ((n & 1) == 0)
                     throw new InvalidOperationException("not relatively prime");
@@ -144,7 +144,7 @@ namespace Decompose.Numerics
 
         public IReducer<uint> GetReducer(uint n)
         {
-            return new Reducer(n);
+            return new Reducer(this, n);
         }
     }
 }
