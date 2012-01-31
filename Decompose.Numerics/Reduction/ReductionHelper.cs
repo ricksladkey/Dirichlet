@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Decompose.Numerics
 {
-    public static class ResidueHelper
+    public static class ReductionHelper
     {
         public static void ModularPower<T>(IResidue<T> value, T exponent)
         {

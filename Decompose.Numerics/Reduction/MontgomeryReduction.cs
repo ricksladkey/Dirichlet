@@ -100,7 +100,7 @@ namespace Decompose.Numerics
 
                 public IResidue<BigInteger> Power(BigInteger x)
                 {
-                    ResidueHelper.ModularPower(this, x);
+                    ReductionHelper.ModularPower(this, x);
                     return this;
                 }
 
