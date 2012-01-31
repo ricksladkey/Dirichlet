@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public class UInt128MontgomeryReduction : UInt64Operations, IReductionAlgorithm<ulong>
+    public class UInt64MontgomeryReduction : UInt64Operations, IReductionAlgorithm<ulong>
     {
         private class Reducer : IReducer<ulong>
         {

@@ -152,7 +152,7 @@ namespace Decompose.Numerics.Test
         public void TestUInt128Reduction()
         {
             var p = ulong.Parse("10023859281455311421");
-            TestReduction(p, new UInt128Reduction());
+            TestReduction(p, new UInt64Reduction());
         }
 
         [TestMethod]
@@ -164,7 +164,7 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void TestUInt128MontgomeryReduction()
         {
-            TestReduction(ulong.Parse("259027704197601377"), new UInt128MontgomeryReduction());
+            TestReduction(ulong.Parse("259027704197601377"), new UInt64MontgomeryReduction());
         }
 
         private void TestReduction<T>(T p, IReductionAlgorithm<T> reduction)

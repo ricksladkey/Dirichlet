@@ -426,16 +426,30 @@ namespace Decompose.Numerics
             return result;
         }
 
+        public static uint ModularPower(uint value, ulong exponent, uint modulus)
+        {
+            var result = (uint)1;
+            while (exponent != 0)
+            {
+                if ((exponent & 1) != 0)
+                    result = (uint)((ulong)result * value % modulus);
+                value = (uint)((ulong)value * value % modulus);
+                exponent >>= 1;
+            }
+            return result;
+        }
+
         public static long ModularPower(long value, long exponent, long modulus)
         {
             return (long)ModularPower((ulong)value, (ulong)exponent, (ulong)modulus);
         }
 
-        private static IReductionAlgorithm<ulong> reduction = new UInt128MontgomeryReduction();
+        private static IReductionAlgorithm<ulong> reduction = new UInt64MontgomeryReduction();
+
         public static ulong ModularPower(ulong value, ulong exponent, ulong modulus)
         {
-            if (value <= uint.MaxValue && exponent <= uint.MaxValue && modulus <= uint.MaxValue)
-                return ModularPower((uint)value, (uint)exponent, (uint)modulus);
+            if (modulus <= uint.MaxValue)
+                return ModularPower((uint)(value % modulus), exponent, (uint)modulus);
             if ((modulus & 1) == 0)
                 return UInt128.ModularPower(value, exponent, modulus);
             var reducer = reduction.GetReducer(modulus);
