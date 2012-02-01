@@ -97,6 +97,18 @@ namespace Decompose.Numerics
             return this;
         }
 
+        public Word32Integer Set(int a)
+        {
+            CheckValid();
+            bits[index] = (uint)(a < 0 ? -a : a);
+            for (int i = 1; i <= last; i++)
+                bits[index + i] = 0;
+            last = 0;
+            sign = a < 0 ? -1 : 1;
+            CheckValid();
+            return this;
+        }
+
         public Word32Integer Set(uint a)
         {
             CheckValid();
@@ -125,13 +137,15 @@ namespace Decompose.Numerics
         public Word32Integer Set(BigInteger a)
         {
             CheckValid();
+            var asign = a.Sign == -1 ? -1 : 1;
+            a = BigInteger.Abs(a);
             Debug.Assert(a.GetBitLength() <= 32 * length);
             var nBits = GetBits(a);
             nBits.CopyTo(bits, index);
             for (int i = nBits.Length; i <= last; i++)
                 bits[index + i] = 0;
             last = Math.Max(nBits.Length - 1, 0);
-            sign = 1;
+            sign = asign;
             CheckValid();
             return this;
         }
@@ -178,6 +192,13 @@ namespace Decompose.Numerics
             return new Word32Integer(newBits, 0, length);
         }
 
+        public int ToInt32()
+        {
+            CheckValid();
+            Debug.Assert(last == 0);
+            return sign == -1 ? -(int)bits[index] : (int)bits[index];
+        }
+
         public uint ToUInt32()
         {
             CheckValid();
@@ -198,6 +219,16 @@ namespace Decompose.Numerics
             var bytes = new byte[(last + 1) * 4 + 1];
             for (int i = 0; i <= last; i++)
                 BitConverter.GetBytes(bits[index + i]).CopyTo(bytes, i * 4);
+            if (sign == -1)
+            {
+                int carry = 1;
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    carry += (byte)~bytes[i];
+                    bytes[i] = (byte)carry;
+                    carry >>= 8;
+                }
+            }
             return new BigInteger(bytes);
         }
 
@@ -743,7 +774,7 @@ namespace Decompose.Numerics
             }
             else
             {
-                if (a.CompareTo(b) < 0)
+                if (a.UnsignedCompareTo(b) < 0)
                 {
                     SetUnsignedDifference(b, a);
                     sign = -asign;
@@ -754,6 +785,16 @@ namespace Decompose.Numerics
                     sign = asign;
                 }
             }
+        }
+
+        public void Negate()
+        {
+            sign = sign == -1 ? 1 : -1;
+        }
+
+        public void AbsoluteValue()
+        {
+            sign = 1;
         }
 
         public Word32Integer Multiply(Word32Integer a, Word32Integer reg1)
@@ -849,6 +890,7 @@ namespace Decompose.Numerics
                 while (wlast > 0 && wbits[wlast] == 0)
                     --wlast;
                 last = wlast;
+                sign = a.sign == b.sign ? 1 : -1;
             }
 
             CheckValid();

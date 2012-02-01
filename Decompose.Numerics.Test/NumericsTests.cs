@@ -128,7 +128,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void TestRadix32IntegerReduction()
+        public void TestWord32IntegerIntegerReduction()
         {
             var p = BigInteger.Parse("10023859281455311421");
             TestReduction(p, new Word32IntegerReduction());
@@ -190,7 +190,38 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void TestRadix32()
+        public void TestWord32Integer1()
+        {
+            var n = BigInteger.Parse("10023859281455311421");
+            var store = new Word32IntegerStore(1);
+            var a = store.Create();
+            var b = store.Create();
+            var x = store.Create();
+            for (int i = -10; i < 10; i++)
+            {
+                for (int j = -10; j < 10; j++)
+                {
+                    a.Set(i);
+                    Assert.AreEqual(i, a.ToInt32());
+                    Assert.AreEqual((BigInteger)i, a.ToBigInteger());
+                    b.Set(j);
+                    Assert.AreEqual(j, b.ToInt32());
+                    x.SetSum(a, b);
+                    Assert.AreEqual(i + j, x.ToInt32());
+                    x.SetDifference(a, b);
+                    Assert.AreEqual(i - j, x.ToInt32());
+                    x.SetProduct(a, b);
+                    Assert.AreEqual(i * j, x.ToInt32());
+                    x.Set(a).Negate();
+                    Assert.AreEqual(-i, x.ToInt32());
+                    x.Set(a).AbsoluteValue();
+                    Assert.AreEqual(Math.Abs(i), x.ToInt32());
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestWord32Integer2()
         {
             var n = BigInteger.Parse("10023859281455311421");
             var generator = new MersenneTwister(0);
@@ -254,27 +285,17 @@ namespace Decompose.Numerics.Test
                 x.SetSquare(a);
                 Assert.AreEqual(aPrime * aPrime, x.ToBigInteger());
 
-                if (aPrime > bPrime)
-                {
-                    x.SetDifference(a, b);
-                    Assert.AreEqual(aPrime - bPrime, x.ToBigInteger());
-                }
-                else
-                {
-                    x.SetDifference(b, a);
-                    Assert.AreEqual(bPrime - aPrime, x.ToBigInteger());
-                }
+                x.SetDifference(a, b);
+                Assert.AreEqual(aPrime - bPrime, x.ToBigInteger());
 
                 x.SetGreatestCommonDivisor(a, b, reg1);
                 Assert.AreEqual(BigInteger.GreatestCommonDivisor(aPrime, bPrime), x.ToBigInteger());
 
-#if false
                 if (x.IsOne)
                 {
                     x.SetModularInverse(a, b, reg1, reg2, reg3, reg4, reg5, reg6);
                     Assert.AreEqual(IntegerMath.ModularInverse(aPrime, bPrime), x.ToBigInteger());
                 }
-#endif
             }
         }
 
