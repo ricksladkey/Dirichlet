@@ -907,6 +907,16 @@ namespace Decompose.Numerics
             return SetProduct(this, a);
         }
 
+        public Word32Integer SetProduct(Word32Integer a, int b)
+        {
+            CheckValid();
+            Debug.Assert(a.GetBitLength() + b.GetBitLength() <= 32 * length);
+            SetProduct(a, (uint)Math.Abs(b));
+            if (b < 0)
+                sign = -sign;
+            return SetLast(a.last + 1);
+        }
+
         public Word32Integer SetProduct(Word32Integer a, uint b)
         {
             // Use operand scanning algorithm.
@@ -922,6 +932,7 @@ namespace Decompose.Numerics
             bits[index + a.last + 1] = (uint)carry;
             for (int j = a.last + 2; j <= last; j++)
                 bits[index + j] = 0;
+            sign = a.sign;
             return SetLast(a.last + 1);
         }
 
@@ -1034,7 +1045,7 @@ namespace Decompose.Numerics
 
         private static unsafe void DivMod(Word32Integer u, Word32Integer v, Word32Integer q)
         {
-            if (u.CompareTo(v) < 0)
+            if (u.UnsignedCompareTo(v) < 0)
             {
                 if (q != null)
                     q.Clear();
@@ -1117,6 +1128,7 @@ namespace Decompose.Numerics
                 for (int i = m + 1; i <= q.last; i++)
                     q.bits[q.index + i] = 0;
                 q.SetLast(m);
+                q.sign = u.sign == v.sign ? 1 : -1;
             }
             u.SetLast(n - 1);
         }
@@ -1131,6 +1143,15 @@ namespace Decompose.Numerics
         public Word32Integer Modulo(uint a)
         {
             DivMod(this, a, null);
+            return this;
+        }
+
+        public Word32Integer SetQuotient(Word32Integer a, int b, Word32Integer reg1)
+        {
+            reg1.Set(a);
+            DivMod(reg1, (uint)Math.Abs(b), this);
+            if (b < 0)
+                sign = -sign;
             return this;
         }
 
@@ -1151,6 +1172,14 @@ namespace Decompose.Numerics
         public Word32Integer SetRemainder(Word32Integer a, uint b)
         {
             return Set(a.GetRemainder(b));
+        }
+
+        public unsafe int GetRemainder(int v)
+        {
+            var result = (int)GetRemainder((uint)Math.Abs(v));
+            if (sign == -1)
+                result = -result;
+            return result;
         }
 
         public unsafe uint GetRemainder(uint v)

@@ -197,6 +197,7 @@ namespace Decompose.Numerics.Test
             var a = store.Create();
             var b = store.Create();
             var x = store.Create();
+            var reg1 = store.Create();
             for (int i = -10; i < 10; i++)
             {
                 for (int j = -10; j < 10; j++)
@@ -212,6 +213,19 @@ namespace Decompose.Numerics.Test
                     Assert.AreEqual(i - j, x.ToInt32());
                     x.SetProduct(a, b);
                     Assert.AreEqual(i * j, x.ToInt32());
+                    x.SetProduct(a, j);
+                    Assert.AreEqual(i * j, x.ToInt32());
+                    if (j != 0)
+                    {
+                        x.SetQuotient(a, b, reg1);
+                        Assert.AreEqual(i / j, x.ToInt32());
+                        x.SetRemainder(a, b);
+                        Assert.AreEqual(i % j, x.ToInt32());
+                        x.SetQuotient(a, j, reg1);
+                        Assert.AreEqual(i / j, x.ToInt32());
+                        var remainder = x.Set(a).GetRemainder(j);
+                        Assert.AreEqual(i % j, remainder);
+                    }
                     x.Set(a).Negate();
                     Assert.AreEqual(-i, x.ToInt32());
                     x.Set(a).AbsoluteValue();
