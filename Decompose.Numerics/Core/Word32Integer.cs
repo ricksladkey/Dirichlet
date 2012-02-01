@@ -762,11 +762,14 @@ namespace Decompose.Numerics
             Debug.Assert(length == a.length);
             fixed (uint* wbits = &bits[index], abits = &a.bits[a.index])
             {
+                // Add the word.
                 int alast = a.last;
                 int wlast = last;
                 ulong carry = (ulong)abits[0] + b;
                 wbits[0] = (uint)carry;
                 carry >>= 32;
+
+                // Propagate carry.
                 int j = 1;
                 while (j <= alast && carry != 0)
                 {
@@ -775,24 +778,32 @@ namespace Decompose.Numerics
                     carry >>= 32;
                     ++j;
                 }
+
+                // Check for overflow.
                 if (carry != 0)
                 {
+                    // Add a new word.
                     Debug.Assert(alast + 1 < length);
                     ++alast;
                     wbits[alast] = (uint)carry;
                 }
                 else if (!object.ReferenceEquals(a, this))
                 {
+                    // Copy unchanged words.
                     while (j <= alast)
                     {
                         wbits[j] = abits[j];
                         ++j;
                     }
                 }
+
+                // Clear old words.
                 for (int i = alast + 1; i <= wlast; i++)
                     wbits[i] = 0;
-                sign = a.sign;
+
+                // Update last and sign.
                 last = alast;
+                sign = a.sign;
             }
             CheckValid();
         }
