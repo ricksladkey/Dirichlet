@@ -233,15 +233,29 @@ namespace Decompose.Numerics.Test
                         Assert.AreEqual(i / j, (int)x);
                         x.SetRemainder(a, b);
                         Assert.AreEqual(i % j, (int)x);
-                        x.SetQuotient(a, j, reg1);
-                        Assert.AreEqual(i / j, (int)x);
-                        var remainder = a.GetRemainder(j);
-                        Assert.AreEqual(i % j, remainder);
                     }
                     x.Set(a).Negate();
                     Assert.AreEqual(-i, (int)x);
                     x.Set(a).AbsoluteValue();
                     Assert.AreEqual(Math.Abs(i), (int)x);
+
+                    x.SetSum(a, j);
+                    Assert.AreEqual(i + j, (int)x);
+                    x.SetDifference(a, j);
+                    Assert.AreEqual(i - j, (int)x);
+                    x.SetProduct(a, j);
+                    Assert.AreEqual(i * j, (int)x);
+                    x.SetProduct(a, j);
+                    Assert.AreEqual(i * j, (int)x);
+                    if (j != 0)
+                    {
+                        x.SetQuotient(a, j, reg1);
+                        Assert.AreEqual(i / j, (int)x);
+                        x.SetQuotient(a, j, reg1);
+                        Assert.AreEqual(i / j, (int)x);
+                        var remainder = a.GetRemainder(j);
+                        Assert.AreEqual(i % j, remainder);
+                    }
 
                     Assert.AreEqual(i == j, a == b);
                     Assert.AreEqual(i != j, a != b);

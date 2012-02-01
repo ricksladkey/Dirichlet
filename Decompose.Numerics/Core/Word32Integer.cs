@@ -547,13 +547,21 @@ namespace Decompose.Numerics
         {
             CheckValid();
             if (last > 0)
-                return 1;
+                return sign;
             if (sign == -1)
             {
                 if (IsZero && other == 0)
                     return 0;
                 return sign;
             }
+            return bits[index].CompareTo(other);
+        }
+
+        public int UnsignedCompareTo(uint other)
+        {
+            CheckValid();
+            if (last > 0)
+                return 1;
             return bits[index].CompareTo(other);
         }
 
@@ -714,33 +722,7 @@ namespace Decompose.Numerics
                 for (int i = limit + 1; i <= wlast; i++)
                     wbits[i] = 0;
                 last = limit;
-            }
-            CheckValid();
-        }
-
-        private unsafe void SetUnsignedSum(Word32Integer a, uint b)
-        {
-            CheckValid();
-            fixed (uint* wbits = &bits[index], abits = &a.bits[a.index])
-            {
-                int limit = a.last;
-                int wlast = last;
-                ulong carry = b;
-                for (int i = 0; i <= limit; i++)
-                {
-                    carry += (ulong)abits[i];
-                    wbits[i] = (uint)carry;
-                    carry >>= 32;
-                }
-                if (carry != 0)
-                {
-                    Debug.Assert(limit + 1 < length);
-                    ++limit;
-                    wbits[limit] = (uint)carry;
-                }
-                for (int i = limit + 1; i <= wlast; i++)
-                    wbits[i] = 0;
-                last = limit;
+                sign = a.sign;
             }
             CheckValid();
         }
@@ -750,12 +732,57 @@ namespace Decompose.Numerics
             return SetSum(this, 1);
         }
 
+#if false
+        public Word32Integer Subtract(int a)
+        {
+            return SetDifference(this, a);
+        }
+
+        public Word32Integer SetDifference(Word32Integer a, int b)
+        {
+            SetSignedSum(a, b, true);
+            return this;
+        }
+
+        public Word32Integer Subtract(uint a)
+        {
+            return SetDifference(this, a);
+        }
+
+        public Word32Integer SetDifference(Word32Integer a, uint b)
+        {
+            if (a.sign == -1)
+                return SetSum(a, b);
+            SetUnsignedDifference(a, b);
+            return this;
+        }
+
+#endif
+        public Word32Integer Add(int a)
+        {
+            return SetSum(this, a);
+        }
+
+        public Word32Integer SetSum(Word32Integer a, int b)
+        {
+            SetSignedSum(a, b, false);
+            return this;
+        }
+
         public Word32Integer Add(uint a)
         {
             return SetSum(this, a);
         }
 
-        public unsafe Word32Integer SetSum(Word32Integer a, uint b)
+        public Word32Integer SetSum(Word32Integer a, uint b)
+        {
+            if (a.sign == -1)
+                return SetDifference(a, b);
+            SetUnsignedSum(a, b);
+            return this;
+        }
+
+        private unsafe void SetUnsignedSum(Word32Integer a, uint b)
         {
             CheckValid();
             Debug.Assert(length == a.length);
@@ -780,10 +807,10 @@ namespace Decompose.Numerics
                 }
                 for (int i = alast + 1; i <= wlast; i++)
                     wbits[i] = 0;
+                sign = a.sign;
                 last = alast;
             }
             CheckValid();
-            return this;
         }
 
         public unsafe Word32Integer AddModulo(Word32Integer a, Word32Integer n)
@@ -848,6 +875,30 @@ namespace Decompose.Numerics
             CheckValid();
         }
 
+        public Word32Integer Subtract(int a)
+        {
+            return SetDifference(this, a);
+        }
+
+        public Word32Integer SetDifference(Word32Integer a, int b)
+        {
+            SetSignedSum(a, b, true);
+            return this;
+        }
+
+        public Word32Integer Subtract(uint a)
+        {
+            return SetDifference(this, a);
+        }
+
+        public Word32Integer SetDifference(Word32Integer a, uint b)
+        {
+            if (a.sign == -1)
+                return SetSum(a, b);
+            SetUnsignedDifference(a, b);
+            return this;
+        }
+
         private unsafe void SetUnsignedDifference(Word32Integer a, uint b)
         {
             CheckValid();
@@ -866,6 +917,7 @@ namespace Decompose.Numerics
                 while (limit > 0 && wbits[limit] == 0)
                     --limit;
                 last = limit;
+                sign = a.sign;
             }
             CheckValid();
         }
@@ -894,6 +946,38 @@ namespace Decompose.Numerics
             }
             CheckValid();
             return this;
+        }
+
+        public void SetSignedSum(Word32Integer a, int b, bool subtraction)
+        {
+            var asign = a.sign;
+            var bsign = 1;
+            var bAbs = (uint)b;
+            if (b < 0)
+            {
+                bsign = -1;
+                bAbs = (uint)-b;
+            }
+            if (subtraction)
+                bsign = -bsign;
+            if (asign == bsign)
+            {
+                SetUnsignedSum(a, bAbs);
+                sign = asign;
+            }
+            else
+            {
+                if (a.UnsignedCompareTo(bAbs) < 0)
+                {
+                    Set(bAbs - a.LeastSignificantWord);
+                    sign = -asign;
+                }
+                else
+                {
+                    SetUnsignedDifference(a, bAbs);
+                    sign = asign;
+                }
+            }
         }
 
         public void SetSignedSum(Word32Integer a, Word32Integer b, bool subtraction)
@@ -1185,6 +1269,8 @@ namespace Decompose.Numerics
             if (n == 1)
             {
                 DivMod(u, v.bits[v.index], q);
+                if (v.sign == -1 && q != null)
+                    q.sign = -q.sign;
                 return;
             }
             int dneg = v.bits[v.index + v.last].GetBitLength();
@@ -1354,6 +1440,7 @@ namespace Decompose.Numerics
                 q.bits[q.index + i] = 0;
             q.SetLast(m);
             u.last = 0;
+            q.sign = u.sign;
         }
 
         public Word32Integer SetGreatestCommonDivisor(Word32Integer a, Word32Integer b, Word32Integer reg1)
