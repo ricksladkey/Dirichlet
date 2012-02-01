@@ -4,9 +4,10 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Numerics;
-using Decompose.Numerics;
 using System.Reflection;
+using Decompose.Numerics;
 
 namespace Decompose
 {
@@ -39,7 +40,8 @@ namespace Decompose
                 //GraphTest();
                 //UInt128Test();
                 //ModularInverseTest();
-                PrimalityTest();
+                //PrimalityTest();
+                OperationsTest();
             }
             catch (AggregateException ex)
             {
@@ -62,7 +64,7 @@ namespace Decompose
 
         static void FindPrimeTest1()
         {
-            var random = new MersenneTwister(0).CreateInstance<BigInteger>();
+            var random = new MersenneTwister(0).Create<BigInteger>();
             var limit = BigInteger.One << (32 * 4);
             var x = random.Next(limit);
             while (!IntegerMath.IsPrime(x))
@@ -73,7 +75,7 @@ namespace Decompose
         static void BarrettReductionTest1()
         {
             var p = BigInteger.Parse("10023859281455311421");
-            var random = new MersenneTwister(0).CreateInstance<BigInteger>();
+            var random = new MersenneTwister(0).Create<BigInteger>();
             var x = random.Next(p);
             var y = random.Next(p);
             var z = x * y;
@@ -102,8 +104,8 @@ namespace Decompose
         static void BarrettReductionTest2()
         {
             var n = BigInteger.Parse("10023859281455311421");
-            var random1 = new MersenneTwister(0).CreateInstance<BigInteger>();
-            var random2 = new MersenneTwister(0).CreateInstance<BigInteger>();
+            var random1 = new MersenneTwister(0).Create<BigInteger>();
+            var random2 = new MersenneTwister(0).Create<BigInteger>();
             var timer1 = new Stopwatch();
             var timer2 = new Stopwatch();
             var iterations1 = 1000;
@@ -155,8 +157,8 @@ namespace Decompose
         {
             var n = BigInteger.Parse("10023859281455311421");
             var length = (n.GetBitLength() * 2 + 31) / 32;
-            var random1 = new MersenneTwister(0).CreateInstance<BigInteger>();
-            var random2 = new MersenneTwister(0).CreateInstance<BigInteger>();
+            var random1 = new MersenneTwister(0).Create<BigInteger>();
+            var random2 = new MersenneTwister(0).Create<BigInteger>();
             var timer1 = new Stopwatch();
             var timer2 = new Stopwatch();
             var iterations1 = 1000;
@@ -267,7 +269,7 @@ namespace Decompose
 
         static void FactorTest4()
         {
-            var random = new MersenneTwister(0).CreateInstance<BigInteger>();
+            var random = new MersenneTwister(0).Create<BigInteger>();
             for (int i = 5; i <= 16; i++)
             {
                 var limit = BigInteger.Pow(new BigInteger(10), i);
@@ -317,7 +319,7 @@ namespace Decompose
 
         static void QuadraticSieveParametersTest()
         {
-            var random = new MersenneTwister(0).CreateInstance<BigInteger>();
+            var random = new MersenneTwister(0).Create<BigInteger>();
             int i = 50;
             var sample = samples[i];
             var p = sample.P;
@@ -390,7 +392,7 @@ namespace Decompose
 
         static void CreateSamplesTest()
         {
-            var random = new MersenneTwister(0).CreateInstance<BigInteger>();
+            var random = new MersenneTwister(0).Create<BigInteger>();
             for (int i = 1; i <= 10; i++)
             {
                 var limit = BigInteger.Pow(10, i);
@@ -660,7 +662,7 @@ namespace Decompose
         private static void UInt128Test()
         {
             var timer = new Stopwatch();
-            var random = new MersenneTwister(0).CreateInstance<ulong>();
+            var random = new MersenneTwister(0).Create<ulong>();
             var max = (ulong)1 << 60;
             timer.Start();
             for (int i = 0; i < 5000000; i++)
@@ -686,7 +688,7 @@ namespace Decompose
 
         static void ModularInverseTest()
         {
-            var random = new MersenneTwister(0).CreateInstance<ulong>();
+            var random = new MersenneTwister(0).Create<ulong>();
             //var inverse = new Func<long, long, long>(HybridRSSModularInverse);
             //var inverse = new Func<long, long, long>(RSSSimpleModularInverse);
             var inverse = new Func<long, long, long>(RSSModularInverse);
@@ -1064,9 +1066,9 @@ namespace Decompose
 #if false
             {
                 int count = 1000000;
-                var random = new MersenneTwister(0).CreateInstance<ulong>();
+                var random = new MersenneTwister(0).Create<ulong>();
                 //var algorithm = new OldMillerRabin(16);
-                var algorithm = MillerRabin.CreateInstance(16, new UInt64MontgomeryReduction());
+                var algorithm = MillerRabin.Create(16, new UInt64MontgomeryReduction());
                 var max = (ulong)1 << 60;
                 var timer = new Stopwatch();
                 timer.Start();
@@ -1077,14 +1079,14 @@ namespace Decompose
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
-#if true
+#if false
             {
                 int count = 20000;
-                var random = new MersenneTwister(0).CreateInstance<BigInteger>();
+                var random = new MersenneTwister(0).Create<BigInteger>();
                 //var algorithm = new OldMillerRabin(16);
-                //var algorithm = MillerRabin.CreateInstance(16, new BigIntegerReduction());
-                var algorithm = MillerRabin.CreateInstance(16, new MontgomeryReduction());
-                //var algorithm = MillerRabin.CreateInstance(16, new Word32IntegerReduction());
+                //var algorithm = MillerRabin.Create(16, new BigIntegerReduction());
+                var algorithm = MillerRabin.Create(16, new MontgomeryReduction());
+                //var algorithm = MillerRabin.Create(16, new Word32IntegerReduction());
                 var max = BigInteger.One << 256;
                 var timer = new Stopwatch();
                 timer.Start();
@@ -1095,6 +1097,152 @@ namespace Decompose
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
+        }
+
+        static void OperationsTest()
+        {
+            int count = 200000;
+#if true
+            {
+                Console.WriteLine("hand coded 32");
+                var max = (int)1 << 30;
+                int c;
+                int d;
+                GC.Collect();
+                var timer = new Stopwatch();
+                var random = new MersenneTwister(0).Create<int>();
+                timer.Restart();
+                for (int i = 0; i < count; i++)
+                    ExtendedGreatestCommonDivisor(random.Next(max), random.Next(max), out c, out d);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
+#endif
+#if true
+            {
+                Console.WriteLine("hand coded 64");
+                var max = (long)1 << 62;
+                long c;
+                long d;
+                GC.Collect();
+                var timer = new Stopwatch();
+                var random = new MersenneTwister(0).Create<long>();
+                timer.Restart();
+                for (int i = 0; i < count; i++)
+                    ExtendedGreatestCommonDivisor(random.Next(max), random.Next(max), out c, out d);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
+#endif
+            OperationsTest(new Int32Operations(), (int)1 << 30, count);
+            OperationsTest(new UInt64Operations(), (ulong)1 << 62, count);
+            OperationsTest(new BigIntegerOperations(), (BigInteger)1 << 31, count);
+        }
+
+        static void OperationsTest<T>(IOperations<T> ops, T max, int count)
+        {
+            Console.WriteLine("type = {0}", typeof(T));
+            T c;
+            T d;
+            for (int j = 0; j < 1; j++)
+            {
+#if true
+                {
+                    GC.Collect();
+                    var timer = new Stopwatch();
+                    var random = new MersenneTwister(0).Create<T>();
+                    timer.Restart();
+                    for (int i = 0; i < count; i++)
+                        Core.ExtendedGreatestCommonDivisor(ops, random.Next(max), random.Next(max), out c, out d);
+                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                }
+#endif
+#if true
+                {
+                    GC.Collect();
+                    var timer = new Stopwatch();
+                    var random = new MersenneTwister(0).Create<T>();
+                    timer.Restart();
+                    for (int i = 0; i < count; i++)
+                        ExtendedGreatestCommonDivisor(ops, random.Next(max), random.Next(max), out c, out d);
+                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                }
+#endif
+            }
+        }
+
+        public static void ExtendedGreatestCommonDivisor(int a, int b, out int c, out int d)
+        {
+            var x = (int)0;
+            var lastx = (int)1;
+            var y = (int)1;
+            var lasty = (int)0;
+
+            while (b != 0)
+            {
+                var quotient = a / b;
+                var tmpa = a;
+                a = b;
+                b = tmpa - quotient * b;
+                var tmpx = x;
+                x = lastx - quotient * x;
+                lastx = tmpx;
+                var tmpy = y;
+                y = lasty - quotient * y;
+                lasty = tmpy;
+            }
+            c = lastx;
+            d = lasty;
+        }
+
+        public static void ExtendedGreatestCommonDivisor(long a, long b, out long c, out long d)
+        {
+            var x = (long)0;
+            var lastx = (long)1;
+            var y = (long)1;
+            var lasty = (long)0;
+
+            while (b != 0)
+            {
+                var quotient = a / b;
+                var tmpa = a;
+                a = b;
+                b = tmpa - quotient * b;
+                var tmpx = x;
+                x = lastx - quotient * x;
+                lastx = tmpx;
+                var tmpy = y;
+                y = lasty - quotient * y;
+                lasty = tmpy;
+            }
+            c = lastx;
+            d = lasty;
+        }
+
+        public static void ExtendedGreatestCommonDivisor<T>(IOperations<T> ops, T a, T b, out T c, out T d)
+        {
+            var zero = ops.Wrap(ops.Convert(0));
+            var one = ops.Wrap(ops.Convert(1));
+            var x = zero;
+            var lastx = one;
+            var y = one;
+            var lasty = zero;
+
+            var p = ops.Wrap(a);
+            var q = ops.Wrap(b);
+            while (q != zero)
+            {
+                var quotient = p / q;
+                var tmpa = p;
+                p = q;
+                q = tmpa - quotient * q;
+                var tmpx = x;
+                x = lastx - quotient * x;
+                lastx = tmpx;
+                var tmpy = y;
+                y = lasty - quotient * y;
+                lasty = tmpy;
+            }
+            c = lastx;
+            d = lasty;
         }
 
         private static string[] GetLinesGzip(string file)

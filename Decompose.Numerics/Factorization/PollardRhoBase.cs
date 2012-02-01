@@ -9,7 +9,7 @@ namespace Decompose.Numerics
 {
     public abstract class PollardRhoBase : IFactorizationAlgorithm<BigInteger>
     {
-        protected IRandomNumberAlgorithm<BigInteger> random = new MersenneTwister(0).CreateInstance<BigInteger>();
+        protected IRandomNumberAlgorithm<BigInteger> random = new MersenneTwister(0).Create<BigInteger>();
         protected int threads;
         protected int iterations;
 

@@ -40,7 +40,7 @@ namespace Decompose.Numerics
             var s = nMinusOne;
             while ((s & 1) == 0)
                 s >>= 1;
-            var random = generator.CreateInstance<long>();
+            var random = generator.Create<long>();
             for (int i = 0; i < k; i++)
             {
                 var a = random.Next(n - 4) + 2;
@@ -67,7 +67,7 @@ namespace Decompose.Numerics
             var s = nMinusOne;
             while (s.IsEven)
                 s >>= 1;
-            var random = generator.CreateInstance<BigInteger>();
+            var random = generator.Create<BigInteger>();
             for (int i = 0; i < k; i++)
             {
                 var a = random.Next(n - 4) + 2;

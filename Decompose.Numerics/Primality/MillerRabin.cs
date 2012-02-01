@@ -23,7 +23,7 @@ namespace Decompose.Numerics
                     return false;
                 if (!reduction.Equals(n, reduction.Two) && reduction.IsEven(n))
                     return false;
-                var random = generator.CreateInstance<T>();
+                var random = generator.Create<T>();
                 var reducer = reduction.GetReducer(n);
                 var four = reduction.Convert(4);
                 var s = 0;
@@ -56,7 +56,7 @@ namespace Decompose.Numerics
             }
         }
 
-        public static IPrimalityAlgorithm<T> CreateInstance<T>(int k, IReductionAlgorithm<T> reduction)
+        public static IPrimalityAlgorithm<T> Create<T>(int k, IReductionAlgorithm<T> reduction)
         {
             return new PrimalityAlgorithm<T>(k, reduction);
         }

@@ -37,7 +37,7 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void TestPrimality()
         {
-            var algorithm = MillerRabin.CreateInstance(16, new Int32Reduction());
+            var algorithm = MillerRabin.Create(16, new Int32Reduction());
             var primes = Enumerable.Range(937, 1000 - 937)
                 .Where(n => algorithm.IsPrime(n))
                 .ToArray();
@@ -169,7 +169,7 @@ namespace Decompose.Numerics.Test
 
         private void TestReduction<T>(T p, IReductionAlgorithm<T> reduction)
         {
-            var random = new MersenneTwister(0).CreateInstance<T>();
+            var random = new MersenneTwister(0).Create<T>();
             var reducer = reduction.GetReducer(p);
             var xPrime = reducer.ToResidue(p);
             var yPrime = reducer.ToResidue(p);
@@ -194,8 +194,8 @@ namespace Decompose.Numerics.Test
         {
             var n = BigInteger.Parse("10023859281455311421");
             var generator = new MersenneTwister(0);
-            var random = generator.CreateInstance<BigInteger>();
-            var smallRandom = generator.CreateInstance<uint>();
+            var random = generator.Create<BigInteger>();
+            var smallRandom = generator.Create<uint>();
             var length = (n.GetBitLength() * 2 + 31) / 32 + 3;
             var store = new Word32IntegerStore(length);
             var a = store.Create();
@@ -269,7 +269,7 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void ModularSquareRootTest1()
         {
-            var random = new MersenneTwister(0).CreateInstance<BigInteger>();
+            var random = new MersenneTwister(0).Create<BigInteger>();
             var limit = BigInteger.Parse("10023859281455311421");
             for (int i = 0; i < 100; i++)
             {
@@ -476,7 +476,7 @@ namespace Decompose.Numerics.Test
         public void ModularInverseTest()
         {
             var n = BigInteger.Parse("10023859281455311421");
-            var random = new MersenneTwister(0).CreateInstance<BigInteger>();
+            var random = new MersenneTwister(0).Create<BigInteger>();
             for (int i = 0; i < 1000; i++)
             {
                 var p = random.Next(n);
@@ -510,7 +510,7 @@ namespace Decompose.Numerics.Test
 
         private void UInt128Test(int factorSize, int modulusSize)
         {
-            var random = new MersenneTwister(0).CreateInstance<ulong>();
+            var random = new MersenneTwister(0).Create<ulong>();
             var factorMax = (ulong)1 << factorSize;
             var modulusMax = (ulong)1 << modulusSize;
             for (int i = 0; i < 10000; i++)

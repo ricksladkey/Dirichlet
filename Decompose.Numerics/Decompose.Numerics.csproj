@@ -51,7 +51,9 @@
     <Compile Include="Core\BigIntegerOperations.cs" />
     <Compile Include="Core\Core.cs" />
     <Compile Include="Core\Int32Operations.cs" />
+    <Compile Include="Core\Integer.cs" />
     <Compile Include="Core\IOperations.cs" />
+    <Compile Include="Core\Operations.cs" />
     <Compile Include="Core\UInt128.cs" />
     <Compile Include="Core\Uint32Operations.cs" />
     <Compile Include="Core\UInt64Operations.cs" />

@@ -105,6 +105,7 @@ namespace Decompose.Numerics
 
             public Reducer(IReductionAlgorithm<ulong> reduction, ulong n)
             {
+                this.reduction = reduction;
                 this.n = n;
             }
 

@@ -93,7 +93,7 @@ namespace Decompose.Numerics
             diag = config.Diagnostics;
             output = config.DiagnosticsOutput ?? Console.Out;
             sieveTimeLimit = config.SieveTimeLimit;
-            random = new MersenneTwister(0).CreateInstance<int>();
+            random = new MersenneTwister(0).Create<int>();
             smallIntegerFactorer = new TrialDivisionFactorization();
             allPrimes = new SieveOfErostothones();
             solver = new Solver(config.Threads, config.MergeLimit, (diag & Diag.Solving) != 0);

@@ -8,7 +8,7 @@ namespace Decompose.Numerics
     public class PollardRhoLong : IFactorizationAlgorithm<long>
     {
         const int batchSize = 100;
-        private IRandomNumberAlgorithm<long> random = new MersenneTwister(0).CreateInstance<long>();
+        private IRandomNumberAlgorithm<long> random = new MersenneTwister(0).Create<long>();
 
         public IEnumerable<long> Factor(long n)
         {

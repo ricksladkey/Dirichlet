@@ -15,6 +15,7 @@ namespace Decompose.Numerics
             var y = ops.One;
             var lasty = ops.Zero;
 
+#if false
             if (ops.Compare(a, b) < 0)
             {
                 var tmpa = a;
@@ -25,8 +26,10 @@ namespace Decompose.Numerics
                 y = ops.Zero;
                 lasty = ops.One;
             }
+#endif
             while (!ops.IsZero(b))
             {
+#if false
                 Debug.Assert(ops.Compare(a, b) >= 0);
                 var b2 = ops.LeftShift(b, 1);
                 if (ops.Compare(a, b2) < 0)
@@ -56,6 +59,7 @@ namespace Decompose.Numerics
                     lasty = tmpy;
                 }
                 else
+#endif
                 {
                     var quotient = ops.Divide(a, b);
                     var tmpa = a;

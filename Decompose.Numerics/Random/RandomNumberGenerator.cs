@@ -120,7 +120,7 @@ namespace Decompose.Numerics
 
         public abstract uint Next();
 
-        public IRandomNumberAlgorithm<T> CreateInstance<T>()
+        public IRandomNumberAlgorithm<T> Create<T>()
         {
             var type = typeof(T);
             if (type == typeof(int))

@@ -9,6 +9,6 @@ namespace Decompose.Numerics
     {
         object SyncRoot { get; }
         uint Next();
-        IRandomNumberAlgorithm<T> CreateInstance<T>();
+        IRandomNumberAlgorithm<T> Create<T>();
     }
 }
