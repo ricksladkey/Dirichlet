@@ -239,6 +239,10 @@ namespace Decompose.Numerics.Test
                     x.Set(a).AbsoluteValue();
                     Assert.AreEqual(Math.Abs(i), (int)x);
 
+                    x.Set(a).Increment();
+                    Assert.AreEqual(i + 1, (int)x);
+                    x.Set(a).Decrement();
+                    Assert.AreEqual(i - 1, (int)x);
                     x.SetSum(a, j);
                     Assert.AreEqual(i + j, (int)x);
                     x.SetDifference(a, j);

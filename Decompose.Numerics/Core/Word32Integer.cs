@@ -732,32 +732,6 @@ namespace Decompose.Numerics
             return SetSum(this, 1);
         }
 
-#if false
-        public Word32Integer Subtract(int a)
-        {
-            return SetDifference(this, a);
-        }
-
-        public Word32Integer SetDifference(Word32Integer a, int b)
-        {
-            SetSignedSum(a, b, true);
-            return this;
-        }
-
-        public Word32Integer Subtract(uint a)
-        {
-            return SetDifference(this, a);
-        }
-
-        public Word32Integer SetDifference(Word32Integer a, uint b)
-        {
-            if (a.sign == -1)
-                return SetSum(a, b);
-            SetUnsignedDifference(a, b);
-            return this;
-        }
-
-#endif
         public Word32Integer Add(int a)
         {
             return SetSum(this, a);
@@ -793,17 +767,27 @@ namespace Decompose.Numerics
                 ulong carry = (ulong)abits[0] + b;
                 wbits[0] = (uint)carry;
                 carry >>= 32;
-                for (int i = 1; i <= alast; i++)
+                int j = 1;
+                while (j <= alast && carry != 0)
                 {
-                    carry += abits[i];
-                    wbits[i] = (uint)carry;
+                    carry += abits[j];
+                    wbits[j] = (uint)carry;
                     carry >>= 32;
+                    ++j;
                 }
                 if (carry != 0)
                 {
                     Debug.Assert(alast + 1 < length);
                     ++alast;
                     wbits[alast] = (uint)carry;
+                }
+                else if (!object.ReferenceEquals(a, this))
+                {
+                    while (j <= alast)
+                    {
+                        wbits[j] = abits[j];
+                        ++j;
+                    }
                 }
                 for (int i = alast + 1; i <= wlast; i++)
                     wbits[i] = 0;
@@ -875,6 +859,11 @@ namespace Decompose.Numerics
             CheckValid();
         }
 
+        public Word32Integer Decrement()
+        {
+            return SetDifference(this, 1);
+        }
+
         public Word32Integer Subtract(int a)
         {
             return SetDifference(this, a);
@@ -904,13 +893,25 @@ namespace Decompose.Numerics
             CheckValid();
             fixed (uint* wbits = &bits[index], abits = &a.bits[a.index])
             {
-                ulong borrow = (ulong)0 - b;
+                ulong borrow = (ulong)abits[0] - b;
+                wbits[0] = (uint)borrow;
+                borrow = (ulong)((long)borrow >> 32);
                 var limit = a.last;
-                for (int i = 0; i <= limit; i++)
+                int j = 1;
+                while (j <= limit && borrow != 0)
                 {
-                    borrow += (ulong)abits[i];
-                    wbits[i] = (uint)borrow;
+                    borrow += (ulong)abits[j];
+                    wbits[j] = (uint)borrow;
                     borrow = (ulong)((long)borrow >> 32);
+                    ++j;
+                }
+                if (!object.ReferenceEquals(a, this))
+                {
+                    while (j <= limit)
+                    {
+                        wbits[j] = abits[j];
+                        ++j;
+                    }
                 }
                 for (int i = limit + 1; i <= last; i++)
                     wbits[i] = 0;
