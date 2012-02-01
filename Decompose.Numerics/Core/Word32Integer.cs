@@ -51,7 +51,7 @@ namespace Decompose.Numerics
 
         public bool IsOne
         {
-            get { return sign == 1 && last == 0 && bits[index] == 1; }
+            get { return last == 0 && bits[index] == 1 && sign == 1; }
         }
 
         public bool IsEven
@@ -197,34 +197,34 @@ namespace Decompose.Numerics
             return new Word32Integer(newBits, 0, length);
         }
 
-        public int ToInt32()
+        public static explicit operator int(Word32Integer a)
         {
-            CheckValid();
-            Debug.Assert(last == 0);
-            return sign == -1 ? -(int)bits[index] : (int)bits[index];
+            CheckValid(a);
+            Debug.Assert(a.last == 0);
+            return a.sign == -1 ? -(int)a.bits[a.index] : (int)a.bits[a.index];
         }
 
-        public uint ToUInt32()
+        public static explicit operator uint(Word32Integer a)
         {
-            CheckValid();
-            Debug.Assert(last == 0);
-            return bits[index];
+            CheckValid(a);
+            Debug.Assert(a.last == 0);
+            return a.bits[a.index];
         }
 
-        public ulong ToUInt64()
+        public static explicit operator ulong(Word32Integer a)
         {
-            CheckValid();
-            Debug.Assert(last < 2);
-            return last == 0 ? bits[index] : (ulong)bits[index + 1] << 32 | bits[index];
+            CheckValid(a);
+            Debug.Assert(a.last < 2);
+            return a.last == 0 ? a.bits[a.index] : (ulong)a.bits[a.index + 1] << 32 | a.bits[a.index];
         }
 
-        public BigInteger ToBigInteger()
+        public static implicit operator BigInteger(Word32Integer a)
         {
-            CheckValid();
-            var bytes = new byte[(last + 1) * 4 + 1];
-            for (int i = 0; i <= last; i++)
-                BitConverter.GetBytes(bits[index + i]).CopyTo(bytes, i * 4);
-            if (sign == -1)
+            CheckValid(a);
+            var bytes = new byte[(a.last + 1) * 4 + 1];
+            for (int i = 0; i <= a.last; i++)
+                BitConverter.GetBytes(a.bits[a.index + i]).CopyTo(bytes, i * 4);
+            if (a.sign == -1)
             {
                 int carry = 1;
                 for (int i = 0; i < bytes.Length; i++)
@@ -239,7 +239,7 @@ namespace Decompose.Numerics
 
         public override string ToString()
         {
-            return ToBigInteger().ToString();
+            return ((BigInteger)this).ToString();
         }
 
         public bool Equals(Word32Integer other)
@@ -265,6 +265,13 @@ namespace Decompose.Numerics
             return a.CompareTo(b) == 0;
         }
 
+        public static bool operator ==(Word32Integer a, int b)
+        {
+            if ((object)a == null)
+                return false;
+            return a.CompareTo(b) == 0;
+        }
+
         public static bool operator ==(Word32Integer a, uint b)
         {
             if ((object)a == null)
@@ -277,6 +284,13 @@ namespace Decompose.Numerics
             if ((object)a == null)
                 return false;
             return a.CompareTo(b) == 0;
+        }
+
+        public static bool operator ==(int a, Word32Integer b)
+        {
+            if ((object)b == null)
+                return false;
+            return b.CompareTo(a) == 0;
         }
 
         public static bool operator ==(uint a, Word32Integer b)
@@ -298,12 +312,22 @@ namespace Decompose.Numerics
             return !(a == b);
         }
 
+        public static bool operator !=(Word32Integer a, int b)
+        {
+            return !(a == b);
+        }
+
         public static bool operator !=(Word32Integer a, uint b)
         {
             return !(a == b);
         }
 
         public static bool operator !=(Word32Integer a, ulong b)
+        {
+            return !(a == b);
+        }
+
+        public static bool operator !=(int a, Word32Integer b)
         {
             return !(a == b);
         }
@@ -323,6 +347,11 @@ namespace Decompose.Numerics
             return a.CompareTo(b) < 0;
         }
 
+        public static bool operator <(Word32Integer a, int b)
+        {
+            return a.CompareTo(b) < 0;
+        }
+
         public static bool operator <(Word32Integer a, uint b)
         {
             return a.CompareTo(b) < 0;
@@ -331,6 +360,11 @@ namespace Decompose.Numerics
         public static bool operator <(Word32Integer a, ulong b)
         {
             return a.CompareTo(b) < 0;
+        }
+
+        public static bool operator <(int a, Word32Integer b)
+        {
+            return b.CompareTo(a) > 0;
         }
 
         public static bool operator <(uint a, Word32Integer b)
@@ -348,6 +382,11 @@ namespace Decompose.Numerics
             return a.CompareTo(b) <= 0;
         }
 
+        public static bool operator <=(Word32Integer a, int b)
+        {
+            return a.CompareTo(b) <= 0;
+        }
+
         public static bool operator <=(Word32Integer a, uint b)
         {
             return a.CompareTo(b) <= 0;
@@ -356,6 +395,11 @@ namespace Decompose.Numerics
         public static bool operator <=(Word32Integer a, ulong b)
         {
             return a.CompareTo(b) <= 0;
+        }
+
+        public static bool operator <=(int a, Word32Integer b)
+        {
+            return b.CompareTo(a) >= 0;
         }
 
         public static bool operator <=(uint a, Word32Integer b)
@@ -373,6 +417,11 @@ namespace Decompose.Numerics
             return a.CompareTo(b) > 0;
         }
 
+        public static bool operator >(Word32Integer a, int b)
+        {
+            return a.CompareTo(b) > 0;
+        }
+
         public static bool operator >(Word32Integer a, uint b)
         {
             return a.CompareTo(b) > 0;
@@ -381,6 +430,11 @@ namespace Decompose.Numerics
         public static bool operator >(Word32Integer a, ulong b)
         {
             return a.CompareTo(b) > 0;
+        }
+
+        public static bool operator >(int a, Word32Integer b)
+        {
+            return b.CompareTo(a) < 0;
         }
 
         public static bool operator >(uint a, Word32Integer b)
@@ -398,6 +452,11 @@ namespace Decompose.Numerics
             return a.CompareTo(b) >= 0;
         }
 
+        public static bool operator >=(Word32Integer a, int b)
+        {
+            return a.CompareTo(b) >= 0;
+        }
+
         public static bool operator >=(Word32Integer a, uint b)
         {
             return a.CompareTo(b) >= 0;
@@ -408,6 +467,11 @@ namespace Decompose.Numerics
             return a.CompareTo(b) >= 0;
         }
 
+        public static bool operator >=(int a, Word32Integer b)
+        {
+            return b.CompareTo(a) <= 0;
+        }
+
         public static bool operator >=(uint a, Word32Integer b)
         {
             return b.CompareTo(a) <= 0;
@@ -416,16 +480,6 @@ namespace Decompose.Numerics
         public static bool operator >=(ulong a, Word32Integer b)
         {
             return b.CompareTo(a) <= 0;
-        }
-
-        public static explicit operator uint(Word32Integer a)
-        {
-            return a.ToUInt32();
-        }
-
-        public static explicit operator ulong(Word32Integer a)
-        {
-            return a.ToUInt64();
         }
 
         public override int GetHashCode()
@@ -482,11 +536,32 @@ namespace Decompose.Numerics
             return 0;
         }
 
+        public int CompareTo(int other)
+        {
+            CheckValid();
+            if (last > 0)
+                return 1;
+            if (sign != (other < 0 ? -1 : 1))
+            {
+                if (IsZero && other == 0)
+                    return 0;
+                return sign;
+            }
+            var result = bits[index].CompareTo((uint)Math.Abs(other));
+            return sign == -1 ? -result : result;
+        }
+
         public int CompareTo(uint other)
         {
             CheckValid();
             if (last > 0)
                 return 1;
+            if (sign == -1)
+            {
+                if (IsZero && other == 0)
+                    return 0;
+                return sign;
+            }
             return bits[index].CompareTo(other);
         }
 
@@ -1191,7 +1266,7 @@ namespace Decompose.Numerics
                 var u0 = (ulong)(wbits[last] % v);
                 for (int j = last - 1; j >= 0; j--)
                     u0 = (u0 << 32 | wbits[j]) % v;
-                Debug.Assert(ToBigInteger() % v == u0);
+                Debug.Assert((BigInteger)this % v == u0);
                 return (uint)u0;
             }
         }

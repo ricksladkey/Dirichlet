@@ -203,33 +203,56 @@ namespace Decompose.Numerics.Test
                 for (int j = -10; j < 10; j++)
                 {
                     a.Set(i);
-                    Assert.AreEqual(i, a.ToInt32());
-                    Assert.AreEqual((BigInteger)i, a.ToBigInteger());
+                    Assert.AreEqual(i, (int)a);
+                    Assert.AreEqual((BigInteger)i, (BigInteger)a);
                     b.Set(j);
-                    Assert.AreEqual(j, b.ToInt32());
+                    Assert.AreEqual(j, (int)b);
+                    Assert.AreEqual((BigInteger)j, (BigInteger)b);
+
                     x.SetSum(a, b);
-                    Assert.AreEqual(i + j, x.ToInt32());
+                    Assert.AreEqual(i + j, (int)x);
                     x.SetDifference(a, b);
-                    Assert.AreEqual(i - j, x.ToInt32());
+                    Assert.AreEqual(i - j, (int)x);
                     x.SetProduct(a, b);
-                    Assert.AreEqual(i * j, x.ToInt32());
+                    Assert.AreEqual(i * j, (int)x);
                     x.SetProduct(a, j);
-                    Assert.AreEqual(i * j, x.ToInt32());
+                    Assert.AreEqual(i * j, (int)x);
                     if (j != 0)
                     {
                         x.SetQuotient(a, b, reg1);
-                        Assert.AreEqual(i / j, x.ToInt32());
+                        Assert.AreEqual(i / j, (int)x);
                         x.SetRemainder(a, b);
-                        Assert.AreEqual(i % j, x.ToInt32());
+                        Assert.AreEqual(i % j, (int)x);
                         x.SetQuotient(a, j, reg1);
-                        Assert.AreEqual(i / j, x.ToInt32());
+                        Assert.AreEqual(i / j, (int)x);
                         var remainder = x.Set(a).GetRemainder(j);
                         Assert.AreEqual(i % j, remainder);
                     }
                     x.Set(a).Negate();
-                    Assert.AreEqual(-i, x.ToInt32());
+                    Assert.AreEqual(-i, (int)x);
                     x.Set(a).AbsoluteValue();
-                    Assert.AreEqual(Math.Abs(i), x.ToInt32());
+                    Assert.AreEqual(Math.Abs(i), (int)x);
+
+                    Assert.AreEqual(i == j, a == b);
+                    Assert.AreEqual(i != j, a != b);
+                    Assert.AreEqual(i < j, a < b);
+                    Assert.AreEqual(i <= j, a <= b);
+                    Assert.AreEqual(i > j, a > b);
+                    Assert.AreEqual(i >= j, a >= b);
+
+                    Assert.AreEqual(i == j, a == j);
+                    Assert.AreEqual(i != j, a != j);
+                    Assert.AreEqual(i < j, a < j);
+                    Assert.AreEqual(i <= j, a <= j);
+                    Assert.AreEqual(i > j, a > j);
+                    Assert.AreEqual(i >= j, a >= j);
+
+                    Assert.AreEqual(i == j, i == b);
+                    Assert.AreEqual(i != j, i != b);
+                    Assert.AreEqual(i < j, i < b);
+                    Assert.AreEqual(i <= j, i <= b);
+                    Assert.AreEqual(i > j, i > b);
+                    Assert.AreEqual(i >= j, i >= b);
                 }
             }
         }
@@ -263,52 +286,52 @@ namespace Decompose.Numerics.Test
                 for (int j = 0; j <= 65; j++)
                 {
                     x.Set(a).LeftShift(j);
-                    Assert.AreEqual(aPrime << j, x.ToBigInteger());
+                    Assert.AreEqual(aPrime << j, (BigInteger)x);
 
                     x.Set(a).RightShift(j);
-                    Assert.AreEqual(aPrime >> j, x.ToBigInteger());
+                    Assert.AreEqual(aPrime >> j, (BigInteger)x);
                 }
 
                 x.SetSum(a, b);
-                Assert.AreEqual(aPrime + bPrime, x.ToBigInteger());
+                Assert.AreEqual(aPrime + bPrime, (BigInteger)x);
 
                 x.SetSum(a, c);
-                Assert.AreEqual(aPrime + c, x.ToBigInteger());
+                Assert.AreEqual(aPrime + c, (BigInteger)x);
 
                 x.SetProduct(a, b);
-                Assert.AreEqual(aPrime * bPrime, x.ToBigInteger());
+                Assert.AreEqual(aPrime * bPrime, (BigInteger)x);
 
                 x.SetSquare(a);
-                Assert.AreEqual(aPrime * aPrime, x.ToBigInteger());
+                Assert.AreEqual(aPrime * aPrime, (BigInteger)x);
 
                 x.SetProduct(a, c);
-                Assert.AreEqual(c * aPrime, x.ToBigInteger());
+                Assert.AreEqual(c * aPrime, (BigInteger)x);
 
                 x.SetQuotient(a, b, reg1);
-                Assert.AreEqual(aPrime / bPrime, x.ToBigInteger());
+                Assert.AreEqual(aPrime / bPrime, (BigInteger)x);
 
                 x.SetRemainder(a, b);
-                Assert.AreEqual(aPrime % bPrime, x.ToBigInteger());
+                Assert.AreEqual(aPrime % bPrime, (BigInteger)x);
 
                 x.SetQuotient(a, c, reg1);
-                Assert.AreEqual(aPrime / c, x.ToBigInteger());
+                Assert.AreEqual(aPrime / c, (BigInteger)x);
 
                 x.SetRemainder(a, c);
-                Assert.AreEqual(aPrime % c, x.ToBigInteger());
+                Assert.AreEqual(aPrime % c, (BigInteger)x);
 
                 x.SetSquare(a);
-                Assert.AreEqual(aPrime * aPrime, x.ToBigInteger());
+                Assert.AreEqual(aPrime * aPrime, (BigInteger)x);
 
                 x.SetDifference(a, b);
-                Assert.AreEqual(aPrime - bPrime, x.ToBigInteger());
+                Assert.AreEqual(aPrime - bPrime, (BigInteger)x);
 
                 x.SetGreatestCommonDivisor(a, b, reg1);
-                Assert.AreEqual(BigInteger.GreatestCommonDivisor(aPrime, bPrime), x.ToBigInteger());
+                Assert.AreEqual(BigInteger.GreatestCommonDivisor(aPrime, bPrime), (BigInteger)x);
 
                 if (x.IsOne)
                 {
                     x.SetModularInverse(a, b, reg1, reg2, reg3, reg4, reg5, reg6);
-                    Assert.AreEqual(IntegerMath.ModularInverse(aPrime, bPrime), x.ToBigInteger());
+                    Assert.AreEqual(IntegerMath.ModularInverse(aPrime, bPrime), (BigInteger)x);
                 }
             }
         }
@@ -344,7 +367,7 @@ namespace Decompose.Numerics.Test
             a.Set(BigInteger.Parse("851968723384911158384830467125731460171903460330379450819468842227482878637917031244505597763225"));
             b.Set(BigInteger.Parse("2200761205517100656206929789365760219952611739831"));
             x.SetRemainder(a, b);
-            Assert.AreEqual(a.ToBigInteger() % b.ToBigInteger(), x.ToBigInteger());
+            Assert.AreEqual((BigInteger)a % (BigInteger)b, (BigInteger)x);
         }
 
         [TestMethod]

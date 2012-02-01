@@ -90,7 +90,7 @@ namespace Decompose.Numerics
 
                 public BigInteger Value()
                 {
-                    return r.ToBigInteger();
+                    return r;
                 }
 
                 public override string ToString()

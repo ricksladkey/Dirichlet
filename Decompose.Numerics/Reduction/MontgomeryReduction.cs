@@ -118,7 +118,7 @@ namespace Decompose.Numerics
                 {
                     reducer.reg3.Set(r);
                     reducer.Reduce(reducer.reg3);
-                    return reducer.reg3.ToBigInteger();
+                    return reducer.reg3;
                 }
 
                 public override string ToString()
