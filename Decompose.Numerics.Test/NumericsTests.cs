@@ -203,6 +203,10 @@ namespace Decompose.Numerics.Test
             var x = store.Create();
             var reg1 = store.Create();
             var reg2 = store.Create();
+            var reg3 = store.Create();
+            var reg4 = store.Create();
+            var reg5 = store.Create();
+            var reg6 = store.Create();
             for (int i = 0; i < 1000; i++)
             {
                 var aPrime = random.Next(n);
@@ -263,6 +267,14 @@ namespace Decompose.Numerics.Test
 
                 x.SetGreatestCommonDivisor(a, b, reg1);
                 Assert.AreEqual(BigInteger.GreatestCommonDivisor(aPrime, bPrime), x.ToBigInteger());
+
+#if false
+                if (x.IsOne)
+                {
+                    x.SetModularInverse(a, b, reg1, reg2, reg3, reg4, reg5, reg6);
+                    Assert.AreEqual(IntegerMath.ModularInverse(aPrime, bPrime), x.ToBigInteger());
+                }
+#endif
             }
         }
 

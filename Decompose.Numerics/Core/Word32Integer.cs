@@ -13,6 +13,7 @@ namespace Decompose.Numerics
         private int index;
         private int length;
         private int last;
+        private int sign;
 
         public uint[] Bits { get { return bits; } }
         public int Index { get { return index; } }
@@ -38,6 +39,11 @@ namespace Decompose.Numerics
             }
         }
 
+        public int Sign
+        {
+            get { return last == 0 && bits[index] == 0 ? 0 : sign; }
+        }
+
         public bool IsZero
         {
             get { return last == 0 && bits[index] == 0; }
@@ -45,7 +51,7 @@ namespace Decompose.Numerics
 
         public bool IsOne
         {
-            get { return last == 0 && bits[index] == 1; }
+            get { return sign == 1 && last == 0 && bits[index] == 1; }
         }
 
         public bool IsEven
@@ -73,6 +79,7 @@ namespace Decompose.Numerics
             this.bits = bits;
             this.index = index;
             this.length = length;
+            this.sign = 1;
             SetLast(length - 1);
         }
 
@@ -97,6 +104,7 @@ namespace Decompose.Numerics
             for (int i = 1; i <= last; i++)
                 bits[index + i] = 0;
             last = 0;
+            sign = 1;
             CheckValid();
             return this;
         }
@@ -109,6 +117,7 @@ namespace Decompose.Numerics
             for (int i = 2; i <= last; i++)
                 bits[index + i] = 0;
             last = bits[index + 1] != 0 ? 1 : 0;
+            sign = 1;
             CheckValid();
             return this;
         }
@@ -122,6 +131,7 @@ namespace Decompose.Numerics
             for (int i = nBits.Length; i <= last; i++)
                 bits[index + i] = 0;
             last = Math.Max(nBits.Length - 1, 0);
+            sign = 1;
             CheckValid();
             return this;
         }
@@ -140,6 +150,7 @@ namespace Decompose.Numerics
                 for (int i = alast + 1; i <= wlast; i++)
                     wbits[i] = 0;
                 last = alast;
+                sign = a.sign;
             }
             CheckValid();
             return this;
@@ -393,6 +404,30 @@ namespace Decompose.Numerics
         {
             CheckValid();
             Debug.Assert(length == other.length);
+            if (sign != other.sign)
+                return sign < other.sign ? -1 : 1;
+            var diff = last - other.last;
+            if (diff != 0)
+                return diff;
+            fixed (uint* wbits = &bits[index], obits = &other.bits[other.index])
+            {
+                for (int i = last; i >= 0; i--)
+                {
+                    uint wi = wbits[i];
+                    uint oi = obits[i];
+                    if (wi < oi)
+                        return -sign;
+                    if (wi > oi)
+                        return sign;
+                }
+            }
+            return 0;
+        }
+
+        public unsafe int UnsignedCompareTo(Word32Integer other)
+        {
+            CheckValid();
+            Debug.Assert(length == other.length);
             var diff = last - other.last;
             if (diff != 0)
                 return diff;
@@ -534,7 +569,13 @@ namespace Decompose.Numerics
             return SetSum(this, a);
         }
 
-        public unsafe Word32Integer SetSum(Word32Integer a, Word32Integer b)
+        public Word32Integer SetSum(Word32Integer a, Word32Integer b)
+        {
+            SetSignedSum(a, b, false);
+            return this;
+        }
+
+        private unsafe void SetUnsignedSum(Word32Integer a, Word32Integer b)
         {
             CheckValid();
             Debug.Assert(length == a.length && length == b.length);
@@ -560,7 +601,6 @@ namespace Decompose.Numerics
                 last = limit;
             }
             CheckValid();
-            return this;
         }
 
         public Word32Integer Increment()
@@ -637,11 +677,16 @@ namespace Decompose.Numerics
             return SetDifference(this, a);
         }
 
-        public unsafe Word32Integer SetDifference(Word32Integer a, Word32Integer b)
+        public Word32Integer SetDifference(Word32Integer a, Word32Integer b)
+        {
+            SetSignedSum(a, b, true);
+            return this;
+        }
+
+        private unsafe void SetUnsignedDifference(Word32Integer a, Word32Integer b)
         {
             CheckValid();
             Debug.Assert(length == a.length && length == b.length);
-            Debug.Assert(a.CompareTo(b) >= 0);
             fixed (uint* wbits = &bits[index], abits = &a.bits[a.index], bbits = &b.bits[b.index])
             {
                 ulong borrow = 0;
@@ -659,7 +704,6 @@ namespace Decompose.Numerics
                 last = limit;
             }
             CheckValid();
-            return this;
         }
 
         public unsafe Word32Integer SubtractModulo(Word32Integer a, Word32Integer n)
@@ -686,6 +730,30 @@ namespace Decompose.Numerics
             }
             CheckValid();
             return this;
+        }
+
+        public void SetSignedSum(Word32Integer a, Word32Integer b, bool subtraction)
+        {
+            var asign = a.sign;
+            var bsign = subtraction ? -b.sign : b.sign;
+            if (asign == bsign)
+            {
+                SetUnsignedSum(a, b);
+                sign = asign;
+            }
+            else
+            {
+                if (a.CompareTo(b) < 0)
+                {
+                    SetUnsignedDifference(b, a);
+                    sign = -asign;
+                }
+                else
+                {
+                    SetUnsignedDifference(a, b);
+                    sign = asign;
+                }
+            }
         }
 
         public Word32Integer Multiply(Word32Integer a, Word32Integer reg1)
@@ -1107,6 +1175,34 @@ namespace Decompose.Numerics
                     }
                 }
             }
+            return this;
+        }
+
+        public Word32Integer SetModularInverse(Word32Integer a, Word32Integer b, Word32Integer reg1, Word32Integer reg2, Word32Integer reg3, Word32Integer reg4, Word32Integer reg5, Word32Integer reg6)
+        {
+            var p = reg1.Set(a);
+            var q = reg2.Set(b);
+            var x0 = reg3.Set(0);
+            var s0 = 1;
+            var x1 = this.Set(1);
+            var s1 = 1;
+            var quotient = reg4;
+            var remainder = reg5;
+            var product = reg6;
+            while (!q.IsZero)
+            {
+                DivMod(remainder.Set(p), q, quotient);
+                var tmpp = p;
+                p = q;
+                q = tmpp.Set(remainder);
+                var tmpx = x0;
+                x0 = x1.Subtract(product.SetProduct(quotient, x0));
+                x1 = tmpx;
+            }
+            if (!object.ReferenceEquals(x1, this))
+                this.Set(x1);
+            if (sign == -1)
+                Add(b);
             return this;
         }
 

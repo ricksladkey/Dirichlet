@@ -40,8 +40,8 @@ namespace Decompose
                 //GraphTest();
                 //UInt128Test();
                 //ModularInverseTest();
-                //PrimalityTest();
-                OperationsTest();
+                PrimalityTest();
+                //OperationsTest();
             }
             catch (AggregateException ex)
             {
@@ -1079,14 +1079,14 @@ namespace Decompose
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
-#if false
+#if true
             {
                 int count = 20000;
                 var random = new MersenneTwister(0).Create<BigInteger>();
                 //var algorithm = new OldMillerRabin(16);
                 //var algorithm = MillerRabin.Create(16, new BigIntegerReduction());
-                var algorithm = MillerRabin.Create(16, new MontgomeryReduction());
                 //var algorithm = MillerRabin.Create(16, new Word32IntegerReduction());
+                var algorithm = MillerRabin.Create(16, new MontgomeryReduction());
                 var max = BigInteger.One << 256;
                 var timer = new Stopwatch();
                 timer.Start();
@@ -1172,7 +1172,7 @@ namespace Decompose
                 {
                     var a = pairs[i].A;
                     var b = pairs[i].B;
-                    var c = ModularInverse(a, b);
+                    var c = IntegerMath.ModularInverse(a, b);
                     if (a * c % b != 1)
                         throw new InvalidOperationException("miscalculation");
                 }
