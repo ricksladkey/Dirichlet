@@ -159,11 +159,7 @@ namespace Decompose.Numerics
                 var rSquaredModN = r * r % n;
                 BigInteger c;
                 BigInteger d;
-#if false
                 IntegerMath.ExtendedGreatestCommonDivisor(r, n, out c, out d);
-#else
-                Core.ExtendedGreatestCommonDivisor(reduction, r, n, out c, out d);
-#endif
                 var rInverse = c;
                 k = -d;
                 if (rInverse.Sign == -1)

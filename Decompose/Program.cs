@@ -1101,8 +1101,15 @@ namespace Decompose
 
         static void OperationsTest()
         {
-            int count = 200000;
-#if true
+            int count = 50000;
+            var max = (BigInteger)1 << 128;
+            var source = new MersenneTwister(0).Create<BigInteger>();
+            var pairs = source.Sequence(max)
+                .Zip(source.Sequence(max), (a, b) => new { A = a, B = b })
+                .Where(pair => IntegerMath.GreatestCommonDivisor(pair.A, pair.B) == 1)
+                .Take(count)
+                .ToArray();
+#if false
             {
                 Console.WriteLine("hand coded 32");
                 var max = (int)1 << 30;
@@ -1117,7 +1124,7 @@ namespace Decompose
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
-#if true
+#if false
             {
                 Console.WriteLine("hand coded 64");
                 var max = (long)1 << 62;
@@ -1132,9 +1139,51 @@ namespace Decompose
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
+#if true
+            {
+                Console.WriteLine("hand coded BigInteger");
+                BigInteger c;
+                BigInteger d;
+                GC.Collect();
+                var timer = new Stopwatch();
+                var random = new MersenneTwister(0).Create<BigInteger>();
+                timer.Restart();
+                for (int i = 0; i < count; i++)
+                {
+                    var a = pairs[i].A;
+                    var b = pairs[i].B;
+                    IntegerMath.ExtendedGreatestCommonDivisor(a, b, out c, out d);
+                    if (c < 0)
+                        c += b;
+                    if (a * c % b != 1)
+                        throw new InvalidOperationException("miscalculation");
+                }
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
+#endif
+#if true
+            {
+                Console.WriteLine("new BigInteger");
+                GC.Collect();
+                var timer = new Stopwatch();
+                var random = new MersenneTwister(0).Create<BigInteger>();
+                timer.Restart();
+                for (int i = 0; i < count; i++)
+                {
+                    var a = pairs[i].A;
+                    var b = pairs[i].B;
+                    var c = ModularInverse(a, b);
+                    if (a * c % b != 1)
+                        throw new InvalidOperationException("miscalculation");
+                }
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
+#endif
+#if false
             OperationsTest(new Int32Operations(), (int)1 << 30, count);
             OperationsTest(new UInt64Operations(), (ulong)1 << 62, count);
-            OperationsTest(new BigIntegerOperations(), (BigInteger)1 << 31, count);
+            OperationsTest(new BigIntegerOperations(), (BigInteger)1 << 128, count);
+#endif
         }
 
         static void OperationsTest<T>(IOperations<T> ops, T max, int count)
@@ -1215,6 +1264,71 @@ namespace Decompose
             }
             c = lastx;
             d = lasty;
+        }
+
+        public static void ExtendedGreatestCommonDivisor(BigInteger a, BigInteger b, out BigInteger c, out BigInteger d)
+        {
+            var x = (BigInteger)0;
+            var lastx = (BigInteger)1;
+            var y = (BigInteger)1;
+            var lasty = (BigInteger)0;
+
+            while (b != 0)
+            {
+                var quotient = a / b;
+                var tmpa = a;
+                a = b;
+                b = tmpa - quotient * b;
+                var tmpx = x;
+                x = lastx - quotient * x;
+                lastx = tmpx;
+                var tmpy = y;
+                y = lasty - quotient * y;
+                lasty = tmpy;
+            }
+            c = lastx;
+            d = lasty;
+        }
+
+        public static BigInteger ModularInverse(BigInteger a, BigInteger b)
+        {
+            var x0 = BigInteger.Zero;
+            var x1 = BigInteger.One;
+            BigInteger p = a;
+            BigInteger q = b;
+            ModularInverseCore(ref p, ref q, ref x0, ref x1);
+            ModularInverseCore((ulong)p, (ulong)q, ref x0, ref x1);
+            if (x1 < 0)
+                x1 += b;
+            return x1;
+        }
+
+        public static void ModularInverseCore(ref BigInteger a, ref BigInteger b, ref BigInteger x0, ref BigInteger x1)
+        {
+            while (a > ulong.MaxValue)
+            {
+                var quotient = a / b;
+                var tmpa = a;
+                a = b;
+                b = tmpa - quotient * b;
+                var tmpx = x0;
+                x0 = x1 - quotient * x0;
+                x1 = tmpx;
+            }
+        }
+
+        public static void ModularInverseCore(ulong a, ulong b, ref BigInteger x0, ref BigInteger x1)
+        {
+            while (b != 0)
+            {
+                var quotient = a / b;
+                var tmpa = a;
+                a = b;
+                b = tmpa - quotient * b;
+                var tmpx = x0;
+                x0 = x1 - quotient * x0;
+                x1 = tmpx;
+            }
         }
 
         public static void ExtendedGreatestCommonDivisor<T>(IOperations<T> ops, T a, T b, out T c, out T d)

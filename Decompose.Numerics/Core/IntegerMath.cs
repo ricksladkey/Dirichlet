@@ -211,6 +211,11 @@ namespace Decompose.Numerics
             return a;
         }
 
+        public static BigInteger GreatestCommonDivisor(BigInteger a, BigInteger b)
+        {
+            return BigInteger.GreatestCommonDivisor(a, b);
+        }
+
         public static void ExtendedGreatestCommonDivisor(int a, int b, out int c, out int d)
         {
             var x = 0;
