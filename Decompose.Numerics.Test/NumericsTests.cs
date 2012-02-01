@@ -205,9 +205,19 @@ namespace Decompose.Numerics.Test
                     a.Set(i);
                     Assert.AreEqual(i, (int)a);
                     Assert.AreEqual((BigInteger)i, (BigInteger)a);
+                    Assert.AreEqual(i.GetBitLength(), a.GetBitLength());
                     b.Set(j);
                     Assert.AreEqual(j, (int)b);
                     Assert.AreEqual((BigInteger)j, (BigInteger)b);
+                    Assert.AreEqual(j.GetBitLength(), j.GetBitLength());
+
+                    for (int k = 0; k < 10; k++)
+                    {
+                        x.Set(a).LeftShift(k);
+                        Assert.AreEqual(i << k, (int)x);
+                        x.Set(a).RightShift(k);
+                        Assert.AreEqual(i >> k, (int)x);
+                    }
 
                     x.SetSum(a, b);
                     Assert.AreEqual(i + j, (int)x);
@@ -225,7 +235,7 @@ namespace Decompose.Numerics.Test
                         Assert.AreEqual(i % j, (int)x);
                         x.SetQuotient(a, j, reg1);
                         Assert.AreEqual(i / j, (int)x);
-                        var remainder = x.Set(a).GetRemainder(j);
+                        var remainder = a.GetRemainder(j);
                         Assert.AreEqual(i % j, remainder);
                     }
                     x.Set(a).Negate();

@@ -22,7 +22,7 @@ namespace Decompose.Numerics
 
         public Word32Integer Create()
         {
-            var result = new Word32Integer(bits, allocated, length);
+            var result = new Word32Integer(bits, allocated, length, 1);
             allocated += size;
             return result;
         }

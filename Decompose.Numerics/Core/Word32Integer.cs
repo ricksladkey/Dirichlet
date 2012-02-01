@@ -29,6 +29,7 @@ namespace Decompose.Numerics
             return 32 * last + bits[index + last].GetBitLength();
         }
 
+#if DEBUG
         private uint[] DebugBits
         {
             get
@@ -38,6 +39,7 @@ namespace Decompose.Numerics
                 return debugBits;
             }
         }
+#endif
 
         public int Sign
         {
@@ -75,16 +77,20 @@ namespace Decompose.Numerics
         }
 
         public Word32Integer(int length)
-            : this(new uint[length], 0, length)
+            : this(new uint[length], 0, length, 1)
         {
         }
 
-        public Word32Integer(uint[] bits, int index, int length)
+        public Word32Integer(uint[] bits, int index, int length, int sign)
         {
+            Debug.Assert(bits != null);
+            Debug.Assert(length > 0);
+            Debug.Assert(index >= 0 && index + length <= bits.Length);
+            Debug.Assert(sign == 1 || sign == -1);
             this.bits = bits;
             this.index = index;
             this.length = length;
-            this.sign = 1;
+            this.sign = sign;
             SetLast(length - 1);
         }
 
@@ -194,7 +200,7 @@ namespace Decompose.Numerics
             CheckValid();
             var newBits = new uint[length];
             Array.Copy(bits, index, newBits, 0, last + 1);
-            return new Word32Integer(newBits, 0, length);
+            return new Word32Integer(newBits, 0, length, sign);
         }
 
         public static explicit operator int(Word32Integer a)
@@ -484,34 +490,20 @@ namespace Decompose.Numerics
 
         public override int GetHashCode()
         {
+            if (IsZero)
+                return 0;
             int hash = 0;
             for (int i = 0; i <= last; i++)
                 hash ^= (int)bits[index + i];
-            return hash;
+            return hash ^ sign;
         }
 
         public unsafe int CompareTo(Word32Integer other)
         {
-            CheckValid();
-            Debug.Assert(length == other.length);
             if (sign != other.sign)
-                return sign < other.sign ? -1 : 1;
-            var diff = last - other.last;
-            if (diff != 0)
-                return diff;
-            fixed (uint* wbits = &bits[index], obits = &other.bits[other.index])
-            {
-                for (int i = last; i >= 0; i--)
-                {
-                    uint wi = wbits[i];
-                    uint oi = obits[i];
-                    if (wi < oi)
-                        return -sign;
-                    if (wi > oi)
-                        return sign;
-                }
-            }
-            return 0;
+                return IsZero && other.IsZero ? 0 : sign;
+            var result = UnsignedCompareTo(other);
+            return sign == -1 ? -result : result;
         }
 
         public unsafe int UnsignedCompareTo(Word32Integer other)
@@ -634,7 +626,19 @@ namespace Decompose.Numerics
 
         public Word32Integer RightShift(int n)
         {
+            if (sign == 1)
+                return UnsignedRightShift(n);
+            SetUnsignedDifference(this, 1);
+            UnsignedRightShift(n);
+            SetUnsignedSum(this, 1);
+            return this;
+        }
+
+        public Word32Integer UnsignedRightShift(int n)
+        {
             CheckValid();
+            if (n == 0)
+                return this;
             int i = n / 32;
             if (i > last)
             {
@@ -690,14 +694,41 @@ namespace Decompose.Numerics
         {
             CheckValid();
             Debug.Assert(length == a.length && length == b.length);
-            ulong carry = 0;
-            int limit = Math.Max(a.last, b.last);
-            int wlast = last;
             fixed (uint* wbits = &bits[index], abits = &a.bits[a.index], bbits = &b.bits[b.index])
             {
+                int limit = Math.Max(a.last, b.last);
+                int wlast = last;
+                ulong carry = 0;
                 for (int i = 0; i <= limit; i++)
                 {
                     carry += (ulong)abits[i] + bbits[i];
+                    wbits[i] = (uint)carry;
+                    carry >>= 32;
+                }
+                if (carry != 0)
+                {
+                    Debug.Assert(limit + 1 < length);
+                    ++limit;
+                    wbits[limit] = (uint)carry;
+                }
+                for (int i = limit + 1; i <= wlast; i++)
+                    wbits[i] = 0;
+                last = limit;
+            }
+            CheckValid();
+        }
+
+        private unsafe void SetUnsignedSum(Word32Integer a, uint b)
+        {
+            CheckValid();
+            fixed (uint* wbits = &bits[index], abits = &a.bits[a.index])
+            {
+                int limit = a.last;
+                int wlast = last;
+                ulong carry = b;
+                for (int i = 0; i <= limit; i++)
+                {
+                    carry += (ulong)abits[i];
                     wbits[i] = (uint)carry;
                     carry >>= 32;
                 }
@@ -805,6 +836,28 @@ namespace Decompose.Numerics
                 for (int i = 0; i <= limit; i++)
                 {
                     borrow += (ulong)abits[i] - bbits[i];
+                    wbits[i] = (uint)borrow;
+                    borrow = (ulong)((long)borrow >> 32);
+                }
+                for (int i = limit + 1; i <= last; i++)
+                    wbits[i] = 0;
+                while (limit > 0 && wbits[limit] == 0)
+                    --limit;
+                last = limit;
+            }
+            CheckValid();
+        }
+
+        private unsafe void SetUnsignedDifference(Word32Integer a, uint b)
+        {
+            CheckValid();
+            fixed (uint* wbits = &bits[index], abits = &a.bits[a.index])
+            {
+                ulong borrow = (ulong)0 - b;
+                var limit = a.last;
+                for (int i = 0; i <= limit; i++)
+                {
+                    borrow += (ulong)abits[i];
                     wbits[i] = (uint)borrow;
                     borrow = (ulong)((long)borrow >> 32);
                 }
@@ -1524,6 +1577,8 @@ namespace Decompose.Numerics
         [Conditional("DEBUG")]
         private static void CheckValid(Word32Integer x)
         {
+            if (x.sign != -1 && x.sign != 1)
+                throw new InvalidOperationException("invalid sign");
             if (x.last == 0 && x.bits[x.index] == 0)
                 return;
             if (x.last >= x.length)

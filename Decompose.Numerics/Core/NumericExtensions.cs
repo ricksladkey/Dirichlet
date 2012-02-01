@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
@@ -58,12 +59,12 @@ namespace Decompose.Numerics
 
         public static int GetBitLength(this long value)
         {
-            return GetBitLength((ulong)value);
+            return GetBitLength((ulong)Math.Abs(value));
         }
 
         public static int GetBitLength(this int value)
         {
-            return GetBitLength((uint)value);
+            return GetBitLength((uint)Math.Abs(value));
         }
 
         public static int GetBitLength(this ulong value)
