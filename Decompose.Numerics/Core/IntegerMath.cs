@@ -141,14 +141,55 @@ namespace Decompose.Numerics
             return x;
         }
 
-        public static BigInteger ModularInverse(BigInteger n, BigInteger p)
+        public static BigInteger ModularInverse(BigInteger a, BigInteger b)
         {
-            BigInteger x;
-            BigInteger y;
-            ExtendedGreatestCommonDivisor(n, p, out x, out y);
-            if (x < 0)
-                x += p;
-            return x;
+            var x0 = BigInteger.Zero;
+            var x1 = BigInteger.One;
+            BigInteger p = a;
+            BigInteger q = b;
+            ModularInverseCore(ref p, ref q, ref x0, ref x1);
+            ModularInverseCore((ulong)p, (ulong)q, ref x0, ref x1);
+            if (x1 < 0)
+                x1 += b;
+            Debug.Assert(a * x1 % b == 1);
+            return x1;
+        }
+
+        private static void ModularInverseCore(ref BigInteger a, ref BigInteger b, ref BigInteger x0, ref BigInteger x1)
+        {
+            if (a < b)
+            {
+                var tmpa = a;
+                a = b;
+                b = tmpa;
+                var tmpx = x0;
+                x0 = x1;
+                x1 = tmpx;
+            }
+            while (a > ulong.MaxValue)
+            {
+                var quotient = a / b;
+                var tmpa = a;
+                a = b;
+                b = tmpa - quotient * b;
+                var tmpx = x0;
+                x0 = x1 - quotient * x0;
+                x1 = tmpx;
+            }
+        }
+
+        private static void ModularInverseCore(ulong a, ulong b, ref BigInteger x0, ref BigInteger x1)
+        {
+            while (b != 0)
+            {
+                var quotient = a / b;
+                var tmpa = a;
+                a = b;
+                b = tmpa - quotient * b;
+                var tmpx = x0;
+                x0 = x1 - quotient * x0;
+                x1 = tmpx;
+            }
         }
 
         public static bool IsSquareFree(IEnumerable<int> factors)

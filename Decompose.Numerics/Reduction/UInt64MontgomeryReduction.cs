@@ -130,13 +130,13 @@ namespace Decompose.Numerics
                 var rModN = rMinusOne - rDivN * n + 1;
                 rSquaredModN = IntegerMath.ModularProduct(rModN, rModN, n);
 
-                //k0 = (uint)(((UInt128)IntegerMath.ModularInverse(rModN, n) << 64) / n);
                 long c;
                 long d;
                 IntegerMath.ExtendedGreatestCommonDivisor((long)rModN, (long)n, out c, out d);
                 d -= (long)rDivN * c;
                 var k = (-d < 0 ? rMinusOne - (ulong)d + 1 : (ulong)-d);
                 k0 = (uint)k;
+                //k0 = (uint)(((UInt128)IntegerMath.ModularInverse(rModN, n) << 64) / n);
             }
 
             public IResidue<ulong> ToResidue(ulong x)

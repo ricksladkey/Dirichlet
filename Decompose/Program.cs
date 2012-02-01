@@ -1290,47 +1290,6 @@ namespace Decompose
             d = lasty;
         }
 
-        public static BigInteger ModularInverse(BigInteger a, BigInteger b)
-        {
-            var x0 = BigInteger.Zero;
-            var x1 = BigInteger.One;
-            BigInteger p = a;
-            BigInteger q = b;
-            ModularInverseCore(ref p, ref q, ref x0, ref x1);
-            ModularInverseCore((ulong)p, (ulong)q, ref x0, ref x1);
-            if (x1 < 0)
-                x1 += b;
-            return x1;
-        }
-
-        public static void ModularInverseCore(ref BigInteger a, ref BigInteger b, ref BigInteger x0, ref BigInteger x1)
-        {
-            while (a > ulong.MaxValue)
-            {
-                var quotient = a / b;
-                var tmpa = a;
-                a = b;
-                b = tmpa - quotient * b;
-                var tmpx = x0;
-                x0 = x1 - quotient * x0;
-                x1 = tmpx;
-            }
-        }
-
-        public static void ModularInverseCore(ulong a, ulong b, ref BigInteger x0, ref BigInteger x1)
-        {
-            while (b != 0)
-            {
-                var quotient = a / b;
-                var tmpa = a;
-                a = b;
-                b = tmpa - quotient * b;
-                var tmpx = x0;
-                x0 = x1 - quotient * x0;
-                x1 = tmpx;
-            }
-        }
-
         public static void ExtendedGreatestCommonDivisor<T>(IOperations<T> ops, T a, T b, out T c, out T d)
         {
             var zero = ops.Wrap(ops.Convert(0));

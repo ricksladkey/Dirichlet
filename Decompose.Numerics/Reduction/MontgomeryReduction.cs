@@ -157,18 +157,8 @@ namespace Decompose.Numerics
                 length = 2 * rLength / 32 + 1;
                 var r = BigInteger.One << rLength;
                 var rSquaredModN = r * r % n;
-                BigInteger c;
-                BigInteger d;
-                IntegerMath.ExtendedGreatestCommonDivisor(r, n, out c, out d);
-                var rInverse = c;
-                k = -d;
-                if (rInverse.Sign == -1)
-                    rInverse += n;
-                if (k.Sign == -1)
-                    k += r;
-                Debug.Assert(r * rInverse == k * n + 1);
-                var w = BigInteger.One << 32;
-                k0 = (uint)(k % w);
+                k = r - IntegerMath.ModularInverse(n, r);
+                k0 = (uint)(k & uint.MaxValue);
 
                 store = new Word32IntegerStore(length);
                 nRep = store.Create();
