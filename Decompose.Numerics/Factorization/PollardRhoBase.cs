@@ -74,11 +74,7 @@ namespace Decompose.Numerics
 
         protected static BigInteger F(BigInteger x, BigInteger c, BigInteger n)
         {
-#if true
             return (x * x + c) % n;
-#else
-            return BigIntegerUtils.AddMod(BigInteger.ModPow(x, BigIntegerUtils.Two, n), c, n);
-#endif
         }
 
         protected abstract BigInteger Rho(BigInteger n, BigInteger xInit, BigInteger c, CancellationToken cancellationToken);

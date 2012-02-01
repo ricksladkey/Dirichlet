@@ -30,5 +30,6 @@ namespace Decompose.Numerics
         public override int Compare(int x, int y) { return x.CompareTo(y); }
         public override int ModularProduct(int a, int b, int modulus) { return (int)((long)a * b % modulus); }
         public override int ModularPower(int value, int exponent, int modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
+        public override uint LeastSignificantWord(int a) { return (uint)(a & uint.MaxValue); }
     }
 }

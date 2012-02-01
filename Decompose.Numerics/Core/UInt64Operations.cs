@@ -30,5 +30,6 @@ namespace Decompose.Numerics
         public override int Compare(ulong x, ulong y) { return x.CompareTo(y); }
         public override ulong ModularProduct(ulong a, ulong b, ulong modulus) { return a * b % modulus; }
         public override ulong ModularPower(ulong value, ulong exponent, ulong modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
+        public override uint LeastSignificantWord(ulong a) { return (uint)(a & uint.MaxValue); }
     }
 }

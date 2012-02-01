@@ -70,7 +70,7 @@ namespace Decompose.Numerics
 
                 public IResidue<BigInteger> Power(BigInteger x)
                 {
-                    r = BigInteger.ModPow(r, x, reducer.Modulus);
+                    r = IntegerMath.ModularPower(r, x, reducer.Modulus);
                     return this;
                 }
 

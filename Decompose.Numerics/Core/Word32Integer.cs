@@ -59,6 +59,11 @@ namespace Decompose.Numerics
             get { return (bits[index] & 1) == 0; }
         }
 
+        public uint LeastSignificantWord
+        {
+            get { return bits[index]; }
+        }
+
         public int LengthInWords
         {
             get { return last + 1; }
@@ -1225,9 +1230,7 @@ namespace Decompose.Numerics
             var p = reg1.Set(a);
             var q = reg2.Set(b);
             var x0 = reg3.Set(0);
-            var s0 = 1;
             var x1 = this.Set(1);
-            var s1 = 1;
             var quotient = reg4;
             var remainder = reg5;
             var product = reg6;

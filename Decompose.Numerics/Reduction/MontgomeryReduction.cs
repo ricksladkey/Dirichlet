@@ -182,7 +182,7 @@ namespace Decompose.Numerics
                 var rRep = store.Create().Set(r);
 #if true
                 kRep.Set(reg7.Set(r).Subtract(reg8.SetModularInverse(nRep, rRep, reg1, reg2, reg3, reg4, reg5, reg6)));
-                k0 = kRep.ToUInt32();
+                k0 = kRep.LeastSignificantWord;
 #endif
                 zeroRep.Set(new Residue(this, BigInteger.Zero).Rep);
                 oneRep.Set(new Residue(this, BigInteger.One).Rep);

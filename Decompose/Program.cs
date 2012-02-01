@@ -1081,7 +1081,7 @@ namespace Decompose
 #endif
 #if true
             {
-                int count = 20000;
+                int count = 80000;
                 var random = new MersenneTwister(0).Create<BigInteger>();
                 //var algorithm = new OldMillerRabin(16);
                 //var algorithm = MillerRabin.Create(16, new BigIntegerReduction());

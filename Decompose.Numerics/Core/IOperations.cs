@@ -28,5 +28,6 @@ namespace Decompose.Numerics
         bool IsEven(T a);
         T ModularProduct(T a, T b, T modulus);
         T ModularPower(T value, T exponent, T modulus);
+        uint LeastSignificantWord(T a);
     }
 }

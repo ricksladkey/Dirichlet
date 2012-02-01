@@ -523,7 +523,7 @@ namespace Decompose.Numerics
             return primalityInt.IsPrime(n);
         }
 
-        private static IPrimalityAlgorithm<BigInteger> primalityBigInteger = MillerRabin.Create(16, new BigIntegerReduction());
+        private static IPrimalityAlgorithm<BigInteger> primalityBigInteger = MillerRabin.Create(16, new MontgomeryReduction());
 
         public static bool IsProbablePrime(int n)
         {
@@ -645,7 +645,7 @@ namespace Decompose.Numerics
 
         public static bool IsQuadraticResidue(BigInteger n, BigInteger p)
         {
-            return BigInteger.ModPow(n, (p - 1) / 2, p).IsOne;
+            return ModularPower(n, (p - 1) / 2, p).IsOne;
         }
 
         public static int ModularSquareRoot(BigInteger n, int p)
@@ -673,13 +673,13 @@ namespace Decompose.Numerics
                 ++s;
             }
             if (s == 1)
-                return BigInteger.ModPow(n, (p + 1) / 4, p);
+                return ModularPower(n, (p + 1) / 4, p);
             var z = BigIntegers.Two;
             while (JacobiSymbol(z, p) != -1)
                 ++z;
-            var c = BigInteger.ModPow(z, q, p);
-            var r = BigInteger.ModPow(n, (q + 1) / 2, p);
-            var t = BigInteger.ModPow(n, q, p);
+            var c = ModularPower(z, q, p);
+            var r = ModularPower(n, (q + 1) / 2, p);
+            var t = ModularPower(n, q, p);
             var m = s;
             while (!t.IsOne)
             {
@@ -690,7 +690,7 @@ namespace Decompose.Numerics
                     k = k * k % p;
                     ++i;
                 }
-                var b = BigInteger.ModPow(c, BigInteger.Pow(BigIntegers.Two, m - i - 1), p);
+                var b = ModularPower(c, BigInteger.Pow(BigIntegers.Two, m - i - 1), p);
                 r = r * b % p;
                 var b2 = b * b % p;
                 t = t * b2 % p;

@@ -1126,7 +1126,7 @@ namespace Decompose.Numerics
             var exponents = SumExponents(indices);
             var yFactorBase = new[] { -1 }
                 .Concat(factorBase.Select(entry => entry.P))
-                .Zip(exponents, (p, exponent) => BigInteger.ModPow(p, exponent, n));
+                .Zip(exponents, (p, exponent) => IntegerMath.ModularPower(p, exponent, n));
             var yCofactors = indices
                 .Select(index => (BigInteger)relations[index].Cofactor)
                 .Where(cofactor => cofactor != 1);
@@ -2111,7 +2111,7 @@ namespace Decompose.Numerics
             var result = MultiplyFactors(relation.Entries);
             if (relation.Cofactor == 1)
                 return result;
-            return result * BigInteger.ModPow(relation.Cofactor, 2, n) % n;
+            return result * relation.Cofactor % n * relation.Cofactor % n;
         }
 
         private BigInteger MultiplyFactors(ExponentEntries entries, params BigInteger[] cofactors)

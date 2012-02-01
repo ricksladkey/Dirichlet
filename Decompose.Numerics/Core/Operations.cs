@@ -31,6 +31,7 @@ namespace Decompose.Numerics
         public abstract bool IsEven(T a);
         public abstract T ModularProduct(T a, T b, T modulus);
         public abstract T ModularPower(T value, T exponent, T modulus);
+        public abstract uint LeastSignificantWord(T a);
         public abstract bool Equals(T x, T y);
         public abstract int GetHashCode(T obj);
         public abstract int Compare(T x, T y);

@@ -14,10 +14,28 @@ namespace Decompose.Numerics
             var result = reducer.ToResidue(ops.One);
             while (!ops.IsZero(exponent))
             {
-                if (!ops.IsEven(exponent))
-                    result.Multiply(value);
-                value.Multiply(value);
-                exponent = ops.RightShift(exponent, 1);
+                var word = ops.LeastSignificantWord(exponent);
+                exponent = ops.RightShift(exponent, 32);
+                if (ops.IsZero(exponent))
+                {
+                    while (word != 0)
+                    {
+                        if ((word & 1) != 0)
+                            result.Multiply(value);
+                        value.Multiply(value);
+                        word >>= 1;
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < 32; i++)
+                    {
+                        if ((word & 1) != 0)
+                            result.Multiply(value);
+                        value.Multiply(value);
+                        word >>= 1;
+                    }
+                }
             }
             value.Set(result);
         }

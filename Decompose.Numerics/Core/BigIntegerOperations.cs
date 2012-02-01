@@ -29,6 +29,7 @@ namespace Decompose.Numerics
         public override int GetHashCode(BigInteger obj) { return obj.GetHashCode(); }
         public override int Compare(BigInteger x, BigInteger y) { return x.CompareTo(y); }
         public override BigInteger ModularProduct(BigInteger a, BigInteger b, BigInteger modulus) { return a * b % modulus; }
-        public override BigInteger ModularPower(BigInteger value, BigInteger exponent, BigInteger modulus) { return BigInteger.ModPow(value, exponent, modulus); }
+        public override BigInteger ModularPower(BigInteger value, BigInteger exponent, BigInteger modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
+        public override uint LeastSignificantWord(BigInteger a) { return (uint)(a & uint.MaxValue); }
     }
 }
