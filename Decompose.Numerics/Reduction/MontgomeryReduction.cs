@@ -157,8 +157,10 @@ namespace Decompose.Numerics
                 length = 2 * rLength / 32 + 1;
                 var r = BigInteger.One << rLength;
                 var rSquaredModN = r * r % n;
+#if false
                 k = r - IntegerMath.ModularInverse(n, r);
                 k0 = (uint)(k & uint.MaxValue);
+#endif
 
                 store = new Word32IntegerStore(length);
                 nRep = store.Create();
@@ -167,14 +169,24 @@ namespace Decompose.Numerics
                 reg1 = store.Create();
                 reg2 = store.Create();
                 reg3 = store.Create();
+                var reg4 = store.Create();
+                var reg5 = store.Create();
+                var reg6 = store.Create();
+                var reg7 = store.Create();
+                var reg8 = store.Create();
                 zeroRep = store.Create();
                 oneRep = store.Create();
 
                 nRep.Set(n);
                 rSquaredModNRep.Set(rSquaredModN);
-                kRep.Set(k);
+                var rRep = store.Create().Set(r);
+#if true
+                kRep.Set(reg7.Set(r).Subtract(reg8.SetModularInverse(nRep, rRep, reg1, reg2, reg3, reg4, reg5, reg6)));
+                k0 = kRep.ToUInt32();
+#endif
                 zeroRep.Set(new Residue(this, BigInteger.Zero).Rep);
                 oneRep.Set(new Residue(this, BigInteger.One).Rep);
+
             }
 
             public IResidue<BigInteger> ToResidue(BigInteger x)
