@@ -567,7 +567,7 @@ namespace Decompose
             //var algorithm = new PollardRhoReduction(1, int.MaxValue, new Word32IntegerReduction());
             //var algorithm = new PollardRhoReduction(1, int.MaxValue, new MontgomeryReduction());
             //var algorithm = new ShanksSquareForms();
-            var algorithm = new Int64PollardRhoReduction(new UInt64MontgomeryReduction());
+            var algorithm = new UInt64PollardRhoReduction(new UInt64MontgomeryReduction());
 
             var timer = new Stopwatch();
             timer.Restart();

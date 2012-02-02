@@ -5,13 +5,13 @@ using System.Threading;
 
 namespace Decompose.Numerics
 {
-    public class Int64PollardRhoReduction : IFactorizationAlgorithm<long>, IFactorizationAlgorithm<ulong>
+    public class UInt64PollardRhoReduction : IFactorizationAlgorithm<long>, IFactorizationAlgorithm<ulong>
     {
         const int batchSize = 100;
         private IRandomNumberAlgorithm<ulong> random = new MersenneTwister(0).Create<ulong>();
         private IReductionAlgorithm<ulong> reduction;
 
-        public Int64PollardRhoReduction(IReductionAlgorithm<ulong> reduction)
+        public UInt64PollardRhoReduction(IReductionAlgorithm<ulong> reduction)
         {
             this.reduction = reduction;
         }
