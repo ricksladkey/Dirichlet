@@ -23,7 +23,7 @@ namespace Decompose
                 //FindPrimeTest1();
                 //BarrettReductionTest1();
                 //BarrettReductionTest2();
-                //Radix32Test1();
+                Word32IntegerTest1();
                 //FactorTest1();
                 //FactorTest2();
                 //FactorTest3();
@@ -37,7 +37,7 @@ namespace Decompose
                 //CunninghamTest();
                 //GaussianEliminationTest1();
                 //CreateSamplesTest();
-                GraphTest();
+                //GraphTest();
                 //UInt128Test();
                 //ModularInverseTest();
                 //PrimalityTest();
@@ -142,16 +142,16 @@ namespace Decompose
             output.WriteLine("elapsed1 = {0}, elapsed2 = {1}", elapsed1, elapsed2);
         }
 
-        static void Radix32Test1()
+        static void Word32IntegerTest1()
         {
             for (int i = 0; i < 2; i++)
             {
-                Radix32Test1("sum:     ", (c, a, b) => c.SetSum(a, b), (a, b) => a + b);
-                Radix32Test1("product: ", (c, a, b) => c.SetProduct(a, b), (a, b) => a * b);
+                Word32IntegerTest1("sum:     ", (c, a, b) => c.SetSum(a, b), (a, b) => a + b);
+                Word32IntegerTest1("product: ", (c, a, b) => c.SetProduct(a, b), (a, b) => a * b);
             }
         }
 
-        static void Radix32Test1(string label,
+        static void Word32IntegerTest1(string label,
             Action<Word32Integer, Word32Integer, Word32Integer> operation1,
             Func<BigInteger, BigInteger, BigInteger> operation2)
         {
@@ -161,8 +161,8 @@ namespace Decompose
             var random2 = new MersenneTwister(0).Create<BigInteger>();
             var timer1 = new Stopwatch();
             var timer2 = new Stopwatch();
-            var iterations1 = 1000;
-            var iterations2 = 1000;
+            var iterations1 = 10000;
+            var iterations2 = 10000;
 
             timer1.Start();
             for (int i = 0; i < iterations1; i++)
@@ -179,6 +179,7 @@ namespace Decompose
             }
             var elapsed1 = timer1.ElapsedMilliseconds;
 
+#if false
             timer2.Start();
             for (int i = 0; i < iterations1; i++)
             {
@@ -192,6 +193,9 @@ namespace Decompose
             var elapsed2 = timer1.ElapsedMilliseconds;
 
             output.WriteLine("{0}: elapsed1 = {1}, elapsed2 = {2}", label, elapsed1, elapsed2);
+#else
+            output.WriteLine("{0}: elapsed = {1}", label, elapsed1);
+#endif
         }
 
         static void FactorTest1()
@@ -566,6 +570,7 @@ namespace Decompose
             //var algorithm = new QuadraticSieve(new QuadraticSieve.Config());
             //var algorithm = new PollardRhoReduction(1, int.MaxValue, new Word32IntegerReduction());
             //var algorithm = new PollardRhoReduction(1, int.MaxValue, new MontgomeryReduction());
+            //var algorithm = new OldPollardRhoLong();
             //var algorithm = new ShanksSquareForms();
             var algorithm = new UInt64PollardRhoReduction(new UInt64MontgomeryReduction());
 

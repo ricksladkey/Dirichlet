@@ -10,60 +10,45 @@ namespace Decompose.Numerics
         private const int wordLength = 32;
 
         private uint[] bits;
-        private int index;
-        private int length;
         private int last;
         private int sign;
 
         public uint[] Bits { get { return bits; } }
-        public int Index { get { return index; } }
-        public int Length { get { return length; } }
+        public int Length { get { return bits.Length; } }
         public int Last { get { return last; } }
 
         public int GetBitLength()
         {
             CheckValid();
-            if (last == 0 && bits[index] == 0)
+            if (last == 0 && bits[0] == 0)
                 return 0;
-            var b = bits[index + last];
-            return 32 * last + bits[index + last].GetBitLength();
+            var b = bits[last];
+            return 32 * last + bits[last].GetBitLength();
         }
-
-#if DEBUG
-        private uint[] DebugBits
-        {
-            get
-            {
-                var debugBits = new uint[length];
-                Array.Copy(bits, index, debugBits, 0, length);
-                return debugBits;
-            }
-        }
-#endif
 
         public int Sign
         {
-            get { return last == 0 && bits[index] == 0 ? 0 : sign; }
+            get { return last == 0 && bits[0] == 0 ? 0 : sign; }
         }
 
         public bool IsZero
         {
-            get { return last == 0 && bits[index] == 0; }
+            get { return last == 0 && bits[0] == 0; }
         }
 
         public bool IsOne
         {
-            get { return last == 0 && bits[index] == 1 && sign == 1; }
+            get { return last == 0 && bits[0] == 1 && sign == 1; }
         }
 
         public bool IsEven
         {
-            get { return (bits[index] & 1) == 0; }
+            get { return (bits[0] & 1) == 0; }
         }
 
         public uint LeastSignificantWord
         {
-            get { return bits[index]; }
+            get { return bits[0]; }
         }
 
         public int LengthInWords
@@ -76,33 +61,27 @@ namespace Decompose.Numerics
             get { return wordLength; }
         }
 
-        public Word32Integer(int length)
-            : this(new uint[length], 0, length, 1)
+        public Word32Integer(int Length)
+            : this(new uint[Length], 1)
         {
         }
 
-        public Word32Integer(uint[] bits, int index, int length, int sign)
+        public Word32Integer(uint[] bits, int sign)
         {
             Debug.Assert(bits != null);
-            Debug.Assert(length > 0);
-            Debug.Assert(index >= 0 && index + length <= bits.Length);
+            Debug.Assert(Length > 0);
             Debug.Assert(sign == 1 || sign == -1);
             this.bits = bits;
-            this.index = index;
-            this.length = length;
             this.sign = sign;
-            SetLast(length - 1);
+            SetLast(Length - 1);
         }
 
-        public unsafe Word32Integer Clear()
+        public Word32Integer Clear()
         {
             CheckValid();
-            fixed (uint* wbits = &bits[index])
-            {
-                int wlast = last;
-                for (int i = 0; i <= wlast; i++)
-                    wbits[i] = 0;
-            }
+            int wlast = last;
+            for (int i = 0; i <= wlast; i++)
+                bits[i] = 0;
             last = 0;
             CheckValid();
             return this;
@@ -111,9 +90,9 @@ namespace Decompose.Numerics
         public Word32Integer Set(int a)
         {
             CheckValid();
-            bits[index] = (uint)(a < 0 ? -a : a);
+            bits[0] = (uint)(a < 0 ? -a : a);
             for (int i = 1; i <= last; i++)
-                bits[index + i] = 0;
+                bits[i] = 0;
             last = 0;
             sign = a < 0 ? -1 : 1;
             CheckValid();
@@ -123,9 +102,9 @@ namespace Decompose.Numerics
         public Word32Integer Set(uint a)
         {
             CheckValid();
-            bits[index] = a;
+            bits[0] = a;
             for (int i = 1; i <= last; i++)
-                bits[index + i] = 0;
+                bits[i] = 0;
             last = 0;
             sign = 1;
             CheckValid();
@@ -135,11 +114,11 @@ namespace Decompose.Numerics
         public Word32Integer Set(ulong a)
         {
             CheckValid();
-            bits[index] = (uint)a;
-            bits[index + 1] = (uint)(a >> 32);
+            bits[0] = (uint)a;
+            bits[1] = (uint)(a >> 32);
             for (int i = 2; i <= last; i++)
-                bits[index + i] = 0;
-            last = bits[index + 1] != 0 ? 1 : 0;
+                bits[i] = 0;
+            last = bits[1] != 0 ? 1 : 0;
             sign = 1;
             CheckValid();
             return this;
@@ -150,33 +129,30 @@ namespace Decompose.Numerics
             CheckValid();
             var asign = a.Sign == -1 ? -1 : 1;
             a = BigInteger.Abs(a);
-            Debug.Assert(a.GetBitLength() <= 32 * length);
+            Debug.Assert(a.GetBitLength() <= 32 * Length);
             var nBits = GetBits(a);
-            nBits.CopyTo(bits, index);
+            nBits.CopyTo(bits, 0);
             for (int i = nBits.Length; i <= last; i++)
-                bits[index + i] = 0;
+                bits[i] = 0;
             last = Math.Max(nBits.Length - 1, 0);
             sign = asign;
             CheckValid();
             return this;
         }
 
-        public unsafe Word32Integer Set(Word32Integer a)
+        public Word32Integer Set(Word32Integer a)
         {
             CheckValid();
-            Debug.Assert(length == a.length);
+            Debug.Assert(Length == a.Length);
             Debug.Assert(!object.ReferenceEquals(this, a));
-            fixed (uint* wbits = &bits[index], abits = &a.bits[a.index])
-            {
-                int alast = a.last;
-                int wlast = last;
-                for (int i = 0; i <= alast; i++)
-                    wbits[i] = abits[i];
-                for (int i = alast + 1; i <= wlast; i++)
-                    wbits[i] = 0;
-                last = alast;
-                sign = a.sign;
-            }
+            var abits = a.bits;
+            int alast = a.last;
+            for (int i = 0; i <= alast; i++)
+                bits[i] = abits[i];
+            for (int i = alast + 1; i <= last; i++)
+                bits[i] = 0;
+            last = alast;
+            sign = a.sign;
             CheckValid();
             return this;
         }
@@ -184,44 +160,44 @@ namespace Decompose.Numerics
         public Word32Integer SetMasked(Word32Integer a, int n)
         {
             CheckValid();
-            Debug.Assert(length == a.length);
+            Debug.Assert(Length == a.Length);
             Debug.Assert(n % 32 == 0 && n > 0);
             int clast = (n + 31) / 32 - 1;
             int alast = Math.Min(a.last, clast);
             for (int i = 0; i <= alast; i++)
-                bits[index + i] = a.Bits[a.index + i];
+                bits[i] = a.Bits[i];
             for (int i = alast + 1; i <= last; i++)
-                bits[index + i] = 0;
+                bits[i] = 0;
             return SetLast(alast);
         }
 
         public Word32Integer Copy()
         {
             CheckValid();
-            var newBits = new uint[length];
-            Array.Copy(bits, index, newBits, 0, last + 1);
-            return new Word32Integer(newBits, 0, length, sign);
+            var newBits = new uint[Length];
+            Array.Copy(bits, 0, newBits, 0, last + 1);
+            return new Word32Integer(newBits, sign);
         }
 
         public static explicit operator int(Word32Integer a)
         {
             CheckValid(a);
             Debug.Assert(a.last == 0);
-            return a.sign == -1 ? -(int)a.bits[a.index] : (int)a.bits[a.index];
+            return a.sign == -1 ? -(int)a.bits[0] : (int)a.bits[0];
         }
 
         public static explicit operator uint(Word32Integer a)
         {
             CheckValid(a);
             Debug.Assert(a.last == 0);
-            return a.bits[a.index];
+            return a.bits[0];
         }
 
         public static explicit operator ulong(Word32Integer a)
         {
             CheckValid(a);
             Debug.Assert(a.last < 2);
-            return a.last == 0 ? a.bits[a.index] : (ulong)a.bits[a.index + 1] << 32 | a.bits[a.index];
+            return a.last == 0 ? a.bits[0] : (ulong)a.bits[1] << 32 | a.bits[0];
         }
 
         public static implicit operator BigInteger(Word32Integer a)
@@ -229,7 +205,7 @@ namespace Decompose.Numerics
             CheckValid(a);
             var bytes = new byte[(a.last + 1) * 4 + 1];
             for (int i = 0; i <= a.last; i++)
-                BitConverter.GetBytes(a.bits[a.index + i]).CopyTo(bytes, i * 4);
+                BitConverter.GetBytes(a.bits[i]).CopyTo(bytes, i * 4);
             if (a.sign == -1)
             {
                 int carry = 1;
@@ -494,11 +470,11 @@ namespace Decompose.Numerics
                 return 0;
             int hash = 0;
             for (int i = 0; i <= last; i++)
-                hash ^= (int)bits[index + i];
+                hash ^= (int)bits[i];
             return hash ^ sign;
         }
 
-        public unsafe int CompareTo(Word32Integer other)
+        public int CompareTo(Word32Integer other)
         {
             if (sign != other.sign)
                 return IsZero && other.IsZero ? 0 : sign;
@@ -506,24 +482,23 @@ namespace Decompose.Numerics
             return sign == -1 ? -result : result;
         }
 
-        public unsafe int UnsignedCompareTo(Word32Integer other)
+        public int UnsignedCompareTo(Word32Integer other)
         {
             CheckValid();
-            Debug.Assert(length == other.length);
+            Debug.Assert(Length == other.Length);
             var diff = last - other.last;
             if (diff != 0)
                 return diff;
-            fixed (uint* wbits = &bits[index], obits = &other.bits[other.index])
+            var wbits = bits;
+            var obits = other.bits;
+            for (int i = last; i >= 0; i--)
             {
-                for (int i = last; i >= 0; i--)
-                {
-                    uint wi = wbits[i];
-                    uint oi = obits[i];
-                    if (wi < oi)
-                        return -1;
-                    if (wi > oi)
-                        return 1;
-                }
+                uint wi = wbits[i];
+                uint oi = obits[i];
+                if (wi < oi)
+                    return -1;
+                if (wi > oi)
+                    return 1;
             }
             return 0;
         }
@@ -539,7 +514,7 @@ namespace Decompose.Numerics
                     return 0;
                 return sign;
             }
-            var result = bits[index].CompareTo((uint)Math.Abs(other));
+            var result = bits[0].CompareTo((uint)Math.Abs(other));
             return sign == -1 ? -result : result;
         }
 
@@ -554,7 +529,7 @@ namespace Decompose.Numerics
                     return 0;
                 return sign;
             }
-            return bits[index].CompareTo(other);
+            return bits[0].CompareTo(other);
         }
 
         public int UnsignedCompareTo(uint other)
@@ -562,7 +537,7 @@ namespace Decompose.Numerics
             CheckValid();
             if (last > 0)
                 return 1;
-            return bits[index].CompareTo(other);
+            return bits[0].CompareTo(other);
         }
 
         public int CompareTo(ulong other)
@@ -570,33 +545,31 @@ namespace Decompose.Numerics
             CheckValid();
             if (last > 1)
                 return 1;
-            return ((ulong)bits[index + 1] << 32 | bits[index]).CompareTo(other);
+            return ((ulong)bits[1] << 32 | bits[0]).CompareTo(other);
         }
 
-        public unsafe Word32Integer Mask(int n)
+        public Word32Integer Mask(int n)
         {
             CheckValid();
             int i = n / 32;
             int j = n - 32 * i;
-            fixed (uint* wbits = &bits[index])
+            var wbits = bits;
+            if (j == 0)
             {
-                if (j == 0)
-                {
-                    for (int k = last; k >= i; k--)
-                        wbits[k] = 0;
-                    if (i > 0)
-                        --i;
-                }
-                else
-                {
-                    for (int k = last; k > i; k--)
-                        wbits[k] = 0;
-                    wbits[i] &= (1u << j) - 1;
-                }
-                while (i > 0 && wbits[i] == 0)
+                for (int k = last; k >= i; k--)
+                    wbits[k] = 0;
+                if (i > 0)
                     --i;
-                last = i;
             }
+            else
+            {
+                for (int k = last; k > i; k--)
+                    wbits[k] = 0;
+                wbits[i] &= (1u << j) - 1;
+            }
+            while (i > 0 && wbits[i] == 0)
+                --i;
+            last = i;
             CheckValid();
             return this;
         }
@@ -604,7 +577,7 @@ namespace Decompose.Numerics
         public Word32Integer LeftShift(int n)
         {
             CheckValid();
-            Debug.Assert(GetBitLength() + n <= 32 * length);
+            Debug.Assert(GetBitLength() + n <= 32 * Length);
             if (n == 0)
                 return this;
             int i = n / 32;
@@ -612,9 +585,9 @@ namespace Decompose.Numerics
             if (j == 0)
             {
                 for (int k = last; k >= 0; k--)
-                    bits[index + k + i] = bits[index + k];
+                    bits[k + i] = bits[k];
                 for (int k = 0; k < i; k++)
-                    bits[index + k] = 0;
+                    bits[k] = 0;
                 last += i;
                 CheckValid();
                 return this;
@@ -622,12 +595,12 @@ namespace Decompose.Numerics
             else
             {
                 int jneg = 32 - j;
-                bits[index + last + i + 1] = bits[index + last] >> jneg;
+                bits[last + i + 1] = bits[last] >> jneg;
                 for (int k = last - 1; k >= 0; k--)
-                    bits[index + k + i + 1] = bits[index + k + 1] << j | bits[index + k] >> jneg;
-                bits[index + i] = bits[index] << j;
+                    bits[k + i + 1] = bits[k + 1] << j | bits[k] >> jneg;
+                bits[i] = bits[0] << j;
                 for (int k = 0; k < i; k++)
-                    bits[index + k] = 0;
+                    bits[k] = 0;
                 return SetLast(last + i + 1);
             }
         }
@@ -658,18 +631,18 @@ namespace Decompose.Numerics
             if (j == 0)
             {
                 for (int k = 0; k <= limit; k++)
-                    bits[index + k] = bits[index + k + i];
+                    bits[k] = bits[k + i];
                 for (int k = limit + 1; k <= last; k++)
-                    bits[index + k] = 0;
+                    bits[k] = 0;
             }
             else
             {
                 int jneg = 32 - j;
                 for (int k = 0; k < limit; k++)
-                    bits[index + k] = bits[index + i + k + 1] << jneg | bits[index + i + k] >> j;
-                bits[index + limit] = bits[index + i + limit] >> j;
+                    bits[k] = bits[i + k + 1] << jneg | bits[i + k] >> j;
+                bits[limit] = bits[i + limit] >> j;
                 for (int k = limit + 1; k <= last; k++)
-                    bits[index + k] = 0;
+                    bits[k] = 0;
             }
             return SetLast(limit);
         }
@@ -680,8 +653,8 @@ namespace Decompose.Numerics
             Debug.Assert(n % 32 == 0);
             int i = n / 32;
             int j = n - 32 * i;
-            Debug.Assert(bits[index + i] == 0);
-            ++bits[index + i];
+            Debug.Assert(bits[i] == 0);
+            ++bits[i];
             last = Math.Max(last, i);
             CheckValid();
             return this;
@@ -698,32 +671,32 @@ namespace Decompose.Numerics
             return this;
         }
 
-        private unsafe void SetUnsignedSum(Word32Integer a, Word32Integer b)
+        private void SetUnsignedSum(Word32Integer a, Word32Integer b)
         {
             CheckValid();
-            Debug.Assert(length == a.length && length == b.length);
-            fixed (uint* wbits = &bits[index], abits = &a.bits[a.index], bbits = &b.bits[b.index])
+            Debug.Assert(Length == a.Length && Length == b.Length);
+            var wbits = bits;
+            var abits = a.bits;
+            var bbits = b.bits;
+            int limit = Math.Max(a.last, b.last);
+            int wlast = last;
+            ulong carry = 0;
+            for (int i = 0; i <= limit; i++)
             {
-                int limit = Math.Max(a.last, b.last);
-                int wlast = last;
-                ulong carry = 0;
-                for (int i = 0; i <= limit; i++)
-                {
-                    carry += (ulong)abits[i] + bbits[i];
-                    wbits[i] = (uint)carry;
-                    carry >>= 32;
-                }
-                if (carry != 0)
-                {
-                    Debug.Assert(limit + 1 < length);
-                    ++limit;
-                    wbits[limit] = (uint)carry;
-                }
-                for (int i = limit + 1; i <= wlast; i++)
-                    wbits[i] = 0;
-                last = limit;
-                sign = a.sign;
+                carry += (ulong)abits[i] + bbits[i];
+                wbits[i] = (uint)carry;
+                carry >>= 32;
             }
+            if (carry != 0)
+            {
+                Debug.Assert(limit + 1 < Length);
+                ++limit;
+                wbits[limit] = (uint)carry;
+            }
+            for (int i = limit + 1; i <= wlast; i++)
+                wbits[i] = 0;
+            last = limit;
+            sign = a.sign;
             CheckValid();
         }
 
@@ -756,80 +729,81 @@ namespace Decompose.Numerics
             return this;
         }
 
-        private unsafe void SetUnsignedSum(Word32Integer a, uint b)
+        private void SetUnsignedSum(Word32Integer a, uint b)
         {
             CheckValid();
-            Debug.Assert(length == a.length);
-            fixed (uint* wbits = &bits[index], abits = &a.bits[a.index])
-            {
-                // Add the word.
-                int alast = a.last;
-                int wlast = last;
-                ulong carry = (ulong)abits[0] + b;
-                wbits[0] = (uint)carry;
-                carry >>= 32;
+            Debug.Assert(Length == a.Length);
+            var wbits = bits;
+            var abits = a.bits;
 
-                // Propagate carry.
-                int j = 1;
-                while (j <= alast && carry != 0)
+            // Add the word.
+            int alast = a.last;
+            int wlast = last;
+            ulong carry = (ulong)abits[0] + b;
+            wbits[0] = (uint)carry;
+            carry >>= 32;
+
+            // Propagate carry.
+            int j = 1;
+            while (j <= alast && carry != 0)
+            {
+                carry += abits[j];
+                wbits[j] = (uint)carry;
+                carry >>= 32;
+                ++j;
+            }
+
+            // Check for overflow.
+            if (carry != 0)
+            {
+                // Add a new word.
+                Debug.Assert(alast + 1 < Length);
+                ++alast;
+                wbits[alast] = (uint)carry;
+            }
+            else if (!object.ReferenceEquals(a, this))
+            {
+                // Copy unchanged words.
+                while (j <= alast)
                 {
-                    carry += abits[j];
-                    wbits[j] = (uint)carry;
-                    carry >>= 32;
+                    wbits[j] = abits[j];
                     ++j;
                 }
-
-                // Check for overflow.
-                if (carry != 0)
-                {
-                    // Add a new word.
-                    Debug.Assert(alast + 1 < length);
-                    ++alast;
-                    wbits[alast] = (uint)carry;
-                }
-                else if (!object.ReferenceEquals(a, this))
-                {
-                    // Copy unchanged words.
-                    while (j <= alast)
-                    {
-                        wbits[j] = abits[j];
-                        ++j;
-                    }
-                }
-
-                // Clear old words.
-                for (int i = alast + 1; i <= wlast; i++)
-                    wbits[i] = 0;
-
-                // Update last and sign.
-                last = alast;
-                sign = a.sign;
             }
+
+            // Clear old words.
+            for (int i = alast + 1; i <= wlast; i++)
+                wbits[i] = 0;
+
+            // Update last and sign.
+            last = alast;
+            sign = a.sign;
+
             CheckValid();
         }
 
-        public unsafe Word32Integer AddModulo(Word32Integer a, Word32Integer n)
+        public Word32Integer AddModulo(Word32Integer a, Word32Integer n)
         {
             CheckValid();
-            Debug.Assert(length == a.length && length == n.length);
+            Debug.Assert(Length == a.Length && Length == n.Length);
             ulong carry = 0;
             int limit = Math.Max(last, a.last);
-            fixed (uint* wbits = &bits[index], abits = &a.bits[a.index], nbits = &n.bits[n.index])
+            var wbits = bits;
+            var abits = a.bits;
+            var nbits = n.bits;
+            for (int i = 0; i <= limit; i++)
             {
-                for (int i = 0; i <= limit; i++)
-                {
-                    carry += (ulong)wbits[i] + abits[i];
-                    wbits[i] = (uint)carry;
-                    carry >>= 32;
-                }
-                if (carry != 0)
-                {
-                    Debug.Assert(limit + 1 < length);
-                    ++limit;
-                    wbits[limit] = (uint)carry;
-                }
-                last = limit;
+                carry += (ulong)wbits[i] + abits[i];
+                wbits[i] = (uint)carry;
+                carry >>= 32;
             }
+            if (carry != 0)
+            {
+                Debug.Assert(limit + 1 < Length);
+                ++limit;
+                wbits[limit] = (uint)carry;
+            }
+            last = limit;
             if (CompareTo(n) >= 0)
                 SetDifference(this, n);
             CheckValid();
@@ -847,26 +821,26 @@ namespace Decompose.Numerics
             return this;
         }
 
-        private unsafe void SetUnsignedDifference(Word32Integer a, Word32Integer b)
+        private void SetUnsignedDifference(Word32Integer a, Word32Integer b)
         {
             CheckValid();
-            Debug.Assert(length == a.length && length == b.length);
-            fixed (uint* wbits = &bits[index], abits = &a.bits[a.index], bbits = &b.bits[b.index])
+            Debug.Assert(Length == a.Length && Length == b.Length);
+            var wbits = bits;
+            var abits = a.bits;
+            var bbits = b.bits;
+            ulong borrow = 0;
+            var limit = Math.Max(a.last, b.last);
+            for (int i = 0; i <= limit; i++)
             {
-                ulong borrow = 0;
-                var limit = Math.Max(a.last, b.last);
-                for (int i = 0; i <= limit; i++)
-                {
-                    borrow += (ulong)abits[i] - bbits[i];
-                    wbits[i] = (uint)borrow;
-                    borrow = (ulong)((long)borrow >> 32);
-                }
-                for (int i = limit + 1; i <= last; i++)
-                    wbits[i] = 0;
-                while (limit > 0 && wbits[limit] == 0)
-                    --limit;
-                last = limit;
+                borrow += (ulong)abits[i] - bbits[i];
+                wbits[i] = (uint)borrow;
+                borrow = (ulong)((long)borrow >> 32);
             }
+            for (int i = limit + 1; i <= last; i++)
+                wbits[i] = 0;
+            while (limit > 0 && wbits[limit] == 0)
+                --limit;
+            last = limit;
             CheckValid();
         }
 
@@ -899,63 +873,62 @@ namespace Decompose.Numerics
             return this;
         }
 
-        private unsafe void SetUnsignedDifference(Word32Integer a, uint b)
+        private void SetUnsignedDifference(Word32Integer a, uint b)
         {
             CheckValid();
-            fixed (uint* wbits = &bits[index], abits = &a.bits[a.index])
+            var wbits = bits;
+            var abits = a.bits;
+            ulong borrow = (ulong)abits[0] - b;
+            wbits[0] = (uint)borrow;
+            borrow = (ulong)((long)borrow >> 32);
+            var limit = a.last;
+            int j = 1;
+            while (j <= limit && borrow != 0)
             {
-                ulong borrow = (ulong)abits[0] - b;
-                wbits[0] = (uint)borrow;
+                borrow += (ulong)abits[j];
+                wbits[j] = (uint)borrow;
                 borrow = (ulong)((long)borrow >> 32);
-                var limit = a.last;
-                int j = 1;
-                while (j <= limit && borrow != 0)
+                ++j;
+            }
+            if (!object.ReferenceEquals(a, this))
+            {
+                while (j <= limit)
                 {
-                    borrow += (ulong)abits[j];
-                    wbits[j] = (uint)borrow;
-                    borrow = (ulong)((long)borrow >> 32);
+                    wbits[j] = abits[j];
                     ++j;
                 }
-                if (!object.ReferenceEquals(a, this))
-                {
-                    while (j <= limit)
-                    {
-                        wbits[j] = abits[j];
-                        ++j;
-                    }
-                }
-                for (int i = limit + 1; i <= last; i++)
-                    wbits[i] = 0;
-                while (limit > 0 && wbits[limit] == 0)
-                    --limit;
-                last = limit;
-                sign = a.sign;
             }
+            for (int i = limit + 1; i <= last; i++)
+                wbits[i] = 0;
+            while (limit > 0 && wbits[limit] == 0)
+                --limit;
+            last = limit;
+            sign = a.sign;
             CheckValid();
         }
 
-        public unsafe Word32Integer SubtractModulo(Word32Integer a, Word32Integer n)
+        public Word32Integer SubtractModulo(Word32Integer a, Word32Integer n)
         {
             CheckValid();
-            Debug.Assert(length == a.length && length == n.length);
+            Debug.Assert(Length == a.Length && Length == n.Length);
             if (CompareTo(a) < 0)
                 SetSum(this, n);
-            fixed (uint* wbits = &bits[index], abits = &a.bits[a.index], nbits = &n.bits[n.index])
+            var wbits = bits;
+            var abits = a.bits;
+            var nbits = n.bits;
+            ulong borrow = 0;
+            var limit = Math.Max(last, a.last);
+            for (int i = 0; i <= limit; i++)
             {
-                ulong borrow = 0;
-                var limit = Math.Max(last, a.last);
-                for (int i = 0; i <= limit; i++)
-                {
-                    borrow += (ulong)wbits[i] - abits[i];
-                    wbits[i] = (uint)borrow;
-                    borrow = (ulong)((long)borrow >> 32);
-                }
-                for (int i = limit + 1; i <= last; i++)
-                    wbits[i] = 0;
-                while (limit > 0 && wbits[limit] == 0)
-                    --limit;
-                last = limit;
+                borrow += (ulong)wbits[i] - abits[i];
+                wbits[i] = (uint)borrow;
+                borrow = (ulong)((long)borrow >> 32);
             }
+            for (int i = limit + 1; i <= last; i++)
+                wbits[i] = 0;
+            while (limit > 0 && wbits[limit] == 0)
+                --limit;
+            last = limit;
             CheckValid();
             return this;
         }
@@ -1039,88 +1012,87 @@ namespace Decompose.Numerics
             return SetProduct(a, a);
         }
 
-        public unsafe Word32Integer SetSquareSlow(Word32Integer a)
+        public Word32Integer SetSquareSlow(Word32Integer a)
         {
             // Use operand scanning algorithm.
             CheckValid();
-            Debug.Assert(2 * a.GetBitLength() <= 32 * length);
-            fixed (uint* wbits = &bits[index], abits = &a.bits[a.index])
+            Debug.Assert(2 * a.GetBitLength() <= 32 * Length);
+            var wbits = bits;
+            var abits = a.bits;
+            for (int i = 0; i <= last; i++)
+                wbits[i] = 0;
+            int alast = a.last;
+            for (int i = 0; i <= alast; i++)
             {
-                for (int i = 0; i <= last; i++)
-                    wbits[i] = 0;
-                int alast = a.last;
-                for (int i = 0; i <= alast; i++)
+                ulong avalue = abits[i];
+                ulong carry = avalue * avalue + wbits[2 * i];
+                wbits[2 * i] = (uint)carry;
+                carry >>= 32;
+                for (int j = i + 1; j <= alast; j++)
                 {
-                    ulong avalue = abits[i];
-                    ulong carry = avalue * avalue + wbits[2 * i];
-                    wbits[2 * i] = (uint)carry;
+                    ulong value = avalue * abits[j];
+                    ulong eps = value >> 63;
+                    value <<= 1;
+                    carry += value + wbits[i + j];
+                    wbits[i + j] = (uint)carry;
                     carry >>= 32;
-                    for (int j = i + 1; j <= alast; j++)
-                    {
-                        ulong value = avalue * abits[j];
-                        ulong eps = value >> 63;
-                        value <<= 1;
-                        carry += value + wbits[i + j];
-                        wbits[i + j] = (uint)carry;
-                        carry >>= 32;
-                        carry += eps << 32;
-                    }
-                    int k = i + alast + 1;
-                    carry += wbits[k];
-                    wbits[k] = (uint)carry;
-                    carry >>= 32;
-                    wbits[k + 1] = (uint)carry;
+                    carry += eps << 32;
                 }
-                int limit = 2 * alast + 1;
-                while (limit > 0 && wbits[limit] == 0)
-                    --limit;
-                last = limit;
+                int k = i + alast + 1;
+                carry += wbits[k];
+                wbits[k] = (uint)carry;
+                carry >>= 32;
+                wbits[k + 1] = (uint)carry;
             }
+            int limit = 2 * alast + 1;
+            while (limit > 0 && wbits[limit] == 0)
+                --limit;
+            last = limit;
             CheckValid();
             return this;
         }
 
-        public unsafe Word32Integer SetProduct(Word32Integer a, Word32Integer b)
+        public Word32Integer SetProduct(Word32Integer a, Word32Integer b)
         {
             // Use operand scanning algorithm.
             CheckValid();
-            Debug.Assert(a.GetBitLength() + b.GetBitLength() <= 32 * length);
+            Debug.Assert(a.GetBitLength() + b.GetBitLength() <= 32 * Length);
             Debug.Assert(!object.ReferenceEquals(this, a) && !object.ReferenceEquals(this, b));
 
-            fixed (uint* wbits = &bits[index], abits = &a.bits[a.index], bbits = &b.bits[b.index])
+            var wbits = bits;
+            var abits = a.bits;
+            var bbits = b.bits;
+            int wlast = last;
+            int alast = a.last;
+            int blast = b.last;
+            ulong ai = abits[0];
+            ulong carry = 0;
+            for (int j = 0; j <= blast; j++)
             {
-                int wlast = last;
-                int alast = a.last;
-                int blast = b.last;
-                ulong ai = abits[0];
-                ulong carry = 0;
+                carry += ai * bbits[j];
+                wbits[j] = (uint)carry;
+                carry >>= 32;
+            }
+            wbits[blast + 1] = (uint)carry;
+            for (int i = 1; i <= alast; i++)
+            {
+                ai = abits[i];
+                carry = 0;
                 for (int j = 0; j <= blast; j++)
                 {
-                    carry += ai * bbits[j];
-                    wbits[j] = (uint)carry;
+                    carry += (ulong)wbits[i + j] + ai * bbits[j];
+                    wbits[i + j] = (uint)carry;
                     carry >>= 32;
                 }
-                wbits[blast + 1] = (uint)carry;
-                for (int i = 1; i <= alast; i++)
-                {
-                    ai = abits[i];
-                    carry = 0;
-                    for (int j = 0; j <= blast; j++)
-                    {
-                        carry += (ulong)wbits[i + j] + ai * bbits[j];
-                        wbits[i + j] = (uint)carry;
-                        carry >>= 32;
-                    }
-                    wbits[i + blast + 1] = (uint)carry;
-                }
-                wlast = alast + blast + 1;
-                for (int i = wlast + 1; i <= last; i++)
-                    wbits[i] = 0;
-                while (wlast > 0 && wbits[wlast] == 0)
-                    --wlast;
-                last = wlast;
-                sign = a.sign == b.sign ? 1 : -1;
+                wbits[i + blast + 1] = (uint)carry;
             }
+            wlast = alast + blast + 1;
+            for (int i = wlast + 1; i <= last; i++)
+                wbits[i] = 0;
+            while (wlast > 0 && wbits[wlast] == 0)
+                --wlast;
+            last = wlast;
+            sign = a.sign == b.sign ? 1 : -1;
 
             CheckValid();
             return this;
@@ -1134,7 +1106,7 @@ namespace Decompose.Numerics
         public Word32Integer SetProduct(Word32Integer a, int b)
         {
             CheckValid();
-            Debug.Assert(a.GetBitLength() + b.GetBitLength() <= 32 * length);
+            Debug.Assert(a.GetBitLength() + b.GetBitLength() <= 32 * Length);
             SetProduct(a, (uint)Math.Abs(b));
             if (b < 0)
                 sign = -sign;
@@ -1145,17 +1117,17 @@ namespace Decompose.Numerics
         {
             // Use operand scanning algorithm.
             CheckValid();
-            Debug.Assert(a.GetBitLength() + b.GetBitLength() <= 32 * length);
+            Debug.Assert(a.GetBitLength() + b.GetBitLength() <= 32 * Length);
             ulong carry = 0;
             for (int j = 0; j <= a.last; j++)
             {
-                carry += (ulong)b * a.bits[a.index + j];
-                bits[index + j] = (uint)carry;
+                carry += (ulong)b * a.bits[j];
+                bits[j] = (uint)carry;
                 carry >>= 32;
             }
-            bits[index + a.last + 1] = (uint)carry;
+            bits[a.last + 1] = (uint)carry;
             for (int j = a.last + 2; j <= last; j++)
-                bits[index + j] = 0;
+                bits[j] = 0;
             sign = a.sign;
             return SetLast(a.last + 1);
         }
@@ -1173,12 +1145,12 @@ namespace Decompose.Numerics
                 ulong carry = 0;
                 for (int j = 0; j <= blast; j++)
                 {
-                    carry += (ulong)bits[index + i + j] + (ulong)a.bits[a.index + i] * b.bits[b.index + j];
-                    bits[index + i + j] = (uint)carry;
+                    carry += (ulong)bits[i + j] + (ulong)a.bits[i] * b.bits[j];
+                    bits[i + j] = (uint)carry;
                     carry >>= 32;
                 }
                 if (i + blast < clast)
-                    bits[index + i + blast + 1] = (uint)carry;
+                    bits[i + blast + 1] = (uint)carry;
             }
             return SetLast(clast);
         }
@@ -1213,7 +1185,7 @@ namespace Decompose.Numerics
                 for (int i = min; i <= max; i++)
                 {
                     int j = k - i;
-                    ulong uv = (ulong)a.bits[a.index + i] * b.bits[b.index + j];
+                    ulong uv = (ulong)a.bits[i] * b.bits[j];
                     r0 += (uint)uv;
                     eps = r0 >> 32;
                     r0 = (uint)r0;
@@ -1223,12 +1195,12 @@ namespace Decompose.Numerics
                     r2 += eps;
                 }
                 if (k >= shifted)
-                    bits[index + k - shifted] = (uint)r0;
+                    bits[k - shifted] = (uint)r0;
                 r0 = r1;
                 r1 = r2;
                 r2 = 0;
             }
-            bits[index + clast - shifted] = (uint)r0;
+            bits[clast - shifted] = (uint)r0;
             return SetLast(clast - shifted);
         }
 
@@ -1267,7 +1239,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        private static unsafe void DivMod(Word32Integer u, Word32Integer v, Word32Integer q)
+        private static void DivMod(Word32Integer u, Word32Integer v, Word32Integer q)
         {
             if (u.UnsignedCompareTo(v) < 0)
             {
@@ -1280,79 +1252,78 @@ namespace Decompose.Numerics
             int n = v.last + 1;
             if (n == 1)
             {
-                DivMod(u, v.bits[v.index], q);
+                DivMod(u, v.bits[0], q);
                 if (v.sign == -1 && q != null)
                     q.sign = -q.sign;
                 return;
             }
-            int dneg = v.bits[v.index + v.last].GetBitLength();
+            int dneg = v.bits[v.last].GetBitLength();
             int d = 32 - dneg;
             int m = u.last + 1 - n;
-            fixed (uint* ubits = &u.bits[u.index], vbits = &v.bits[v.index])
+            var ubits = u.bits;
+            var vbits = v.bits;
+            uint v1 = vbits[v.last];
+            uint v2 = vbits[v.last - 1];
+            if (d != 0)
             {
-                uint v1 = vbits[v.last];
-                uint v2 = vbits[v.last - 1];
+                uint v3 = n > 2 ? vbits[v.last - 2] : 0;
+                v1 = v1 << d | v2 >> dneg;
+                v2 = v2 << d | v3 >> dneg;
+            }
+            for (int j = 0; j <= m; j++)
+            {
+                int left = n + m - j;
+                uint u0 = ubits[left];
+                uint u1 = ubits[left - 1];
+                uint u2 = ubits[left - 2];
                 if (d != 0)
                 {
-                    uint v3 = n >= 2 ? vbits[v.last - 2] : 0;
-                    v1 = v1 << d | v2 >> dneg;
-                    v2 = v2 << d | v3 >> dneg;
+                    uint u3 = j < m ? ubits[left - 3] : 0;
+                    u0 = u0 << d | u1 >> dneg;
+                    u1 = u1 << d | u2 >> dneg;
+                    u2 = u2 << d | u3 >> dneg;
                 }
-                for (int j = 0; j <= m; j++)
+                ulong u0u1 = (ulong)u0 << 32 | u1;
+                ulong qhat = u0 == v1 ? (1ul << 32) - 1 : u0u1 / v1;
+                ulong r = u0u1 - qhat * v1;
+                if (r == (uint)r && v2 * qhat > (r << 32 | u2))
                 {
-                    int left = n + m - j;
-                    uint u0 = ubits[left];
-                    uint u1 = ubits[left - 1];
-                    uint u2 = ubits[left - 2];
-                    if (d != 0)
-                    {
-                        uint u3 = j < m ? ubits[left - 3] : 0;
-                        u0 = u0 << d | u1 >> dneg;
-                        u1 = u1 << d | u2 >> dneg;
-                        u2 = u2 << d | u3 >> dneg;
-                    }
-                    ulong u0u1 = (ulong)u0 << 32 | u1;
-                    ulong qhat = u0 == v1 ? (1ul << 32) - 1 : u0u1 / v1;
-                    ulong r = u0u1 - qhat * v1;
+                    --qhat;
+                    r = u0u1 - qhat * v1;
                     if (r == (uint)r && v2 * qhat > (r << 32 | u2))
-                    {
                         --qhat;
-                        r = u0u1 - qhat * v1;
-                        if (r == (uint)r && v2 * qhat > (r << 32 | u2))
-                            --qhat;
-                    }
-                    ulong carry = 0;
-                    ulong borrow = 0;
+                }
+                ulong carry = 0;
+                ulong borrow = 0;
+                for (int i = 0; i < n; i++)
+                {
+                    carry += qhat * vbits[i];
+                    borrow += (ulong)ubits[left - n + i] - (uint)carry;
+                    carry >>= 32;
+                    ubits[left - n + i] = (uint)borrow;
+                    borrow = (ulong)((long)borrow >> 32);
+                }
+                borrow += ubits[left] - carry;
+                ubits[left] = 0;
+
+                if (borrow != 0)
+                {
+                    --qhat;
+                    carry = 0;
                     for (int i = 0; i < n; i++)
                     {
-                        carry += qhat * vbits[i];
-                        borrow += (ulong)ubits[left - n + i] - (uint)carry;
+                        carry += (ulong)ubits[left - n + i] + vbits[i];
+                        ubits[left - n + i] = (uint)carry;
                         carry >>= 32;
-                        ubits[left - n + i] = (uint)borrow;
-                        borrow = (ulong)((long)borrow >> 32);
                     }
-                    borrow += ubits[left] - carry;
-                    ubits[left] = 0;
-
-                    if (borrow != 0)
-                    {
-                        --qhat;
-                        carry = 0;
-                        for (int i = 0; i < n; i++)
-                        {
-                            carry += (ulong)ubits[left - n + i] + vbits[i];
-                            ubits[left - n + i] = (uint)carry;
-                            carry >>= 32;
-                        }
-                    }
-                    if (q != null)
-                        q.bits[q.index + m - j] = (uint)qhat;
                 }
+                if (q != null)
+                    q.bits[m - j] = (uint)qhat;
             }
             if (q != null)
             {
                 for (int i = m + 1; i <= q.last; i++)
-                    q.bits[q.index + i] = 0;
+                    q.bits[i] = 0;
                 q.SetLast(m);
                 q.sign = u.sign == v.sign ? 1 : -1;
             }
@@ -1400,7 +1371,7 @@ namespace Decompose.Numerics
             return Set(a.GetRemainder(b));
         }
 
-        public unsafe int GetRemainder(int v)
+        public int GetRemainder(int v)
         {
             var result = (int)GetRemainder((uint)Math.Abs(v));
             if (sign == -1)
@@ -1408,48 +1379,44 @@ namespace Decompose.Numerics
             return result;
         }
 
-        public unsafe uint GetRemainder(uint v)
+        public uint GetRemainder(uint v)
         {
-            fixed (uint* wbits = &bits[index])
-            {
-                if (v == 0)
-                    throw new DivideByZeroException();
-                var u0 = (ulong)(wbits[last] % v);
-                for (int j = last - 1; j >= 0; j--)
-                    u0 = (u0 << 32 | wbits[j]) % v;
-                Debug.Assert((BigInteger)this % v == u0);
-                return (uint)u0;
-            }
+            var wbits = bits;
+            if (v == 0)
+                throw new DivideByZeroException();
+            var u0 = (ulong)(wbits[last] % v);
+            for (int j = last - 1; j >= 0; j--)
+                u0 = (u0 << 32 | wbits[j]) % v;
+            Debug.Assert((BigInteger)this % v == u0);
+            return (uint)u0;
         }
 
-        private static unsafe void DivMod(Word32Integer u, uint v, Word32Integer q)
+        private static void DivMod(Word32Integer u, uint v, Word32Integer q)
         {
             if (q == null)
             {
                 var result = u.GetRemainder(v);
                 u.Clear();
-                u.bits[u.index + 0] = result;
+                u.bits[0] = result;
                 return;
             }
             if (v == 0)
                 throw new DivideByZeroException();
             int m = u.last;
-            fixed (uint* ubits = &u.bits[u.index])
+            var ubits = u.bits;
+            for (int j = 0; j <= m; j++)
             {
-                for (int j = 0; j <= m; j++)
-                {
-                    int left = 1 + m - j;
-                    uint u0 = ubits[left];
-                    uint u1 = ubits[left - 1];
-                    ulong u0u1 = (ulong)u0 << 32 | u1;
-                    ulong qhat = u0 == v ? (1ul << 32) - 1 : u0u1 / v;
-                    ubits[left - 1] = (uint)(u0u1 - qhat * v);
-                    ubits[left] = 0;
-                    q.bits[q.index + m - j] = (uint)qhat;
-                }
+                int left = 1 + m - j;
+                uint u0 = ubits[left];
+                uint u1 = ubits[left - 1];
+                ulong u0u1 = (ulong)u0 << 32 | u1;
+                ulong qhat = u0 == v ? (1ul << 32) - 1 : u0u1 / v;
+                ubits[left - 1] = (uint)(u0u1 - qhat * v);
+                ubits[left] = 0;
+                q.bits[m - j] = (uint)qhat;
             }
             for (int i = m + 1; i <= q.last; i++)
-                q.bits[q.index + i] = 0;
+                q.bits[i] = 0;
             q.SetLast(m);
             u.last = 0;
             q.sign = u.sign;
@@ -1507,141 +1474,138 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public unsafe Word32Integer BarrettReduction(Word32Integer z, Word32Integer mu, int k)
+        public Word32Integer BarrettReduction(Word32Integer z, Word32Integer mu, int k)
         {
             // Use product scanning algorithm.
             CheckValid();
             Clear();
-            fixed (uint* wbits = &bits[index], abits = &z.bits[z.index], mubits = &mu.bits[mu.index])
+            var wbits = bits;
+            var abits = z.bits;
+            var mubits = mu.bits;
+            ulong r0 = 0;
+            ulong r1 = 0;
+            ulong r2 = 0;
+            ulong eps = 0;
+            var clast = z.last + mu.last + 1;
+            for (int ij = k - 2; ij < clast; ij++)
             {
-                ulong r0 = 0;
-                ulong r1 = 0;
-                ulong r2 = 0;
-                ulong eps = 0;
-                var clast = z.last + mu.last + 1;
-                uint* zbits = wbits + k - 1;
-                for (int ij = k - 2; ij < clast; ij++)
+                var min = Math.Max(ij - mu.last, 0);
+                var max = Math.Min(ij, z.last - (k - 1));
+                for (int i = min; i <= max; i++)
                 {
-                    var min = Math.Max(ij - mu.last, 0);
-                    var max = Math.Min(ij, z.last - (k - 1));
-                    for (int i = min; i <= max; i++)
-                    {
-                        int j = ij - i;
-                        ulong uv = (ulong)zbits[i] * mubits[j];
-                        r0 += (uint)uv;
-                        eps = r0 >> 32;
-                        r0 = (uint)r0;
-                        r1 += (uv >> 32) + eps;
-                        eps = r1 >> 32;
-                        r1 = (uint)r1;
-                        r2 += eps;
-                    }
-                    if (ij >= k - 1)
-                        wbits[ij - k - 1] = (uint)r0;
-                    r0 = r1;
-                    r1 = r2;
-                    r2 = 0;
+                    int j = ij - i;
+                    ulong uv = (ulong)wbits[i + k - 1] * mubits[j];
+                    r0 += (uint)uv;
+                    eps = r0 >> 32;
+                    r0 = (uint)r0;
+                    r1 += (uv >> 32) + eps;
+                    eps = r1 >> 32;
+                    r1 = (uint)r1;
+                    r2 += eps;
                 }
-                wbits[clast - (k - 1)] = (uint)r0;
-                return SetLast(clast - (k - 1));
+                if (ij >= k - 1)
+                    wbits[ij - k - 1] = (uint)r0;
+                r0 = r1;
+                r1 = r2;
+                r2 = 0;
             }
+            wbits[clast - (k - 1)] = (uint)r0;
+            return SetLast(clast - (k - 1));
         }
 
-        public unsafe Word32Integer MontgomerySOS(Word32Integer n, uint k0)
+        public Word32Integer MontgomerySOS(Word32Integer n, uint k0)
         {
             // SOS Method - Separated Operand Scanning
             CheckValid();
             int s = n.last + 1;
-            fixed (uint* wbits = &bits[index], nbits = &n.bits[n.index])
+            var wbits = bits;
+            var nbits = n.bits;
+            for (int i = 0; i < s; i++)
             {
-                for (int i = 0; i < s; i++)
+                ulong carry = 0;
+                ulong m = wbits[i] * k0;
+                for (int j = 0; j < s; j++)
                 {
-                    ulong carry = 0;
-                    ulong m = wbits[i] * k0;
-                    for (int j = 0; j < s; j++)
-                    {
-                        carry += (ulong)wbits[i + j] + m * nbits[j];
-                        wbits[i + j] = (uint)carry;
-                        carry >>= 32;
-                    }
-                    for (int j = s; carry != 0; j++)
-                    {
-                        carry += wbits[i + j];
-                        wbits[i + j] = (uint)carry;
-                        carry >>= 32;
-                    }
+                    carry += (ulong)wbits[i + j] + m * nbits[j];
+                    wbits[i + j] = (uint)carry;
+                    carry >>= 32;
                 }
-                for (int i = 0; i <= s; i++)
+                for (int j = s; carry != 0; j++)
                 {
-                    wbits[i] = wbits[i + s];
-                    wbits[i + s] = 0;
+                    carry += wbits[i + j];
+                    wbits[i + j] = (uint)carry;
+                    carry >>= 32;
                 }
-                while (s > 0 && wbits[s] == 0)
-                    --s;
-                last = s;
             }
+            for (int i = 0; i <= s; i++)
+            {
+                wbits[i] = wbits[i + s];
+                wbits[i + s] = 0;
+            }
+            while (s > 0 && wbits[s] == 0)
+                --s;
+            last = s;
             return this;
         }
 
-        public unsafe Word32Integer MontgomeryCIOS(Word32Integer u, Word32Integer v, Word32Integer n, uint k0)
+        public Word32Integer MontgomeryCIOS(Word32Integer u, Word32Integer v, Word32Integer n, uint k0)
         {
             // CIOS Method - Coarsely Integrated Operand Scanning
             CheckValid();
             int s = n.last + 1;
-            fixed (uint* wbits = &bits[index], ubits = &u.bits[u.index], vbits = &v.bits[v.index], nbits = &n.bits[n.index])
+            var wbits = bits;
+            var ubits = u.bits;
+            var vbits = v.bits;
+            var nbits = n.bits;
+            int wlast = last;
+            for (int i = 0; i <= wlast; i++)
+                wbits[i] = 0;
+            for (int i = 0; i < s; i++)
             {
-                int wlast = last;
-                for (int i = 0; i <= wlast; i++)
-                    wbits[i] = 0;
-                for (int i = 0; i < s; i++)
+                ulong carry = 0;
+                ulong ui = ubits[i];
+                for (int j = 0; j < s; j++)
                 {
-                    ulong carry = 0;
-                    ulong ui = ubits[i];
-                    for (int j = 0; j < s; j++)
-                    {
-                        carry += (ulong)wbits[j] + ui * vbits[j];
-                        wbits[j] = (uint)carry;
-                        carry >>= 32;
-                    }
-                    carry += wbits[s];
-                    wbits[s] = (uint)carry;
-                    wbits[s + 1] = (uint)(carry >> 32);
-                    ulong m = bits[index] * k0;
-                    carry = bits[index] + m * nbits[0];
+                    carry += (ulong)wbits[j] + ui * vbits[j];
+                    wbits[j] = (uint)carry;
                     carry >>= 32;
-                    for (int j = 1; j < s; j++)
-                    {
-                        carry += (ulong)wbits[j] + m * nbits[j];
-                        wbits[j - 1] = (uint)carry;
-                        carry >>= 32;
-                    }
-                    carry += wbits[s];
-                    wbits[s - 1] = (uint)carry;
-                    carry >>= 32;
-                    wbits[s] = wbits[s + 1] + (uint)carry;
                 }
-                wbits[s + 1] = 0;
-                while (s > 0 && wbits[s] == 0)
-                    --s;
-                last = s;
+                carry += wbits[s];
+                wbits[s] = (uint)carry;
+                wbits[s + 1] = (uint)(carry >> 32);
+                ulong m = bits[0] * k0;
+                carry = bits[0] + m * nbits[0];
+                carry >>= 32;
+                for (int j = 1; j < s; j++)
+                {
+                    carry += (ulong)wbits[j] + m * nbits[j];
+                    wbits[j - 1] = (uint)carry;
+                    carry >>= 32;
+                }
+                carry += wbits[s];
+                wbits[s - 1] = (uint)carry;
+                carry >>= 32;
+                wbits[s] = wbits[s + 1] + (uint)carry;
             }
+            wbits[s + 1] = 0;
+            while (s > 0 && wbits[s] == 0)
+                --s;
+            last = s;
             return this;
         }
 
-        private unsafe Word32Integer SetLast(int n)
+        private Word32Integer SetLast(int n)
         {
             if (n < 0)
                 last = 0;
             else
             {
                 int i = n;
-                if (i == length)
+                if (i == Length)
                     --i;
-                fixed (uint* wbits = &bits[index])
-                {
-                    while (i > 0 && wbits[i] == 0)
-                        --i;
-                }
+                var wbits = bits;
+                while (i > 0 && wbits[i] == 0)
+                    --i;
                 last = i;
             }
             CheckValid();
@@ -1654,15 +1618,15 @@ namespace Decompose.Numerics
             var byteLength = bytes.Length;
             if (bytes[byteLength - 1] == 0)
                 --byteLength;
-            int length = (byteLength + 3) / 4;
-            if (4 * length > bytes.Length)
+            int Length = (byteLength + 3) / 4;
+            if (4 * Length > bytes.Length)
             {
-                var newBytes = new byte[4 * length];
+                var newBytes = new byte[4 * Length];
                 bytes.CopyTo(newBytes, 0);
                 bytes = newBytes;
             }
-            var bits = new uint[length];
-            for (int i = 0; i < length; i++)
+            var bits = new uint[Length];
+            for (int i = 0; i < Length; i++)
                 bits[i] = (uint)BitConverter.ToInt32(bytes, 4 * i);
             return bits;
         }
@@ -1678,14 +1642,14 @@ namespace Decompose.Numerics
         {
             if (x.sign != -1 && x.sign != 1)
                 throw new InvalidOperationException("invalid sign");
-            if (x.last == 0 && x.bits[x.index] == 0)
+            if (x.last == 0 && x.bits[0] == 0)
                 return;
-            if (x.last >= x.length)
+            if (x.last >= x.Length)
                 throw new InvalidOperationException("overrun");
-            if (x.bits[x.index + x.last] == 0)
+            if (x.bits[x.last] == 0)
                 throw new InvalidOperationException("last miscount");
-            for (int i = x.last + 1; i < x.length; i++)
-                if (x.bits[x.index + i] != 0)
+            for (int i = x.last + 1; i < x.Length; i++)
+                if (x.bits[i] != 0)
                     throw new InvalidOperationException("not zeroed");
         }
     }

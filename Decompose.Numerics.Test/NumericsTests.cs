@@ -78,7 +78,7 @@ namespace Decompose.Numerics.Test
             var factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
             var product = factors.Aggregate((sofar, current) => sofar * current);
             Assert.AreEqual(n, product);
-            Assert.IsTrue(((IStructuralEquatable)factors).Equals(expected, EqualityComparer<long>.Default));
+            Assert.IsTrue(((IStructuralEquatable)factors).Equals(expected, EqualityComparer<ulong>.Default));
         }
 
         [TestMethod]
@@ -193,7 +193,7 @@ namespace Decompose.Numerics.Test
         public void TestWord32Integer1()
         {
             var n = BigInteger.Parse("10023859281455311421");
-            var store = new Word32IntegerStore(1);
+            var store = new Word32IntegerStore(2);
             var a = store.Create();
             var b = store.Create();
             var x = store.Create();
