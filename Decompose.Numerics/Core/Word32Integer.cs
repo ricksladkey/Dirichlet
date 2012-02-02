@@ -66,7 +66,7 @@ namespace Decompose.Numerics
         {
         }
 
-        public Word32Integer(uint[] bits, int sign)
+        private Word32Integer(uint[] bits, int sign)
         {
             Debug.Assert(bits != null && bits.Length > 0);
             Debug.Assert(sign == 1 || sign == -1);
@@ -75,11 +75,20 @@ namespace Decompose.Numerics
             SetLast(Length - 1);
         }
 
+        private void CheckLast(int newLast)
+        {
+            if (bits.Length < newLast + 1)
+            {
+                var newBits = new uint[newLast + 1];
+                bits.CopyTo(newBits, 0);
+                bits = newBits;
+            }
+        }
+
         public Word32Integer Clear()
         {
             CheckValid();
-            int wlast = last;
-            for (int i = 0; i <= wlast; i++)
+            for (int i = 0; i <= last; i++)
                 bits[i] = 0;
             last = 0;
             CheckValid();
@@ -128,8 +137,8 @@ namespace Decompose.Numerics
             CheckValid();
             var asign = a.Sign == -1 ? -1 : 1;
             a = BigInteger.Abs(a);
-            Debug.Assert(a.GetBitLength() <= 32 * Length);
             var nBits = GetBits(a);
+            CheckLast(nBits.Length - 1);
             nBits.CopyTo(bits, 0);
             for (int i = nBits.Length; i <= last; i++)
                 bits[i] = 0;
@@ -142,7 +151,7 @@ namespace Decompose.Numerics
         public Word32Integer Set(Word32Integer a)
         {
             CheckValid();
-            Debug.Assert(Length == a.Length);
+            CheckLast(a.last);
             Debug.Assert(!object.ReferenceEquals(this, a));
             var abits = a.bits;
             int alast = a.last;
@@ -156,6 +165,7 @@ namespace Decompose.Numerics
             return this;
         }
 
+#if false
         public Word32Integer SetMasked(Word32Integer a, int n)
         {
             CheckValid();
@@ -164,11 +174,12 @@ namespace Decompose.Numerics
             int clast = (n + 31) / 32 - 1;
             int alast = Math.Min(a.last, clast);
             for (int i = 0; i <= alast; i++)
-                bits[i] = a.Bits[i];
+                bits[i] = a.bits[i];
             for (int i = alast + 1; i <= last; i++)
                 bits[i] = 0;
             return SetLast(alast);
         }
+#endif
 
         public Word32Integer Copy()
         {
@@ -488,11 +499,10 @@ namespace Decompose.Numerics
             var diff = last - other.last;
             if (diff != 0)
                 return diff;
-            var wbits = bits;
             var obits = other.bits;
             for (int i = last; i >= 0; i--)
             {
-                uint wi = wbits[i];
+                uint wi = bits[i];
                 uint oi = obits[i];
                 if (wi < oi)
                     return -1;
@@ -520,14 +530,14 @@ namespace Decompose.Numerics
         public int CompareTo(uint other)
         {
             CheckValid();
-            if (last > 0)
-                return sign;
             if (sign == -1)
             {
                 if (IsZero && other == 0)
                     return 0;
-                return sign;
+                return -1;
             }
+            if (last > 0)
+                return 1;
             return bits[0].CompareTo(other);
         }
 
@@ -542,6 +552,20 @@ namespace Decompose.Numerics
         public int CompareTo(ulong other)
         {
             CheckValid();
+            if (sign == -1)
+            {
+                if (IsZero && other == 0)
+                    return 0;
+                return -1;
+            }
+            if (last > 1)
+                return 1;
+            return ((ulong)bits[1] << 32 | bits[0]).CompareTo(other);
+        }
+
+        public int UnsignedCompareTo(ulong other)
+        {
+            CheckValid();
             if (last > 1)
                 return 1;
             return ((ulong)bits[1] << 32 | bits[0]).CompareTo(other);
@@ -552,21 +576,20 @@ namespace Decompose.Numerics
             CheckValid();
             int i = n / 32;
             int j = n - 32 * i;
-            var wbits = bits;
             if (j == 0)
             {
                 for (int k = last; k >= i; k--)
-                    wbits[k] = 0;
+                    bits[k] = 0;
                 if (i > 0)
                     --i;
             }
             else
             {
                 for (int k = last; k > i; k--)
-                    wbits[k] = 0;
-                wbits[i] &= (1u << j) - 1;
+                    bits[k] = 0;
+                bits[i] &= (1u << j) - 1;
             }
-            while (i > 0 && wbits[i] == 0)
+            while (i > 0 && bits[i] == 0)
                 --i;
             last = i;
             CheckValid();
@@ -576,11 +599,11 @@ namespace Decompose.Numerics
         public Word32Integer LeftShift(int n)
         {
             CheckValid();
-            Debug.Assert(GetBitLength() + n <= 32 * Length);
             if (n == 0)
                 return this;
             int i = n / 32;
             int j = n - 32 * i;
+            CheckLast(last + i + 1);
             if (j == 0)
             {
                 for (int k = last; k >= 0; k--)
@@ -646,13 +669,13 @@ namespace Decompose.Numerics
             return SetLast(limit);
         }
 
-        public Word32Integer AddPowerOfTwo(int n)
+        public Word32Integer SetBit(int n)
         {
             CheckValid();
             Debug.Assert(n % 32 == 0);
             int i = n / 32;
             int j = n - 32 * i;
-            Debug.Assert(bits[i] == 0);
+            CheckLast(i);
             ++bits[i];
             last = Math.Max(last, i);
             CheckValid();
@@ -673,27 +696,25 @@ namespace Decompose.Numerics
         private void SetUnsignedSum(Word32Integer a, Word32Integer b)
         {
             CheckValid();
-            Debug.Assert(Length == a.Length && Length == b.Length);
-            var wbits = bits;
             var abits = a.bits;
             var bbits = b.bits;
             int limit = Math.Max(a.last, b.last);
-            int wlast = last;
+            CheckLast(limit);
             ulong carry = 0;
             for (int i = 0; i <= limit; i++)
             {
                 carry += (ulong)abits[i] + bbits[i];
-                wbits[i] = (uint)carry;
+                bits[i] = (uint)carry;
                 carry >>= 32;
             }
             if (carry != 0)
             {
                 Debug.Assert(limit + 1 < Length);
-                ++limit;
-                wbits[limit] = (uint)carry;
+                CheckLast(++limit);
+                bits[limit] = (uint)carry;
             }
-            for (int i = limit + 1; i <= wlast; i++)
-                wbits[i] = 0;
+            for (int i = limit + 1; i <= last; i++)
+                bits[i] = 0;
             last = limit;
             sign = a.sign;
             CheckValid();
@@ -732,22 +753,21 @@ namespace Decompose.Numerics
         {
             CheckValid();
             Debug.Assert(Length == a.Length);
-            var wbits = bits;
             var abits = a.bits;
 
             // Add the word.
-            int alast = a.last;
-            int wlast = last;
+            int limit = a.last;
+            CheckLast(limit);
             ulong carry = (ulong)abits[0] + b;
-            wbits[0] = (uint)carry;
+            bits[0] = (uint)carry;
             carry >>= 32;
 
             // Propagate carry.
             int j = 1;
-            while (j <= alast && carry != 0)
+            while (j <= limit && carry != 0)
             {
                 carry += abits[j];
-                wbits[j] = (uint)carry;
+                bits[j] = (uint)carry;
                 carry >>= 32;
                 ++j;
             }
@@ -756,26 +776,25 @@ namespace Decompose.Numerics
             if (carry != 0)
             {
                 // Add a new word.
-                Debug.Assert(alast + 1 < Length);
-                ++alast;
-                wbits[alast] = (uint)carry;
+                CheckLast(++limit);
+                bits[limit] = (uint)carry;
             }
             else if (!object.ReferenceEquals(a, this))
             {
                 // Copy unchanged words.
-                while (j <= alast)
+                while (j <= limit)
                 {
-                    wbits[j] = abits[j];
+                    bits[j] = abits[j];
                     ++j;
                 }
             }
 
             // Clear old words.
-            for (int i = alast + 1; i <= wlast; i++)
-                wbits[i] = 0;
+            for (int i = limit + 1; i <= last; i++)
+                bits[i] = 0;
 
             // Update last and sign.
-            last = alast;
+            last = limit;
             sign = a.sign;
 
             CheckValid();
@@ -784,23 +803,23 @@ namespace Decompose.Numerics
         public Word32Integer AddModulo(Word32Integer a, Word32Integer n)
         {
             CheckValid();
-            Debug.Assert(Length == a.Length && Length == n.Length);
+            CheckLast(n.last);
+            Debug.Assert(a.last <= n.last);
             ulong carry = 0;
             int limit = Math.Max(last, a.last);
-            var wbits = bits;
             var abits = a.bits;
             var nbits = n.bits;
             for (int i = 0; i <= limit; i++)
             {
-                carry += (ulong)wbits[i] + abits[i];
-                wbits[i] = (uint)carry;
+                carry += (ulong)bits[i] + abits[i];
+                bits[i] = (uint)carry;
                 carry >>= 32;
             }
             if (carry != 0)
             {
                 Debug.Assert(limit + 1 < Length);
                 ++limit;
-                wbits[limit] = (uint)carry;
+                bits[limit] = (uint)carry;
             }
             last = limit;
             if (CompareTo(n) >= 0)
@@ -823,21 +842,20 @@ namespace Decompose.Numerics
         private void SetUnsignedDifference(Word32Integer a, Word32Integer b)
         {
             CheckValid();
-            Debug.Assert(Length == a.Length && Length == b.Length);
-            var wbits = bits;
+            CheckLast(a.last);
             var abits = a.bits;
             var bbits = b.bits;
             ulong borrow = 0;
-            var limit = Math.Max(a.last, b.last);
+            var limit = a.last;
             for (int i = 0; i <= limit; i++)
             {
                 borrow += (ulong)abits[i] - bbits[i];
-                wbits[i] = (uint)borrow;
+                bits[i] = (uint)borrow;
                 borrow = (ulong)((long)borrow >> 32);
             }
             for (int i = limit + 1; i <= last; i++)
-                wbits[i] = 0;
-            while (limit > 0 && wbits[limit] == 0)
+                bits[i] = 0;
+            while (limit > 0 && bits[limit] == 0)
                 --limit;
             last = limit;
             CheckValid();
@@ -875,17 +893,17 @@ namespace Decompose.Numerics
         private void SetUnsignedDifference(Word32Integer a, uint b)
         {
             CheckValid();
-            var wbits = bits;
+            CheckLast(a.last);
             var abits = a.bits;
             ulong borrow = (ulong)abits[0] - b;
-            wbits[0] = (uint)borrow;
+            bits[0] = (uint)borrow;
             borrow = (ulong)((long)borrow >> 32);
             var limit = a.last;
             int j = 1;
             while (j <= limit && borrow != 0)
             {
                 borrow += (ulong)abits[j];
-                wbits[j] = (uint)borrow;
+                bits[j] = (uint)borrow;
                 borrow = (ulong)((long)borrow >> 32);
                 ++j;
             }
@@ -893,13 +911,13 @@ namespace Decompose.Numerics
             {
                 while (j <= limit)
                 {
-                    wbits[j] = abits[j];
+                    bits[j] = abits[j];
                     ++j;
                 }
             }
             for (int i = limit + 1; i <= last; i++)
-                wbits[i] = 0;
-            while (limit > 0 && wbits[limit] == 0)
+                bits[i] = 0;
+            while (limit > 0 && bits[limit] == 0)
                 --limit;
             last = limit;
             sign = a.sign;
@@ -909,23 +927,23 @@ namespace Decompose.Numerics
         public Word32Integer SubtractModulo(Word32Integer a, Word32Integer n)
         {
             CheckValid();
-            Debug.Assert(Length == a.Length && Length == n.Length);
+            CheckLast(n.last);
+            Debug.Assert(a.last <= n.last);
             if (CompareTo(a) < 0)
                 SetSum(this, n);
-            var wbits = bits;
             var abits = a.bits;
             var nbits = n.bits;
             ulong borrow = 0;
             var limit = Math.Max(last, a.last);
             for (int i = 0; i <= limit; i++)
             {
-                borrow += (ulong)wbits[i] - abits[i];
-                wbits[i] = (uint)borrow;
+                borrow += (ulong)bits[i] - abits[i];
+                bits[i] = (uint)borrow;
                 borrow = (ulong)((long)borrow >> 32);
             }
             for (int i = limit + 1; i <= last; i++)
-                wbits[i] = 0;
-            while (limit > 0 && wbits[limit] == 0)
+                bits[i] = 0;
+            while (limit > 0 && bits[limit] == 0)
                 --limit;
             last = limit;
             CheckValid();
@@ -1014,54 +1032,54 @@ namespace Decompose.Numerics
             return SetProduct(a, a);
         }
 
+#if false
         public Word32Integer SetSquareSlow(Word32Integer a)
         {
             // Use operand scanning algorithm.
             CheckValid();
-            Debug.Assert(2 * a.GetBitLength() <= 32 * Length);
-            var wbits = bits;
+            CheckLast(2 * a.last + 1);
             var abits = a.bits;
             for (int i = 0; i <= last; i++)
-                wbits[i] = 0;
+                bits[i] = 0;
             int alast = a.last;
             for (int i = 0; i <= alast; i++)
             {
                 ulong avalue = abits[i];
-                ulong carry = avalue * avalue + wbits[2 * i];
-                wbits[2 * i] = (uint)carry;
+                ulong carry = avalue * avalue + bits[2 * i];
+                bits[2 * i] = (uint)carry;
                 carry >>= 32;
                 for (int j = i + 1; j <= alast; j++)
                 {
                     ulong value = avalue * abits[j];
                     ulong eps = value >> 63;
                     value <<= 1;
-                    carry += value + wbits[i + j];
-                    wbits[i + j] = (uint)carry;
+                    carry += value + bits[i + j];
+                    bits[i + j] = (uint)carry;
                     carry >>= 32;
                     carry += eps << 32;
                 }
                 int k = i + alast + 1;
-                carry += wbits[k];
-                wbits[k] = (uint)carry;
+                carry += bits[k];
+                bits[k] = (uint)carry;
                 carry >>= 32;
-                wbits[k + 1] = (uint)carry;
+                bits[k + 1] = (uint)carry;
             }
             int limit = 2 * alast + 1;
-            while (limit > 0 && wbits[limit] == 0)
+            while (limit > 0 && bits[limit] == 0)
                 --limit;
             last = limit;
             CheckValid();
             return this;
         }
+#endif
 
         public Word32Integer SetProduct(Word32Integer a, Word32Integer b)
         {
             // Use operand scanning algorithm.
             CheckValid();
-            Debug.Assert(a.GetBitLength() + b.GetBitLength() <= 32 * Length);
+            CheckLast(a.last + b.last + 1);
             Debug.Assert(!object.ReferenceEquals(this, a) && !object.ReferenceEquals(this, b));
 
-            var wbits = bits;
             var abits = a.bits;
             var bbits = b.bits;
             int wlast = last;
@@ -1072,26 +1090,26 @@ namespace Decompose.Numerics
             for (int j = 0; j <= blast; j++)
             {
                 carry += ai * bbits[j];
-                wbits[j] = (uint)carry;
+                bits[j] = (uint)carry;
                 carry >>= 32;
             }
-            wbits[blast + 1] = (uint)carry;
+            bits[blast + 1] = (uint)carry;
             for (int i = 1; i <= alast; i++)
             {
                 ai = abits[i];
                 carry = 0;
                 for (int j = 0; j <= blast; j++)
                 {
-                    carry += (ulong)wbits[i + j] + ai * bbits[j];
-                    wbits[i + j] = (uint)carry;
+                    carry += (ulong)bits[i + j] + ai * bbits[j];
+                    bits[i + j] = (uint)carry;
                     carry >>= 32;
                 }
-                wbits[i + blast + 1] = (uint)carry;
+                bits[i + blast + 1] = (uint)carry;
             }
             wlast = alast + blast + 1;
             for (int i = wlast + 1; i <= last; i++)
-                wbits[i] = 0;
-            while (wlast > 0 && wbits[wlast] == 0)
+                bits[i] = 0;
+            while (wlast > 0 && bits[wlast] == 0)
                 --wlast;
             last = wlast;
             sign = a.sign == b.sign ? 1 : -1;
@@ -1119,7 +1137,7 @@ namespace Decompose.Numerics
         {
             // Use operand scanning algorithm.
             CheckValid();
-            Debug.Assert(a.GetBitLength() + b.GetBitLength() <= 32 * Length);
+            CheckLast(a.last + 1);
             ulong carry = 0;
             for (int j = 0; j <= a.last; j++)
             {
@@ -1140,6 +1158,7 @@ namespace Decompose.Numerics
             Debug.Assert(n % 32 == 0);
             Clear();
             int clast = (n + 31) / 32 - 1;
+            CheckLast(clast);
             int alast = Math.Min(a.last, clast);
             for (int i = 0; i <= alast; i++)
             {
@@ -1157,6 +1176,7 @@ namespace Decompose.Numerics
             return SetLast(clast);
         }
 
+#if false
         /// <summary>
         /// Evaluate the product of two numbers and discard some of the lower bits.
         /// </summary>
@@ -1175,6 +1195,7 @@ namespace Decompose.Numerics
             Debug.Assert(n % 32 == 0 && n > 0);
             int shifted = n / 32;
             Clear();
+            CheckLast(a.last + b.last + 1 - shifted);
             ulong r0 = 0;
             ulong r1 = 0;
             ulong r2 = 0;
@@ -1205,6 +1226,7 @@ namespace Decompose.Numerics
             bits[clast - shifted] = (uint)r0;
             return SetLast(clast - shifted);
         }
+#endif
 
         public Word32Integer Divide(Word32Integer a, Word32IntegerStore store)
         {
@@ -1270,6 +1292,8 @@ namespace Decompose.Numerics
             var vbits = v.bits;
             uint v1 = vbits[v.last];
             uint v2 = vbits[v.last - 1];
+            if (q != null)
+                q.CheckLast(m + 1);
             if (d != 0)
             {
                 uint v3 = n > 2 ? vbits[v.last - 2] : 0;
@@ -1393,12 +1417,11 @@ namespace Decompose.Numerics
 
         public uint GetRemainder(uint v)
         {
-            var wbits = bits;
             if (v == 0)
                 throw new DivideByZeroException();
-            var u0 = (ulong)(wbits[last] % v);
+            var u0 = (ulong)(bits[last] % v);
             for (int j = last - 1; j >= 0; j--)
-                u0 = (u0 << 32 | wbits[j]) % v;
+                u0 = (u0 << 32 | bits[j]) % v;
             Debug.Assert(BigInteger.Abs(this) % v == u0);
             return (uint)u0;
         }
@@ -1416,6 +1439,7 @@ namespace Decompose.Numerics
                 throw new DivideByZeroException();
             int m = u.last;
             var ubits = u.bits;
+            q.CheckLast(m + 1);
             for (int j = 0; j <= m; j++)
             {
                 int left = 1 + m - j;
@@ -1500,7 +1524,7 @@ namespace Decompose.Numerics
             // Use product scanning algorithm.
             CheckValid();
             Clear();
-            var wbits = bits;
+            CheckLast(z.last + mu.last + 1);
             var abits = z.bits;
             var mubits = mu.bits;
             ulong r0 = 0;
@@ -1515,7 +1539,7 @@ namespace Decompose.Numerics
                 for (int i = min; i <= max; i++)
                 {
                     int j = ij - i;
-                    ulong uv = (ulong)wbits[i + k - 1] * mubits[j];
+                    ulong uv = (ulong)bits[i + k - 1] * mubits[j];
                     r0 += (uint)uv;
                     eps = r0 >> 32;
                     r0 = (uint)r0;
@@ -1525,12 +1549,12 @@ namespace Decompose.Numerics
                     r2 += eps;
                 }
                 if (ij >= k - 1)
-                    wbits[ij - k - 1] = (uint)r0;
+                    bits[ij - k - 1] = (uint)r0;
                 r0 = r1;
                 r1 = r2;
                 r2 = 0;
             }
-            wbits[clast - (k - 1)] = (uint)r0;
+            bits[clast - (k - 1)] = (uint)r0;
             return SetLast(clast - (k - 1));
         }
 
@@ -1539,31 +1563,31 @@ namespace Decompose.Numerics
             // SOS Method - Separated Operand Scanning
             CheckValid();
             int s = n.last + 1;
-            var wbits = bits;
+            CheckLast(2 * s);
             var nbits = n.bits;
             for (int i = 0; i < s; i++)
             {
                 ulong carry = 0;
-                ulong m = wbits[i] * k0;
+                ulong m = bits[i] * k0;
                 for (int j = 0; j < s; j++)
                 {
-                    carry += (ulong)wbits[i + j] + m * nbits[j];
-                    wbits[i + j] = (uint)carry;
+                    carry += (ulong)bits[i + j] + m * nbits[j];
+                    bits[i + j] = (uint)carry;
                     carry >>= 32;
                 }
                 for (int j = s; carry != 0; j++)
                 {
-                    carry += wbits[i + j];
-                    wbits[i + j] = (uint)carry;
+                    carry += bits[i + j];
+                    bits[i + j] = (uint)carry;
                     carry >>= 32;
                 }
             }
             for (int i = 0; i <= s; i++)
             {
-                wbits[i] = wbits[i + s];
-                wbits[i + s] = 0;
+                bits[i] = bits[i + s];
+                bits[i + s] = 0;
             }
-            while (s > 0 && wbits[s] == 0)
+            while (s > 0 && bits[s] == 0)
                 --s;
             last = s;
             return this;
@@ -1574,42 +1598,42 @@ namespace Decompose.Numerics
             // CIOS Method - Coarsely Integrated Operand Scanning
             CheckValid();
             int s = n.last + 1;
-            var wbits = bits;
+            CheckLast(2 * s);
             var ubits = u.bits;
             var vbits = v.bits;
             var nbits = n.bits;
             int wlast = last;
             for (int i = 0; i <= wlast; i++)
-                wbits[i] = 0;
+                bits[i] = 0;
             for (int i = 0; i < s; i++)
             {
                 ulong carry = 0;
                 ulong ui = ubits[i];
                 for (int j = 0; j < s; j++)
                 {
-                    carry += (ulong)wbits[j] + ui * vbits[j];
-                    wbits[j] = (uint)carry;
+                    carry += (ulong)bits[j] + ui * vbits[j];
+                    bits[j] = (uint)carry;
                     carry >>= 32;
                 }
-                carry += wbits[s];
-                wbits[s] = (uint)carry;
-                wbits[s + 1] = (uint)(carry >> 32);
+                carry += bits[s];
+                bits[s] = (uint)carry;
+                bits[s + 1] = (uint)(carry >> 32);
                 ulong m = bits[0] * k0;
                 carry = bits[0] + m * nbits[0];
                 carry >>= 32;
                 for (int j = 1; j < s; j++)
                 {
-                    carry += (ulong)wbits[j] + m * nbits[j];
-                    wbits[j - 1] = (uint)carry;
+                    carry += (ulong)bits[j] + m * nbits[j];
+                    bits[j - 1] = (uint)carry;
                     carry >>= 32;
                 }
-                carry += wbits[s];
-                wbits[s - 1] = (uint)carry;
+                carry += bits[s];
+                bits[s - 1] = (uint)carry;
                 carry >>= 32;
-                wbits[s] = wbits[s + 1] + (uint)carry;
+                bits[s] = bits[s + 1] + (uint)carry;
             }
-            wbits[s + 1] = 0;
-            while (s > 0 && wbits[s] == 0)
+            bits[s + 1] = 0;
+            while (s > 0 && bits[s] == 0)
                 --s;
             last = s;
             return this;
@@ -1624,8 +1648,7 @@ namespace Decompose.Numerics
                 int i = n;
                 if (i == Length)
                     --i;
-                var wbits = bits;
-                while (i > 0 && wbits[i] == 0)
+                while (i > 0 && bits[i] == 0)
                     --i;
                 last = i;
             }

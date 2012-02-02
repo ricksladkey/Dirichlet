@@ -210,6 +210,9 @@ namespace Decompose.Numerics.Test
                     Assert.AreEqual((BigInteger)j, (BigInteger)b);
                     Assert.AreEqual(j.GetBitLength(), j.GetBitLength());
 
+                    x.Set((BigInteger)i);
+                    Assert.AreEqual(i, (int)x);
+
                     for (int k = 0; k < 10; k++)
                     {
                         x.Set(a).LeftShift(k);
