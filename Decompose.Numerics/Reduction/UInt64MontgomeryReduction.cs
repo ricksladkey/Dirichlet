@@ -35,7 +35,7 @@ namespace Decompose.Numerics
                 public Residue(Reducer reducer, ulong x)
                     : this(reducer)
                 {
-                    r = reducer.Reduce(x % reducer.n, reducer.rSquaredModN);
+                    Set(x);
                 }
 
                 public IResidue<ulong> Set(ulong x)
@@ -129,13 +129,24 @@ namespace Decompose.Numerics
                 var rModN = rMinusOne - rDivN * n + 1;
                 rSquaredModN = IntegerMath.ModularProduct(rModN, rModN, n);
 
-                long c;
-                long d;
-                IntegerMath.ExtendedGreatestCommonDivisor((long)rModN, (long)n, out c, out d);
-                d -= (long)rDivN * c;
-                var k = (-d < 0 ? rMinusOne - (ulong)d + 1 : (ulong)-d);
-                k0 = (uint)k;
-                //k0 = (uint)(((UInt128)IntegerMath.ModularInverse(rModN, n) << 64) / n);
+                if (n <= long.MaxValue)
+                {
+                    long c;
+                    long d;
+                    IntegerMath.ExtendedGreatestCommonDivisor((long)rModN, (long)n, out c, out d);
+                    d = -(d - (long)rDivN * c);
+                    var k = (d < 0 ? rMinusOne - (ulong)-d + 1 : (ulong)d);
+                    k0 = (uint)k;
+#if false
+                    var k0 = (uint)(((UInt128)IntegerMath.ModularInverse(rModN, n) << rLength) / n);
+#endif
+                }
+                else
+                {
+                    var r = (BigInteger)1 << rLength;
+                    var k = r - IntegerMath.ModularInverse(n, r);
+                    k0 = (uint)(k & uint.MaxValue);
+                }
             }
 
             public IResidue<ulong> ToResidue(ulong x)

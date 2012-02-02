@@ -16,9 +16,9 @@ namespace Decompose.Numerics
             {
                 var word = ops.LeastSignificantWord(exponent);
                 exponent = ops.RightShift(exponent, 32);
-                if (ops.IsZero(exponent))
+                if (!ops.IsZero(exponent))
                 {
-                    while (word != 0)
+                    for (int i = 0; i < 32; i++)
                     {
                         if ((word & 1) != 0)
                             result.Multiply(value);
@@ -28,11 +28,12 @@ namespace Decompose.Numerics
                 }
                 else
                 {
-                    for (int i = 0; i < 32; i++)
+                    while (word != 0)
                     {
                         if ((word & 1) != 0)
                             result.Multiply(value);
-                        value.Multiply(value);
+                        if (word != 1)
+                            value.Multiply(value);
                         word >>= 1;
                     }
                 }

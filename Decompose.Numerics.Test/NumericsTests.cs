@@ -53,6 +53,22 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
+        public void TestPrimality3()
+        {
+            var primalityOld = new OldMillerRabin(16);
+            var primalityNew = MillerRabin.Create(16, new UInt64MontgomeryReduction());
+            var count = (uint)100000;
+            var first = 0;
+            for (var i = (uint)0; i < count; i++)
+            {
+                var n = (uint)(i + first);
+                var isPrimeOld = primalityOld.IsPrime(n);
+                var isPrimeNew = primalityNew.IsPrime(n);
+                Assert.AreEqual(isPrimeOld, isPrimeNew);
+            }
+        }
+
+        [TestMethod]
         public void TestPollard1()
         {
             var expected = new[] { BigInteger.Parse("274177"), BigInteger.Parse("67280421310721") };

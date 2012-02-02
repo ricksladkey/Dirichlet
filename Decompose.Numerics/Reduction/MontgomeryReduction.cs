@@ -169,7 +169,6 @@ namespace Decompose.Numerics
                 store = new Word32IntegerStore(length);
                 nRep = store.Allocate().Set(n);
                 rSquaredModNRep = store.Allocate().Set(rSquaredModN);
-                oneRep = store.Allocate().Set(new Residue(this, BigInteger.One).Rep);
 
                 nRep.Set(n);
                 rSquaredModNRep.Set(rSquaredModN);
@@ -182,6 +181,8 @@ namespace Decompose.Numerics
                 store.Release(kRep);
                 store.Release(rRep);
 #endif
+                oneRep = store.Allocate().Set(1).Multiply(rSquaredModNRep, store);
+                Reduce(oneRep);
             }
 
             public IResidue<BigInteger> ToResidue(BigInteger x)

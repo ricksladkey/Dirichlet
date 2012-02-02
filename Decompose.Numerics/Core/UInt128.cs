@@ -133,6 +133,9 @@ namespace Decompose.Numerics
             var n0 = (uint)n;
             var n1 = (uint)(n >> 32);
 
+            if (n1 == 0)
+                return Montgomery(u0, v0, n0, k0);
+
             var carry = (ulong)u0 * v0;
             var t0 = (uint)carry;
             carry >>= 32;

@@ -72,7 +72,7 @@ namespace Decompose.Numerics
 
                 public IResidue<ulong> Power(ulong x)
                 {
-                    IntegerMath.ModularPower(r, x, reducer.Modulus);
+                    r = IntegerMath.ModularPower(r, x, reducer.Modulus);
                     return this;
                 }
 

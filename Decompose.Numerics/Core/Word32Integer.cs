@@ -495,7 +495,6 @@ namespace Decompose.Numerics
         public int UnsignedCompareTo(Word32Integer other)
         {
             CheckValid();
-            Debug.Assert(Length == other.Length);
             var diff = last - other.last;
             if (diff != 0)
                 return diff;
@@ -711,7 +710,6 @@ namespace Decompose.Numerics
             }
             if (carry != 0)
             {
-                Debug.Assert(limit + 1 < Length);
                 CheckLast(++limit);
                 bits[limit] = (uint)carry;
             }
@@ -754,7 +752,6 @@ namespace Decompose.Numerics
         private void SetUnsignedSum(Word32Integer a, uint b)
         {
             CheckValid();
-            Debug.Assert(Length == a.Length);
             var abits = a.bits;
 
             // Add the word.

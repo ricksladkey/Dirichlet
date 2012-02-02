@@ -466,7 +466,8 @@ namespace Decompose.Numerics
             {
                 if ((exponent & 1) != 0)
                     result = (uint)((ulong)result * value % modulus);
-                value = (uint)((ulong)value * value % modulus);
+                if (exponent != 1)
+                    value = (uint)((ulong)value * value % modulus);
                 exponent >>= 1;
             }
             return result;
@@ -479,7 +480,8 @@ namespace Decompose.Numerics
             {
                 if ((exponent & 1) != 0)
                     result = (uint)((ulong)result * value % modulus);
-                value = (uint)((ulong)value * value % modulus);
+                if (exponent != 1)
+                    value = (uint)((ulong)value * value % modulus);
                 exponent >>= 1;
             }
             return result;
@@ -505,7 +507,8 @@ namespace Decompose.Numerics
             {
                 if ((exponent & 1) != 0)
                     result.Multiply(b);
-                b.Multiply(b);
+                if (exponent != 1)
+                    b.Multiply(b);
                 exponent >>= 1;
             }
             return result.Value();
@@ -528,7 +531,6 @@ namespace Decompose.Numerics
             return primalityInt.IsPrime(n);
         }
 
-#if false
         private static IPrimalityAlgorithm<ulong> primalityLong = MillerRabin.Create(16, new UInt64MontgomeryReduction());
 
         public static bool IsPrime(long n)
@@ -551,16 +553,6 @@ namespace Decompose.Numerics
                 return IsPrime((ulong)n);
             return primalityBigInteger.IsPrime(n);
         }
-#else
-        private static IPrimalityAlgorithm<BigInteger> primalityBigInteger = new OldMillerRabin(16);
-
-        public static bool IsPrime(BigInteger n)
-        {
-            if (n <= uint.MaxValue)
-                return IsPrime((uint)n);
-            return primalityBigInteger.IsPrime(n);
-        }
-#endif
 
         public static bool IsProbablePrime(int n)
         {

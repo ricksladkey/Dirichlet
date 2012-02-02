@@ -21,7 +21,7 @@ namespace Decompose.Numerics
             {
                 if (reduction.Compare(n, reduction.Two) < 0)
                     return false;
-                if (reduction.Equals(n, reduction.Two))
+                if (reduction.Equals(n, reduction.Two) || reduction.Equals(n, reduction.Convert(3)))
                     return true;
                 if (reduction.IsEven(n))
                     return false;
