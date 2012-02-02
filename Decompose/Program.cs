@@ -200,7 +200,7 @@ namespace Decompose
         static void FactorTest1()
         {
             var n = BigInteger.Parse("10023859281455311421");
-            int threads = 1;
+            //int threads = 1;
             bool debug = false;
 
             output.WriteLine("bits = {0}", n.GetBitLength());

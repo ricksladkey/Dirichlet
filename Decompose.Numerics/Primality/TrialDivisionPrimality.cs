@@ -1,8 +1,13 @@
 ﻿namespace Decompose.Numerics
 {
-    public class TrialDivisionPrimality : IPrimalityAlgorithm<int>
+    public class TrialDivisionPrimality : IPrimalityAlgorithm<int>, IPrimalityAlgorithm<uint>
     {
         public bool IsPrime(int n)
+        {
+            return IsPrime((uint)n);
+        }
+
+        public bool IsPrime(uint n)
         {
             if (n < 2)
                 return false;

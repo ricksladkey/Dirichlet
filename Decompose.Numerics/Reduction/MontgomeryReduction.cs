@@ -66,7 +66,7 @@ namespace Decompose.Numerics
                 public IResidue<BigInteger> Multiply(IResidue<BigInteger> x)
                 {
                     // Use SOS for squaring and CIOS otherwise.
-                    if (this == x)
+                    if (x == this)
                     {
                         r.Multiply(r, reducer.store);
                         reducer.Reduce(r);
@@ -86,7 +86,7 @@ namespace Decompose.Numerics
                 {
                     // Use CIOS for everything.
                     var reg1 = reducer.store.Allocate().Set(r);
-                    if (this == x)
+                    if (x == this)
                         reducer.Reduce(r, reg1, reg1);
                     else
                         reducer.Reduce(r, reg1, ((Residue)x).r);

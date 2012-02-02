@@ -516,14 +516,45 @@ namespace Decompose.Numerics
             return BigInteger.ModPow(value, exponent, modulus);
         }
 
-        private static IPrimalityAlgorithm<int> primalityInt = new TrialDivisionPrimality();
+        private static IPrimalityAlgorithm<uint> primalityInt = new TrialDivisionPrimality();
 
         public static bool IsPrime(int n)
+        {
+            return IsPrime((uint)n);
+        }
+
+        public static bool IsPrime(uint n)
         {
             return primalityInt.IsPrime(n);
         }
 
+#if false
+        //private static IPrimalityAlgorithm<ulong> primalityLong = MillerRabin.Create(16, new UInt64MontgomeryReduction());
+        private static IPrimalityAlgorithm<ulong> primalityLong = MillerRabin.Create(16, new UInt64Reduction());
+
+        public static bool IsPrime(long n)
+        {
+            return IsPrime((ulong)n);
+        }
+
+        public static bool IsPrime(ulong n)
+        {
+#if true
+            if (primalityLong.IsPrime(n) != primalityBigInteger.IsPrime(n))
+                Debugger.Break();
+#endif
+            return primalityLong.IsPrime(n);
+        }
+#endif
+
         private static IPrimalityAlgorithm<BigInteger> primalityBigInteger = MillerRabin.Create(16, new MontgomeryReduction());
+
+        public static bool IsPrime(BigInteger n)
+        {
+            if (n <= uint.MaxValue)
+                return primalityInt.IsPrime((uint)n);
+            return primalityBigInteger.IsPrime(n);
+        }
 
         public static bool IsProbablePrime(int n)
         {
@@ -550,13 +581,6 @@ namespace Decompose.Numerics
         public static bool IsProbablePrime(BigInteger n)
         {
             return ModularPower(BigIntegers.Two, n - BigInteger.One, n).IsOne;
-        }
-
-        public static bool IsPrime(BigInteger n)
-        {
-            if (n < int.MaxValue)
-                return primalityInt.IsPrime((int)n);
-            return primalityBigInteger.IsPrime(n);
         }
 
         public static BigInteger NextPrime(BigInteger n)

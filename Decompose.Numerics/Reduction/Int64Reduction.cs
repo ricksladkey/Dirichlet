@@ -3,16 +3,16 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class UInt64Reduction : UInt64Operations, IReductionAlgorithm<ulong>
+    public class Int64Reduction : Int64Operations, IReductionAlgorithm<long>
     {
-        private class Reducer : IReducer<ulong>
+        private class Reducer : IReducer<long>
         {
-            private class Residue : IResidue<ulong>
+            private class Residue : IResidue<long>
             {
                 private Reducer reducer;
-                private ulong r;
+                private long r;
 
-                public IReducer<ulong> Reducer { get { return reducer; } }
+                public IReducer<long> Reducer { get { return reducer; } }
                 public bool IsZero { get { return r == 0; } }
                 public bool IsOne { get { return r == 1; } }
 
@@ -21,38 +21,38 @@ namespace Decompose.Numerics
                     this.reducer = reducer;
                 }
 
-                public Residue(Reducer reducer, ulong x)
+                public Residue(Reducer reducer, long x)
                     : this(reducer)
                 {
                     this.r = x % reducer.Modulus;
                 }
 
-                public IResidue<ulong> Set(ulong x)
+                public IResidue<long> Set(long x)
                 {
                     r = x;
                     return this;
                 }
 
-                public IResidue<ulong> Set(IResidue<ulong> x)
+                public IResidue<long> Set(IResidue<long> x)
                 {
                     r = ((Residue)x).r;
                     return this;
                 }
 
-                public IResidue<ulong> Copy()
+                public IResidue<long> Copy()
                 {
                     var residue = new Residue(reducer);
                     residue.r = r;
                     return residue;
                 }
 
-                public IResidue<ulong> Multiply(IResidue<ulong> x)
+                public IResidue<long> Multiply(IResidue<long> x)
                 {
-                    r = UInt128.ModularProduct(r, ((Residue)x).r, reducer.Modulus);
+                    r = IntegerMath.ModularProduct(r, ((Residue)x).r, reducer.Modulus);
                     return this;
                 }
 
-                public IResidue<ulong> Add(IResidue<ulong> x)
+                public IResidue<long> Add(IResidue<long> x)
                 {
                     r += ((Residue)x).r;
                     if (r >= reducer.Modulus)
@@ -60,7 +60,7 @@ namespace Decompose.Numerics
                     return this;
                 }
 
-                public IResidue<ulong> Subtract(IResidue<ulong> x)
+                public IResidue<long> Subtract(IResidue<long> x)
                 {
                     var xr = ((Residue)x).r;
                     if (r < xr)
@@ -70,13 +70,13 @@ namespace Decompose.Numerics
                     return this;
                 }
 
-                public IResidue<ulong> Power(ulong x)
+                public IResidue<long> Power(long x)
                 {
-                    IntegerMath.ModularPower(r, x, reducer.Modulus);
+                    r = IntegerMath.ModularPower(r, x, reducer.Modulus);
                     return this;
                 }
 
-                public ulong Value()
+                public long Value()
                 {
                     return r;
                 }
@@ -86,36 +86,36 @@ namespace Decompose.Numerics
                     return Value().ToString();
                 }
 
-                public bool Equals(IResidue<ulong> other)
+                public bool Equals(IResidue<long> other)
                 {
                     return r == ((Residue)other).r;
                 }
 
-                public int CompareTo(IResidue<ulong> other)
+                public int CompareTo(IResidue<long> other)
                 {
                     return r.CompareTo(((Residue)other).r);
                 }
             }
 
-            private IReductionAlgorithm<ulong> reduction;
-            private ulong n;
+            private IReductionAlgorithm<long> reduction;
+            private long n;
 
-            public IReductionAlgorithm<ulong> Reduction { get { return reduction; } }
-            public ulong Modulus { get { return n; } }
+            public IReductionAlgorithm<long> Reduction { get { return reduction; } }
+            public long Modulus { get { return n; } }
 
-            public Reducer(IReductionAlgorithm<ulong> reduction, ulong n)
+            public Reducer(IReductionAlgorithm<long> reduction, long n)
             {
                 this.reduction = reduction;
                 this.n = n;
             }
 
-            public IResidue<ulong> ToResidue(ulong x)
+            public IResidue<long> ToResidue(long x)
             {
                 return new Residue(this, x);
             }
         }
 
-        public IReducer<ulong> GetReducer(ulong n)
+        public IReducer<long> GetReducer(long n)
         {
             return new Reducer(this, n);
         }

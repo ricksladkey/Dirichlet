@@ -52,7 +52,7 @@ namespace Decompose.Numerics
                 public IResidue<BigInteger> Multiply(IResidue<BigInteger> x)
                 {
                     var reg1 = reducer.store.Allocate().Set(r);
-                    if (this == x)
+                    if (x == this)
                         r.SetSquare(reg1);
                     else
                         r.SetProduct(reg1, ((Residue)x).r);
@@ -75,7 +75,11 @@ namespace Decompose.Numerics
 
                 public IResidue<BigInteger> Power(BigInteger x)
                 {
+#if false
+                    r.Set(IntegerMath.ModularPower(r, x, reducer.Modulus));
+#else
                     ReductionHelper.Power(this, x);
+#endif
                     return this;
                 }
 

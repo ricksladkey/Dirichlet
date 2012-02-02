@@ -51,6 +51,7 @@
     <Compile Include="Core\BigIntegerOperations.cs" />
     <Compile Include="Core\Core.cs" />
     <Compile Include="Core\Int32Operations.cs" />
+    <Compile Include="Core\Int64Operations.cs" />
     <Compile Include="Core\Integer.cs" />
     <Compile Include="Core\IOperations.cs" />
     <Compile Include="Core\Operations.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="Primality\IPrimalityAlgorithm.cs" />
     <Compile Include="Random\IRandomNumberAlgorithm.cs" />
     <Compile Include="Reduction\Int32Reduction.cs" />
+    <Compile Include="Reduction\Int64Reduction.cs" />
     <Compile Include="Reduction\IReducer.cs" />
     <Compile Include="Reduction\IReductionAlgorithm.cs" />
     <Compile Include="Core\IntegerMath.cs" />
