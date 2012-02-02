@@ -56,12 +56,36 @@ namespace Decompose.Numerics.Test
         public void TestPrimality3()
         {
             var primalityOld = new OldMillerRabin(16);
-            var primalityNew = MillerRabin.Create(16, new UInt64MontgomeryReduction());
-            var count = (uint)100000;
-            var first = 0;
-            for (var i = (uint)0; i < count; i++)
+            TestPrimality3<int>(0, 10000, primalityOld, new Int32Reduction());
+            //TestPrimality3<int>(0, 10000, primalityOld, new Int32MontgomeryReduction());
+            TestPrimality3<int>(int.MaxValue - 10000 - 1, 10000, primalityOld, new Int32Reduction());
+            //TestPrimality3<int>(int.MaxValue - 10000 - 1, 10000, primalityOld, new Int32MontgomeryReduction());
+            TestPrimality3<uint>(0, 10000, primalityOld, new UInt32Reduction());
+            TestPrimality3<uint>(0, 10000, primalityOld, new UInt32MontgomeryReduction());
+            TestPrimality3<uint>(uint.MaxValue - 10000 - 1, 10000, primalityOld, new UInt32Reduction());
+            TestPrimality3<uint>(uint.MaxValue - 10000 - 1, 10000, primalityOld, new UInt32MontgomeryReduction());
+            TestPrimality3<long>(0, 10000, primalityOld, new Int64Reduction());
+            //TestPrimality3<long>(0, 10000, primalityOld, new Int64MontgomeryReduction());
+            TestPrimality3<long>(long.MaxValue - 10000 - 1, 10000, primalityOld, new Int64Reduction());
+            //TestPrimality3<long>(long.MaxValue - 10000 - 1, 10000, primalityOld, new Int64MontgomeryReduction());
+            TestPrimality3<ulong>(0, 10000, primalityOld, new UInt64Reduction());
+            TestPrimality3<ulong>(0, 10000, primalityOld, new UInt64MontgomeryReduction());
+            TestPrimality3<ulong>(ulong.MaxValue - 10000 - 1, 10000, primalityOld, new UInt64Reduction());
+            TestPrimality3<ulong>(ulong.MaxValue - 10000 - 1, 10000, primalityOld, new UInt64MontgomeryReduction());
+            TestPrimality3<BigInteger>(0, 10000, primalityOld, new BigIntegerReduction());
+            TestPrimality3<BigInteger>(0, 10000, primalityOld, new MontgomeryReduction());
+            TestPrimality3<BigInteger>((BigInteger)ulong.MaxValue * ulong.MaxValue, 10000, primalityOld, new BigIntegerReduction());
+            TestPrimality3<BigInteger>((BigInteger)ulong.MaxValue * ulong.MaxValue, 10000, primalityOld, new MontgomeryReduction());
+        }
+
+        private void TestPrimality3<T>(T startValue, T countValue, IPrimalityAlgorithm<T> primalityOld, IReductionAlgorithm<T> reduction)
+        {
+            var start = reduction.Wrap(startValue);
+            var count = reduction.Wrap(countValue);
+            var primalityNew = MillerRabin.Create(16, reduction);
+            for (var i = reduction.Wrap(reduction.Zero); i < count; i++)
             {
-                var n = (uint)(i + first);
+                var n = start + i;
                 var isPrimeOld = primalityOld.IsPrime(n);
                 var isPrimeNew = primalityNew.IsPrime(n);
                 Assert.AreEqual(isPrimeOld, isPrimeNew);

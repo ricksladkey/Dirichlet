@@ -35,7 +35,7 @@ namespace Decompose.Numerics
                 public Residue(Reducer reducer, uint x)
                     : this(reducer)
                 {
-                    r = reducer.Reduce(x % reducer.n, reducer.rSquaredModN);
+                    Set(x);
                 }
 
                 public IResidue<uint> Set(uint x)

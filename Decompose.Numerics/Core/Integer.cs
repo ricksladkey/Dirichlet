@@ -22,6 +22,8 @@ namespace Decompose.Numerics
         public static Integer<T> operator /(Integer<T> a, Integer<T> b) { return new Integer<T>(a.ops.Divide(a.value, b.value), a.ops); }
         public static Integer<T> operator %(Integer<T> a, Integer<T> b) { return new Integer<T>(a.ops.Modulus(a.value, b.value), a.ops); }
         public static Integer<T> operator -(Integer<T> a) { return new Integer<T>(a.ops.Negate(a.value), a.ops); }
+        public static Integer<T> operator ++(Integer<T> a) { return new Integer<T>(a.ops.Add(a, a.ops.One), a.ops); }
+        public static Integer<T> operator --(Integer<T> a) { return new Integer<T>(a.ops.Subtract(a, a.ops.One), a.ops); }
         public static Integer<T> operator <<(Integer<T> a, int b) { return new Integer<T>(a.ops.LeftShift(a.value, b), a.ops); }
         public static Integer<T> operator >>(Integer<T> a, int b) { return new Integer<T>(a.ops.RightShift(a.value, b), a.ops); }
         public static Integer<T> operator &(Integer<T> a, Integer<T> b) { return new Integer<T>(a.ops.And(a.value, b.value), a.ops); }

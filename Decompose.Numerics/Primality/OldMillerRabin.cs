@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public class OldMillerRabin : IPrimalityAlgorithm<int>, IPrimalityAlgorithm<long>, IPrimalityAlgorithm<BigInteger>
+    public class OldMillerRabin : IPrimalityAlgorithm<int>, IPrimalityAlgorithm<uint>, IPrimalityAlgorithm<long>, IPrimalityAlgorithm<ulong>, IPrimalityAlgorithm<BigInteger>
     {
         private IRandomNumberGenerator generator = new MersenneTwister(0);
         private int k;
@@ -18,7 +18,17 @@ namespace Decompose.Numerics
             return IsPrime(n, k);
         }
 
+        public bool IsPrime(uint n)
+        {
+            return IsPrime(n, k);
+        }
+
         public bool IsPrime(long n)
+        {
+            return IsPrime(n, k);
+        }
+
+        public bool IsPrime(ulong n)
         {
             return IsPrime(n, k);
         }
