@@ -35,7 +35,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void TestPrimality()
+        public void TestPrimality1()
         {
             var algorithm = MillerRabin.Create(16, new Int32Reduction());
             var primes = Enumerable.Range(937, 1000 - 937)
@@ -43,6 +43,13 @@ namespace Decompose.Numerics.Test
                 .ToArray();
             var expected = new[] { 937, 941, 947, 953, 967, 971, 977, 983, 991, 997 };
             Assert.IsTrue(((IStructuralEquatable)primes).Equals(expected, EqualityComparer<int>.Default));
+        }
+
+        [TestMethod]
+        public void TestPrimality2()
+        {
+            var algorithm = MillerRabin.Create(16, new Int32Reduction());
+            Assert.IsTrue(new SieveOfErostothones().Take(10000).All(prime => algorithm.IsPrime(prime)));
         }
 
         [TestMethod]

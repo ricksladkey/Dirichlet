@@ -21,7 +21,9 @@ namespace Decompose.Numerics
             {
                 if (reduction.Compare(n, reduction.Two) < 0)
                     return false;
-                if (!reduction.Equals(n, reduction.Two) && reduction.IsEven(n))
+                if (reduction.Equals(n, reduction.Two))
+                    return true;
+                if (reduction.IsEven(n))
                     return false;
                 var random = generator.Create<T>();
                 var reducer = reduction.GetReducer(n);
