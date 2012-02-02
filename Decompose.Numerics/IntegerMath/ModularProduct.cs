@@ -1,0 +1,32 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace Decompose.Numerics
+{
+    public static partial class IntegerMath
+    {
+        public static int ModularProduct(int a, int b, int modulus)
+        {
+            return (int)((long)a * b % modulus);
+        }
+
+        public static uint ModularProduct(uint a, uint b, uint modulus)
+        {
+            return (uint)((ulong)a * b % modulus);
+        }
+
+        public static long ModularProduct(long a, long b, long modulus)
+        {
+            var result = (long)UInt128.ModularProduct((ulong)Math.Abs(a), (ulong)Math.Abs(b), (ulong)modulus);
+            return (a < 0) != (b < 0) ? -result : result;
+        }
+
+        public static ulong ModularProduct(ulong a, ulong b, ulong modulus)
+        {
+            return UInt128.ModularProduct(a, b, modulus);
+        }
+
+    }
+}

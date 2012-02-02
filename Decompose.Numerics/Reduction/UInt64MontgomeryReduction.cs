@@ -143,9 +143,19 @@ namespace Decompose.Numerics
                 }
                 else
                 {
+#if false
                     var r = (BigInteger)1 << rLength;
                     var k = r - IntegerMath.ModularInverse(n, r);
                     k0 = (uint)(k & uint.MaxValue);
+#endif
+#if true
+                    var store = new Word32IntegerStore(4);
+                    var nRep = store.Allocate().Set(n);
+                    var r = store.Allocate().Set(1).LeftShift(rLength);
+                    var inv = store.Allocate().SetModularInverse(nRep, r, store);
+                    var k = store.Allocate().Set(r).Subtract(inv);
+                    k0 = k.LeastSignificantWord;
+#endif
                 }
             }
 

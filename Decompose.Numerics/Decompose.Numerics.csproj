@@ -50,11 +50,18 @@
     <Compile Include="Collections\IntegerSet.cs" />
     <Compile Include="Core\BigIntegerOperations.cs" />
     <Compile Include="Core\Core.cs" />
+    <Compile Include="IntegerMath\GreatestCommonDivisor.cs" />
     <Compile Include="Core\Int32Operations.cs" />
     <Compile Include="Core\Int64Operations.cs" />
     <Compile Include="Core\Integer.cs" />
     <Compile Include="Core\IOperations.cs" />
+    <Compile Include="IntegerMath\JacobiSymbol.cs" />
+    <Compile Include="IntegerMath\ModularInverse.cs" />
+    <Compile Include="IntegerMath\ModularPower.cs" />
+    <Compile Include="IntegerMath\ModularProduct.cs" />
+    <Compile Include="IntegerMath\ModularSquareRoot.cs" />
     <Compile Include="Core\Operations.cs" />
+    <Compile Include="IntegerMath\Primality.cs" />
     <Compile Include="Core\UInt128.cs" />
     <Compile Include="Core\Uint32Operations.cs" />
     <Compile Include="Core\UInt64Operations.cs" />
@@ -85,7 +92,7 @@
     <Compile Include="Reduction\Int64Reduction.cs" />
     <Compile Include="Reduction\IReducer.cs" />
     <Compile Include="Reduction\IReductionAlgorithm.cs" />
-    <Compile Include="Core\IntegerMath.cs" />
+    <Compile Include="IntegerMath\IntegerMath.cs" />
     <Compile Include="Core\ISqrtAlgorithm.cs" />
     <Compile Include="Random\MersenneTwister.cs" />
     <Compile Include="Primality\MillerRabin.cs" />
