@@ -48,8 +48,8 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void TestPrimality2()
         {
-            var algorithm = MillerRabin.Create(16, new Int32Reduction());
-            Assert.IsTrue(new SieveOfErostothones().Take(10000).All(prime => algorithm.IsPrime(prime)));
+            var algorithm = MillerRabin.Create(16, new UInt32MontgomeryReduction());
+            Assert.IsTrue(new SieveOfErostothones().Take(10000).All(prime => algorithm.IsPrime((uint)prime)));
         }
 
         [TestMethod]

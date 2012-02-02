@@ -17,8 +17,8 @@ namespace Decompose.Numerics
         public override ulong Divide(ulong a, ulong b) { return a / b; }
         public override ulong Modulus(ulong a, ulong b) { return a % b; }
         public override ulong Negate(ulong a) { return 0 - a; }
-        public override ulong LeftShift(ulong a, int n) { return a << n; }
-        public override ulong RightShift(ulong a, int n) { return a >> n; }
+        public override ulong LeftShift(ulong a, int n) { return n < 64 ? a << n : 0; }
+        public override ulong RightShift(ulong a, int n) { return n < 64 ? a >> n : 0; }
         public override ulong And(ulong a, ulong b) { return a & b; }
         public override ulong Or(ulong a, ulong b) { return a | b; }
         public override ulong ExclusiveOr(ulong a, ulong b) { return a ^ b; }

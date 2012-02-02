@@ -17,8 +17,8 @@ namespace Decompose.Numerics
         public override long Divide(long a, long b) { return a / b; }
         public override long Modulus(long a, long b) { return a % b; }
         public override long Negate(long a) { return 0 - a; }
-        public override long LeftShift(long a, int n) { return a << n; }
-        public override long RightShift(long a, int n) { return a >> n; }
+        public override long LeftShift(long a, int n) { return n < 64 ? a << n : 0; }
+        public override long RightShift(long a, int n) { return n < 64 ? a >> n : 0; }
         public override long And(long a, long b) { return a & b; }
         public override long Or(long a, long b) { return a | b; }
         public override long ExclusiveOr(long a, long b) { return a ^ b; }

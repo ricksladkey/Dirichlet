@@ -17,8 +17,8 @@ namespace Decompose.Numerics
         public override int Divide(int a, int b) { return a / b; }
         public override int Modulus(int a, int b) { return a % b; }
         public override int Negate(int a) { return 0 - a; }
-        public override int LeftShift(int a, int n) { return a << n; }
-        public override int RightShift(int a, int n) { return a >> n; }
+        public override int LeftShift(int a, int n) { return n < 32 ? a << n : 0; }
+        public override int RightShift(int a, int n) { return n < 32 ? a >> n : 0; }
         public override int And(int a, int b) { return a & b; }
         public override int Or(int a, int b) { return a | b; }
         public override int ExclusiveOr(int a, int b) { return a ^ b; }

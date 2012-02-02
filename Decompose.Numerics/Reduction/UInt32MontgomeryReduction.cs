@@ -123,17 +123,11 @@ namespace Decompose.Numerics
                 this.n = n;
                 if ((n & 1) == 0)
                     throw new InvalidOperationException("not relatively prime");
-                var rMinusOne = uint.MaxValue;
-                var rDivN = rMinusOne / n;
-                var rModN = rMinusOne - rDivN * n + 1;
-                rSquaredModN = IntegerMath.ModularProduct(rModN, rModN, n);
-
-                //k0 = (uint)(((UInt128)IntegerMath.ModularInverse(rModN, n) << 32) / n);
-                long c;
-                long d;
-                IntegerMath.ExtendedGreatestCommonDivisor((long)rModN, (long)n, out c, out d);
-                d -= (long)rDivN * c;
-                var k = (-d < 0 ? rMinusOne - (uint)d + 1 : (uint)-d);
+                var r = (long)1 << 32;
+                var rDivN = r / n;
+                var rModN = r - rDivN * n;
+                rSquaredModN = (uint)IntegerMath.ModularProduct(rModN, rModN, n);
+                var k = r - IntegerMath.ModularInverse(n, r);
                 k0 = (uint)k;
             }
 
