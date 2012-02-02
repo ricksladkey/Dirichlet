@@ -15,7 +15,7 @@ namespace Decompose.Numerics
 
                 public IReducer<BigInteger> Reducer { get { return reducer; } }
                 public Word32Integer Rep { get { return r; } }
-                public bool IsZero { get { return r == reducer.zeroRep; } }
+                public bool IsZero { get { return r == 0; } }
                 public bool IsOne { get { return r == reducer.oneRep; } }
 
                 protected Residue(Reducer reducer)
@@ -27,13 +27,13 @@ namespace Decompose.Numerics
                     : this(reducer)
                 {
                     r = reducer.CreateRep();
-                    r.Set(x).Multiply(reducer.rSquaredModNRep, reducer.reg3);
+                    r.Set(x).Multiply(reducer.rSquaredModNRep, reducer.store);
                     reducer.Reduce(r);
                 }
 
                 public IResidue<BigInteger> Set(BigInteger x)
                 {
-                    r.Set(x).Multiply(reducer.rSquaredModNRep, reducer.reg3);
+                    r.Set(x).Multiply(reducer.rSquaredModNRep, reducer.store);
                     reducer.Reduce(r);
                     return this;
                 }
@@ -52,39 +52,47 @@ namespace Decompose.Numerics
                     return residue;
                 }
 
+#if false
                 public IResidue<BigInteger> Multiply(IResidue<BigInteger> x)
                 {
-#if false
                     // Use SOS for everything.
-                    r.Multiply(((Residue)x).r, reducer.reg3);
+                    r.Multiply(((Residue)x).r, reducer.store);
                     reducer.Reduce(r);
                     return this;
+                }
 #endif
+
 #if false
+                public IResidue<BigInteger> Multiply(IResidue<BigInteger> x)
+                {
                     // Use SOS for squaring and CIOS otherwise.
                     if (this == x)
                     {
-                        r.Multiply(r, reducer.reg3);
+                        r.Multiply(r, reducer.store);
                         reducer.Reduce(r);
-                        return this;
                     }
                     else
                     {
-                        reducer.reg3.Set(r);
-                        reducer.Reduce(r, reducer.reg3, ((Residue)x).r);
-                        return this;
+                        var reg1 = reducer.store.Allocate().Set(r);
+                        reg1.Set(r);
+                        reducer.Reduce(r, reg1, ((Residue)x).r);
                     }
-#endif
-#if true
-                    // Use CIOS for everything.
-                    reducer.reg3.Set(r);
-                    if (this == x)
-                        reducer.Reduce(r, reducer.reg3, reducer.reg3);
-                    else
-                        reducer.Reduce(r, reducer.reg3, ((Residue)x).r);
                     return this;
-#endif
                 }
+#endif
+
+#if true
+                public IResidue<BigInteger> Multiply(IResidue<BigInteger> x)
+                {
+                    // Use CIOS for everything.
+                    var reg1 = reducer.store.Allocate().Set(r);
+                    if (this == x)
+                        reducer.Reduce(r, reg1, reg1);
+                    else
+                        reducer.Reduce(r, reg1, ((Residue)x).r);
+                    return this;
+                }
+#endif
 
                 public IResidue<BigInteger> Add(IResidue<BigInteger> x)
                 {
@@ -116,9 +124,12 @@ namespace Decompose.Numerics
 
                 public BigInteger Value()
                 {
-                    reducer.reg3.Set(r);
-                    reducer.Reduce(reducer.reg3);
-                    return reducer.reg3;
+                    var reg1 = reducer.store.Allocate().Set(r);
+                    reg1.Set(r);
+                    reducer.Reduce(reg1);
+                    var result = (BigInteger)reg1;
+                    reducer.store.Release(reg1);
+                    return result;
                 }
 
                 public override string ToString()
@@ -129,18 +140,12 @@ namespace Decompose.Numerics
 
             private IReductionAlgorithm<BigInteger> reduction;
             private BigInteger n;
-            private int rLength;
             private int length;
             private uint k0;
             private Word32IntegerStore store;
 
             private Word32Integer nRep;
             private Word32Integer rSquaredModNRep;
-            private Word32Integer kRep;
-            private Word32Integer reg1;
-            private Word32Integer reg2;
-            private Word32Integer reg3;
-            private Word32Integer zeroRep;
             private Word32Integer oneRep;
 
             public IReductionAlgorithm<BigInteger> Reduction { get { return reduction; } }
@@ -152,7 +157,7 @@ namespace Decompose.Numerics
                 this.n = n;
                 if (n.IsEven)
                     throw new InvalidOperationException("not relatively prime");
-                rLength = (n.GetBitLength() + 31) / 32 * 32;
+                var rLength = (n.GetBitLength() + 31) / 32 * 32;
                 length = 2 * rLength / 32 + 1;
                 var r = BigInteger.One << rLength;
                 var rSquaredModN = r * r % n;
@@ -162,30 +167,21 @@ namespace Decompose.Numerics
 #endif
 
                 store = new Word32IntegerStore(length);
-                nRep = store.Create();
-                rSquaredModNRep = store.Create();
-                kRep = store.Create();
-                reg1 = store.Create();
-                reg2 = store.Create();
-                reg3 = store.Create();
-                var reg4 = store.Create();
-                var reg5 = store.Create();
-                var reg6 = store.Create();
-                var reg7 = store.Create();
-                var reg8 = store.Create();
-                zeroRep = store.Create();
-                oneRep = store.Create();
+                nRep = store.Allocate().Set(n);
+                rSquaredModNRep = store.Allocate().Set(rSquaredModN);
+                oneRep = store.Allocate().Set(new Residue(this, BigInteger.One).Rep);
 
                 nRep.Set(n);
                 rSquaredModNRep.Set(rSquaredModN);
-                var rRep = store.Create().Set(r);
 #if true
-                kRep.Set(reg7.Set(r).Subtract(reg8.SetModularInverse(nRep, rRep, reg1, reg2, reg3, reg4, reg5, reg6)));
+                var rRep = store.Allocate().Set(r);
+                var nInv = store.Allocate().SetModularInverse(nRep, rRep, store);
+                var kRep = store.Allocate().Set(r).Subtract(nInv);
                 k0 = kRep.LeastSignificantWord;
+                store.Release(nInv);
+                store.Release(kRep);
+                store.Release(rRep);
 #endif
-                zeroRep.Set(new Residue(this, BigInteger.Zero).Rep);
-                oneRep.Set(new Residue(this, BigInteger.One).Rep);
-
             }
 
             public IResidue<BigInteger> ToResidue(BigInteger x)
@@ -209,18 +205,6 @@ namespace Decompose.Numerics
             private void Reduce(Word32Integer t)
             {
                 t.MontgomerySOS(nRep, k0);
-                if (t >= nRep)
-                    t.Subtract(nRep);
-                Debug.Assert(t < nRep);
-            }
-
-            private void BasicReduce(Word32Integer t)
-            {
-                reg1.SetMasked(t, rLength);
-                reg2.SetProductMasked(reg1, kRep, rLength);
-                reg1.SetProduct(reg2, nRep);
-                t.Add(reg1);
-                t.RightShift(rLength);
                 if (t >= nRep)
                     t.Subtract(nRep);
                 Debug.Assert(t < nRep);

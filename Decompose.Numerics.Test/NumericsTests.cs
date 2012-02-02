@@ -194,10 +194,9 @@ namespace Decompose.Numerics.Test
         {
             var n = BigInteger.Parse("10023859281455311421");
             var store = new Word32IntegerStore(2);
-            var a = store.Create();
-            var b = store.Create();
-            var x = store.Create();
-            var reg1 = store.Create();
+            var a = store.Allocate();
+            var b = store.Allocate();
+            var x = store.Allocate();
             for (int i = -10; i < 10; i++)
             {
                 for (int j = -10; j < 10; j++)
@@ -229,7 +228,7 @@ namespace Decompose.Numerics.Test
                     Assert.AreEqual(i * j, (int)x);
                     if (j != 0)
                     {
-                        x.SetQuotient(a, b, reg1);
+                        x.SetQuotient(a, b, store);
                         Assert.AreEqual(i / j, (int)x);
                         x.SetRemainder(a, b);
                         Assert.AreEqual(i % j, (int)x);
@@ -253,9 +252,9 @@ namespace Decompose.Numerics.Test
                     Assert.AreEqual(i * j, (int)x);
                     if (j != 0)
                     {
-                        x.SetQuotient(a, j, reg1);
+                        x.SetQuotient(a, j, store);
                         Assert.AreEqual(i / j, (int)x);
-                        x.SetQuotient(a, j, reg1);
+                        x.SetQuotient(a, j, store);
                         Assert.AreEqual(i / j, (int)x);
                         var remainder = a.GetRemainder(j);
                         Assert.AreEqual(i % j, remainder);
@@ -294,15 +293,9 @@ namespace Decompose.Numerics.Test
             var smallRandom = generator.Create<uint>();
             var length = (n.GetBitLength() * 2 + 31) / 32 + 3;
             var store = new Word32IntegerStore(length);
-            var a = store.Create();
-            var b = store.Create();
-            var x = store.Create();
-            var reg1 = store.Create();
-            var reg2 = store.Create();
-            var reg3 = store.Create();
-            var reg4 = store.Create();
-            var reg5 = store.Create();
-            var reg6 = store.Create();
+            var a = store.Allocate();
+            var b = store.Allocate();
+            var x = store.Allocate();
             for (int i = 0; i < 1000; i++)
             {
                 var aPrime = random.Next(n);
@@ -335,13 +328,13 @@ namespace Decompose.Numerics.Test
                 x.SetProduct(a, c);
                 Assert.AreEqual(c * aPrime, (BigInteger)x);
 
-                x.SetQuotient(a, b, reg1);
+                x.SetQuotient(a, b, store);
                 Assert.AreEqual(aPrime / bPrime, (BigInteger)x);
 
                 x.SetRemainder(a, b);
                 Assert.AreEqual(aPrime % bPrime, (BigInteger)x);
 
-                x.SetQuotient(a, c, reg1);
+                x.SetQuotient(a, c, store);
                 Assert.AreEqual(aPrime / c, (BigInteger)x);
 
                 x.SetRemainder(a, c);
@@ -353,12 +346,12 @@ namespace Decompose.Numerics.Test
                 x.SetDifference(a, b);
                 Assert.AreEqual(aPrime - bPrime, (BigInteger)x);
 
-                x.SetGreatestCommonDivisor(a, b, reg1);
+                x.SetGreatestCommonDivisor(a, b, store);
                 Assert.AreEqual(BigInteger.GreatestCommonDivisor(aPrime, bPrime), (BigInteger)x);
 
                 if (x.IsOne)
                 {
-                    x.SetModularInverse(a, b, reg1, reg2, reg3, reg4, reg5, reg6);
+                    x.SetModularInverse(a, b, store);
                     Assert.AreEqual(IntegerMath.ModularInverse(aPrime, bPrime), (BigInteger)x);
                 }
             }
@@ -387,11 +380,11 @@ namespace Decompose.Numerics.Test
         public void DivModTest1()
         {
             // Triggers "borrow != 0" special case.
-            Word32IntegerStore store = new Word32IntegerStore(20);
-            var a = store.Create();
-            var b = store.Create();
-            var c = store.Create();
-            var x = store.Create();
+            int length = 20;
+            var a = new Word32Integer(length);
+            var b = new Word32Integer(length);
+            var c = new Word32Integer(length);
+            var x = new Word32Integer(length);
             a.Set(BigInteger.Parse("851968723384911158384830467125731460171903460330379450819468842227482878637917031244505597763225"));
             b.Set(BigInteger.Parse("2200761205517100656206929789365760219952611739831"));
             x.SetRemainder(a, b);

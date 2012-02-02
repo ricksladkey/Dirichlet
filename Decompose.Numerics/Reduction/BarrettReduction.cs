@@ -52,7 +52,7 @@ namespace Decompose.Numerics
 
                 public IResidue<BigInteger> Multiply(IResidue<BigInteger> x)
                 {
-                    r.Multiply(((Residue)x).r, reducer.reg3);
+                    r.Multiply(((Residue)x).r, reducer.store);
                     reducer.Reduce(r);
                     return this;
                 }
@@ -110,9 +110,6 @@ namespace Decompose.Numerics
 
             private Word32Integer muRep;
             private Word32Integer pRep;
-            private Word32Integer reg2;
-            private Word32Integer reg1;
-            private Word32Integer reg3;
 
             public IReductionAlgorithm<BigInteger> Reduction { get { return reduction; } }
             public BigInteger Modulus { get { return p; } }
@@ -130,11 +127,8 @@ namespace Decompose.Numerics
                 var muLength = mu.GetBitLength();
                 length = (pLength + 31) / 32 * 2 + (muLength + 31) / 32;
                 store = new Word32IntegerStore(length);
-                muRep = store.Create();
-                pRep = store.Create();
-                reg1 = store.Create();
-                reg2 = store.Create();
-                reg3 = store.Create();
+                muRep = store.Allocate();
+                pRep = store.Allocate();
                 muRep.Set(mu);
                 pRep.Set(p);
                 bToTheKMinusOneLength = bLength * (k - 1);
@@ -154,12 +148,12 @@ namespace Decompose.Numerics
             private void Reduce(Word32Integer z)
             {
                 // var qhat = (z >> (bLength * (k - 1))) * mu >> (bLength * (k + 1));
-                reg1.Set(z);
+                var reg1 = store.Allocate().Set(z);
                 reg1.RightShift(bToTheKMinusOneLength);
 #if false
                 reg2.SetProductShifted(reg1, muRep, bToTheKPlusOneLength);
 #else
-                reg2.SetProduct(reg1, muRep);
+                var reg2 = store.Allocate().SetProduct(reg1, muRep);
                 reg2.RightShift(bToTheKPlusOneLength);
 #endif
                 // var r = z % bToTheKPlusOne - qhat * p % bToTheKPlusOne;
@@ -177,6 +171,8 @@ namespace Decompose.Numerics
                 // while (r >= p) r -= p;
                 while (z >= pRep)
                     z.Subtract(pRep);
+                store.Release(reg1);
+                store.Release(reg2);
             }
         }
 

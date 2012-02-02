@@ -51,12 +51,13 @@ namespace Decompose.Numerics
 
                 public IResidue<BigInteger> Multiply(IResidue<BigInteger> x)
                 {
-                    reducer.reg3.Set(r);
+                    var reg1 = reducer.store.Allocate().Set(r);
                     if (this == x)
-                        r.SetSquare(reducer.reg3);
+                        r.SetSquare(reg1);
                     else
-                        r.SetProduct(reducer.reg3, ((Residue)x).r);
+                        r.SetProduct(reg1, ((Residue)x).r);
                     reducer.Reduce(r);
+                    reducer.store.Release(reg1);
                     return this;
                 }
 
@@ -105,9 +106,6 @@ namespace Decompose.Numerics
             private Word32IntegerStore store;
 
             private Word32Integer nRep;
-            private Word32Integer reg1;
-            private Word32Integer reg2;
-            private Word32Integer reg3;
 
             public IReductionAlgorithm<BigInteger> Reduction { get { return reduction; } }
             public BigInteger Modulus { get { return n; } }
@@ -118,10 +116,7 @@ namespace Decompose.Numerics
                 this.n = n;
                 length = (n.GetBitLength() + 31) / 32 * 2 + 1;
                 store = new Word32IntegerStore(length);
-                nRep = store.Create();
-                reg1 = store.Create();
-                reg2 = store.Create();
-                reg3 = store.Create();
+                nRep = store.Allocate();
                 nRep.Set(n);
             }
 
@@ -132,7 +127,7 @@ namespace Decompose.Numerics
 
             private Word32Integer CreateRep()
             {
-                return store.Create();
+                return new Word32Integer(length);
             }
 
             private void Reduce(Word32Integer r)

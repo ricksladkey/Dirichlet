@@ -167,10 +167,9 @@ namespace Decompose
             timer1.Start();
             for (int i = 0; i < iterations1; i++)
             {
-                var store = new Word32IntegerStore(length);
-                var a = store.Create();
-                var b = store.Create();
-                var c = store.Create();
+                var a = new Word32Integer(length);
+                var b = new Word32Integer(length);
+                var c = new Word32Integer(length);
                 a.Set(random1.Next(n));
                 b.Set(random1.Next(n));
 
