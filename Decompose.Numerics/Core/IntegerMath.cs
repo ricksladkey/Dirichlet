@@ -143,16 +143,16 @@ namespace Decompose.Numerics
 
         public static BigInteger ModularInverse(BigInteger a, BigInteger b)
         {
-            var x0 = BigInteger.Zero;
-            var x1 = BigInteger.One;
+            var x0 = BigInteger.One;
+            var x1 = BigInteger.Zero;
             BigInteger p = a;
             BigInteger q = b;
             ModularInverseCore(ref p, ref q, ref x0, ref x1);
             ModularInverseCore((ulong)p, (ulong)q, ref x0, ref x1);
-            if (x1 < 0)
-                x1 += b;
-            Debug.Assert(a * x1 % b == 1);
-            return x1;
+            if (x0 < 0)
+                x0 += b;
+            Debug.Assert(a * x0 % b == 1);
+            return x0;
         }
 
         private static void ModularInverseCore(ref BigInteger a, ref BigInteger b, ref BigInteger x0, ref BigInteger x1)
@@ -172,9 +172,9 @@ namespace Decompose.Numerics
                 var tmpa = a;
                 a = b;
                 b = tmpa - quotient * b;
-                var tmpx = x0;
-                x0 = x1 - quotient * x0;
-                x1 = tmpx;
+                var tmpx = x1;
+                x1 = x0 - quotient * x1;
+                x0 = tmpx;
             }
         }
 
@@ -186,9 +186,9 @@ namespace Decompose.Numerics
                 var tmpa = a;
                 a = b;
                 b = tmpa - quotient * b;
-                var tmpx = x0;
-                x0 = x1 - quotient * x0;
-                x1 = tmpx;
+                var tmpx = x1;
+                x1 = x0 - quotient * x1;
+                x0 = tmpx;
             }
         }
 

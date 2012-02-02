@@ -131,7 +131,6 @@ namespace Decompose.Numerics
             private BigInteger n;
             private int rLength;
             private int length;
-            private BigInteger k;
             private uint k0;
             private Word32IntegerStore store;
 
@@ -158,7 +157,7 @@ namespace Decompose.Numerics
                 var r = BigInteger.One << rLength;
                 var rSquaredModN = r * r % n;
 #if false
-                k = r - IntegerMath.ModularInverse(n, r);
+                var k = r - IntegerMath.ModularInverse(n, r);
                 k0 = (uint)(k & uint.MaxValue);
 #endif
 

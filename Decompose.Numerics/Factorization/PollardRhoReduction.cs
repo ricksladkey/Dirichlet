@@ -51,6 +51,7 @@ namespace Decompose.Numerics
                             return BigInteger.Zero;
                         if (++count >= iterations)
                             return BigInteger.One;
+                        AdvanceF(y, cPrime);
                         q.Multiply(diff.Set(x).Subtract(y));
                     }
                     g = BigInteger.GreatestCommonDivisor(q.Value(), n);
@@ -68,7 +69,7 @@ namespace Decompose.Numerics
                     if (cancellationToken.IsCancellationRequested)
                         return BigInteger.Zero;
                     AdvanceF(ys, cPrime);
-                    g = BigInteger.GreatestCommonDivisor(diff.Set(x).Subtract(y).Value(), n);
+                    g = BigInteger.GreatestCommonDivisor(diff.Set(x).Subtract(ys).Value(), n);
                 }
                 while (g.IsOne);
             }

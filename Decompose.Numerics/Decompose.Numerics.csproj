@@ -57,7 +57,8 @@
     <Compile Include="Core\UInt128.cs" />
     <Compile Include="Core\Uint32Operations.cs" />
     <Compile Include="Core\UInt64Operations.cs" />
-    <Compile Include="Factorization\PollardRhoLong.cs" />
+    <Compile Include="Factorization\OldPollardRhoLong.cs" />
+    <Compile Include="Factorization\Int64PollardRhoReduction.cs" />
     <Compile Include="Factorization\ShanksSquareForms.cs" />
     <Compile Include="Factorization\TrialDivisionFactorization.cs" />
     <Compile Include="Primality\OldMillerRabin.cs" />

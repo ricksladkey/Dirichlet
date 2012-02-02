@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Decompose.Numerics
 {
-    public class PollardRhoLong : IFactorizationAlgorithm<long>
+    public class OldPollardRhoLong : IFactorizationAlgorithm<long>
     {
         const int batchSize = 100;
         private IRandomNumberAlgorithm<long> random = new MersenneTwister(0).Create<long>();

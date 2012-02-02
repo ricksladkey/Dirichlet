@@ -123,9 +123,8 @@ namespace Decompose.Numerics
                 this.n = n;
                 if ((n & 1) == 0)
                     throw new InvalidOperationException("not relatively prime");
-                if (n == (uint)n)
-                    throw new NotSupportedException("single word modulus");
-                var rMinusOne = ulong.MaxValue;
+                int rLength = n == (uint)n ? 32 : 64;
+                var rMinusOne = rLength == 32 ? uint.MaxValue : ulong.MaxValue;
                 var rDivN = rMinusOne / n;
                 var rModN = rMinusOne - rDivN * n + 1;
                 rSquaredModN = IntegerMath.ModularProduct(rModN, rModN, n);

@@ -37,10 +37,10 @@ namespace Decompose
                 //CunninghamTest();
                 //GaussianEliminationTest1();
                 //CreateSamplesTest();
-                //GraphTest();
+                GraphTest();
                 //UInt128Test();
                 //ModularInverseTest();
-                PrimalityTest();
+                //PrimalityTest();
                 //OperationsTest();
             }
             catch (AggregateException ex)
@@ -567,7 +567,7 @@ namespace Decompose
             //var algorithm = new PollardRhoReduction(1, int.MaxValue, new Word32IntegerReduction());
             //var algorithm = new PollardRhoReduction(1, int.MaxValue, new MontgomeryReduction());
             //var algorithm = new ShanksSquareForms();
-            var algorithm = new PollardRhoLong();
+            var algorithm = new Int64PollardRhoReduction(new UInt64MontgomeryReduction());
 
             var timer = new Stopwatch();
             timer.Restart();
@@ -1063,11 +1063,12 @@ namespace Decompose
 
         static void PrimalityTest()
         {
-#if false
+#if true
             {
-                int count = 1000000;
+                int count = 2000000;
                 var random = new MersenneTwister(0).Create<ulong>();
                 //var algorithm = new OldMillerRabin(16);
+                //var algorithm = MillerRabin.Create(16, new UInt64Reduction());
                 var algorithm = MillerRabin.Create(16, new UInt64MontgomeryReduction());
                 var max = (ulong)1 << 60;
                 var timer = new Stopwatch();
@@ -1079,7 +1080,7 @@ namespace Decompose
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
-#if true
+#if false
             {
                 int count = 80000;
                 var random = new MersenneTwister(0).Create<BigInteger>();

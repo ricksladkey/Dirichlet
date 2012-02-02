@@ -1485,8 +1485,8 @@ namespace Decompose.Numerics
         {
             var p = reg1.Set(a);
             var q = reg2.Set(b);
-            var x0 = reg3.Set(0);
-            var x1 = this.Set(1);
+            var x0 = reg3.Set(1);
+            var x1 = this.Set(0);
             var quotient = reg4;
             var remainder = reg5;
             var product = reg6;
@@ -1496,12 +1496,12 @@ namespace Decompose.Numerics
                 var tmpp = p;
                 p = q;
                 q = tmpp.Set(remainder);
-                var tmpx = x0;
-                x0 = x1.Subtract(product.SetProduct(quotient, x0));
-                x1 = tmpx;
+                var tmpx = x1;
+                x1 = x0.Subtract(product.SetProduct(quotient, x1));
+                x0 = tmpx;
             }
-            if (!object.ReferenceEquals(x1, this))
-                this.Set(x1);
+            if (!object.ReferenceEquals(x0, this))
+                this.Set(x0);
             if (sign == -1)
                 Add(b);
             return this;

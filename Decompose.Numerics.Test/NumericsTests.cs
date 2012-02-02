@@ -72,9 +72,9 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void TestPollardLong()
         {
-            var expected = new[] { long.Parse("400433141"), long.Parse("646868797") };
+            var expected = new[] { ulong.Parse("400433141"), ulong.Parse("646868797") };
             var n = expected[0] * expected[1];
-            var algorithm = new PollardRhoLong();
+            var algorithm = new Int64PollardRhoReduction(new UInt64Reduction());
             var factors = algorithm.Factor(n).OrderBy(factor => factor).ToArray();
             var product = factors.Aggregate((sofar, current) => sofar * current);
             Assert.AreEqual(n, product);
