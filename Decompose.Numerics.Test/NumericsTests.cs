@@ -193,7 +193,7 @@ namespace Decompose.Numerics.Test
         public void TestWord32Integer1()
         {
             var n = BigInteger.Parse("10023859281455311421");
-            var store = new Word32IntegerStore(2);
+            var store = new Word32IntegerStore(1);
             var a = store.Allocate();
             var b = store.Allocate();
             var x = store.Allocate();
@@ -295,7 +295,7 @@ namespace Decompose.Numerics.Test
             var random = generator.Create<BigInteger>();
             var smallRandom = generator.Create<uint>();
             var length = (n.GetBitLength() * 2 + 31) / 32 + 3;
-            var store = new Word32IntegerStore(length);
+            var store = new Word32IntegerStore(1);
             var a = store.Allocate();
             var b = store.Allocate();
             var x = store.Allocate();

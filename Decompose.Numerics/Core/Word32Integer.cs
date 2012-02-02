@@ -696,10 +696,12 @@ namespace Decompose.Numerics
         private void SetUnsignedSum(Word32Integer a, Word32Integer b)
         {
             CheckValid();
-            var abits = a.bits;
-            var bbits = b.bits;
             int limit = Math.Max(a.last, b.last);
             CheckLast(limit);
+            a.CheckLast(limit);
+            b.CheckLast(limit);
+            var abits = a.bits;
+            var bbits = b.bits;
             ulong carry = 0;
             for (int i = 0; i <= limit; i++)
             {
@@ -842,11 +844,12 @@ namespace Decompose.Numerics
         private void SetUnsignedDifference(Word32Integer a, Word32Integer b)
         {
             CheckValid();
-            CheckLast(a.last);
+            var limit = a.last;
+            CheckLast(limit);
+            b.CheckLast(limit);
             var abits = a.bits;
             var bbits = b.bits;
             ulong borrow = 0;
-            var limit = a.last;
             for (int i = 0; i <= limit; i++)
             {
                 borrow += (ulong)abits[i] - bbits[i];
@@ -1288,12 +1291,13 @@ namespace Decompose.Numerics
             int dneg = v.bits[v.last].GetBitLength();
             int d = 32 - dneg;
             int m = u.last + 1 - n;
+            u.CheckLast(u.last + 1);
+            if (q != null)
+                q.CheckLast(m + 1);
             var ubits = u.bits;
             var vbits = v.bits;
             uint v1 = vbits[v.last];
             uint v2 = vbits[v.last - 1];
-            if (q != null)
-                q.CheckLast(m + 1);
             if (d != 0)
             {
                 uint v3 = n > 2 ? vbits[v.last - 2] : 0;
@@ -1438,8 +1442,9 @@ namespace Decompose.Numerics
             if (v == 0)
                 throw new DivideByZeroException();
             int m = u.last;
-            var ubits = u.bits;
+            u.CheckLast(m + 1);
             q.CheckLast(m + 1);
+            var ubits = u.bits;
             for (int j = 0; j <= m; j++)
             {
                 int left = 1 + m - j;
