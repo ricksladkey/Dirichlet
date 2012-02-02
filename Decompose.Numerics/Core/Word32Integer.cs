@@ -68,8 +68,7 @@ namespace Decompose.Numerics
 
         public Word32Integer(uint[] bits, int sign)
         {
-            Debug.Assert(bits != null);
-            Debug.Assert(Length > 0);
+            Debug.Assert(bits != null && bits.Length > 0);
             Debug.Assert(sign == 1 || sign == -1);
             this.bits = bits;
             this.sign = sign;
@@ -1400,7 +1399,7 @@ namespace Decompose.Numerics
             var u0 = (ulong)(wbits[last] % v);
             for (int j = last - 1; j >= 0; j--)
                 u0 = (u0 << 32 | wbits[j]) % v;
-            Debug.Assert((BigInteger)this % v == u0);
+            Debug.Assert(BigInteger.Abs(this) % v == u0);
             return (uint)u0;
         }
 
