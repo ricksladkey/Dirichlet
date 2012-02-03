@@ -5,34 +5,54 @@ namespace Decompose.Numerics
 {
     public static partial class IntegerMath
     {
-        public static int ModularInverse(int n, int p)
+        public static int ModularInverse(int a, int b)
         {
             int x;
             int y;
-            ExtendedGreatestCommonDivisor(n, p, out x, out y);
+            ExtendedGreatestCommonDivisor(a, b, out x, out y);
             if (x < 0)
-                x += p;
+                x += b;
             return x;
         }
 
-        public static uint ModularInverse(uint n, uint p)
+        public static uint ModularInverse(uint a, uint b)
         {
-            return (uint)ModularInverse((int)n, (int)p);
+            return (uint)ModularInverse((int)a, (int)b);
         }
 
-        public static long ModularInverse(long n, long p)
+        public static long ModularInverse(long a, long b)
         {
             long x;
             long y;
-            ExtendedGreatestCommonDivisor(n, p, out x, out y);
+            ExtendedGreatestCommonDivisor(a, b, out x, out y);
             if (x < 0)
-                x += p;
+                x += b;
             return x;
         }
 
-        public static ulong ModularInverse(ulong n, ulong p)
+        public static ulong ModularInverse(ulong a, ulong b)
         {
-            return (ulong)ModularInverse((long)n, (long)p);
+            var x0 = (ulong)0;
+            var x1 = (ulong)1;
+            var p = b;
+            var q = a < b ? a : a % b;
+            while (q != 0)
+            {
+                Debug.Assert(p >= q);
+                var quotient = p / q;
+                var tmpp = p;
+                p = q;
+                q = tmpp - quotient * q;
+                var tmpx = x1;
+                var qx = ModularProduct(quotient, x1, b);
+                if (x0 < qx)
+                    x1 = x0 + (b - qx);
+                else
+                    x1 = x0 - qx;
+                x0 = tmpx;
+            }
+            Debug.Assert((BigInteger)a * x0 % b == 1);
+            return x0;
         }
 
         public static int ModularInverse(BigInteger n, int p)
@@ -52,8 +72,8 @@ namespace Decompose.Numerics
         {
             var x0 = BigInteger.Zero;
             var x1 = BigInteger.One;
-            BigInteger p = b;
-            BigInteger q = a < b ? a : a % b;
+            var p = b;
+            var q = a < b ? a : a % b;
             ModularInverseCore(ref p, ref q, ref x0, ref x1);
             ModularInverseCore((ulong)p, (ulong)q, ref x0, ref x1);
             if (x0 < 0)

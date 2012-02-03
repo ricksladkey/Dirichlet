@@ -23,7 +23,7 @@ namespace Decompose
                 //FindPrimeTest1();
                 //BarrettReductionTest1();
                 //BarrettReductionTest2();
-                Word32IntegerTest1();
+                //Word32IntegerTest1();
                 //FactorTest1();
                 //FactorTest2();
                 //FactorTest3();
@@ -39,7 +39,7 @@ namespace Decompose
                 //CreateSamplesTest();
                 //GraphTest();
                 //UInt128Test();
-                //ModularInverseTest();
+                ModularInverseTest();
                 //PrimalityTest();
                 //OperationsTest();
             }
@@ -692,7 +692,6 @@ namespace Decompose
 
         static void ModularInverseTest()
         {
-            var random = new MersenneTwister(0).Create<ulong>();
             //var inverse = new Func<long, long, long>(HybridRSSModularInverse);
             //var inverse = new Func<long, long, long>(RSSSimpleModularInverse);
             var inverse = new Func<long, long, long>(RSSModularInverse);
@@ -703,13 +702,14 @@ namespace Decompose
             //var aInv2 = inverse(a, m);
             //Console.WriteLine("aInv2 = {0}", aInv2);
 
-            var max = (ulong)1 << 60;
+            var max = (ulong)long.MaxValue;
+            var random = new MersenneTwister(0).Create<ulong>();
             var pairs = random.Sequence(max)
-                .Zip(random.Sequence(max), (a, b) => new { A = (long)a, B = (long)b })
-                .Where(pair => IntegerMath.GreatestCommonDivisor(pair.A, pair.B) == 1)
+                .Zip(random.Sequence(max), (a, b) => new { A = a, B = b })
+                .Where(pair => pair.A != 1 && pair.B != 1 && IntegerMath.GreatestCommonDivisor(pair.A, pair.B) == 1)
                 .Take(1000)
                 .ToArray();
-            int count = 20000;
+            int count = 10000;
 
             var timer = new Stopwatch();
             timer.Start();
@@ -729,8 +729,6 @@ namespace Decompose
             }
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
-
-            Console.WriteLine();
         }
 
         private static long RSSModularInverse(long a, long m)
