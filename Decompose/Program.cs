@@ -702,6 +702,7 @@ namespace Decompose
             //var aInv2 = inverse(a, m);
             //Console.WriteLine("aInv2 = {0}", aInv2);
 
+            IntegerMath.ModularInverse((ulong)17, (ulong)25);
             var max = (ulong)long.MaxValue;
             var random = new MersenneTwister(0).Create<ulong>();
             var pairs = random.Sequence(max)

@@ -81,36 +81,15 @@ namespace Decompose.Numerics
 
         public static void ExtendedGreatestCommonDivisor(uint a, uint b, out uint c, out uint d)
         {
-            var p = a;
-            var q = b;
-            var x = (uint)0;
-            var lastx = (uint)1;
-            var y = (uint)1;
-            var lasty = (uint)0;
-
-            while (q != 0)
-            {
-                var quotient = p / q;
-                var tmpp = p;
-                p = q;
-                q = tmpp - quotient * q;
-                var tmpx = x;
-                var qx = quotient * x;
-                if (qx > lastx)
-                    x = lastx + (a - qx);
-                else
-                    x = lastx - qx;
-                lastx = tmpx;
-                var tmpy = y;
-                var qy = quotient * y;
-                if (qx > lasty)
-                    y = lasty + (b - qy);
-                else
-                    y = lasty - qy;
-                lasty = tmpy;
-            }
-            c = lastx;
-            d = lasty;
+            long cLong;
+            long dLong;
+            ExtendedGreatestCommonDivisor(a, b, out cLong, out dLong);
+            if (cLong < 0)
+                cLong += b;
+            if (dLong < 0)
+                dLong += a;
+            c = (uint)cLong;
+            d = (uint)dLong;
         }
 
         public static void ExtendedGreatestCommonDivisor(long a, long b, out long c, out long d)

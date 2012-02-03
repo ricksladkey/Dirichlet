@@ -32,12 +32,11 @@ namespace Decompose.Numerics
 
         public static ulong ModularInverse(ulong a, ulong b)
         {
-            var x0 = (ulong)0;
-            var s0 = 1;
-            var x1 = (ulong)1;
-            var s1 = 1;
+            var x0 = (Int65)0;
+            var x1 = (Int65)1;
             var p = b;
             var q = a < b ? a : a % b;
+            var tmpx = (Int65)0;
             while (q != 0)
             {
                 Debug.Assert(p >= q);
@@ -45,38 +44,16 @@ namespace Decompose.Numerics
                 var tmpp = p;
                 p = q;
                 q = tmpp - quotient * q;
-                var tmpx = x1;
-                var tmps = s1;
-                SignedDifference(ref x1, ref s1, x0, s0, quotient * x1, s1);
+                tmpx = x1;
+                x1.Multiply(quotient);
+                x1.SetDifference(ref x0, ref x1);
                 x0 = tmpx;
-                s0 = tmps;
             }
-            if (s0 != 1)
-                x0 = b - x0;
-            Debug.Assert((BigInteger)a * x0 % b == 1);
-            return x0;
-        }
-
-        private static void SignedDifference(ref ulong c, ref int cSign, ulong a, int aSign, ulong b, int bSign)
-        {
-            if (aSign == bSign)
-            {
-                if (a >= b)
-                {
-                    c = a - b;
-                    cSign = aSign;
-                }
-                else
-                {
-                    c = b - a;
-                    cSign = -aSign;
-                }
-            }
-            else
-            {
-                c = a + b;
-                cSign = aSign;
-            }
+            if (x0.Sign != 1)
+                x0 += b;
+            var result = (ulong)x0;
+            Debug.Assert((BigInteger)a * result % b == 1);
+            return result;
         }
 
         public static int ModularInverse(BigInteger n, int p)

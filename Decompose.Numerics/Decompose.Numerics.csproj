@@ -50,6 +50,7 @@
     <Compile Include="Collections\IntegerSet.cs" />
     <Compile Include="Core\BigIntegerOperations.cs" />
     <Compile Include="Core\Core.cs" />
+    <Compile Include="Core\Int65.cs" />
     <Compile Include="IntegerMath\GreatestCommonDivisor.cs" />
     <Compile Include="Core\Int32Operations.cs" />
     <Compile Include="Core\Int64Operations.cs" />
