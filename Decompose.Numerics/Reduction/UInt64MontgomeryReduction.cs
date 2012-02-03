@@ -137,9 +137,6 @@ namespace Decompose.Numerics
                     d = -(d - (long)rDivN * c);
                     var k = (d < 0 ? rMinusOne - (ulong)-d + 1 : (ulong)d);
                     k0 = (uint)k;
-#if false
-                    var k0 = (uint)(((UInt128)IntegerMath.ModularInverse(rModN, n) << rLength) / n);
-#endif
                 }
                 else
                 {
@@ -148,13 +145,16 @@ namespace Decompose.Numerics
                     var k = r - IntegerMath.ModularInverse(n, r);
                     k0 = (uint)(k & uint.MaxValue);
 #endif
-#if true
+#if false
                     var store = new Word32IntegerStore(4);
                     var nRep = store.Allocate().Set(n);
                     var r = store.Allocate().Set(1).LeftShift(rLength);
                     var inv = store.Allocate().SetModularInverse(nRep, r, store);
                     var k = store.Allocate().Set(r).Subtract(inv);
                     k0 = k.LeastSignificantWord;
+#endif
+#if true
+                    k0 = (uint)(((UInt128)IntegerMath.ModularInverse(rModN, n) << rLength) / n);
 #endif
                 }
             }
