@@ -717,7 +717,16 @@ namespace Decompose
             for (int i = 0; i < count; i++)
             {
                 foreach (var pair in pairs)
-                    IntegerMath.ModularInverse(pair.A, pair.B);
+                {
+                    var aInv = IntegerMath.ModularInverse(pair.A, pair.B);
+                    ulong c;
+                    ulong d;
+                    IntegerMath.ExtendedGreatestCommonDivisor(pair.A, pair.B, out c, out d);
+                    if (IntegerMath.ModularProduct(pair.A, c, pair.B) != 1)
+                        throw new InvalidOperationException("miscalculation");
+                    if (c != aInv)
+                        throw new InvalidOperationException("disagreement");
+                }
             }
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 

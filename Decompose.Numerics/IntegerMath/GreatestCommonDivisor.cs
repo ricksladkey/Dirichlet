@@ -61,7 +61,6 @@ namespace Decompose.Numerics
             var lastx = 1;
             var y = 1;
             var lasty = 0;
-
             while (b != 0)
             {
                 var quotient = a / b;
@@ -206,6 +205,39 @@ namespace Decompose.Numerics
             }
             c = lastx;
             d = lasty;
+        }
+
+        public static void ExtendedGreatestCommonDivisor(ulong p, ulong q, out ulong c, out ulong d)
+        {
+            var x = (Int65)0;
+            var lastx = (Int65)1;
+            var y = (Int65)1;
+            var lasty = (Int65)0;
+            var a = p;
+            var b = q;
+            var tmpx = (Int65)0;
+            var tmpy = (Int65)0;
+            while (q != 0)
+            {
+                var quotient = p / q;
+                var tmpa = p;
+                p = q;
+                q = tmpa - quotient * q;
+                tmpx = x;
+                x.Multiply(quotient);
+                x.SetDifference(ref lastx, ref x);
+                lastx = tmpx;
+                tmpy = y;
+                y.Multiply(quotient);
+                y.SetDifference(ref lasty, ref y);
+                lasty = tmpy;
+            }
+            if (lastx.Sign != 1)
+                lastx += b;
+            if (lasty.Sign != 1)
+                lasty += a;
+            c = (ulong)lastx;
+            d = (ulong)lasty;
         }
 
         public static void ExtendedGreatestCommonDivisor(BigInteger a, BigInteger b, out BigInteger c, out BigInteger d)
