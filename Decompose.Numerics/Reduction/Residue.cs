@@ -11,6 +11,11 @@ namespace Decompose.Numerics
 
         public IReducer<TValue> Reducer { get { return reducer; } }
 
+        protected Residue(TReducer reducer)
+        {
+            this.reducer = reducer;
+        }
+
         protected Residue(TReducer reducer, TRep r)
         {
             this.reducer = reducer;

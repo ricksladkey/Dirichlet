@@ -8,7 +8,7 @@ namespace Decompose.Numerics
     {
         private class Reducer : IReducer<BigInteger>
         {
-            private class Residue : Residue<Reducer, BigInteger, Word32Integer>, IResidue<BigInteger>
+            private class Residue : Residue<Reducer, BigInteger, Word32Integer>
             {
                 public override bool IsZero { get { return r == 0; } }
                 public override bool IsOne { get { return r == reducer.oneRep; } }
