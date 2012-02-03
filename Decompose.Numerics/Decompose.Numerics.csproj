@@ -111,6 +111,7 @@
     <Compile Include="Core\Word32Integer.cs" />
     <Compile Include="Reduction\IResidue.cs" />
     <Compile Include="Reduction\ReductionHelper.cs" />
+    <Compile Include="Reduction\Residue.cs" />
     <Compile Include="Reduction\UInt32Reduction.cs" />
     <Compile Include="Reduction\UInt64MontgomeryReduction.cs" />
     <Compile Include="Reduction\UInt64Reduction.cs" />

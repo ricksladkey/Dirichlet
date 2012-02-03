@@ -8,61 +8,49 @@ namespace Decompose.Numerics
     {
         private class Reducer : IReducer<BigInteger>
         {
-            private class Residue : IResidue<BigInteger>
+            private class Residue : Residue<Reducer, BigInteger, Word32Integer>, IResidue<BigInteger>
             {
-                private Reducer reducer;
-                private Word32Integer r;
-
-                public IReducer<BigInteger> Reducer { get { return reducer; } }
-                public Word32Integer Rep { get { return r; } }
-                public bool IsZero { get { return r == 0; } }
-                public bool IsOne { get { return r == reducer.oneRep; } }
-
-                protected Residue(Reducer reducer)
-                {
-                    this.reducer = reducer;
-                }
+                public override bool IsZero { get { return r == 0; } }
+                public override bool IsOne { get { return r == reducer.oneRep; } }
 
                 public Residue(Reducer reducer, BigInteger x)
-                    : this(reducer)
+                    : base(reducer, reducer.CreateRep())
                 {
-                    r = reducer.CreateRep();
                     Set(x);
                 }
 
-                public IResidue<BigInteger> Set(BigInteger x)
+                public override IResidue<BigInteger> Set(BigInteger x)
                 {
                     r.Set(x).Multiply(reducer.rSquaredModNRep, reducer.store);
                     reducer.Reduce(r);
                     return this;
                 }
 
-                public IResidue<BigInteger> Set(IResidue<BigInteger> x)
+                public override IResidue<BigInteger> Set(IResidue<BigInteger> x)
                 {
-                    r.Set(((Residue)x).r);
+                    r.Set(GetRep(x));
                     return this;
                 }
 
-                public IResidue<BigInteger> Copy()
+                public override IResidue<BigInteger> Copy()
                 {
-                    var residue = new Residue(reducer);
-                    residue.r = reducer.CreateRep();
+                    var residue = new Residue(reducer, reducer.CreateRep());
                     residue.r.Set(r);
                     return residue;
                 }
 
 #if false
-                public IResidue<BigInteger> Multiply(IResidue<BigInteger> x)
+                public override IResidue<BigInteger> Multiply(IResidue<BigInteger> x)
                 {
                     // Use SOS for everything.
-                    r.Multiply(((Residue)x).r, reducer.store);
+                    r.Multiply(GetRep(x), reducer.store);
                     reducer.Reduce(r);
                     return this;
                 }
 #endif
 
 #if false
-                public IResidue<BigInteger> Multiply(IResidue<BigInteger> x)
+                public override IResidue<BigInteger> Multiply(IResidue<BigInteger> x)
                 {
                     // Use SOS for squaring and CIOS otherwise.
                     if (x == this)
@@ -74,54 +62,38 @@ namespace Decompose.Numerics
                     {
                         var reg1 = reducer.store.Allocate().Set(r);
                         reg1.Set(r);
-                        reducer.Reduce(r, reg1, ((Residue)x).r);
+                        reducer.Reduce(r, reg1, GetRep(x));
                     }
                     return this;
                 }
 #endif
 
 #if true
-                public IResidue<BigInteger> Multiply(IResidue<BigInteger> x)
+                public override IResidue<BigInteger> Multiply(IResidue<BigInteger> x)
                 {
                     // Use CIOS for everything.
                     var reg1 = reducer.store.Allocate().Set(r);
                     if (x == this)
                         reducer.Reduce(r, reg1, reg1);
                     else
-                        reducer.Reduce(r, reg1, ((Residue)x).r);
+                        reducer.Reduce(r, reg1, GetRep(x));
                     return this;
                 }
 #endif
 
-                public IResidue<BigInteger> Add(IResidue<BigInteger> x)
+                public override IResidue<BigInteger> Add(IResidue<BigInteger> x)
                 {
-                    r.AddModulo(((Residue)x).r, reducer.nRep);
+                    r.AddModulo(GetRep(x), reducer.nRep);
                     return this;
                 }
 
-                public IResidue<BigInteger> Subtract(IResidue<BigInteger> x)
+                public override IResidue<BigInteger> Subtract(IResidue<BigInteger> x)
                 {
-                    r.Subtract(((Residue)x).r);
+                    r.Subtract(GetRep(x));
                     return this;
                 }
 
-                public IResidue<BigInteger> Power(BigInteger x)
-                {
-                    ReductionHelper.Power(this, x);
-                    return this;
-                }
-
-                public bool Equals(IResidue<BigInteger> other)
-                {
-                    return r == ((Residue)other).r;
-                }
-
-                public int CompareTo(IResidue<BigInteger> other)
-                {
-                    return r.CompareTo(((Residue)other).r);
-                }
-
-                public BigInteger Value()
+                public override BigInteger Value()
                 {
                     var reg1 = reducer.store.Allocate().Set(r);
                     reg1.Set(r);
@@ -129,11 +101,6 @@ namespace Decompose.Numerics
                     var result = (BigInteger)reg1;
                     reducer.store.Release(reg1);
                     return result;
-                }
-
-                public override string ToString()
-                {
-                    return Value().ToString();
                 }
             }
 

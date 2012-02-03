@@ -39,8 +39,8 @@ namespace Decompose
                 //CreateSamplesTest();
                 //GraphTest();
                 //UInt128Test();
-                ModularInverseTest();
-                //PrimalityTest();
+                //ModularInverseTest();
+                PrimalityTest();
                 //OperationsTest();
             }
             catch (AggregateException ex)
@@ -1092,7 +1092,7 @@ namespace Decompose
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
-#if false
+#if true
             {
                 int count = 80000;
                 var random = new MersenneTwister(0).Create<BigInteger>();
