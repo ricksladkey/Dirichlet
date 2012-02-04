@@ -657,18 +657,29 @@ namespace Decompose.Numerics.Test
             for (int i = 0; i < 10000; i++)
             {
                 var n = random.Next(modulusSize - 1) + 1;
-                if ((n & 1) == 0)
-                    ++n;
                 var a = random.Next(factorSize) % n;
                 var b = random.Next(factorSize) % n;
-                var c = (UInt128)a * b;
-                Assert.AreEqual((BigInteger)a * b, c);
+                var s = (int)(b % 32);
+                Assert.AreEqual((BigInteger)a << s, (UInt128)a << s);
+                Assert.AreEqual((BigInteger)a >> s, (UInt128)a >> s);
+                Assert.AreEqual((BigInteger)a + b, (UInt128)a + b);
+                if (b < a)
+                    Assert.AreEqual((BigInteger)a - b, (UInt128)a - b);
+                Assert.AreEqual((BigInteger)a * b, (UInt128)a * b);
                 Assert.AreEqual((BigInteger)a * b % n, (UInt128)a * b % n);
                 Assert.AreEqual((BigInteger)a * b / n, (UInt128)a * b / n);
                 Assert.AreEqual(((BigInteger)a + b) % n, UInt128.ModularSum(a, b, n));
                 Assert.AreEqual((((BigInteger)a - b) % n + n) % n, UInt128.ModularDifference(a, b, n));
                 Assert.AreEqual((BigInteger)a * b % n, UInt128.ModularProduct(a, b, n));
-                Assert.AreEqual(BigInteger.ModPow(a, b, n), IntegerMath.ModularPower(a, b, n));
+            }
+            for (int i = 0; i < 1000; i++)
+            {
+                var n = random.Next(modulusSize - 1) + 1;
+                if ((n & 1) == 0)
+                    ++n;
+                var a = random.Next(factorSize) % n;
+                var b = random.Next(factorSize) % n;
+                Assert.AreEqual(BigInteger.ModPow(a, b, n), UInt128.ModularPower(a, b, n));
             }
         }
     }
