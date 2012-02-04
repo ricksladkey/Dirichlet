@@ -186,51 +186,39 @@ namespace Decompose.Numerics
 
             var carry = (ulong)u0 * v0;
             var t0 = (uint)carry;
-            carry >>= 32;
-            carry += (ulong)u1 * v0;
+            carry = (carry >> 32) + (ulong)u1 * v0;
             var t1 = (uint)carry;
-            carry >>= 32;
-            var t2 = (uint)carry;
+            var t2 = (uint)(carry >> 32);
 
             var m = (ulong)(t0 * k0);
             carry = t0 + m * n0;
-            carry >>= 32;
-            carry += t1 + m * n1;
+            carry = (carry >> 32) + t1 + m * n1;
             t0 = (uint)carry;
-            carry >>= 32;
-            carry += t2;
+            carry = (carry >> 32) + t2;
             t1 = (uint)carry;
-            carry >>= 32;
-            t2 = (uint)carry;
+            t2 = (uint)(carry >> 32);
 
             carry = t0 + (ulong)u0 * v1;
             t0 = (uint)carry;
-            carry >>= 32;
-            carry += t1 + (ulong)u1 * v1;
+            carry = (carry >> 32) + t1 + (ulong)u1 * v1;
             t1 = (uint)carry;
-            carry >>= 32;
-            carry += t2;
+            carry = (carry >> 32) + t2;
             t2 = (uint)carry;
-            carry >>= 32;
-            var t3 = (uint)carry;
+            var t3 = (uint)(carry >> 32);
 
             m = (ulong)(t0 * k0);
             carry = t0 + m * n0;
-            carry >>= 32;
-            carry += t1 + m * n1;
+            carry = (carry >> 32) + t1 + m * n1;
             t0 = (uint)carry;
-            carry >>= 32;
-            carry += t2;
+            carry = (carry >> 32) + t2;
             t1 = (uint)carry;
-            carry >>= 32;
-            t2 = t3 + (uint)carry;
+            t2 = t3 + (uint)(carry >> 32);
 
             if (t2 != 0)
             {
                 var borrow = (ulong)t0 - n0;
                 t0 = (uint)borrow;
-                borrow = (ulong)((long)borrow >> 32);
-                borrow += (ulong)t1 - n1;
+                borrow = (ulong)((long)borrow >> 32) + t1 - n1;
                 t1 = (uint)borrow;
                 borrow = (ulong)((long)borrow >> 32);
             }
@@ -241,16 +229,13 @@ namespace Decompose.Numerics
         {
             var carry = (ulong)u0 * v0;
             var t0 = (uint)carry;
-            carry >>= 32;
-            var t1 = (uint)carry;
+            var t1 = (uint)(carry >> 32);
 
             var m = (ulong)(t0 * k0);
             carry = t0 + m * n0;
-            carry >>= 32;
-            carry += t1;
+            carry = (carry >> 32) + t1;
             t0 = (uint)carry;
-            carry >>= 32;
-            t1 = (uint)carry;
+            t1 = (uint)(carry >> 32);
 
             var result = (ulong)t1 << 32 | t0;
             return (uint)(result >= n0 ? result - n0 : result);
@@ -259,18 +244,14 @@ namespace Decompose.Numerics
         {
             var carry = (ulong)u0 * v0;
             w.r0 = (uint)carry;
-            carry >>= 32;
-            carry += (ulong)u0 * v1;
+            carry = (carry >> 32) + (ulong)u0 * v1;
             w.r1 = (uint)carry;
-            carry >>= 32;
-            w.r2 = (uint)carry;
+            w.r2 = (uint)(carry >> 32);
             carry = w.r1 + (ulong)u1 * v0;
             w.r1 = (uint)carry;
-            carry >>= 32;
-            carry += w.r2 + (ulong)u1 * v1;
+            carry = (carry >> 32) + w.r2 + (ulong)u1 * v1;
             w.r2 = (uint)carry;
-            carry >>= 32;
-            w.r3 = (uint)carry;
+            w.r3 = (uint)(carry >> 32);
         }
         private static void Divide(ref UInt128 w, ref UInt128 u, ulong v)
         {

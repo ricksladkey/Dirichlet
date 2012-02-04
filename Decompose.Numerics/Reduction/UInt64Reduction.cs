@@ -1,7 +1,4 @@
-﻿using System.Numerics;
-using System.Diagnostics;
-
-namespace Decompose.Numerics
+﻿namespace Decompose.Numerics
 {
     public class UInt64Reduction : UInt64Operations, IReductionAlgorithm<ulong>
     {
@@ -25,7 +22,7 @@ namespace Decompose.Numerics
 
                 public override IResidue<ulong> Set(IResidue<ulong> x)
                 {
-                    r = ((Residue)x).r;
+                    r = GetRep(x);
                     return this;
                 }
 
@@ -36,7 +33,7 @@ namespace Decompose.Numerics
 
                 public override IResidue<ulong> Multiply(IResidue<ulong> x)
                 {
-                    r = UInt128.ModularProduct(r, ((Residue)x).r, reducer.modulus);
+                    r = UInt128.ModularProduct(r, GetRep(x), reducer.modulus);
                     return this;
                 }
 
