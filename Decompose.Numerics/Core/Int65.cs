@@ -2,14 +2,20 @@
 
 namespace Decompose.Numerics
 {
+    /// <summary>
+    /// An Int65 is a "signed" UInt64, i.e. a ulong plus a sign bit.
+    /// </summary>
     public struct Int65
     {
         private int sign;
         private ulong value;
 
+        public static Int65 MinValue { get { return -MaxValue; } }
+        public static Int65 MaxValue { get { return ulong.MaxValue; } }
+
         public int Sign
         {
-            get { return value != 0 ? sign : 0; }
+            get { return value == 0 ? 0 : sign; }
         }
 
         public bool IsZero
@@ -17,9 +23,49 @@ namespace Decompose.Numerics
             get { return value == 0; }
         }
 
+        public static implicit operator Int65(int value)
+        {
+            var c = default(Int65);
+            if (value < 0)
+            {
+                c.value = (ulong)-value;
+                c.sign = -1;
+            }
+            else
+            {
+                c.value = (ulong)value;
+                c.sign = 1;
+            }
+            return c;
+        }
+
+        public static implicit operator Int65(uint value)
+        {
+            var c = default(Int65);
+            c.value = value;
+            c.sign = 1;
+            return c;
+        }
+
+        public static implicit operator Int65(long value)
+        {
+            var c = default(Int65);
+            if (value < 0)
+            {
+                c.value = (ulong)-value;
+                c.sign = -1;
+            }
+            else
+            {
+                c.value = (ulong)value;
+                c.sign = 1;
+            }
+            return c;
+        }
+
         public static implicit operator Int65(ulong value)
         {
-            Int65 c = default(Int65);
+            var c = default(Int65);
             c.value = value;
             c.sign = 1;
             return c;
@@ -35,9 +81,17 @@ namespace Decompose.Numerics
             return value.value;
         }
 
+        public static Int65 operator -(Int65 a)
+        {
+            var c = default(Int65);
+            c.value = a.value;
+            c.sign = -a.sign;
+            return c;
+        }
+
         public static Int65 operator *(Int65 a, Int65 b)
         {
-            Int65 c = default(Int65);
+            var c = default(Int65);
             c.value = a.value * b.value;
             c.sign = a.sign == b.sign ? 1 : -1;
             return c;
@@ -45,7 +99,7 @@ namespace Decompose.Numerics
 
         public static Int65 operator *(ulong a, Int65 b)
         {
-            Int65 c = default(Int65);
+            var c = default(Int65);
             c.value = a * b.value;
             c.sign = b.sign;
             return c;
@@ -53,14 +107,14 @@ namespace Decompose.Numerics
 
         public static Int65 operator +(Int65 a, Int65 b)
         {
-            Int65 c = default(Int65);
+            var c = default(Int65);
             c.SetSum(ref a, ref b);
             return c;
         }
 
         public static Int65 operator -(Int65 a, Int65 b)
         {
-            Int65 c = default(Int65);
+            var c = default(Int65);
             c.SetDifference(ref a, ref b);
             return c;
         }

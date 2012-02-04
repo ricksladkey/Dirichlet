@@ -5,119 +5,80 @@ namespace Decompose.Numerics
 {
     public class UInt64Reduction : UInt64Operations, IReductionAlgorithm<ulong>
     {
-        private class Reducer : IReducer<ulong>
+        private class Reducer : Reducer<UInt64Reduction, ulong>
         {
-            private class Residue : IResidue<ulong>
+            private class Residue : Residue<Reducer, ulong, ulong>
             {
-                private Reducer reducer;
-                private ulong r;
-
-                public IReducer<ulong> Reducer { get { return reducer; } }
-                public bool IsZero { get { return r == 0; } }
-                public bool IsOne { get { return r == 1; } }
-
-                protected Residue(Reducer reducer)
-                {
-                    this.reducer = reducer;
-                }
+                public override bool IsZero { get { return r == 0; } }
+                public override bool IsOne { get { return r == 1; } }
 
                 public Residue(Reducer reducer, ulong x)
-                    : this(reducer)
+                    : base(reducer)
                 {
-                    this.r = x % reducer.Modulus;
+                    this.r = x % reducer.modulus;
                 }
 
-                public IResidue<ulong> Set(ulong x)
+                public override IResidue<ulong> Set(ulong x)
                 {
-                    r = x;
+                    r = x % reducer.modulus;
                     return this;
                 }
 
-                public IResidue<ulong> Set(IResidue<ulong> x)
+                public override IResidue<ulong> Set(IResidue<ulong> x)
                 {
                     r = ((Residue)x).r;
                     return this;
                 }
 
-                public IResidue<ulong> Copy()
+                public override IResidue<ulong> Copy()
                 {
-                    var residue = new Residue(reducer);
-                    residue.r = r;
-                    return residue;
+                    return new Residue(reducer, r);
                 }
 
-                public IResidue<ulong> Multiply(IResidue<ulong> x)
+                public override IResidue<ulong> Multiply(IResidue<ulong> x)
                 {
-                    r = UInt128.ModularProduct(r, ((Residue)x).r, reducer.Modulus);
+                    r = UInt128.ModularProduct(r, ((Residue)x).r, reducer.modulus);
                     return this;
                 }
 
-                public IResidue<ulong> Add(IResidue<ulong> x)
+                public override IResidue<ulong> Add(IResidue<ulong> x)
                 {
-                    r += ((Residue)x).r;
-                    if (r >= reducer.Modulus)
-                        r -= reducer.Modulus;
+                    r = UInt128.ModularSum(r, GetRep(x), reducer.modulus);
                     return this;
                 }
 
-                public IResidue<ulong> Subtract(IResidue<ulong> x)
+                public override IResidue<ulong> Subtract(IResidue<ulong> x)
                 {
-                    var xr = ((Residue)x).r;
-                    if (r < xr)
-                        r += reducer.Modulus - xr;
-                    else
-                        r -= xr;
+                    r = UInt128.ModularDifference(r, GetRep(x), reducer.modulus);
                     return this;
                 }
 
-                public IResidue<ulong> Power(ulong x)
+                public override IResidue<ulong> Power(ulong x)
                 {
-                    r = IntegerMath.ModularPower(r, x, reducer.Modulus);
+                    r = IntegerMath.ModularPower(r, x, reducer.modulus);
                     return this;
                 }
 
-                public ulong Value()
+                public override ulong Value()
                 {
                     return r;
                 }
-
-                public override string ToString()
-                {
-                    return Value().ToString();
-                }
-
-                public bool Equals(IResidue<ulong> other)
-                {
-                    return r == ((Residue)other).r;
-                }
-
-                public int CompareTo(IResidue<ulong> other)
-                {
-                    return r.CompareTo(((Residue)other).r);
-                }
             }
 
-            private IReductionAlgorithm<ulong> reduction;
-            private ulong n;
-
-            public IReductionAlgorithm<ulong> Reduction { get { return reduction; } }
-            public ulong Modulus { get { return n; } }
-
-            public Reducer(IReductionAlgorithm<ulong> reduction, ulong n)
+            public Reducer(UInt64Reduction reduction, ulong modulus)
+                : base(reduction, modulus)
             {
-                this.reduction = reduction;
-                this.n = n;
             }
 
-            public IResidue<ulong> ToResidue(ulong x)
+            public override IResidue<ulong> ToResidue(ulong x)
             {
                 return new Residue(this, x);
             }
         }
 
-        public IReducer<ulong> GetReducer(ulong n)
+        public IReducer<ulong> GetReducer(ulong modulus)
         {
-            return new Reducer(this, n);
+            return new Reducer(this, modulus);
         }
     }
 }

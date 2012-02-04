@@ -53,19 +53,13 @@ namespace Decompose.Numerics
 
                 public override IResidue<ulong> Add(IResidue<ulong> x)
                 {
-                    r += GetRep(x);
-                    if (r >= reducer.modulus)
-                        r -= reducer.modulus;
+                    r = UInt128.ModularSum(r, GetRep(x), reducer.modulus);
                     return this;
                 }
 
                 public override IResidue<ulong> Subtract(IResidue<ulong> x)
                 {
-                    var xr = GetRep(x);
-                    if (r < xr)
-                        r += reducer.modulus - xr;
-                    else
-                        r -= xr;
+                    r = UInt128.ModularDifference(r, GetRep(x), reducer.modulus);
                     return this;
                 }
 

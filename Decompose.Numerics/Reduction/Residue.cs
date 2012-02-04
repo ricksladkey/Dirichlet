@@ -32,7 +32,7 @@ namespace Decompose.Numerics
             return r.CompareTo(GetRep(other));
         }
 
-        protected TRep GetRep(IResidue<TValue> x)
+        public static TRep GetRep(IResidue<TValue> x)
         {
             return ((Residue<TReducer, TValue, TRep>)x).r;
         }

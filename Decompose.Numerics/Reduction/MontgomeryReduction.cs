@@ -6,7 +6,7 @@ namespace Decompose.Numerics
 {
     public class MontgomeryReduction : BigIntegerOperations, IReductionAlgorithm<BigInteger>
     {
-        private class Reducer : IReducer<BigInteger>
+        private class Reducer : Reducer<MontgomeryReduction, BigInteger>
         {
             private class Residue : Residue<Reducer, BigInteger, Word32Integer>
             {
@@ -104,8 +104,6 @@ namespace Decompose.Numerics
                 }
             }
 
-            private IReductionAlgorithm<BigInteger> reduction;
-            private BigInteger n;
             private int length;
             private uint k0;
             private Word32IntegerStore store;
@@ -114,44 +112,40 @@ namespace Decompose.Numerics
             private Word32Integer rSquaredModNRep;
             private Word32Integer oneRep;
 
-            public IReductionAlgorithm<BigInteger> Reduction { get { return reduction; } }
-            public BigInteger Modulus { get { return n; } }
-
-            public Reducer(IReductionAlgorithm<BigInteger> reduction, BigInteger n)
+            public Reducer(MontgomeryReduction reduction, BigInteger modulus)
+                : base(reduction, modulus)
             {
-                this.reduction = reduction;
-                this.n = n;
-                if (n.IsEven)
+                if (modulus.IsEven)
                     throw new InvalidOperationException("not relatively prime");
-                var rLength = (n.GetBitLength() + 31) / 32 * 32;
+                var rLength = (modulus.GetBitLength() + 31) / 32 * 32;
                 length = 2 * rLength / 32 + 1;
                 var r = BigInteger.One << rLength;
-                var rSquaredModN = r * r % n;
-#if false
-                var k = r - IntegerMath.ModularInverse(n, r);
-                k0 = (uint)(k & uint.MaxValue);
-#endif
+                var rSquaredModN = r * r % modulus;
 
                 store = new Word32IntegerStore(length);
-                nRep = store.Allocate().Set(n);
+                nRep = store.Allocate().Set(modulus);
                 rSquaredModNRep = store.Allocate().Set(rSquaredModN);
 
-                nRep.Set(n);
+                nRep.Set(modulus);
                 rSquaredModNRep.Set(rSquaredModN);
+#if false
+                var k = r - IntegerMath.ModularInverse(modulus, r);
+                k0 = (uint)(k & uint.MaxValue);
+#endif
 #if true
                 var rRep = store.Allocate().Set(r);
                 var nInv = store.Allocate().SetModularInverse(nRep, rRep, store);
-                var kRep = store.Allocate().Set(r).Subtract(nInv);
+                var kRep = store.Allocate().Set(rRep).Subtract(nInv);
                 k0 = kRep.LeastSignificantWord;
+                store.Release(rRep);
                 store.Release(nInv);
                 store.Release(kRep);
-                store.Release(rRep);
 #endif
                 oneRep = store.Allocate().Set(1).Multiply(rSquaredModNRep, store);
                 Reduce(oneRep);
             }
 
-            public IResidue<BigInteger> ToResidue(BigInteger x)
+            public override IResidue<BigInteger> ToResidue(BigInteger x)
             {
                 return new Residue(this, x);
             }

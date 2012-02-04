@@ -636,35 +636,37 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void UInt128Test()
         {
-            UInt128Test(20, 20);
-            UInt128Test(40, 20);
-            UInt128Test(60, 20);
+            UInt128Test((ulong)1 << 20, (ulong)1 << 20);
+            UInt128Test((ulong)1 << 40, (ulong)1 << 20);
+            UInt128Test((ulong)1 << 60, (ulong)1 << 20);
 
-            UInt128Test(20, 40);
-            UInt128Test(40, 40);
-            UInt128Test(60, 40);
+            UInt128Test((ulong)1 << 20, (ulong)1 << 40);
+            UInt128Test((ulong)1 << 40, (ulong)1 << 40);
+            UInt128Test((ulong)1 << 60, (ulong)1 << 40);
 
-            UInt128Test(20, 60);
-            UInt128Test(40, 60);
-            UInt128Test(60, 60);
+            UInt128Test((ulong)1 << 20, (ulong)1 << 60);
+            UInt128Test((ulong)1 << 40, (ulong)1 << 60);
+            UInt128Test((ulong)1 << 60, (ulong)1 << 60);
+
+            UInt128Test(ulong.MaxValue, ulong.MaxValue);
         }
 
-        private void UInt128Test(int factorSize, int modulusSize)
+        private void UInt128Test(ulong factorSize, ulong modulusSize)
         {
             var random = new MersenneTwister(0).Create<ulong>();
-            var factorMax = (ulong)1 << factorSize;
-            var modulusMax = (ulong)1 << modulusSize;
             for (int i = 0; i < 10000; i++)
             {
-                var a = random.Next(factorMax);
-                var b = random.Next(factorMax);
-                var n = random.Next(modulusMax - 1) + 1;
+                var n = random.Next(modulusSize - 1) + 1;
                 if ((n & 1) == 0)
                     ++n;
+                var a = random.Next(factorSize) % n;
+                var b = random.Next(factorSize) % n;
                 var c = (UInt128)a * b;
                 Assert.AreEqual((BigInteger)a * b, c);
                 Assert.AreEqual((BigInteger)a * b % n, (UInt128)a * b % n);
                 Assert.AreEqual((BigInteger)a * b / n, (UInt128)a * b / n);
+                Assert.AreEqual(((BigInteger)a + b) % n, UInt128.ModularSum(a, b, n));
+                Assert.AreEqual((((BigInteger)a - b) % n + n) % n, UInt128.ModularDifference(a, b, n));
                 Assert.AreEqual((BigInteger)a * b % n, UInt128.ModularProduct(a, b, n));
                 Assert.AreEqual(BigInteger.ModPow(a, b, n), IntegerMath.ModularPower(a, b, n));
             }

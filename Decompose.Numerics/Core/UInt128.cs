@@ -106,11 +106,59 @@ namespace Decompose.Numerics
         {
             return Modulus(ref u, (ulong)v.r1 << 32 | v.r0);
         }
+        public static ulong ModularSum(ulong a, ulong b, ulong modulus)
+        {
+            var a0 = (uint)a;
+            var a1 = (uint)(a >> 32);
+            var b0 = (uint)b;
+            var b1 = (uint)(b >> 32);
+            var n0 = (uint)modulus;
+            var n1 = (uint)(modulus >> 32);
+            var carry = (ulong)a0 + b0;
+            var c0 = (uint)carry;
+            carry = (carry >> 32) + a1 + b1;
+            var c1 = (uint)carry;
+            if (carry > n1 || carry == n1 && c0 >= n0)
+            {
+                var borrow = (ulong)c0 - n0;
+                c0 = (uint)borrow;
+                borrow = (ulong)((long)borrow >> 32) + carry - n1;
+                c1 = (uint)borrow;
+            }
+            var c = (ulong)c1 << 32 | c0;
+            Debug.Assert(((BigInteger)a + b) % modulus % modulus == c);
+            return c;
+        }
+        public static ulong ModularDifference(ulong a, ulong b, ulong modulus)
+        {
+            var a0 = (uint)a;
+            var a1 = (uint)(a >> 32);
+            var b0 = (uint)b;
+            var b1 = (uint)(b >> 32);
+            var n0 = (uint)modulus;
+            var n1 = (uint)(modulus >> 32);
+            var borrow = (ulong)a0 - b0;
+            var c0 = (uint)borrow;
+            borrow = (ulong)((long)borrow >> 32) + a1 - b1;
+            var c1 = (uint)borrow;
+            if (borrow >> 32 != 0)
+            {
+                var carry = (ulong)c0 + n0;
+                c0 = (uint)carry;
+                carry = (carry >> 32) + borrow + n1;
+                c1 = (uint)carry;
+            }
+            var c = (ulong)c1 << 32 | c0;
+            Debug.Assert((((BigInteger)a - b) % modulus + modulus) % modulus == c);
+            return c;
+        }
         public static ulong ModularProduct(ulong a, ulong b, ulong modulus)
         {
-            UInt128 result = default(UInt128);
-            Multiply(ref result, (uint)a, (uint)(a >> 32), (uint)b, (uint)(b >> 32));
-            return Modulus(ref result, modulus);
+            UInt128 product = default(UInt128);
+            Multiply(ref product, (uint)a, (uint)(a >> 32), (uint)b, (uint)(b >> 32));
+            var c = Modulus(ref product, modulus);
+            Debug.Assert((BigInteger)a * b % modulus == c);
+            return c;
         }
         public static ulong ModularPower(ulong value, ulong exponent, ulong modulus)
         {
