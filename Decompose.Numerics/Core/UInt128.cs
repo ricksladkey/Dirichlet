@@ -10,14 +10,17 @@ namespace Decompose.Numerics
         private uint r1;
         private uint r2;
         private uint r3;
+
         public static UInt128 Parse(string value)
         {
             return (UInt128)BigInteger.Parse(value);
         }
+        
         public override string ToString()
         {
             return ((BigInteger)this).ToString();
         }
+        
         public int GetBitLength()
         {
             if (r3 != 0)
@@ -28,84 +31,106 @@ namespace Decompose.Numerics
                 return r1.GetBitLength() + 32;
             return r0.GetBitLength();
         }
+        
         public int GetBitCount()
         {
             return r0.GetBitCount() + r1.GetBitCount() + r2.GetBitCount() + r3.GetBitCount();
         }
-        public static implicit operator UInt128(uint i)
+        
+        public static implicit operator UInt128(uint a)
         {
-            return new UInt128 { r0 = i };
+            var c = default(UInt128);
+            c.r0 = a;
+            return c;
         }
-        public static implicit operator UInt128(ulong i)
+        
+        public static implicit operator UInt128(ulong a)
         {
-            return new UInt128 { r0 = (uint)i, r1 = (uint)(i >> 32) };
+            var c = default(UInt128);
+            c.r0 = (uint)a;
+            c.r1 = (uint)(a >> 32);
+            return c;
         }
-        public static explicit operator UInt128(BigInteger i)
+        
+        public static explicit operator UInt128(BigInteger a)
         {
-            return new UInt128
-            {
-                r0 = (uint)(i & uint.MaxValue),
-                r1 = (uint)(i >> 32 & uint.MaxValue),
-                r2 = (uint)(i >> 64 & uint.MaxValue),
-                r3 = (uint)(i >> 96),
-            };
+            var a01 = (ulong)(a & ulong.MaxValue);
+            var a23 = (ulong)(a >> 64);
+            var c = default(UInt128);
+            c.r0 = (uint)a01;
+            c.r1 = (uint)(a01 >> 32);
+            c.r2 = (uint)a23;
+            c.r3 = (uint)(a23 >> 32);
+            return c;
         }
-        public static explicit operator uint(UInt128 r)
+        
+        public static explicit operator uint(UInt128 a)
         {
-            return r.r0;
+            return a.r0;
         }
-        public static explicit operator ulong(UInt128 r)
+        
+        public static explicit operator ulong(UInt128 a)
         {
-            return (ulong)r.r1 << 32 | r.r0;
+            return (ulong)a.r1 << 32 | a.r0;
         }
-        public static implicit operator BigInteger(UInt128 r)
+        
+        public static implicit operator BigInteger(UInt128 a)
         {
-            return (BigInteger)((ulong)r.r3 << 32 | r.r2) << 64 | (ulong)r.r1 << 32 | r.r0;
+            return (BigInteger)((ulong)a.r3 << 32 | a.r2) << 64 | (ulong)a.r1 << 32 | a.r0;
         }
-        public static UInt128 operator <<(UInt128 r, int n)
+        
+        public static UInt128 operator <<(UInt128 a, int b)
         {
-            UInt128 w;
-            LeftShift(out w, ref r, n);
-            return w;
+            UInt128 c;
+            LeftShift(out c, ref a, b);
+            return c;
         }
-        public static UInt128 operator *(ulong u, UInt128 v)
+        
+        public static UInt128 operator *(ulong a, UInt128 b)
         {
-            UInt128 result = default(UInt128);
-            Multiply(ref result, (uint)u, (uint)(u >> 32), v.r0, v.r1);
-            return result;
+            UInt128 c = default(UInt128);
+            Multiply(ref c, (uint)a, (uint)(a >> 32), b.r0, b.r1);
+            return c;
         }
-        public static UInt128 operator *(UInt128 u, ulong v)
+        
+        public static UInt128 operator *(UInt128 a, ulong b)
         {
-            UInt128 result = default(UInt128);
-            Multiply(ref result, u.r0, u.r1, (uint)v, (uint)(v >> 32));
-            return result;
+            UInt128 c = default(UInt128);
+            Multiply(ref c, a.r0, a.r1, (uint)b, (uint)(b >> 32));
+            return c;
         }
-        public static UInt128 operator *(UInt128 u, UInt128 v)
+        
+        public static UInt128 operator *(UInt128 a, UInt128 b)
         {
-            UInt128 result = default(UInt128);
-            Multiply(ref result, u.r0, u.r1, v.r0, v.r1);
-            return result;
+            UInt128 c = default(UInt128);
+            Multiply(ref c, a.r0, a.r1, b.r0, b.r1);
+            return c;
         }
-        public static UInt128 operator /(UInt128 u, ulong v)
+        
+        public static UInt128 operator /(UInt128 a, ulong b)
         {
-            UInt128 w = default(UInt128);
-            Divide(ref w, ref u, v);
-            return w;
+            UInt128 c = default(UInt128);
+            Divide(ref c, ref a, b);
+            return c;
         }
-        public static UInt128 operator /(UInt128 u, UInt128 v)
+        
+        public static UInt128 operator /(UInt128 a, UInt128 b)
         {
-            UInt128 w = default(UInt128);
-            Divide(ref w, ref u, (ulong)v);
-            return w;
+            UInt128 c = default(UInt128);
+            Divide(ref c, ref a, (ulong)b);
+            return c;
         }
-        public static ulong operator %(UInt128 u, ulong v)
+        
+        public static ulong operator %(UInt128 a, ulong b)
         {
-            return Modulus(ref u, v);
+            return Modulus(ref a, b);
         }
-        public static UInt128 operator %(UInt128 u, UInt128 v)
+        
+        public static UInt128 operator %(UInt128 a, UInt128 b)
         {
-            return Modulus(ref u, (ulong)v.r1 << 32 | v.r0);
+            return Modulus(ref a, (ulong)b.r1 << 32 | b.r0);
         }
+        
         public static ulong ModularSum(ulong a, ulong b, ulong modulus)
         {
             var a0 = (uint)a;
@@ -126,9 +151,10 @@ namespace Decompose.Numerics
                 c1 = (uint)borrow;
             }
             var c = (ulong)c1 << 32 | c0;
-            Debug.Assert(((BigInteger)a + b) % modulus % modulus == c);
+            Debug.Assert(((BigInteger)a + b) % modulus == c);
             return c;
         }
+        
         public static ulong ModularDifference(ulong a, ulong b, ulong modulus)
         {
             var a0 = (uint)a;
@@ -149,9 +175,10 @@ namespace Decompose.Numerics
                 c1 = (uint)carry;
             }
             var c = (ulong)c1 << 32 | c0;
-            Debug.Assert((((BigInteger)a - b) % modulus + modulus) % modulus == c);
+            Debug.Assert(((BigInteger)a - b + modulus) % modulus == c);
             return c;
         }
+        
         public static ulong ModularProduct(ulong a, ulong b, ulong modulus)
         {
             UInt128 product = default(UInt128);
@@ -160,6 +187,7 @@ namespace Decompose.Numerics
             Debug.Assert((BigInteger)a * b % modulus == c);
             return c;
         }
+        
         public static ulong ModularPower(ulong value, ulong exponent, ulong modulus)
         {
             var result = (ulong)1;
@@ -167,11 +195,13 @@ namespace Decompose.Numerics
             {
                 if ((exponent & 1) != 0)
                     result = ModularProduct(result, value, modulus);
-                value = ModularProduct(value, value, modulus);
+                if (exponent != 1)
+                    value = ModularProduct(value, value, modulus);
                 exponent >>= 1;
             }
             return result;
         }
+
         public static ulong Montgomery(ulong u, ulong v, ulong n, uint k0)
         {
             var u0 = (uint)u;
@@ -225,6 +255,7 @@ namespace Decompose.Numerics
             var result = (ulong)t1 << 32 | t0;
             return result >= n ? result - n : result;
         }
+
         public static uint Montgomery(uint u0, uint v0, uint n0, uint k0)
         {
             var carry = (ulong)u0 * v0;
@@ -240,6 +271,7 @@ namespace Decompose.Numerics
             var result = (ulong)t1 << 32 | t0;
             return (uint)(result >= n0 ? result - n0 : result);
         }
+
         private static void Multiply(ref UInt128 w, uint u0, uint u1, uint v0, uint v1)
         {
             var carry = (ulong)u0 * v0;
@@ -253,6 +285,7 @@ namespace Decompose.Numerics
             w.r2 = (uint)carry;
             w.r3 = (uint)(carry >> 32);
         }
+
         private static void Divide(ref UInt128 w, ref UInt128 u, ulong v)
         {
             var v0 = (uint)v;
@@ -299,6 +332,7 @@ namespace Decompose.Numerics
             }
             return Modulus128(ref u, v);
         }
+        
         private static void Division96(ref UInt128 w, ref UInt128 u, uint v)
         {
             w.r2 = u.r2 / v;
@@ -309,6 +343,7 @@ namespace Decompose.Numerics
             u0u1 = u0 << 32 | u.r0;
             w.r0 = (uint)(u0u1 / v);
         }
+        
         private static void Division128(ref UInt128 w, ref UInt128 u, uint v)
         {
             w.r3 = u.r3 / v;
@@ -322,6 +357,7 @@ namespace Decompose.Numerics
             u0u1 = u0 << 32 | u.r0;
             w.r0 = (uint)(u0u1 / v);
         }
+        
         private static void Division96(ref UInt128 w, ref UInt128 u, ulong v)
         {
             var dneg = ((uint)(v >> 32)).GetBitLength();
@@ -343,6 +379,7 @@ namespace Decompose.Numerics
             w.r1 = ModDiv(r3, ref r2, ref r1, v1, v2);
             w.r0 = ModDiv(r2, ref r1, ref r0, v1, v2);
         }
+        
         private static void Division128(ref UInt128 w, ref UInt128 u, ulong v)
         {
             var dneg = ((uint)(v >> 32)).GetBitLength();
@@ -367,6 +404,7 @@ namespace Decompose.Numerics
             w.r1 = ModDiv(r3, ref r2, ref r1, v1, v2);
             w.r0 = ModDiv(r2, ref r1, ref r0, v1, v2);
         }
+        
         private static ulong Modulus96(ref UInt128 u, uint v)
         {
             var u0 = (ulong)(u.r2 % v);
@@ -375,6 +413,7 @@ namespace Decompose.Numerics
             u0u1 = u0 << 32 | u.r0;
             return u0u1 % v;
         }
+        
         private static ulong Modulus128(ref UInt128 u, uint v)
         {
             var u0 = (ulong)(u.r3 % v);
@@ -385,6 +424,7 @@ namespace Decompose.Numerics
             u0u1 = u0 << 32 | u.r0;
             return u0u1 % v;
         }
+        
         private static ulong Modulus96(ref UInt128 u, ulong v)
         {
             var dneg = ((uint)(v >> 32)).GetBitLength();
@@ -407,6 +447,7 @@ namespace Decompose.Numerics
             ModDiv(r2, ref r1, ref r0, v1, v2);
             return ((ulong)r1 << 32 | r0) >> d;
         }
+        
         private static ulong Modulus128(ref UInt128 u, ulong v)
         {
             var dneg = ((uint)(v >> 32)).GetBitLength();
@@ -432,6 +473,7 @@ namespace Decompose.Numerics
             ModDiv(r2, ref r1, ref r0, v1, v2);
             return ((ulong)r1 << 32 | r0) >> d;
         }
+        
         private static uint ModDiv(uint u0, ref uint u1, ref uint u2, uint v1, uint v2)
         {
             var u0u1 = (ulong)u0 << 32 | u1;
@@ -469,6 +511,7 @@ namespace Decompose.Numerics
             }
             return (uint)qhat;
         }
+        
         private static void LeftShift(out UInt128 w, ref UInt128 u, int d)
         {
             if (d == 64)
@@ -498,6 +541,7 @@ namespace Decompose.Numerics
             }
             throw new NotImplementedException();
         }
+        
         private void Set(ulong value)
         {
             r0 = (uint)value;
