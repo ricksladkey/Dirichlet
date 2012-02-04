@@ -1725,24 +1725,23 @@ namespace Decompose.Numerics
         {
             // SOS Method - Separated Operand Scanning
             CheckValid();
-            int s = n.last + 1;
-            CheckLast(2 * s);
+            var s = n.last + 1;
+            CheckLast(2 * s + 1);
             var nbits = n.bits;
             for (int i = 0; i < s; i++)
             {
-                ulong carry = 0;
-                ulong m = bits[i] * k0;
-                for (int j = 0; j < s; j++)
+                var m = bits[i] * k0;
+                var carry = bits[i] + (ulong)m * nbits[0];
+                bits[i] = (uint)carry;
+                for (int j = 1; j < s; j++)
                 {
-                    carry += (ulong)bits[i + j] + m * nbits[j];
+                    carry = (carry >> 32) + bits[i + j] + (ulong)m * nbits[j];
                     bits[i + j] = (uint)carry;
-                    carry >>= 32;
                 }
-                for (int j = s; carry != 0; j++)
+                for (int ij = i + s; (carry >>= 32) != 0; ij++)
                 {
-                    carry += bits[i + j];
-                    bits[i + j] = (uint)carry;
-                    carry >>= 32;
+                    carry += bits[ij];
+                    bits[ij] = (uint)carry;
                 }
             }
             for (int i = 0; i <= s; i++)
@@ -1760,40 +1759,36 @@ namespace Decompose.Numerics
         {
             // CIOS Method - Coarsely Integrated Operand Scanning
             CheckValid();
-            int s = n.last + 1;
-            CheckLast(2 * s);
+            var s = n.last + 1;
+            CheckLast(2 * s + 1);
             var ubits = u.bits;
             var vbits = v.bits;
             var nbits = n.bits;
-            int wlast = last;
-            for (int i = 0; i <= wlast; i++)
+            for (int i = 0; i <= last; i++)
                 bits[i] = 0;
             for (int i = 0; i < s; i++)
             {
-                ulong carry = 0;
-                ulong ui = ubits[i];
-                for (int j = 0; j < s; j++)
-                {
-                    carry += (ulong)bits[j] + ui * vbits[j];
-                    bits[j] = (uint)carry;
-                    carry >>= 32;
-                }
-                carry += bits[s];
-                bits[s] = (uint)carry;
-                bits[s + 1] = (uint)(carry >> 32);
-                ulong m = bits[0] * k0;
-                carry = bits[0] + m * nbits[0];
-                carry >>= 32;
+                var ui = ubits[i];
+                var carry = bits[0] + (ulong)ui * vbits[0];
+                bits[0] = (uint)carry;
                 for (int j = 1; j < s; j++)
                 {
-                    carry += (ulong)bits[j] + m * nbits[j];
-                    bits[j - 1] = (uint)carry;
-                    carry >>= 32;
+                    carry = (carry >> 32) + bits[j] + (ulong)ui * vbits[j];
+                    bits[j] = (uint)carry;
                 }
-                carry += bits[s];
+                carry = (carry >> 32) + bits[s];
+                bits[s] = (uint)carry;
+                bits[s + 1] = (uint)(carry >> 32);
+                var m = bits[0] * k0;
+                carry = bits[0] + (ulong)m * nbits[0];
+                for (int j = 1; j < s; j++)
+                {
+                    carry = (carry >> 32) + bits[j] + (ulong)m * nbits[j];
+                    bits[j - 1] = (uint)carry;
+                }
+                carry = (carry >> 32) + bits[s];
                 bits[s - 1] = (uint)carry;
-                carry >>= 32;
-                bits[s] = bits[s + 1] + (uint)carry;
+                bits[s] = bits[s + 1] + (uint)(carry >> 32);
             }
             bits[s + 1] = 0;
             while (s > 0 && bits[s] == 0)

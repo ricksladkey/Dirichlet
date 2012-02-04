@@ -1075,7 +1075,7 @@ namespace Decompose
 
         static void PrimalityTest()
         {
-#if true
+#if false
             {
                 int count = 2000000;
                 var random = new MersenneTwister(0).Create<ulong>();

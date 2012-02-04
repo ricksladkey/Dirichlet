@@ -284,9 +284,9 @@ namespace Decompose.Numerics
             var t1 = (uint)carry;
             var t2 = (uint)(carry >> 32);
 
-            var m = (ulong)(t0 * k0);
-            carry = t0 + m * n0;
-            carry = (carry >> 32) + t1 + m * n1;
+            var m = t0 * k0;
+            carry = t0 + (ulong)m * n0;
+            carry = (carry >> 32) + t1 + (ulong)m * n1;
             t0 = (uint)carry;
             carry = (carry >> 32) + t2;
             t1 = (uint)carry;
@@ -300,9 +300,9 @@ namespace Decompose.Numerics
             t2 = (uint)carry;
             var t3 = (uint)(carry >> 32);
 
-            m = (ulong)(t0 * k0);
-            carry = t0 + m * n0;
-            carry = (carry >> 32) + t1 + m * n1;
+            m = t0 * k0;
+            carry = t0 + (ulong)m * n0;
+            carry = (carry >> 32) + t1 + (ulong)m * n1;
             t0 = (uint)carry;
             carry = (carry >> 32) + t2;
             t1 = (uint)carry;

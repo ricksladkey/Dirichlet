@@ -63,6 +63,7 @@ namespace Decompose.Numerics
                         var reg1 = reducer.store.Allocate().Set(r);
                         reg1.Set(r);
                         reducer.Reduce(r, reg1, GetRep(x));
+                        reducer.store.Release(reg1);
                     }
                     return this;
                 }
@@ -77,6 +78,7 @@ namespace Decompose.Numerics
                         reducer.Reduce(r, reg1, reg1);
                     else
                         reducer.Reduce(r, reg1, GetRep(x));
+                    reducer.store.Release(reg1);
                     return this;
                 }
 #endif
