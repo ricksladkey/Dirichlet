@@ -13,9 +13,8 @@ namespace Decompose.Numerics
                 public override bool IsOne { get { return r == 1; } }
 
                 public Residue(Reducer reducer, ulong x)
-                    : base(reducer)
+                    : base(reducer, x % reducer.modulus)
                 {
-                    this.r = x % reducer.modulus;
                 }
 
                 public override IResidue<ulong> Set(ulong x)
