@@ -662,6 +662,11 @@ namespace Decompose.Numerics.Test
                 var s = (int)(b % 32);
                 Assert.AreEqual((BigInteger)a << s, (UInt128)a << s);
                 Assert.AreEqual((BigInteger)a >> s, (UInt128)a >> s);
+                Assert.AreEqual((BigInteger)a & b, (UInt128)a & b);
+                Assert.AreEqual((BigInteger)a | b, (UInt128)a | b);
+                Assert.AreEqual((BigInteger)a ^ b, (UInt128)a ^ b);
+                if (a <= long.MaxValue)
+                    Assert.AreEqual(~(BigInteger)a, (long)~(UInt128)a);
                 Assert.AreEqual((BigInteger)a + b, (UInt128)a + b);
                 if (b < a)
                     Assert.AreEqual((BigInteger)a - b, (UInt128)a - b);
