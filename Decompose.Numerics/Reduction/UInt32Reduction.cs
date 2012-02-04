@@ -1,7 +1,4 @@
-﻿using System.Numerics;
-using System.Diagnostics;
-
-namespace Decompose.Numerics
+﻿namespace Decompose.Numerics
 {
     public class UInt32Reduction : UInt32Operations, IReductionAlgorithm<uint>
     {
@@ -36,25 +33,25 @@ namespace Decompose.Numerics
 
                 public override IResidue<uint> Multiply(IResidue<uint> x)
                 {
-                    r = IntegerMath.ModularProduct(r, GetRep(x), reducer.Modulus);
+                    r = IntegerMath.ModularProduct(r, GetRep(x), reducer.modulus);
                     return this;
                 }
 
                 public override IResidue<uint> Add(IResidue<uint> x)
                 {
-                    r = IntegerMath.ModularSum(r, GetRep(x), reducer.Modulus);
+                    r = IntegerMath.ModularSum(r, GetRep(x), reducer.modulus);
                     return this;
                 }
 
                 public override IResidue<uint> Subtract(IResidue<uint> x)
                 {
-                    r = IntegerMath.ModularDifference(r, GetRep(x), reducer.Modulus);
+                    r = IntegerMath.ModularDifference(r, GetRep(x), reducer.modulus);
                     return this;
                 }
 
                 public override IResidue<uint> Power(uint x)
                 {
-                    r = IntegerMath.ModularPower(r, x, reducer.Modulus);
+                    r = IntegerMath.ModularPower(r, x, reducer.modulus);
                     return this;
                 }
 

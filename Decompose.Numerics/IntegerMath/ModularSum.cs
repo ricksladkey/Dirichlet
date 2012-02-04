@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics;
+using System.Numerics;
 
 namespace Decompose.Numerics
 {
@@ -6,6 +7,7 @@ namespace Decompose.Numerics
     {
         public static int ModularSum(int a, int b, int modulus)
         {
+            Debug.Assert(modulus > 0 && a >= 0 && a < modulus && b >= 0 && b < modulus);
             var sum = (uint)a + (uint)b;
             if (sum >= (uint)modulus)
                 sum -= (uint)modulus;
@@ -14,6 +16,7 @@ namespace Decompose.Numerics
 
         public static uint ModularSum(uint a, uint b, uint modulus)
         {
+            Debug.Assert(modulus > 0 && a >= 0 && a < modulus && b >= 0 && b < modulus);
             var sum = (ulong)a + (ulong)b;
             if (sum >= (ulong)modulus)
                 sum -= (ulong)modulus;
@@ -22,6 +25,7 @@ namespace Decompose.Numerics
 
         public static long ModularSum(long a, long b, long modulus)
         {
+            Debug.Assert(modulus > 0 && a >= 0 && a < modulus && b >= 0 && b < modulus);
             var sum = (ulong)a + (ulong)b;
             if (sum >= (ulong)modulus)
                 sum -= (ulong)modulus;
@@ -30,11 +34,13 @@ namespace Decompose.Numerics
 
         public static ulong ModularSum(ulong a, ulong b, ulong modulus)
         {
+            Debug.Assert(modulus > 0 && a >= 0 && a < modulus && b >= 0 && b < modulus);
             return UInt128.ModularSum(a, b, modulus);
         }
 
         public static BigInteger ModularSum(BigInteger a, BigInteger b, BigInteger modulus)
         {
+            Debug.Assert(modulus > 0 && a >= 0 && a < modulus && b >= 0 && b < modulus);
             var sum = a + b;
             return sum >= modulus ? sum - modulus : sum;
         }
