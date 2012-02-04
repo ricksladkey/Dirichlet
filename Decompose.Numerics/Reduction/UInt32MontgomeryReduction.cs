@@ -6,18 +6,13 @@ namespace Decompose.Numerics
 {
     public class UInt32MontgomeryReduction : UInt32Operations, IReductionAlgorithm<uint>
     {
-        private class Reducer : IReducer<uint>
+        private class Reducer : Reducer<UInt32MontgomeryReduction, uint>
         {
-            private class Residue : IResidue<uint>
+            private class Residue : Residue<Reducer, uint, uint>
             {
-                private Reducer reducer;
-                private uint r;
+                public override bool IsZero { get { return r == 0; } }
 
-                public IReducer<uint> Reducer { get { return reducer; } }
-                public uint Rep { get { return r; } }
-                public bool IsZero { get { return r == 0; } }
-
-                public bool IsOne
+                public override bool IsOne
                 {
                     get
                     {
@@ -27,124 +22,84 @@ namespace Decompose.Numerics
                     }
                 }
 
-                protected Residue(Reducer reducer)
-                {
-                    this.reducer = reducer;
-                }
-
                 public Residue(Reducer reducer, uint x)
-                    : this(reducer)
+                    : base(reducer)
                 {
                     Set(x);
                 }
 
-                public IResidue<uint> Set(uint x)
+                public override IResidue<uint> Set(uint x)
                 {
-                    r = reducer.Reduce(x % reducer.n, reducer.rSquaredModN);
+                    r = reducer.Reduce(x % reducer.modulus, reducer.rSquaredModN);
                     return this;
                 }
 
-                public IResidue<uint> Set(IResidue<uint> x)
+                public override IResidue<uint> Set(IResidue<uint> x)
                 {
-                    r = ((Residue)x).r;
+                    r = GetRep(x);
                     return this;
                 }
 
-                public IResidue<uint> Copy()
+                public override IResidue<uint> Copy()
                 {
-                    var residue = new Residue(reducer);
-                    residue.r = r;
-                    return residue;
+                    return new Residue(reducer, r);
                 }
 
-                public IResidue<uint> Multiply(IResidue<uint> x)
+                public override IResidue<uint> Multiply(IResidue<uint> x)
                 {
-                    r = reducer.Reduce(r, ((Residue)x).r);
+                    r = reducer.Reduce(r, GetRep(x));
                     return this;
                 }
 
-                public IResidue<uint> Add(IResidue<uint> x)
+                public override IResidue<uint> Add(IResidue<uint> x)
                 {
-                    r += ((Residue)x).r;
-                    if (r >= reducer.Modulus)
-                        r -= reducer.Modulus;
+                    r = IntegerMath.ModularSum(r, GetRep(x), reducer.modulus);
                     return this;
                 }
 
-                public IResidue<uint> Subtract(IResidue<uint> x)
+                public override IResidue<uint> Subtract(IResidue<uint> x)
                 {
-                    var xr = ((Residue)x).r;
-                    if (r < xr)
-                        r += reducer.Modulus - xr;
-                    else
-                        r -= xr;
+                    r = IntegerMath.ModularDifference(r, GetRep(x), reducer.modulus);
                     return this;
                 }
 
-                public IResidue<uint> Power(uint x)
-                {
-                    ReductionHelper.Power(this, x);
-                    return this;
-                }
-
-                public uint Value()
+                public override uint Value()
                 {
                     return reducer.Reduce(r, 1);
                 }
-
-                public override string ToString()
-                {
-                    return Value().ToString();
-                }
-
-                public bool Equals(IResidue<uint> other)
-                {
-                    return r == ((Residue)other).r;
-                }
-
-                public int CompareTo(IResidue<uint> other)
-                {
-                    return r.CompareTo(((Residue)other).r);
-                }
             }
 
-            private IReductionAlgorithm<uint> reduction;
-            private uint n;
             private uint k0;
             private uint rSquaredModN;
             private uint oneRep;
 
-            public IReductionAlgorithm<uint> Reduction { get { return reduction; } }
-            public uint Modulus { get { return n; } }
-
-            public Reducer(IReductionAlgorithm<uint> reduction, uint n)
+            public Reducer(UInt32MontgomeryReduction reduction, uint modulus)
+                : base(reduction, modulus)
             {
-                this.reduction = reduction;
-                this.n = n;
-                if ((n & 1) == 0)
+                if ((modulus & 1) == 0)
                     throw new InvalidOperationException("not relatively prime");
                 var r = (long)1 << 32;
-                var rDivN = r / n;
-                var rModN = r - rDivN * n;
-                rSquaredModN = (uint)IntegerMath.ModularProduct(rModN, rModN, n);
-                var k = r - IntegerMath.ModularInverse(n, r);
+                var rDivN = r / modulus;
+                var rModN = r - rDivN * modulus;
+                rSquaredModN = (uint)IntegerMath.ModularProduct(rModN, rModN, modulus);
+                var k = r - IntegerMath.ModularInverse(modulus, r);
                 k0 = (uint)k;
             }
 
-            public IResidue<uint> ToResidue(uint x)
+            public override IResidue<uint> ToResidue(uint x)
             {
                 return new Residue(this, x);
             }
 
             private uint Reduce(uint u, uint v)
             {
-                return UInt128.Montgomery(u, v, n, k0);
+                return UInt128.Montgomery(u, v, modulus, k0);
             }
         }
 
-        public IReducer<uint> GetReducer(uint n)
+        public IReducer<uint> GetReducer(uint modulus)
         {
-            return new Reducer(this, n);
+            return new Reducer(this, modulus);
         }
     }
 }
