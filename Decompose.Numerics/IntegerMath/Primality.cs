@@ -30,7 +30,7 @@ namespace Decompose.Numerics
             return primalityLong.IsPrime(n);
         }
 
-        private static IPrimalityAlgorithm<BigInteger> primalityBigInteger = MillerRabin.Create(16, new MontgomeryReduction());
+        private static IPrimalityAlgorithm<BigInteger> primalityBigInteger = MillerRabin.Create(16, new BigIntegerMontgomeryReduction());
 
         public static bool IsPrime(BigInteger n)
         {

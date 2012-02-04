@@ -4,9 +4,9 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public class MontgomeryReduction : BigIntegerOperations, IReductionAlgorithm<BigInteger>
+    public class BigIntegerMontgomeryReduction : BigIntegerOperations, IReductionAlgorithm<BigInteger>
     {
-        private class Reducer : Reducer<MontgomeryReduction, BigInteger>
+        private class Reducer : Reducer<BigIntegerMontgomeryReduction, BigInteger>
         {
             private class Residue : Residue<Reducer, BigInteger, Word32Integer>
             {
@@ -112,7 +112,7 @@ namespace Decompose.Numerics
             private Word32Integer rSquaredModNRep;
             private Word32Integer oneRep;
 
-            public Reducer(MontgomeryReduction reduction, BigInteger modulus)
+            public Reducer(BigIntegerMontgomeryReduction reduction, BigInteger modulus)
                 : base(reduction, modulus)
             {
                 if (modulus.IsEven)

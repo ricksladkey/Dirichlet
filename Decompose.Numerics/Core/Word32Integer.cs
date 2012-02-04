@@ -15,7 +15,7 @@ namespace Decompose.Numerics
 
         public uint[] Bits { get { return bits; } }
         public int Length { get { return bits.Length; } }
-        public int Last { get { return last; } }
+        public int Last { get { return last; } set { last = value; } }
 
         public int GetBitLength()
         {
@@ -29,6 +29,7 @@ namespace Decompose.Numerics
         public int Sign
         {
             get { return last == 0 && bits[0] == 0 ? 0 : sign; }
+            set { sign = value; }
         }
 
         public bool IsZero
@@ -49,11 +50,6 @@ namespace Decompose.Numerics
         public uint LeastSignificantWord
         {
             get { return bits[0]; }
-        }
-
-        public int LengthInWords
-        {
-            get { return last + 1; }
         }
 
         public static int WordLength
@@ -78,11 +74,14 @@ namespace Decompose.Numerics
         private void CheckLast(int newLast)
         {
             if (bits.Length < newLast + 1)
-            {
-                var newBits = new uint[newLast + 1];
-                bits.CopyTo(newBits, 0);
-                bits = newBits;
-            }
+                Resize(newLast + 1);
+        }
+
+        public void Resize(int length)
+        {
+            var newBits = new uint[length];
+            bits.CopyTo(newBits, 0);
+            bits = newBits;
         }
 
         public Word32Integer Clear()
@@ -115,6 +114,20 @@ namespace Decompose.Numerics
                 bits[i] = 0;
             last = 0;
             sign = 1;
+            CheckValid();
+            return this;
+        }
+
+        public Word32Integer Set(long a)
+        {
+            CheckValid();
+            var aAbs = a < 0 ? -a : a;
+            bits[0] = (uint)aAbs;
+            bits[1] = (uint)(aAbs >> 32);
+            for (int i = 2; i <= last; i++)
+                bits[i] = 0;
+            last = bits[1] != 0 ? 1 : 0;
+            sign = a < 0 ? -1 : 1;
             CheckValid();
             return this;
         }
@@ -189,6 +202,31 @@ namespace Decompose.Numerics
             return new Word32Integer(newBits, sign);
         }
 
+        public static implicit operator Word32Integer(int a)
+        {
+            return new Word32Integer(1).Set(a);
+        }
+
+        public static implicit operator Word32Integer(uint a)
+        {
+            return new Word32Integer(1).Set(a);
+        }
+
+        public static implicit operator Word32Integer(long a)
+        {
+            return new Word32Integer(2).Set(a);
+        }
+
+        public static implicit operator Word32Integer(ulong a)
+        {
+            return new Word32Integer(2).Set(a);
+        }
+
+        public static implicit operator Word32Integer(BigInteger a)
+        {
+            return new Word32Integer(4).Set(a);
+        }
+
         public static explicit operator int(Word32Integer a)
         {
             CheckValid(a);
@@ -234,18 +272,28 @@ namespace Decompose.Numerics
             return ((BigInteger)this).ToString();
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj is Word32Integer)
+                return CompareTo((Word32Integer)obj) == 0;
+            if (obj is int)
+                return CompareTo((int)obj) == 0;
+            if (obj is uint)
+                return CompareTo((uint)obj) == 0;
+            if (obj is long)
+                return CompareTo((long)obj) == 0;
+            if (obj is ulong)
+                return CompareTo((ulong)obj) == 0;
+            if (obj is BigInteger)
+                return CompareTo((BigInteger)obj) == 0;
+            return false;
+        }
+
         public bool Equals(Word32Integer other)
         {
             if ((object)other == null)
                 return false;
             return CompareTo(other) == 0;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (!(obj is Word32Integer))
-                return false;
-            return Equals((Word32Integer)obj);
         }
 
         public static bool operator ==(Word32Integer a, Word32Integer b)
@@ -271,6 +319,13 @@ namespace Decompose.Numerics
             return a.CompareTo(b) == 0;
         }
 
+        public static bool operator ==(Word32Integer a, long b)
+        {
+            if ((object)a == null)
+                return false;
+            return a.CompareTo(b) == 0;
+        }
+
         public static bool operator ==(Word32Integer a, ulong b)
         {
             if ((object)a == null)
@@ -286,6 +341,13 @@ namespace Decompose.Numerics
         }
 
         public static bool operator ==(uint a, Word32Integer b)
+        {
+            if ((object)b == null)
+                return false;
+            return b.CompareTo(a) == 0;
+        }
+
+        public static bool operator ==(long a, Word32Integer b)
         {
             if ((object)b == null)
                 return false;
@@ -319,12 +381,22 @@ namespace Decompose.Numerics
             return !(a == b);
         }
 
+        public static bool operator !=(Word32Integer a, long b)
+        {
+            return !(a == b);
+        }
+
         public static bool operator !=(int a, Word32Integer b)
         {
             return !(a == b);
         }
 
         public static bool operator !=(uint a, Word32Integer b)
+        {
+            return !(a == b);
+        }
+
+        public static bool operator !=(long a, Word32Integer b)
         {
             return !(a == b);
         }
@@ -349,6 +421,11 @@ namespace Decompose.Numerics
             return a.CompareTo(b) < 0;
         }
 
+        public static bool operator <(Word32Integer a, long b)
+        {
+            return a.CompareTo(b) < 0;
+        }
+
         public static bool operator <(Word32Integer a, ulong b)
         {
             return a.CompareTo(b) < 0;
@@ -360,6 +437,11 @@ namespace Decompose.Numerics
         }
 
         public static bool operator <(uint a, Word32Integer b)
+        {
+            return b.CompareTo(a) > 0;
+        }
+
+        public static bool operator <(long a, Word32Integer b)
         {
             return b.CompareTo(a) > 0;
         }
@@ -384,6 +466,11 @@ namespace Decompose.Numerics
             return a.CompareTo(b) <= 0;
         }
 
+        public static bool operator <=(Word32Integer a, long b)
+        {
+            return a.CompareTo(b) <= 0;
+        }
+
         public static bool operator <=(Word32Integer a, ulong b)
         {
             return a.CompareTo(b) <= 0;
@@ -395,6 +482,11 @@ namespace Decompose.Numerics
         }
 
         public static bool operator <=(uint a, Word32Integer b)
+        {
+            return b.CompareTo(a) >= 0;
+        }
+
+        public static bool operator <=(long a, Word32Integer b)
         {
             return b.CompareTo(a) >= 0;
         }
@@ -419,6 +511,11 @@ namespace Decompose.Numerics
             return a.CompareTo(b) > 0;
         }
 
+        public static bool operator >(Word32Integer a, long b)
+        {
+            return a.CompareTo(b) > 0;
+        }
+
         public static bool operator >(Word32Integer a, ulong b)
         {
             return a.CompareTo(b) > 0;
@@ -430,6 +527,11 @@ namespace Decompose.Numerics
         }
 
         public static bool operator >(uint a, Word32Integer b)
+        {
+            return b.CompareTo(a) < 0;
+        }
+
+        public static bool operator >(long a, Word32Integer b)
         {
             return b.CompareTo(a) < 0;
         }
@@ -454,6 +556,11 @@ namespace Decompose.Numerics
             return a.CompareTo(b) >= 0;
         }
 
+        public static bool operator >=(Word32Integer a, long b)
+        {
+            return a.CompareTo(b) >= 0;
+        }
+
         public static bool operator >=(Word32Integer a, ulong b)
         {
             return a.CompareTo(b) >= 0;
@@ -469,9 +576,39 @@ namespace Decompose.Numerics
             return b.CompareTo(a) <= 0;
         }
 
+        public static bool operator >=(long a, Word32Integer b)
+        {
+            return b.CompareTo(a) <= 0;
+        }
+
         public static bool operator >=(ulong a, Word32Integer b)
         {
             return b.CompareTo(a) <= 0;
+        }
+
+        public static Word32Integer operator +(Word32Integer a, Word32Integer b)
+        {
+            return new Word32Integer(Math.Max(a.last, b.last) + 2).SetSum(a, b);
+        }
+
+        public static Word32Integer operator -(Word32Integer a, Word32Integer b)
+        {
+            return new Word32Integer(Math.Max(a.last, b.last) + 2).SetDifference(a, b);
+        }
+
+        public static Word32Integer operator *(Word32Integer a, Word32Integer b)
+        {
+            return new Word32Integer(a.last + b.last + 1).SetProduct(a, b);
+        }
+
+        public static Word32Integer operator /(Word32Integer a, Word32Integer b)
+        {
+            return new Word32Integer(a.last + 1).SetQuotient(a, b, new Word32Integer(a.last + 1));
+        }
+
+        public static Word32Integer operator %(Word32Integer a, Word32Integer b)
+        {
+            return new Word32Integer(a.last + b.last + 1).SetRemainder(a, b);
         }
 
         public override int GetHashCode()
@@ -546,6 +683,21 @@ namespace Decompose.Numerics
             if (last > 0)
                 return 1;
             return bits[0].CompareTo(other);
+        }
+
+        public int CompareTo(long other)
+        {
+            CheckValid();
+            if (last > 1)
+                return 1;
+            if (sign != (other < 0 ? -1 : 1))
+            {
+                if (IsZero && other == 0)
+                    return 0;
+                return sign;
+            }
+            var result = ((ulong)bits[1] << 32 | bits[0]).CompareTo(other);
+            return sign == -1 ? -result : result;
         }
 
         public int CompareTo(ulong other)
@@ -1252,6 +1404,13 @@ namespace Decompose.Numerics
             return this;
         }
 
+        public Word32Integer SetQuotient(Word32Integer a, Word32Integer b, Word32Integer reg1)
+        {
+            reg1.Set(a);
+            DivMod(reg1, b, this);
+            return this;
+        }
+
         public Word32Integer SetQuotientWithRemainder(Word32Integer a, Word32Integer b, Word32Integer remainder)
         {
             remainder.Set(a);
@@ -1521,6 +1680,7 @@ namespace Decompose.Numerics
             return this;
         }
 
+#if true
         public Word32Integer BarrettReduction(Word32Integer z, Word32Integer mu, int k)
         {
             // Use product scanning algorithm.
@@ -1559,6 +1719,7 @@ namespace Decompose.Numerics
             bits[clast - (k - 1)] = (uint)r0;
             return SetLast(clast - (k - 1));
         }
+#endif
 
         public Word32Integer MontgomerySOS(Word32Integer n, uint k0)
         {

@@ -100,7 +100,7 @@
     <Compile Include="Random\MersenneTwister.cs" />
     <Compile Include="Primality\MillerRabin.cs" />
     <Compile Include="Reduction\Reference\BigIntegerReduction.cs" />
-    <Compile Include="Reduction\Performance\MontgomeryReduction.cs" />
+    <Compile Include="Reduction\Performance\BigIntegerMontgomeryReduction.cs" />
     <Compile Include="Core\NumericExtensions.cs" />
     <Compile Include="Factorization\PollardRho.cs" />
     <Compile Include="Factorization\PollardRhoBase.cs" />

@@ -151,7 +151,7 @@ namespace Decompose.Numerics
                 var reg1 = store.Allocate().Set(z);
                 reg1.RightShift(bToTheKMinusOneLength);
 #if false
-                reg2.SetProductShifted(reg1, muRep, bToTheKPlusOneLength);
+                var reg2.store.Allocate().SetProductShifted(reg1, muRep, bToTheKPlusOneLength);
 #else
                 var reg2 = store.Allocate().SetProduct(reg1, muRep);
                 reg2.RightShift(bToTheKPlusOneLength);

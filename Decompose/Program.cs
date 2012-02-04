@@ -246,7 +246,7 @@ namespace Decompose
             FactorTest(debug, 25, n, new PollardRhoBrent(threads, 0));
             FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new Word32IntegerReduction()));
             FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new BarrettReduction()));
-            FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
+            FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new BigIntegerMontgomeryReduction()));
         }
 
         static void FactorTest3()
@@ -284,7 +284,7 @@ namespace Decompose
                 var factors = null as BigInteger[];
                 //factors = FactorTest(true, 1, n, new PollardRho(threads, 0));
                 //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, 0, new Word32IntegerReduction()));
-                factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
+                factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, 0, new BigIntegerMontgomeryReduction()));
                 //factors = FactorTest(true, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads }));
             }
         }
@@ -1099,7 +1099,7 @@ namespace Decompose
                 //var algorithm = new OldMillerRabin(16);
                 //var algorithm = MillerRabin.Create(16, new BigIntegerReduction());
                 //var algorithm = MillerRabin.Create(16, new Word32IntegerReduction());
-                var algorithm = MillerRabin.Create(16, new MontgomeryReduction());
+                var algorithm = MillerRabin.Create(16, new BigIntegerMontgomeryReduction());
                 var max = BigInteger.One << 256;
                 var timer = new Stopwatch();
                 timer.Start();

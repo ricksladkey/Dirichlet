@@ -73,9 +73,9 @@ namespace Decompose.Numerics.Test
             TestPrimality3<ulong>(ulong.MaxValue - 10000 - 1, 10000, primalityOld, new UInt64Reduction());
             TestPrimality3<ulong>(ulong.MaxValue - 10000 - 1, 10000, primalityOld, new UInt64MontgomeryReduction());
             TestPrimality3<BigInteger>(0, 10000, primalityOld, new BigIntegerReduction());
-            TestPrimality3<BigInteger>(0, 10000, primalityOld, new MontgomeryReduction());
+            TestPrimality3<BigInteger>(0, 10000, primalityOld, new BigIntegerMontgomeryReduction());
             TestPrimality3<BigInteger>((BigInteger)ulong.MaxValue * ulong.MaxValue, 10000, primalityOld, new BigIntegerReduction());
-            TestPrimality3<BigInteger>((BigInteger)ulong.MaxValue * ulong.MaxValue, 10000, primalityOld, new MontgomeryReduction());
+            TestPrimality3<BigInteger>((BigInteger)ulong.MaxValue * ulong.MaxValue, 10000, primalityOld, new BigIntegerMontgomeryReduction());
         }
 
         private void TestPrimality3<T>(T startValue, T countValue, IPrimalityAlgorithm<T> primalityOld, IReductionAlgorithm<T> reduction)
@@ -185,7 +185,7 @@ namespace Decompose.Numerics.Test
         public void TestMontgomeryReduction()
         {
             var p = BigInteger.Parse("10023859281455311421");
-            TestReduction(p, new MontgomeryReduction());
+            TestReduction(p, new BigIntegerMontgomeryReduction());
         }
 
         [TestMethod]
@@ -336,6 +336,25 @@ namespace Decompose.Numerics.Test
 
         [TestMethod]
         public void TestWord32Integer2()
+        {
+            for (int i = -10; i < 10; i++)
+            {
+                for (int j = -10; j < 10; j++)
+                {
+                    Assert.AreEqual((BigInteger)i + j, (int)((Word32Integer)i + j));
+                    Assert.AreEqual((BigInteger)i - j, (int)((Word32Integer)i - j));
+                    Assert.AreEqual((BigInteger)i * j, (int)((Word32Integer)i * j));
+                    if (j != 0)
+                    {
+                        Assert.AreEqual((BigInteger)i / j, (int)((Word32Integer)i / j));
+                        Assert.AreEqual((BigInteger)i % j, (int)((Word32Integer)i % j));
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestWord32Integer3()
         {
             var n = BigInteger.Parse("10023859281455311421");
             var generator = new MersenneTwister(0);
