@@ -188,6 +188,7 @@ namespace Decompose.Numerics
             public CountInt LogP { get; set; }
             public int Root { get; set; }
             public int RootDiff { get; set; }
+            public long Reciprocal { get; set; }
             public FactorBaseEntry(int p, BigInteger n)
             {
                 P = p;
@@ -196,6 +197,9 @@ namespace Decompose.Numerics
                 Root = n % p == 0 ? 0 : IntegerMath.ModularSquareRoot(n, p);
                 Debug.Assert(((BigInteger)Root * Root - n) % p == 0);
                 RootDiff = ((P - Root) - Root) % p;
+                Reciprocal = ((long)1 << reciprocalShift) / p;
+                if (Reciprocal * p < ((long)1 << reciprocalShift))
+                    ++Reciprocal;
             }
             public override string ToString()
             {
@@ -209,6 +213,7 @@ namespace Decompose.Numerics
             public CountInt LogP { get; set; }
             public int Offset1 { get; set; }
             public int Offset2 { get; set; }
+            public long Reciprocal { get; set; }
         }
 
         private struct CountEntry
@@ -492,6 +497,7 @@ namespace Decompose.Numerics
         private const int maximumAfactor = 4000;
         private const int maximumNumberOfFactors = 20;
         private const int minimumCounTableDigits = 90;
+        private const int reciprocalShift = 40;
 
         private readonly Parameters[] parameters =
         {
@@ -940,6 +946,7 @@ namespace Decompose.Numerics
                 offsets[i].LogP = entry.LogP;
                 offsets[i].Offset1 = (int)((aInv * root1 - x) % p);
                 offsets[i].Offset2 = (int)((aInv * root2 - x) % p);
+                offsets[i].Reciprocal = entry.Reciprocal;
                 Debug.Assert(offsets[i].Offset1 >= 0 && polynomial.Evaluate(x + offsets[i].Offset1) % p == 0);
                 Debug.Assert(offsets[i].Offset2 >= 0 && polynomial.Evaluate(x + offsets[i].Offset2) % p == 0);
             }
@@ -1077,7 +1084,7 @@ namespace Decompose.Numerics
         private void CalculateNumberOfThreads()
         {
 #if DEBUG
-            threads = 0;
+            threads = config.Threads != 0 ? config.Threads : 0;
 #else
             threads = config.Threads != 0 ? config.Threads : 1;
             if (digits < 10)
@@ -1745,6 +1752,7 @@ namespace Decompose.Numerics
                 return;
             if (cofactor < maximumDivisorSquared)
             {
+                // Must be prime and exceeds maximum cofactor.
                 Interlocked.Increment(ref cofactorsExceedingCutoff1);
                 return;
             }
@@ -1761,7 +1769,11 @@ namespace Decompose.Numerics
             if (factor1 <= 1)
                 return;
             var factor2 = cofactor / factor1;
-            Debug.Assert(factor1 < maximumCofactor && factor2 < maximumCofactor);
+            if (factor1 >= maximumCofactor || factor2 >= maximumCofactor)
+            {
+                // One of the two factors exceeds maximum cofactor.
+                Interlocked.Increment(ref cofactorsExceedingCutoff1);
+            }
             ProcessPartialPartialRelation(interval, k, factor1, factor2);
         }
 
@@ -1809,7 +1821,11 @@ namespace Decompose.Numerics
                 if (siqs.IsQIndex[i])
                     continue;
                 var p = offsets[i].P;
+#if false
                 var offset = k % p;
+#else
+                var offset = k - (int)((offsets[i].Reciprocal * k) >> reciprocalShift) * p;
+#endif
                 if (offset != offsets[i].Offset1 && offset != offsets[i].Offset2)
                 {
                     Debug.Assert(y % p != 0);

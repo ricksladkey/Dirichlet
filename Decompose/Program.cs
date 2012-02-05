@@ -31,7 +31,7 @@ namespace Decompose
                 //MsieveTest();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                //QuadraticSieveStandardTest();
+                QuadraticSieveStandardTest();
                 //QuadraticSieveDebugTest();
                 //QuadraticSieveFactorTest();
                 //CunninghamTest();
@@ -42,7 +42,7 @@ namespace Decompose
                 //ModularInverseTest();
                 //PrimalityTest();
                 //OperationsTest();
-                DivisionTest();
+                //DivisionTest();
             }
             catch (AggregateException ex)
             {
@@ -422,7 +422,7 @@ namespace Decompose
                 Threads = 8,
 #endif
                 DiagnosticsOutput = output,
-                //ProcessPartialPartialRelations = true,
+                ProcessPartialPartialRelations = true,
             };
             for (int i = 20; i <= 35; i++)
             {
@@ -445,12 +445,14 @@ namespace Decompose
             {
 #if !DEBUG
                 Threads = 8,
+#else
+                Threads = 8,
 #endif
                 Diagnostics = QuadraticSieve.Diag.Verbose,
                 DiagnosticsOutput = output,
-                ReportingInterval = 60,
-                //ProcessPartialPartialRelations = true,
-                MergeLimit = 10,
+                //ReportingInterval = 60,
+                ProcessPartialPartialRelations = true,
+                //MergeLimit = 10,
                 //FactorBaseSize = 45000,
                 //BlockSize = 1024 * 1024,
                 //IntervalSize = 1024 * 1024,
@@ -462,7 +464,7 @@ namespace Decompose
                 //UseCountTable = false,
                 //CofactorCutoff = 1024,
             };
-            var i = 50;
+            var i = 35;
             var sample = samples[i];
             var p = sample.P;
             var q = sample.Q;
@@ -1232,200 +1234,31 @@ namespace Decompose
             }
         }
 
-        public interface IDivisionAlgorithm<T>
-        {
-            T Divide(T k);
-            T Modulus(T k);
-            bool IsDivisible(T k);
-        }
-
-        public struct UInt32Division1 : IDivisionAlgorithm<uint>
-        {
-            private uint d;
-            private uint m;
-            private int sh1;
-            private int sh2;
-
-            public UInt32Division1(uint d)
-            {
-                this.d = d;
-                var l = (int)Math.Ceiling(Math.Log(d, 2));
-                m = (uint)(1 + (1ul << 32) * ((1ul << l) - d) / d);
-                sh1 = Math.Min(l, 1);
-                sh2 = Math.Max(l - 1, 0);
-            }
-
-            public uint Divide(uint k)
-            {
-                var t = (uint)(((ulong)m * k) >> 32);
-                return ((uint)((k - t) >> sh1) + t) >> sh2;
-            }
-
-            public uint Modulus(uint k)
-            {
-                var t = (uint)(((ulong)m * k) >> 32);
-                return k - (((uint)((k - t) >> sh1) + t) >> sh2) * d;
-            }
-
-            public bool IsDivisible(uint k)
-            {
-                return Modulus(k) == 0;
-            }
-        }
-
-        public struct UInt32Division2 : IDivisionAlgorithm<uint>
-        {
-            private ulong recip;
-            private uint rcorrect;
-            private uint d;
-
-            public UInt32Division2(uint d)
-            {
-                this.d = d;
-                recip = (1ul << 32) / d;
-                rcorrect = (uint)1;
-                if ((ulong)Math.Round((double)(1ul << 32) / d + 0.5) != recip)
-                {
-                    ++recip;
-                    --rcorrect;
-                }
-            }
-
-            public uint Divide(uint k)
-            {
-                return (uint)((recip * (k + rcorrect)) >> 32);
-            }
-
-            public uint Modulus(uint k)
-            {
-                return k - (uint)((recip * (k + rcorrect)) >> 32) * d;
-            }
-
-            public bool IsDivisible(uint k)
-            {
-                return Modulus(k) == 0;
-            }
-        }
-
-        public struct UInt32Division3 : IDivisionAlgorithm<uint>
-        {
-            private const int shift = 40;
-            private ulong recip;
-            private uint d;
-
-            public UInt32Division3(uint d)
-            {
-                this.d = d;
-                recip = (1ul << 40) / d;
-                if (recip * d < (1ul << 40))
-                    ++recip;
-            }
-
-            public uint Divide(uint k)
-            {
-                return (uint)((recip * k) >> 40);
-            }
-
-            public uint Modulus(uint k)
-            {
-                return k - (uint)((recip * k) >> 40) * d;
-            }
-
-            public bool IsDivisible(uint k)
-            {
-                return Modulus(k) == 0;
-            }
-        }
-
-        public struct UInt32Division4 : IDivisionAlgorithm<uint>
-        {
-            private uint d;
-
-            public UInt32Division4(uint d)
-            {
-                this.d = d;
-            }
-
-            public uint Divide(uint k)
-            {
-                var q = (uint)0;
-                while (k >= d)
-                {
-                    k -= d;
-                    ++q;
-                }
-                return q;
-            }
-
-            public uint Modulus(uint k)
-            {
-                while (k >= d)
-                    k -= d;
-                return k;
-            }
-
-            public bool IsDivisible(uint k)
-            {
-                return Modulus(k) == 0;
-            }
-        }
-
-        public struct UInt32Division5 : IDivisionAlgorithm<uint>
-        {
-            private uint dInv;
-            private uint qmax;
-            private uint d;
-
-            public UInt32Division5(uint d)
-            {
-                Debug.Assert(d % 2 == 0);
-                this.d = d;
-                this.dInv = (uint)IntegerMath.ModularInverse(d, (long)1 << 32);
-                this.qmax = uint.MaxValue / d;
-            }
-
-            public uint Divide(uint k)
-            {
-                return k / d;
-            }
-
-            public uint Modulus(uint k)
-            {
-                return k % d;
-            }
-
-            public bool IsDivisible(uint k)
-            {
-                return dInv * k <= qmax;
-            }
-        }
-
         static void DivisionTest()
         {
             var intervalSize = 256 * 1024;
             var count = 5000;
-            DivisionTest1(intervalSize, count);
-            DivisionTest2(intervalSize, count);
-            DivisionTest3(intervalSize, count);
-            DivisionTest4(intervalSize, count);
+            var samples = new MersenneTwister(0).Create<int>().Sequence(intervalSize).Select(a => a | 1).Take(count).ToArray();
+            DivisionTest1(intervalSize, samples);
+            DivisionTest2(intervalSize, samples);
+            DivisionTest3(intervalSize, samples);
+            DivisionTest4(intervalSize, samples);
         }
 
-        private static void DivisionTest1(int intervalSize, int count)
+        private static void DivisionTest1(int intervalSize, int[] samples)
         {
-            var random = new MersenneTwister(0).Create<int>();
+            //var divisions = samples.Select(d => new UInt32Division1((uint)d)).ToArray();
+            //var divisions = samples.Select(d => new UInt32Division2((uint)d)).ToArray();
+            var divisions = samples.Select(d => new UInt32Division3((uint)d)).ToArray();
+            //var divisions = samples.Select(d => new UInt32Division4((uint)d)).ToArray();
             var timer = new Stopwatch();
             var hash = 0;
             timer.Restart();
-            for (int i = 0; i < count; i++)
+            for (var k = 0; k < intervalSize; k++)
             {
-                var d = random.Next(intervalSize) | 1;
-                //var division = new UInt32Division1(d);
-                //var division = new UInt32Division2(d);
-                var division = new UInt32Division3((uint)d);
-                //var division = new UInt32Division4(d);
-                for (var k = 0; k < intervalSize; k++)
+                for (int i = 0; i < samples.Length; i++)
                 {
-                    var r = division.Modulus((uint)k);
+                    var r = divisions[i].Modulus((uint)k);
 #if false
                     if (r != k % d)
                         Debugger.Break();
@@ -1436,17 +1269,16 @@ namespace Decompose
             output.WriteLine("elapsed = {0:F3} msec, hash = {1}", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000, hash);
         }
 
-        private static void DivisionTest2(int intervalSize, int count)
+        private static void DivisionTest2(int intervalSize, int[] samples)
         {
-            var random = new MersenneTwister(0).Create<int>();
             var timer = new Stopwatch();
             var hash = 0;
             timer.Restart();
-            for (int i = 0; i < count; i++)
+            for (var k = 0; k < intervalSize; k++)
             {
-                var d = random.Next(intervalSize) | 1;
-                for (var k = 0; k < intervalSize; k++)
+                for (int i = 0; i < samples.Length; i++)
                 {
+                    var d = samples[i];
                     var r = k % d;
                     hash = (hash << 2 | hash >> 30) ^ r.GetHashCode();
                 }
@@ -1454,23 +1286,21 @@ namespace Decompose
             output.WriteLine("elapsed = {0:F3} msec, hash = {1}", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000, hash);
         }
 
-        private static void DivisionTest3(int intervalSize, int count)
+        private static void DivisionTest3(int intervalSize, int[] samples)
         {
-            var random = new MersenneTwister(0).Create<int>();
+            //var divisions = samples.Select(d => new UInt32Division1((uint)d)).ToArray();
+            //var divisions = samples.Select(d => new UInt32Division2((uint)d)).ToArray();
+            //var divisions = samples.Select(d => new UInt32Division3((uint)d)).ToArray();
+            //var divisions = samples.Select(d => new UInt32Division4((uint)d)).ToArray();
+            var divisions = samples.Select(d => new UInt32Division5((uint)d)).ToArray();
             var timer = new Stopwatch();
             var hash = 0;
             timer.Restart();
-            for (int i = 0; i < count; i++)
+            for (var k = 0; k < intervalSize; k++)
             {
-                var d = random.Next(intervalSize) | 1;
-                //var division = new UInt32Division1(d);
-                //var division = new UInt32Division2(d);
-                //var division = new UInt32Division3(d);
-                //var division = new UInt32Division4(d);
-                var division = new UInt32Division5((uint)d);
-                for (var k = 0; k < intervalSize; k++)
+                for (int i = 0; i < samples.Length; i++)
                 {
-                    var p = division.IsDivisible((uint)k);
+                    var p = divisions[i].IsDivisible((uint)k);
 #if false
                     if (p != (k % d == 0))
                         Debugger.Break();
@@ -1481,17 +1311,16 @@ namespace Decompose
             output.WriteLine("elapsed = {0:F3} msec, hash = {1}", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000, hash);
         }
 
-        private static void DivisionTest4(int intervalSize, int count)
+        private static void DivisionTest4(int intervalSize, int[] samples)
         {
-            var random = new MersenneTwister(0).Create<int>();
             var timer = new Stopwatch();
             var hash = 0;
             timer.Restart();
-            for (int i = 0; i < count; i++)
+            for (var k = 0; k < intervalSize; k++)
             {
-                var d = random.Next(intervalSize) | 1;
-                for (var k = 0; k < intervalSize; k++)
+                for (int i = 0; i < samples.Length; i++)
                 {
+                    var d = samples[i];
                     var p = k % d == 0;
                     hash = (hash << 2 | hash >> 30) ^ p.GetHashCode();
                 }
