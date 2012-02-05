@@ -7,11 +7,13 @@ namespace Decompose.Numerics
     {
         public static int ModularInverse(int a, int b)
         {
+            Debug.Assert(GreatestCommonDivisor(a, b) == 1);
             int x;
             int y;
             ExtendedGreatestCommonDivisor(a, b, out x, out y);
             if (x < 0)
                 x += b;
+            Debug.Assert((BigInteger)a * x % b == 1);
             return x;
         }
 
@@ -22,16 +24,19 @@ namespace Decompose.Numerics
 
         public static long ModularInverse(long a, long b)
         {
+            Debug.Assert(GreatestCommonDivisor(a, b) == 1);
             long x;
             long y;
             ExtendedGreatestCommonDivisor(a, b, out x, out y);
             if (x < 0)
                 x += b;
+            Debug.Assert((BigInteger)a * x % b == 1);
             return x;
         }
 
         public static ulong ModularInverse(ulong a, ulong b)
         {
+            Debug.Assert(GreatestCommonDivisor(a, b) == 1);
             var x0 = (Int65)0;
             var x1 = (Int65)1;
             var p = b;
@@ -56,21 +61,24 @@ namespace Decompose.Numerics
             return result;
         }
 
-        public static int ModularInverse(BigInteger n, int p)
+        public static int ModularInverse(BigInteger a, int b)
         {
-            if (p == 0)
+            Debug.Assert(GreatestCommonDivisor(a, b) == 1);
+            if (b == 0)
                 return 1;
-            int r = (int)(n % p);
+            int r = (int)(a % b);
             int x;
             int y;
-            ExtendedGreatestCommonDivisor(r, p, out x, out y);
+            ExtendedGreatestCommonDivisor(r, b, out x, out y);
             if (x < 0)
-                x += p;
+                x += b;
+            Debug.Assert((BigInteger)a * x % b == 1);
             return x;
         }
 
         public static BigInteger ModularInverse(BigInteger a, BigInteger b)
         {
+            Debug.Assert(GreatestCommonDivisor(a, b) == 1);
             var x0 = BigInteger.Zero;
             var x1 = BigInteger.One;
             var p = b;
