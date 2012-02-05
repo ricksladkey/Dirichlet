@@ -451,21 +451,20 @@ namespace Decompose
                 Diagnostics = QuadraticSieve.Diag.Verbose,
                 DiagnosticsOutput = output,
                 ReportingInterval = 60,
-                MergeLimit = 10,
-                ProcessPartialPartialRelations = true,
-                ThresholdExponent = 2.6,
+                //MergeLimit = 10,
+                //ProcessPartialPartialRelations = true,
+                //ThresholdExponent = 1.6,
 
-                //FactorBaseSize = 45000,
-                //BlockSize = 1024 * 1024,
-                //IntervalSize = 1024 * 1024,
+                //FactorBaseSize = 14000,
+                //BlockSize = 64 * 1024,
+                //IntervalSize = 64 * 1024,
                 //CofactorCutoff = 4096 * 4,
                 //ErrorLimit = 1,
                 //NumberOfFactors = 12,
-                //LargePrimeOptimization = false,
                 //UseCountTable = true,
                 //CofactorCutoff = 1024,
             };
-            var i = 50;
+            var i = 35;
             var sample = samples[i];
             var p = sample.P;
             var q = sample.Q;

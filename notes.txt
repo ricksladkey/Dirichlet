@@ -63,3 +63,8 @@ b ^ (u1 * w) * b ^ u0
 b ^ w ^ u1 * b ^ u0
 
 (2 ^ 64) ^ u1 * 2 ^ u0
+
+- re-evaluate PPRS parameters, e.g. try increasing factor base size
+- reuse PPRS infrastructure for PRS
+- allow extra result parameter to modular power with reduction, then 128-bit modular power in 2^e%n
+

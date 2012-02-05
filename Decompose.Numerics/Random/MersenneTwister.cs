@@ -60,4 +60,28 @@ namespace Decompose.Numerics
             }
         }
     }
+
+    public class MersenneTwister32 : IRandomNumberAlgorithm<uint>
+    {
+        private IRandomNumberAlgorithm<uint> random;
+
+        public MersenneTwister32(uint seed)
+        {
+            random = new MersenneTwister(seed).Create<uint>();
+        }
+
+        #region IRandomNumberAlgorithm<uint> Members
+
+        public uint Next(uint n)
+        {
+            return random.Next(n);
+        }
+
+        public IEnumerable<uint> Sequence(uint n)
+        {
+            return random.Sequence(n);
+        }
+
+        #endregion
+    }
 }
