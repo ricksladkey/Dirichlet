@@ -40,8 +40,9 @@ namespace Decompose
                 //GraphTest();
                 //UInt128Test();
                 //ModularInverseTest();
-                PrimalityTest();
+                //PrimalityTest();
                 //OperationsTest();
+                DivisionTest();
             }
             catch (AggregateException ex)
             {
@@ -1229,6 +1230,151 @@ namespace Decompose
                 }
 #endif
             }
+        }
+
+        static void DivisionTest()
+        {
+            var d = (uint)9997;
+            DivisionTest(d);
+        }
+
+        public interface IDivisionAlgorithm<T>
+        {
+            T Divide(T a);
+            T Modulus(T a);
+        }
+
+        public struct UInt32TextbookMontgomeryDivision : IDivisionAlgorithm<uint>
+        {
+            private uint d;
+            private uint m;
+            private int sh1;
+            private int sh2;
+
+            public UInt32TextbookMontgomeryDivision(uint d)
+            {
+                this.d = d;
+                var l = (int)Math.Ceiling(Math.Log(d, 2));
+                m = (uint)(1 + (1ul << 32) * ((1ul << l) - d) / d);
+                sh1 = Math.Min(l, 1);
+                sh2 = Math.Max(l - 1, 0);
+            }
+
+            public uint Divide(uint k)
+            {
+                var t = (uint)(((ulong)m * k) >> 32);
+                return ((uint)((k - t) >> sh1) + t) >> sh2;
+            }
+
+            public uint Modulus(uint k)
+            {
+                var t = (uint)(((ulong)m * k) >> 32);
+                return k - (((uint)((k - t) >> sh1) + t) >> sh2) * d;
+            }
+        }
+
+        public struct UInt32SimplifiedMontgomeryDivision : IDivisionAlgorithm<uint>
+        {
+            private uint d;
+            private uint recip;
+            private uint rcorrect;
+
+            public UInt32SimplifiedMontgomeryDivision(uint d)
+            {
+                this.d = d;
+                recip = (uint)((1ul << 32) / d);
+                rcorrect = (uint)1;
+                if ((uint)Math.Round((double)(1ul << 32) / d + 0.5) != recip)
+                {
+                    ++recip;
+                    --rcorrect;
+                }
+            }
+
+            public uint Divide(uint k)
+            {
+                return (uint)(((ulong)recip * (k + rcorrect)) >> 32);
+            }
+
+            public uint Modulus(uint k)
+            {
+                return k - (uint)(((ulong)recip * (k + rcorrect)) >> 32) * d;
+            }
+        }
+
+        static void DivisionTest(uint d)
+        {
+            var textbook = new UInt32TextbookMontgomeryDivision(d);
+            var simplified = new UInt32SimplifiedMontgomeryDivision(d);
+            var intervalSize = (uint)(256 * 1024);
+            var count = 5000;
+#if true
+            {
+                var timer = new Stopwatch();
+                var hash = (uint)0;
+                timer.Restart();
+                for (int i = 0; i < count; i++)
+                {
+                    hash = 0;
+                    for (var k = (uint)0; k < intervalSize; k++)
+                    {
+                        var r = textbook.Modulus(k);
+                        hash ^= r;
+#if false
+                        if (r != x % d)
+                        {
+                            Debugger.Break();
+                            Console.WriteLine();
+                        }
+#endif
+                    }
+                }
+                output.WriteLine("elapsed = {0:F3} msec, hash = {1}", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000, hash);
+            }
+#endif
+
+#if true
+            {
+                var timer = new Stopwatch();
+                var hash = (uint)0;
+                timer.Restart();
+                for (int i = 0; i < count; i++)
+                {
+                    hash = 0;
+                    for (var k = (uint)0; k < intervalSize; k++)
+                    {
+                        var r = simplified.Modulus(k);
+                        hash ^= r;
+#if false
+                        if (r != x % d)
+                        {
+                            Debugger.Break();
+                            Console.WriteLine();
+                        }
+#endif
+                    }
+                }
+                output.WriteLine("elapsed = {0:F3} msec, hash = {1}", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000, hash);
+            }
+#endif
+
+#if true
+            {
+                var timer = new Stopwatch();
+                var hash = (uint)0;
+                timer.Restart();
+                for (int i = 0; i < count; i++)
+                {
+                    hash = 0;
+                    for (var k = (uint)0; k < intervalSize; k++)
+                    {
+                        var r = k % d;
+                        hash ^= r;
+                    }
+                }
+                output.WriteLine("elapsed = {0:F3} msec, hash = {1}", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000, hash);
+            }
+#endif
         }
 
         public static void ExtendedGreatestCommonDivisor(int a, int b, out int c, out int d)
