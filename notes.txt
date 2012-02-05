@@ -55,3 +55,11 @@ u1*v1 u0*v1
 
 - add integer reducer
 - remove check from Montgomery for Montgomery32
+
+b ^ (u1 * w + u0)
+
+b ^ (u1 * w) * b ^ u0
+
+b ^ w ^ u1 * b ^ u0
+
+(2 ^ 64) ^ u1 * 2 ^ u0

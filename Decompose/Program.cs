@@ -451,9 +451,9 @@ namespace Decompose
                 Diagnostics = QuadraticSieve.Diag.Verbose,
                 DiagnosticsOutput = output,
                 ReportingInterval = 60,
-                //MergeLimit = 10,
+                MergeLimit = 10,
                 ProcessPartialPartialRelations = true,
-                ThresholdExponent = 2.5,
+                ThresholdExponent = 2.6,
 
                 //FactorBaseSize = 45000,
                 //BlockSize = 1024 * 1024,
@@ -462,10 +462,10 @@ namespace Decompose
                 //ErrorLimit = 1,
                 //NumberOfFactors = 12,
                 //LargePrimeOptimization = false,
-                UseCountTable = true,
+                //UseCountTable = true,
                 //CofactorCutoff = 1024,
             };
-            var i = 45;
+            var i = 50;
             var sample = samples[i];
             var p = sample.P;
             var q = sample.Q;
@@ -1096,7 +1096,7 @@ namespace Decompose
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
-#if true
+#if false
             {
                 int count = 80000;
                 var random = new MersenneTwister(0).Create<BigInteger>();
@@ -1110,6 +1110,20 @@ namespace Decompose
                 for (int i = 0; i < count; i++)
                 {
                     var result = algorithm.IsPrime(random.Next(max));
+                }
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
+#endif
+#if true
+            {
+                int count = 2000000;
+                var random = new MersenneTwister(0).Create<ulong>();
+                var max = ulong.MaxValue;
+                var timer = new Stopwatch();
+                timer.Start();
+                for (int i = 0; i < count; i++)
+                {
+                    var result = IntegerMath.IsProbablePrime(random.Next(max) | 1);
                 }
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
