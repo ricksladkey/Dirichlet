@@ -31,8 +31,8 @@ namespace Decompose
                 //MsieveTest();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                QuadraticSieveStandardTest();
-                //QuadraticSieveDebugTest();
+                //QuadraticSieveStandardTest();
+                QuadraticSieveDebugTest();
                 //QuadraticSieveFactorTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
@@ -422,7 +422,7 @@ namespace Decompose
                 Threads = 8,
 #endif
                 DiagnosticsOutput = output,
-                ProcessPartialPartialRelations = true,
+                //ProcessPartialPartialRelations = true,
             };
             for (int i = 20; i <= 35; i++)
             {
@@ -446,25 +446,26 @@ namespace Decompose
 #if !DEBUG
                 Threads = 8,
 #else
-                Threads = 8,
+                Threads = 0,
 #endif
                 Diagnostics = QuadraticSieve.Diag.Verbose,
                 DiagnosticsOutput = output,
-                //ReportingInterval = 60,
-                ProcessPartialPartialRelations = true,
+                ReportingInterval = 60,
                 //MergeLimit = 10,
+                ProcessPartialPartialRelations = true,
+                ThresholdExponent = 2.5,
+
                 //FactorBaseSize = 45000,
                 //BlockSize = 1024 * 1024,
                 //IntervalSize = 1024 * 1024,
                 //CofactorCutoff = 4096 * 4,
                 //ErrorLimit = 1,
                 //NumberOfFactors = 12,
-                ThresholdExponent = 2.6,
                 //LargePrimeOptimization = false,
-                //UseCountTable = false,
+                UseCountTable = true,
                 //CofactorCutoff = 1024,
             };
-            var i = 35;
+            var i = 45;
             var sample = samples[i];
             var p = sample.P;
             var q = sample.Q;

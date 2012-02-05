@@ -197,9 +197,14 @@ namespace Decompose.Numerics
                 Root = n % p == 0 ? 0 : IntegerMath.ModularSquareRoot(n, p);
                 Debug.Assert(((BigInteger)Root * Root - n) % p == 0);
                 RootDiff = ((P - Root) - Root) % p;
-                Reciprocal = ((long)1 << reciprocalShift) / p;
-                if (Reciprocal * p < ((long)1 << reciprocalShift))
-                    ++Reciprocal;
+                if (p < 1 << reciprocalShift / 2)
+                {
+                    Reciprocal = ((long)1 << reciprocalShift) / p;
+                    if (Reciprocal * p < ((long)1 << reciprocalShift))
+                        ++Reciprocal;
+                    Debug.Assert(Reciprocal * p >= (long)1 << reciprocalShift);
+                    Debug.Assert(Reciprocal * p <= ((long)1 << reciprocalShift) + (1 << reciprocalShift / 2));
+                }
             }
             public override string ToString()
             {
@@ -496,8 +501,8 @@ namespace Decompose.Numerics
         private const int minimumAFactor = 2000;
         private const int maximumAfactor = 4000;
         private const int maximumNumberOfFactors = 20;
-        private const int minimumCounTableDigits = 90;
-        private const int reciprocalShift = 40;
+        private const int minimumCounTableDigits = 85;
+        private const int reciprocalShift = 42;
 
         private readonly Parameters[] parameters =
         {
@@ -1303,6 +1308,7 @@ namespace Decompose.Numerics
                 intervalSize = config.IntervalSize;
             else
                 intervalSize = LookupValue(parameters => parameters.IntervalSize);
+            Debug.Assert(intervalSize <= 1 << reciprocalShift / 2);
             blockSize = IntegerMath.MultipleOfCeiling(blockSize, thresholdInterval);
             intervalSize = IntegerMath.MultipleOfCeiling(intervalSize, blockSize);
             int numberOfIncrements = intervalSize / blockSize;
