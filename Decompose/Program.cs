@@ -39,9 +39,9 @@ namespace Decompose
                 //CreateSamplesTest();
                 //GraphTest();
                 //UInt128Test();
-                //ModularInverseTest1();
+                ModularInverseTest1();
                 //ModularInverseTest2();
-                PrimalityTest();
+                //PrimalityTest();
                 //OperationsTest();
                 //DivisionTest();
             }
@@ -696,6 +696,8 @@ namespace Decompose
 
         static void ModularInverseTest1()
         {
+            var result0 = IntegerMath.ModularPowerOfTwo(2378270433224750976, 3880873274144447570);
+            var result = IntegerMath.ModularPower(375, 249, 388);
             var d = (uint)273;
             var dInv1 = (uint)IntegerMath.ModularInverse(d, (long)1 << 32);
             var result1 = IntegerMath.ModularProduct(d, dInv1, (long)1 << 32);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Numerics;
 
 namespace Decompose.Numerics
 {
@@ -28,5 +29,9 @@ namespace Decompose.Numerics
             return UInt128.ModularProduct(a, b, modulus);
         }
 
+        public static BigInteger ModularProduct(BigInteger a, BigInteger b, BigInteger modulus)
+        {
+            return a * b % modulus;
+        }
     }
 }

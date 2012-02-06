@@ -699,8 +699,6 @@ namespace Decompose.Numerics.Test
             for (int i = 0; i < 1000; i++)
             {
                 var n = random.Next(modulusMax - 1) + 1;
-                if ((n & 1) == 0)
-                    ++n;
                 var a = random.Next(factorMax) % n;
                 var b = random.Next(factorMax) % n;
                 Assert.AreEqual(BigInteger.ModPow(a, b, n), UInt128.ModularPower(a, b, n));
@@ -714,7 +712,7 @@ namespace Decompose.Numerics.Test
             var modulusMax = ulong.MaxValue;
             for (int i = 0; i < 10000; i++)
             {
-                var modulus = random.Next(modulusMax - 1) | 1;
+                var modulus = random.Next(modulusMax - 1);
                 var exponent = random.Next(modulus);
                 Assert.AreEqual(BigInteger.ModPow(2, exponent, modulus), IntegerMath.ModularPowerOfTwo(exponent, modulus));
             }
