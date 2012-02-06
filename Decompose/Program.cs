@@ -39,9 +39,9 @@ namespace Decompose
                 //CreateSamplesTest();
                 //GraphTest();
                 //UInt128Test();
-                ModularInverseTest1();
+                //ModularInverseTest1();
                 //ModularInverseTest2();
-                //PrimalityTest();
+                PrimalityTest();
                 //OperationsTest();
                 //DivisionTest();
             }
@@ -1089,7 +1089,7 @@ namespace Decompose
 
         static void PrimalityTest()
         {
-#if false
+#if true
             {
                 int count = 2000000;
                 var random = new MersenneTwister(0).Create<ulong>();
@@ -1106,7 +1106,7 @@ namespace Decompose
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
-#if true
+#if false
             {
                 int count = 80000;
                 var random = new MersenneTwister(0).Create<BigInteger>();

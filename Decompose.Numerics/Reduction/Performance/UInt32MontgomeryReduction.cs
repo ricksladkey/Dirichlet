@@ -78,7 +78,8 @@ namespace Decompose.Numerics
             {
                 if ((modulus & 1) == 0)
                     throw new InvalidOperationException("not relatively prime");
-                k0 = 0 - IntegerMath.ModularInversePowerOfTwoModulus(modulus, 32);
+                var nInv = IntegerMath.ModularInversePowerOfTwoModulus(modulus, 32);
+                k0 = IntegerMath.TwosComplement(nInv);
                 var rModN = uint.MaxValue % modulus + 1;
                 rSquaredModN = IntegerMath.ModularProduct(rModN, rModN, modulus);
             }

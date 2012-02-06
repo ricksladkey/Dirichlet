@@ -8,6 +8,16 @@ namespace Decompose.Numerics
 {
     public static partial class IntegerMath
     {
+        public static uint TwosComplement(uint a)
+        {
+            return 0 - a;
+        }
+
+        public static ulong TwosComplement(ulong a)
+        {
+            return 0 - a;
+        }
+
         public static int Min(int a, int b)
         {
             return a < b ? a : b;
@@ -73,9 +83,39 @@ namespace Decompose.Numerics
             return (n % p + p) % p;
         }
 
+        public static uint Modulus(uint n, uint p)
+        {
+            return n % p;
+        }
+
+        public static long Modulus(long n, long p)
+        {
+            return (n % p + p) % p;
+        }
+
+        public static ulong Modulus(ulong n, ulong p)
+        {
+            return n % p;
+        }
+
         public static int Modulus(BigInteger n, int p)
         {
             return ((int)(n % p) + p) % p;
+        }
+
+        public static uint Modulus(BigInteger n, uint p)
+        {
+            return ((uint)(n % p) + p) % p;
+        }
+
+        public static long Modulus(BigInteger n, long p)
+        {
+            return ((long)(n % p) + p) % p;
+        }
+
+        public static ulong Modulus(BigInteger n, ulong p)
+        {
+            return ((ulong)(n % p) + p) % p;
         }
 
         public static BigInteger Modulus(BigInteger n, BigInteger p)
@@ -135,6 +175,5 @@ namespace Decompose.Numerics
         {
             return ModularPower(n, (p - 1) / 2, p).IsOne;
         }
-
     }
 }
