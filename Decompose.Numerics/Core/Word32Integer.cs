@@ -197,7 +197,7 @@ namespace Decompose.Numerics
         public Word32Integer Copy()
         {
             CheckValid();
-            var newBits = new uint[Length];
+            var newBits = new uint[bits.Length];
             Array.Copy(bits, 0, newBits, 0, last + 1);
             return new Word32Integer(newBits, sign);
         }
@@ -1384,37 +1384,34 @@ namespace Decompose.Numerics
         {
             var reg1 = store.Allocate().Set(this);
             reg1.Set(this);
-            DivMod(reg1, a, this);
+            reg1.ModuloWithQuotient(a, this);
             store.Release(reg1);
             return this;
         }
 
         public Word32Integer Modulo(Word32Integer a)
         {
-            DivMod(this, a, null);
+            ModuloWithQuotient(a, null);
             return this;
         }
 
         public Word32Integer SetQuotient(Word32Integer a, Word32Integer b, Word32IntegerStore store)
         {
             var reg1 = store.Allocate();
-            reg1.Set(a);
-            DivMod(reg1, b, this);
+            reg1.Set(a).ModuloWithQuotient(b, this);
             store.Release(reg1);
             return this;
         }
 
         public Word32Integer SetQuotient(Word32Integer a, Word32Integer b, Word32Integer reg1)
         {
-            reg1.Set(a);
-            DivMod(reg1, b, this);
+            reg1.Set(a).ModuloWithQuotient(b, this);
             return this;
         }
 
         public Word32Integer SetQuotientWithRemainder(Word32Integer a, Word32Integer b, Word32Integer remainder)
         {
-            remainder.Set(a);
-            DivMod(remainder, b, this);
+            remainder.Set(a).ModuloWithQuotient(b, this);
             return this;
         }
 
@@ -1422,35 +1419,35 @@ namespace Decompose.Numerics
         {
             if (!object.ReferenceEquals(this, a))
                 Set(a);
-            DivMod(this, b, null);
+            ModuloWithQuotient(b, null);
             return this;
         }
 
-        private static void DivMod(Word32Integer u, Word32Integer v, Word32Integer q)
+        public Word32Integer ModuloWithQuotient(Word32Integer v, Word32Integer q)
         {
-            if (u.UnsignedCompareTo(v) < 0)
+            if (UnsignedCompareTo(v) < 0)
             {
                 if (q != null)
                     q.Clear();
-                return;
+                return this;
             }
             if (v.IsZero)
                 throw new DivideByZeroException();
             int n = v.last + 1;
             if (n == 1)
             {
-                DivMod(u, v.bits[0], q);
+                ModuloWithQuotient(v.bits[0], q);
                 if (v.sign == -1 && q != null)
                     q.sign = -q.sign;
-                return;
+                return this;
             }
             int dneg = v.bits[v.last].GetBitLength();
             int d = 32 - dneg;
-            int m = u.last + 1 - n;
-            u.CheckLast(u.last + 1);
+            int m = last + 1 - n;
+            CheckLast(last + 1);
             if (q != null)
                 q.CheckLast(m + 1);
-            var ubits = u.bits;
+            var ubits = bits;
             var vbits = v.bits;
             uint v1 = vbits[v.last];
             uint v2 = vbits[v.last - 1];
@@ -1515,31 +1512,30 @@ namespace Decompose.Numerics
                 for (int i = m + 1; i <= q.last; i++)
                     q.bits[i] = 0;
                 q.SetLast(m);
-                q.sign = u.sign == v.sign ? 1 : -1;
+                q.sign = sign == v.sign ? 1 : -1;
             }
-            u.SetLast(n - 1);
+            SetLast(n - 1);
+            return this;
         }
 
         public Word32Integer Divide(uint a, Word32IntegerStore store)
         {
             var reg1 = store.Allocate();
-            reg1.Set(this);
-            DivMod(reg1, a, this);
+            reg1.Set(this).ModuloWithQuotient(a, this);
             store.Release(reg1);
             return this;
         }
 
         public Word32Integer Modulo(uint a)
         {
-            DivMod(this, a, null);
+            ModuloWithQuotient(a, null);
             return this;
         }
 
         public Word32Integer SetQuotient(Word32Integer a, int b, Word32IntegerStore store)
         {
             var reg1 = store.Allocate();
-            reg1.Set(a);
-            DivMod(reg1, (uint)Math.Abs(b), this);
+            reg1.Set(a).ModuloWithQuotient((uint)Math.Abs(b), this);
             if (b < 0)
                 sign = -sign;
             store.Release(reg1);
@@ -1549,16 +1545,14 @@ namespace Decompose.Numerics
         public Word32Integer SetQuotient(Word32Integer a, uint b, Word32IntegerStore store)
         {
             var reg1 = store.Allocate();
-            reg1.Set(a);
-            DivMod(reg1, b, this);
+            reg1.Set(a).ModuloWithQuotient(b, this);
             store.Release(reg1);
             return this;
         }
 
         public Word32Integer SetQuotientWithRemainder(Word32Integer a, uint b, Word32Integer remainder)
         {
-            remainder.Set(a);
-            DivMod(remainder, b, this);
+            remainder.Set(a).ModuloWithQuotient(b, this);
             return this;
         }
 
@@ -1586,21 +1580,21 @@ namespace Decompose.Numerics
             return (uint)u0;
         }
 
-        private static void DivMod(Word32Integer u, uint v, Word32Integer q)
+        public Word32Integer ModuloWithQuotient(uint v, Word32Integer q)
         {
             if (q == null)
             {
-                var result = u.GetRemainder(v);
-                u.Clear();
-                u.bits[0] = result;
-                return;
+                var result = GetRemainder(v);
+                Clear();
+                bits[0] = result;
+                return this;
             }
             if (v == 0)
                 throw new DivideByZeroException();
-            int m = u.last;
-            u.CheckLast(m + 1);
+            int m = last;
+            CheckLast(m + 1);
             q.CheckLast(m + 1);
-            var ubits = u.bits;
+            var ubits = bits;
             for (int j = 0; j <= m; j++)
             {
                 int left = 1 + m - j;
@@ -1615,91 +1609,8 @@ namespace Decompose.Numerics
             for (int i = m + 1; i <= q.last; i++)
                 q.bits[i] = 0;
             q.SetLast(m);
-            u.last = 0;
-            q.sign = u.sign;
-        }
-
-        public Word32Integer SetGreatestCommonDivisor(Word32Integer a, Word32Integer b, Word32IntegerStore store)
-        {
-            var reg1 = store.Allocate();
-            if (a.IsZero)
-                Set(b);
-            else if (b.IsZero)
-                Set(a);
-            else
-            {
-                reg1.Set(a);
-                Set(b);
-                while (true)
-                {
-                    DivMod(reg1, this, null);
-                    if (reg1.IsZero)
-                        break;
-                    DivMod(this, reg1, null);
-                    if (IsZero)
-                    {
-                        Set(reg1);
-                        break;
-                    }
-                }
-            }
-            store.Release(reg1);
-            return this;
-        }
-
-        public Word32Integer SetModularInverse(Word32Integer a, Word32Integer b, Word32IntegerStore store)
-        {
-            var p = store.Allocate().Set(a);
-            var q = store.Allocate().Set(b);
-            var x0 = store.Allocate().Set(1);
-            var x1 = store.Allocate().Set(0);
-            var quotient = store.Allocate();
-            var remainder = store.Allocate();
-            var product = store.Allocate();
-
-            while (!q.IsZero)
-            {
-                DivMod(remainder.Set(p), q, quotient);
-                var tmpp = p;
-                p = q;
-                q = tmpp.Set(remainder);
-                var tmpx = x1;
-                x1 = x0.Subtract(product.SetProduct(quotient, x1));
-                x0 = tmpx;
-            }
-            this.Set(x0);
-            if (sign == -1)
-                Add(b);
-
-            store.Release(p);
-            store.Release(q);
-            store.Release(x0);
-            store.Release(x1);
-            store.Release(quotient);
-            store.Release(remainder);
-            return this;
-        }
-
-        public Word32Integer SetModularInverseTwoToTheN(Word32Integer d, int n, Word32IntegerStore store)
-        {
-            Set(d);
-            var two = store.Allocate().Set(2);
-            var reg1 = store.Allocate();
-            var reg2 = store.Allocate();
-            for (int m = 3; m < n; m *= 2)
-            {
-                reg1.Set(this);
-                reg2.SetProduct(reg1, d);
-                reg2.Mask(n);
-                reg2.SetDifference(two, reg2);
-                SetProduct(reg1, reg2);
-                Mask(n);
-            }
-            if (this.Sign == -1)
-                Add(reg1.Set(1).LeftShift(n));
-            store.Release(two);
-            store.Release(reg1);
-            store.Release(reg2);
+            last = 0;
+            q.sign = sign;
             return this;
         }
 
