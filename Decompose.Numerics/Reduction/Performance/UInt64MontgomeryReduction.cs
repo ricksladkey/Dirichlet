@@ -82,6 +82,7 @@ namespace Decompose.Numerics
                 rSquaredModN = IntegerMath.ModularProduct(rModN, rModN, modulus);
                 var nInv = IntegerMath.ModularInversePowerOfTwoModulus(modulus, rLength);
                 k0 = (uint)IntegerMath.TwosComplement(nInv);
+                oneRep = 0;
             }
 
             public override IResidue<ulong> ToResidue(ulong x)
