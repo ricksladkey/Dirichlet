@@ -61,22 +61,11 @@ namespace Decompose.Numerics
                 return false;
             if (n <= uint.MaxValue)
                 return IsProbablePrime((uint)n);
-#if true
+#if false
             return ModularPower(2, n - 1, n) == 1;
 #else
             return ModularPowerOfTwo(n - 1, n) == 1;
 #endif
-        }
-
-        public static ulong ModularPowerOfTwo(ulong exponent, ulong modulus)
-        {
-            var exponentOrig = exponent;
-            if (exponent < 64)
-                return ((ulong)1 << (int)exponent) % modulus;
-            var value = ulong.MaxValue % modulus + 1;
-            var result = ((ulong)1 << (int)(exponent & 63)) % modulus;
-            exponent >>= 6;
-            return UInt128.ModularProduct(ModularPower(value, exponent, modulus), result, modulus);
         }
 
         public static bool IsProbablePrime(BigInteger n)

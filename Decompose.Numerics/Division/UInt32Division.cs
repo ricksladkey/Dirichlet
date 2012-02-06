@@ -73,26 +73,24 @@ namespace Decompose.Numerics
 
     public struct UInt32Division3 : IDivisionAlgorithm<uint>
     {
-        private const int shift = 40;
+        private const int shift = 42;
         private ulong recip;
         private uint d;
 
         public UInt32Division3(uint d)
         {
             this.d = d;
-            recip = (1ul << 40) / d;
-            if (recip * d < (1ul << 40))
-                ++recip;
+            recip = (1ul << 42) / d + 1;
         }
 
         public uint Divide(uint k)
         {
-            return (uint)((recip * k) >> 40);
+            return (uint)((recip * k) >> 42);
         }
 
         public uint Modulus(uint k)
         {
-            return k - (uint)((recip * k) >> 40) * d;
+            return k - (uint)((recip * k) >> 42) * d;
         }
 
         public bool IsDivisible(uint k)

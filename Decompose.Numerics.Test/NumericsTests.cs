@@ -670,14 +670,14 @@ namespace Decompose.Numerics.Test
             UInt128Test(ulong.MaxValue, ulong.MaxValue);
         }
 
-        private void UInt128Test(ulong factorSize, ulong modulusSize)
+        private void UInt128Test(ulong factorMax, ulong modulusMax)
         {
             var random = new MersenneTwister(0).Create<ulong>();
             for (int i = 0; i < 10000; i++)
             {
-                var n = random.Next(modulusSize - 1) + 1;
-                var a = random.Next(factorSize) % n;
-                var b = random.Next(factorSize) % n;
+                var n = random.Next(modulusMax - 1) + 1;
+                var a = random.Next(factorMax) % n;
+                var b = random.Next(factorMax) % n;
                 var s = (int)(b % 32);
                 Assert.AreEqual((BigInteger)a << s, (UInt128)a << s);
                 Assert.AreEqual((BigInteger)a >> s, (UInt128)a >> s);
@@ -698,12 +698,25 @@ namespace Decompose.Numerics.Test
             }
             for (int i = 0; i < 1000; i++)
             {
-                var n = random.Next(modulusSize - 1) + 1;
+                var n = random.Next(modulusMax - 1) + 1;
                 if ((n & 1) == 0)
                     ++n;
-                var a = random.Next(factorSize) % n;
-                var b = random.Next(factorSize) % n;
+                var a = random.Next(factorMax) % n;
+                var b = random.Next(factorMax) % n;
                 Assert.AreEqual(BigInteger.ModPow(a, b, n), UInt128.ModularPower(a, b, n));
+            }
+        }
+
+        [TestMethod]
+        public void ModularPowerOfTwo()
+        {
+            var random = new MersenneTwister(0).Create<ulong>();
+            var modulusMax = ulong.MaxValue;
+            for (int i = 0; i < 10000; i++)
+            {
+                var modulus = random.Next(modulusMax - 1) | 1;
+                var exponent = random.Next(modulus);
+                Assert.AreEqual(BigInteger.ModPow(2, exponent, modulus), IntegerMath.ModularPowerOfTwo(exponent, modulus));
             }
         }
     }

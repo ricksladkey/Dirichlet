@@ -29,6 +29,24 @@ namespace Decompose.Numerics
 {
     public class QuadraticSieve : IFactorizationAlgorithm<BigInteger>
     {
+        private const int maximumCycleLenth = 16 * 1024;
+        private const int thresholdInterval = 1024;
+        private const int thresholdShift = 10;
+        private const double thresholdExponentDefault = 1.4;
+        private const double thresholdExponentPartialPartialRelationsDefault = 2.25;
+        private const double errorLimitDefault = 0.1;
+        private const int cofactorCutoffDefault = 1024;
+        private const int surplusRelations = 12;
+        private const int reportingIntervalDefault = 10;
+        private const int maximumMultiplier = 73;
+        private const int maximumScorePrimes = 100;
+        private readonly BigInteger smallFactorCutoff = (BigInteger)int.MaxValue;
+        private const int minimumAFactor = 2000;
+        private const int maximumAfactor = 4000;
+        private const int maximumNumberOfFactors = 20;
+        private const int minimumCounTableDigits = 85;
+        private const int reciprocalShift = 42;
+
         [Flags]
         public enum Diag
         {
@@ -199,9 +217,7 @@ namespace Decompose.Numerics
                 RootDiff = ((P - Root) - Root) % p;
                 if (p < 1 << reciprocalShift / 2)
                 {
-                    Reciprocal = ((long)1 << reciprocalShift) / p;
-                    if (Reciprocal * p < ((long)1 << reciprocalShift))
-                        ++Reciprocal;
+                    Reciprocal = ((long)1 << reciprocalShift) / p + 1;
                     Debug.Assert(Reciprocal * p >= (long)1 << reciprocalShift);
                     Debug.Assert(Reciprocal * p <= ((long)1 << reciprocalShift) + (1 << reciprocalShift / 2));
                 }
@@ -485,24 +501,6 @@ namespace Decompose.Numerics
             public double Error { get; set; }
             public CountInt[] Threshold { get; set; }
         }
-
-        private const int maximumCycleLenth = 16 * 1024;
-        private const int thresholdInterval = 1024;
-        private const int thresholdShift = 10;
-        private const double thresholdExponentDefault = 1.4;
-        private const double thresholdExponentPartialPartialRelationsDefault = 2.25;
-        private const double errorLimitDefault = 0.1;
-        private const int cofactorCutoffDefault = 1024;
-        private const int surplusRelations = 12;
-        private const int reportingIntervalDefault = 10;
-        private const int maximumMultiplier = 73;
-        private const int maximumScorePrimes = 100;
-        private readonly BigInteger smallFactorCutoff = (BigInteger)int.MaxValue;
-        private const int minimumAFactor = 2000;
-        private const int maximumAfactor = 4000;
-        private const int maximumNumberOfFactors = 20;
-        private const int minimumCounTableDigits = 85;
-        private const int reciprocalShift = 42;
 
         private readonly Parameters[] parameters =
         {

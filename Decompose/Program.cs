@@ -32,7 +32,7 @@ namespace Decompose
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
                 //QuadraticSieveStandardTest();
-                QuadraticSieveDebugTest();
+                //QuadraticSieveDebugTest();
                 //QuadraticSieveFactorTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
@@ -40,7 +40,7 @@ namespace Decompose
                 //GraphTest();
                 //UInt128Test();
                 //ModularInverseTest();
-                //PrimalityTest();
+                PrimalityTest();
                 //OperationsTest();
                 //DivisionTest();
             }
