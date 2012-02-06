@@ -121,13 +121,14 @@ namespace Decompose.Numerics
             }
         }
 
-        public static int ModularInverseTwoToTheN(int d, int n)
+        public static int ModularInversePowerOfTwoModulus(int d, int n)
         {
-            return (int)ModularInverseTwoToTheN((uint)d, n);
+            return (int)ModularInversePowerOfTwoModulus((uint)d, n);
         }
 
-        public static uint ModularInverseTwoToTheN(uint d, int n)
+        public static uint ModularInversePowerOfTwoModulus(uint d, int n)
         {
+            // See 9.2 in: http://gmplib.org/~tege/divcnst-pldi94.pdf
             Debug.Assert(d > 0 && n > 0 && n <= 32);
             var dInv = d;
             for (int m = 3; m < n; m *= 2)
@@ -137,13 +138,14 @@ namespace Decompose.Numerics
             return dInv;
         }
 
-        public static long ModularInverseTwoToTheN(long d, int n)
+        public static long ModularInversePowerOfTwoModulus(long d, int n)
         {
-            return (long)ModularInverseTwoToTheN((ulong)d, n);
+            return (long)ModularInversePowerOfTwoModulus((ulong)d, n);
         }
 
-        public static ulong ModularInverseTwoToTheN(ulong d, int n)
+        public static ulong ModularInversePowerOfTwoModulus(ulong d, int n)
         {
+            // See 9.2 in: http://gmplib.org/~tege/divcnst-pldi94.pdf
             Debug.Assert(d > 0 && n > 0 && n <= 64);
             var dInv = d;
             for (int m = 3; m < n; m *= 2)
@@ -153,8 +155,9 @@ namespace Decompose.Numerics
             return dInv;
         }
 
-        public static BigInteger ModularInverseTwoToTheN(BigInteger d, int n)
+        public static BigInteger ModularInversePowerOfTwoModulus(BigInteger d, int n)
         {
+            // See 9.2 in: http://gmplib.org/~tege/divcnst-pldi94.pdf
             Debug.Assert(d > 0 && n > 0);
             var dInv = d;
             var mask = ((BigInteger)1 << n) - 1;

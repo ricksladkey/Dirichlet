@@ -65,8 +65,8 @@ namespace Decompose.Numerics
                 ++s;
             }
             var result1 = ModularPowerReduction(1, value, exponent, modulusOdd);
-            var result2 = ModularPowerTwoToTheN(value, exponent, s);
-            var modulusOddInv = ModularInverseTwoToTheN(modulusOdd, s);
+            var result2 = ModularPowerPowerOfTwoModulus(value, exponent, s);
+            var modulusOddInv = ModularInversePowerOfTwoModulus(modulusOdd, s);
             var factor = ((result2 - result1) * modulusOddInv) & (((ulong)1 << s) - 1);
             var result = result1 + modulusOdd * factor;
             Debug.Assert(result < modulus);
@@ -98,17 +98,20 @@ namespace Decompose.Numerics
         {
             if (exponent < 64)
                 return ((ulong)1 << (int)exponent) % modulus;
+
+            // Handle the first six bits, which we know won't overflow.
             var value = ulong.MaxValue % modulus + 1;
             var result = ((ulong)1 << (int)(exponent & 63));
             exponent >>= 6;
+
             if (modulus <= uint.MaxValue)
-                return ModularProduct(result, ModularPower(value, exponent, (uint)modulus), modulus);
+                return ModularProduct(result, ModularPower((uint)(value % modulus), exponent, (uint)modulus), modulus);
             if ((modulus & 1) == 0)
                 return ModularProduct(result, ModularPowerEven(value, exponent, modulus), modulus);
             return ModularPowerReduction(result, value, exponent, modulus);
         }
 
-        public static ulong ModularPowerTwoToTheN(ulong value, ulong exponent, int n)
+        public static ulong ModularPowerPowerOfTwoModulus(ulong value, ulong exponent, int n)
         {
             Debug.Assert(value > 0 && n > 0 && n <= 64);
             var mask = n == 64 ? ulong.MaxValue : ((ulong)1 << n) - 1;
@@ -125,7 +128,7 @@ namespace Decompose.Numerics
             // and phi(2^n) = 2^(n-1).
             exponent &= mask >> 1;
 
-            // Compute valueOdd ^ exponent % 2^n, ignoring overflow.
+            // Compute value ^ exponent % 2^n, ignoring overflow.
             var result = (ulong)1;
             while (exponent != 0)
             {

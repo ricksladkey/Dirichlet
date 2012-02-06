@@ -140,12 +140,12 @@ namespace Decompose.Numerics
                 store.Release(kRep);
 #endif
 #if false
-                var k = r - IntegerMath.ModularInverseTwoToTheN(modulus, rLength);
+                var k = r - IntegerMath.ModularInversePowerOfTwoModulus(modulus, rLength);
                 k0 = (uint)(k & uint.MaxValue);
 #endif
 #if true
                 var rRep = store.Allocate().Set(1).LeftShift(rLength);
-                var nInv = store.Allocate().SetModularInverseTwoToTheN(nRep, rLength, store);
+                var nInv = store.Allocate().SetModularInversePowerOfTwoModulus(nRep, rLength, store);
                 var kRep = store.Allocate().Set(rRep).Subtract(nInv);
                 k0 = kRep.LeastSignificantWord;
                 store.Release(rRep);

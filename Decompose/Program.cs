@@ -701,7 +701,7 @@ namespace Decompose
             var d = (uint)273;
             var dInv1 = (uint)IntegerMath.ModularInverse(d, (long)1 << 32);
             var result1 = IntegerMath.ModularProduct(d, dInv1, (long)1 << 32);
-            var dInv2 = IntegerMath.ModularInverseTwoToTheN(d, 32);
+            var dInv2 = IntegerMath.ModularInversePowerOfTwoModulus(d, 32);
             Console.WriteLine();
         }
 

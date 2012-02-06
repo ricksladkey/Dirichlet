@@ -142,7 +142,7 @@ namespace Decompose.Numerics
         {
             Debug.Assert(d % 2 == 0);
             this.d = d;
-            this.dInv = IntegerMath.ModularInverseTwoToTheN(d, 32);
+            this.dInv = IntegerMath.ModularInversePowerOfTwoModulus(d, 32);
             this.qmax = uint.MaxValue / d;
         }
 

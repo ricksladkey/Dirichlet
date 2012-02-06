@@ -68,8 +68,9 @@ namespace Decompose.Numerics
             return c;
         }
 
-        public static Word32Integer SetModularInverseTwoToTheN(this Word32Integer c, Word32Integer d, int n, Word32IntegerStore store)
+        public static Word32Integer SetModularInversePowerOfTwoModulus(this Word32Integer c, Word32Integer d, int n, Word32IntegerStore store)
         {
+            // See 9.2 in: http://gmplib.org/~tege/divcnst-pldi94.pdf
             c.Set(d);
             var two = store.Allocate().Set(2);
             var reg1 = store.Allocate();
