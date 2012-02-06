@@ -39,7 +39,8 @@ namespace Decompose
                 //CreateSamplesTest();
                 //GraphTest();
                 //UInt128Test();
-                //ModularInverseTest();
+                //ModularInverseTest1();
+                //ModularInverseTest2();
                 PrimalityTest();
                 //OperationsTest();
                 //DivisionTest();
@@ -693,7 +694,16 @@ namespace Decompose
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
         }
 
-        static void ModularInverseTest()
+        static void ModularInverseTest1()
+        {
+            var d = (uint)273;
+            var dInv1 = (uint)IntegerMath.ModularInverse(d, (long)1 << 32);
+            var result1 = IntegerMath.ModularProduct(d, dInv1, (long)1 << 32);
+            var dInv2 = IntegerMath.ModularInverseTwoToTheN(d, 32);
+            Console.WriteLine();
+        }
+
+        static void ModularInverseTest2()
         {
             //var inverse = new Func<long, long, long>(HybridRSSModularInverse);
             //var inverse = new Func<long, long, long>(RSSSimpleModularInverse);
@@ -705,7 +715,6 @@ namespace Decompose
             //var aInv2 = inverse(a, m);
             //Console.WriteLine("aInv2 = {0}", aInv2);
 
-            IntegerMath.ModularInverse((ulong)17, (ulong)25);
             var max = (ulong)long.MaxValue;
             var random = new MersenneTwister(0).Create<ulong>();
             var pairs = random.Sequence(max)
@@ -1095,7 +1104,7 @@ namespace Decompose
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
-#if false
+#if true
             {
                 int count = 80000;
                 var random = new MersenneTwister(0).Create<BigInteger>();
@@ -1108,12 +1117,12 @@ namespace Decompose
                 timer.Start();
                 for (int i = 0; i < count; i++)
                 {
-                    var result = algorithm.IsPrime(random.Next(max));
+                    var result = algorithm.IsPrime(random.Next(max) | 1);
                 }
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
-#if true
+#if false
             {
                 int count = 2000000;
                 var random = new MersenneTwister(0).Create<ulong>();

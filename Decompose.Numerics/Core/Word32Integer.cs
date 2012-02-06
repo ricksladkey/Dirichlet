@@ -1680,6 +1680,29 @@ namespace Decompose.Numerics
             return this;
         }
 
+        public Word32Integer SetModularInverseTwoToTheN(Word32Integer d, int n, Word32IntegerStore store)
+        {
+            Set(d);
+            var two = store.Allocate().Set(2);
+            var reg1 = store.Allocate();
+            var reg2 = store.Allocate();
+            for (int m = 3; m < n; m *= 2)
+            {
+                reg1.Set(this);
+                reg2.SetProduct(reg1, d);
+                reg2.Mask(n);
+                reg2.SetDifference(two, reg2);
+                SetProduct(reg1, reg2);
+                Mask(n);
+            }
+            if (this.Sign == -1)
+                Add(reg1.Set(1).LeftShift(n));
+            store.Release(two);
+            store.Release(reg1);
+            store.Release(reg2);
+            return this;
+        }
+
 #if true
         public Word32Integer BarrettReduction(Word32Integer z, Word32Integer mu, int k)
         {

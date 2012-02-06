@@ -78,12 +78,9 @@ namespace Decompose.Numerics
             {
                 if ((modulus & 1) == 0)
                     throw new InvalidOperationException("not relatively prime");
-                var r = (long)1 << 32;
-                var rDivN = r / modulus;
-                var rModN = r - rDivN * modulus;
-                rSquaredModN = (uint)IntegerMath.ModularProduct(rModN, rModN, modulus);
-                var k = r - IntegerMath.ModularInverse(modulus, r);
-                k0 = (uint)k;
+                k0 = 0 - IntegerMath.ModularInverseTwoToTheN(modulus, 32);
+                var rModN = uint.MaxValue % modulus + 1;
+                rSquaredModN = IntegerMath.ModularProduct(rModN, rModN, modulus);
             }
 
             public override IResidue<uint> ToResidue(uint x)

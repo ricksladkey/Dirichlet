@@ -121,20 +121,16 @@ namespace Decompose.Numerics
                     throw new InvalidOperationException("not relatively prime");
                 var rLength = (modulus.GetBitLength() + 31) / 32 * 32;
                 length = 2 * rLength / 32 + 1;
-                var r = BigInteger.One << rLength;
-                var rSquaredModN = r * r % modulus;
+                //var r = BigInteger.One << rLength;
+                //var rSquaredModN = r * r % modulus;
 
                 store = new Word32IntegerStore(length);
                 nRep = store.Allocate().Set(modulus);
-                rSquaredModNRep = store.Allocate().Set(rSquaredModN);
-
-                nRep.Set(modulus);
-                rSquaredModNRep.Set(rSquaredModN);
 #if false
                 var k = r - IntegerMath.ModularInverse(modulus, r);
                 k0 = (uint)(k & uint.MaxValue);
 #endif
-#if true
+#if false
                 var rRep = store.Allocate().Set(r);
                 var nInv = store.Allocate().SetModularInverse(nRep, rRep, store);
                 var kRep = store.Allocate().Set(rRep).Subtract(nInv);
@@ -143,6 +139,20 @@ namespace Decompose.Numerics
                 store.Release(nInv);
                 store.Release(kRep);
 #endif
+#if false
+                var k = r - IntegerMath.ModularInverseTwoToTheN(modulus, rLength);
+                k0 = (uint)(k & uint.MaxValue);
+#endif
+#if true
+                var rRep = store.Allocate().Set(1).LeftShift(rLength);
+                var nInv = store.Allocate().SetModularInverseTwoToTheN(nRep, rLength, store);
+                var kRep = store.Allocate().Set(rRep).Subtract(nInv);
+                k0 = kRep.LeastSignificantWord;
+                store.Release(rRep);
+                store.Release(nInv);
+                store.Release(kRep);
+#endif
+                rSquaredModNRep = store.Allocate().SetSquare(rRep).Modulo(nRep);
                 oneRep = store.Allocate().Set(1).Multiply(rSquaredModNRep, store);
                 Reduce(oneRep);
             }

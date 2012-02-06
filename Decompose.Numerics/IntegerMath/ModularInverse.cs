@@ -120,5 +120,44 @@ namespace Decompose.Numerics
                 x0 = tmpx;
             }
         }
+
+        public static int ModularInverseTwoToTheN(int d, int n)
+        {
+            return (int)ModularInverseTwoToTheN((uint)d, n);
+        }
+
+        public static uint ModularInverseTwoToTheN(uint d, int n)
+        {
+            var dInv = d;
+            for (int m = 3; m < n; m *= 2)
+                dInv = dInv * (2 - dInv * d);
+            if (n < 32)
+                dInv &= ((uint)1 << n) - 1;
+            return dInv;
+        }
+
+        public static long ModularInverseTwoToTheN(long d, int n)
+        {
+            return (long)ModularInverseTwoToTheN((ulong)d, n);
+        }
+
+        public static ulong ModularInverseTwoToTheN(ulong d, int n)
+        {
+            var dInv = d;
+            for (int m = 3; m < n; m *= 2)
+                dInv = dInv * (2 - dInv * d);
+            if (n < 64)
+                dInv &= ((ulong)1 << n) - 1;
+            return dInv;
+        }
+
+        public static BigInteger ModularInverseTwoToTheN(BigInteger d, int n)
+        {
+            var dInv = d;
+            var mask = ((BigInteger)1 << n) - 1;
+            for (int m = 3; m < n; m *= 2)
+                dInv = (dInv * (2 - dInv * d)) & mask;
+            return dInv;
+        }
     }
 }
