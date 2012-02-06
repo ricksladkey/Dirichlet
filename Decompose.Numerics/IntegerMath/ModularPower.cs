@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
@@ -55,6 +56,7 @@ namespace Decompose.Numerics
 
         private static ulong ModularPowerEven(ulong value, ulong exponent, ulong modulus)
         {
+            // See: http://cs.ucsb.edu/~koc/docs/j34.pdf
             var s = 0;
             var modulusOdd = modulus;
             while ((modulusOdd & 1) == 0)
@@ -67,24 +69,7 @@ namespace Decompose.Numerics
             var modulusOddInv = ModularInverseTwoToTheN(modulusOdd, s);
             var factor = ((result2 - result1) * modulusOddInv) & (((ulong)1 << s) - 1);
             var result = result1 + modulusOdd * factor;
-            return result;
-        }
-
-        private static ulong ModularPowerTwoToTheN(ulong value, ulong exponent, int n)
-        {
-            var mask = ((ulong)1 << n) - 1;
-            var result = (ulong)1;
-#if false
-            exponent &= mask >> 1;
-#endif
-            while (exponent != 0)
-            {
-                if ((exponent & 1) != 0)
-                    result = (result * value) & mask;
-                if (exponent != 1)
-                    value = (value * value) & mask;
-                exponent >>= 1;
-            }
+            Debug.Assert(result < modulus);
             return result;
         }
 
@@ -121,6 +106,38 @@ namespace Decompose.Numerics
             if ((modulus & 1) == 0)
                 return ModularProduct(result, ModularPowerEven(value, exponent, modulus), modulus);
             return ModularPowerReduction(result, value, exponent, modulus);
+        }
+
+        public static ulong ModularPowerTwoToTheN(ulong value, ulong exponent, int n)
+        {
+            Debug.Assert(value > 0 && n > 0 && n <= 64);
+            var mask = n == 64 ? ulong.MaxValue : ((ulong)1 << n) - 1;
+
+            // Remove factors of two from value.
+            var s = 0;
+            while ((value & 1) == 0)
+            {
+                value >>= 1;
+                ++s;
+            }
+
+            // Reduce exponent since value and 2^n are relatively prime
+            // and phi(2^n) = 2^(n-1).
+            exponent &= mask >> 1;
+
+            // Compute valueOdd ^ exponent % 2^n, ignoring overflow.
+            var result = (ulong)1;
+            while (exponent != 0)
+            {
+                if ((exponent & 1) != 0)
+                    result *= value;
+                if (exponent != 1)
+                    value *= value;
+                exponent >>= 1;
+            }
+
+            // Result is result ^ 2^s % 2^n.
+            return (result << s) & mask;
         }
     }
 }

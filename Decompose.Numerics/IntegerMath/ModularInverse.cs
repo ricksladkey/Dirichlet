@@ -128,6 +128,7 @@ namespace Decompose.Numerics
 
         public static uint ModularInverseTwoToTheN(uint d, int n)
         {
+            Debug.Assert(d > 0 && n > 0 && n <= 32);
             var dInv = d;
             for (int m = 3; m < n; m *= 2)
                 dInv = dInv * (2 - dInv * d);
@@ -143,6 +144,7 @@ namespace Decompose.Numerics
 
         public static ulong ModularInverseTwoToTheN(ulong d, int n)
         {
+            Debug.Assert(d > 0 && n > 0 && n <= 64);
             var dInv = d;
             for (int m = 3; m < n; m *= 2)
                 dInv = dInv * (2 - dInv * d);
@@ -153,10 +155,13 @@ namespace Decompose.Numerics
 
         public static BigInteger ModularInverseTwoToTheN(BigInteger d, int n)
         {
+            Debug.Assert(d > 0 && n > 0);
             var dInv = d;
             var mask = ((BigInteger)1 << n) - 1;
             for (int m = 3; m < n; m *= 2)
                 dInv = (dInv * (2 - dInv * d)) & mask;
+            if (dInv.Sign == -1)
+                dInv += mask + 1;
             return dInv;
         }
     }
