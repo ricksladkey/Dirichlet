@@ -78,43 +78,10 @@ namespace Decompose.Numerics
                     throw new InvalidOperationException("not relatively prime");
                 int rLength = modulus == (uint)modulus ? 32 : 64;
                 var rMinusOne = rLength == 32 ? uint.MaxValue : ulong.MaxValue;
-                var rDivN = rMinusOne / modulus;
-                var rModN = rMinusOne - rDivN * modulus + 1;
+                var rModN = rMinusOne % modulus + 1;
                 rSquaredModN = IntegerMath.ModularProduct(rModN, rModN, modulus);
-
-#if false
-                if (modulus <= long.MaxValue)
-                {
-                    long c;
-                    long d;
-                    IntegerMath.ExtendedGreatestCommonDivisor((long)rModN, (long)modulus, out c, out d);
-                    d = -(d - (long)rDivN * c);
-                    var k = (d < 0 ? rMinusOne - (ulong)-d + 1 : (ulong)d);
-                    k0 = (uint)k;
-                }
-                else
-                {
-#if false
-                    var r = (BigInteger)1 << rLength;
-                    var k = r - IntegerMath.ModularInverse(modulus, r);
-                    k0 = (uint)(k & uint.MaxValue);
-#endif
-#if false
-                    var store = new Word32IntegerStore(4);
-                    var nRep = store.Allocate().Set(modulus);
-                    var r = store.Allocate().Set(1).LeftShift(rLength);
-                    var inv = store.Allocate().SetModularInverse(nRep, r, store);
-                    var k = store.Allocate().Set(r).Subtract(inv);
-                    k0 = k.LeastSignificantWord;
-#endif
-#if true
-                    k0 = (uint)(((UInt128)IntegerMath.ModularInverse(rModN, modulus) << rLength) / modulus);
-#endif
-                }
-#else
                 var nInv = IntegerMath.ModularInversePowerOfTwoModulus(modulus, rLength);
                 k0 = (uint)IntegerMath.TwosComplement(nInv);
-#endif
             }
 
             public override IResidue<ulong> ToResidue(ulong x)
