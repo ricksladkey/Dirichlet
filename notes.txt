@@ -66,7 +66,6 @@ b ^ w ^ u1 * b ^ u0
 
 - re-evaluate PPRS parameters, e.g. try increasing factor base size
 - reuse PPRS infrastructure for PRS
-- allow extra result parameter to modular power with reduction, then 128-bit modular power in 2^e%n
 
 a % d = a % (2^s dOdd) = a - (a / d) * d = a - (a / 2^s  2^s / dOdd dOdd
 
@@ -85,7 +84,7 @@ if d = 6, s = 1, dOdd = 3:
 4 % 2 = 0, 4 % 3 = 1, 4 % 6 = 4
 5 % 2 = 1, 5 % 3 = 2, 5 % 6 = 5
 
-if a = 2^s aOdd and a % 2 == 1:
+if a = 2^s aOdd and aOdd % 2 == 1:
 
 a ^ e % 2^n = (2^s aOdd) ^ e % 2^n = (aOdd ^ e % 2^n) ^ 2^s % 2^n
 

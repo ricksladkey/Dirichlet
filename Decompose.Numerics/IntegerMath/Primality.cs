@@ -47,7 +47,7 @@ namespace Decompose.Numerics
 
         public static bool IsProbablePrime(uint n)
         {
-            return IntegerMath.ModularPower(2, n - 1, n) == 1;
+            return ModularPowerOfTwo(n - 1, n) == 1;
         }
 
         public static bool IsProbablePrime(long n)
@@ -61,11 +61,7 @@ namespace Decompose.Numerics
                 return false;
             if (n <= uint.MaxValue)
                 return IsProbablePrime((uint)n);
-#if false
-            return ModularPower(2, n - 1, n) == 1;
-#else
             return ModularPowerOfTwo(n - 1, n) == 1;
-#endif
         }
 
         public static bool IsProbablePrime(BigInteger n)

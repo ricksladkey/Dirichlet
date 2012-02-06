@@ -43,50 +43,11 @@ namespace Decompose.Numerics
             return (long)ModularPower((ulong)value, (ulong)exponent, (ulong)modulus);
         }
 
-        private static IReductionAlgorithm<ulong> reduction = new UInt64MontgomeryReduction();
-
         public static ulong ModularPower(ulong value, ulong exponent, ulong modulus)
         {
             if (modulus <= uint.MaxValue)
                 return ModularPower((uint)(value % modulus), exponent, (uint)modulus);
-            if ((modulus & 1) == 0)
-                return ModularPowerEven(value, exponent, modulus);
             return ModularPowerReduction(1, value, exponent, modulus);
-        }
-
-        private static ulong ModularPowerEven(ulong value, ulong exponent, ulong modulus)
-        {
-            // See: http://cs.ucsb.edu/~koc/docs/j34.pdf
-            var s = 0;
-            var modulusOdd = modulus;
-            while ((modulusOdd & 1) == 0)
-            {
-                modulusOdd >>= 1;
-                ++s;
-            }
-            var result1 = ModularPowerReduction(1, value, exponent, modulusOdd);
-            var result2 = ModularPowerPowerOfTwoModulus(value, exponent, s);
-            var modulusOddInv = ModularInversePowerOfTwoModulus(modulusOdd, s);
-            var factor = ((result2 - result1) * modulusOddInv) & (((ulong)1 << s) - 1);
-            var result = result1 + modulusOdd * factor;
-            Debug.Assert(result < modulus);
-            return result;
-        }
-
-        private static ulong ModularPowerReduction(ulong start, ulong value, ulong exponent, ulong modulus)
-        {
-            var reducer = reduction.GetReducer(modulus);
-            var b = reducer.ToResidue(value);
-            var result = reducer.ToResidue(start);
-            while (exponent != 0)
-            {
-                if ((exponent & 1) != 0)
-                    result.Multiply(b);
-                if (exponent != 1)
-                    b.Multiply(b);
-                exponent >>= 1;
-            }
-            return result.Value();
         }
 
         public static BigInteger ModularPower(BigInteger value, BigInteger exponent, BigInteger modulus)
@@ -104,11 +65,16 @@ namespace Decompose.Numerics
             var result = ((ulong)1 << (int)(exponent & 63));
             exponent >>= 6;
 
+            // Not sure if this is faster or not.
             if (modulus <= uint.MaxValue)
-                return ModularProduct(result, ModularPower((uint)(value % modulus), exponent, (uint)modulus), modulus);
-            if ((modulus & 1) == 0)
-                return ModularProduct(result, ModularPowerEven(value, exponent, modulus), modulus);
+                return ModularProduct((uint)(result % modulus), ModularPower((uint)value, exponent, (uint)modulus), (uint)modulus);
             return ModularPowerReduction(result, value, exponent, modulus);
+        }
+
+        public static uint ModularPowerPowerOfTwoModulus(uint value, ulong exponent, int n)
+        {
+            Debug.Assert(value > 0 && n > 0 && n <= 32);
+            return (uint)ModularPowerPowerOfTwoModulus((ulong)value, exponent, n);
         }
 
         public static ulong ModularPowerPowerOfTwoModulus(ulong value, ulong exponent, int n)
@@ -141,6 +107,47 @@ namespace Decompose.Numerics
 
             // Result is result ^ 2^s % 2^n.
             return (result << s) & mask;
+        }
+
+        private static ulong ModularPowerReduction(ulong start, ulong value, ulong exponent, ulong modulus)
+        {
+            if ((modulus & 1) != 0)
+                return ModularPowerReductionOdd(start, value, exponent, modulus);
+
+            // See: http://cs.ucsb.edu/~koc/docs/j34.pdf
+            Debug.Assert(modulus > 0);
+            var s = 0;
+            var modulusOdd = modulus;
+            while ((modulusOdd & 1) == 0)
+            {
+                modulusOdd >>= 1;
+                ++s;
+            }
+            var result1 = ModularPowerReductionOdd(start, value, exponent, modulusOdd);
+            var result2 = ModularPowerPowerOfTwoModulus(value, exponent, s);
+            var modulusOddInv = ModularInversePowerOfTwoModulus(modulusOdd, s);
+            var factor = ((result2 - result1) * modulusOddInv) & (((ulong)1 << s) - 1);
+            var result = result1 + modulusOdd * factor;
+            Debug.Assert(result < modulus);
+            return result;
+        }
+
+        private static IReductionAlgorithm<ulong> reductionUInt64 = new UInt64MontgomeryReduction();
+
+        private static ulong ModularPowerReductionOdd(ulong start, ulong value, ulong exponent, ulong modulus)
+        {
+            var reducer = reductionUInt64.GetReducer(modulus);
+            var b = reducer.ToResidue(value);
+            var result = reducer.ToResidue(start);
+            while (exponent != 0)
+            {
+                if ((exponent & 1) != 0)
+                    result.Multiply(b);
+                if (exponent != 1)
+                    b.Multiply(b);
+                exponent >>= 1;
+            }
+            return result.Value();
         }
     }
 }

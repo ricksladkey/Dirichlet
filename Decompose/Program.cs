@@ -1089,7 +1089,7 @@ namespace Decompose
 
         static void PrimalityTest()
         {
-#if true
+#if false
             {
                 int count = 2000000;
                 var random = new MersenneTwister(0).Create<ulong>();
@@ -1124,11 +1124,11 @@ namespace Decompose
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
-#if false
+#if true
             {
-                int count = 2000000;
+                int count = 10000000;
                 var random = new MersenneTwister(0).Create<ulong>();
-                var max = ulong.MaxValue;
+                var max = uint.MaxValue;
                 var timer = new Stopwatch();
                 timer.Start();
                 for (int i = 0; i < count; i++)
