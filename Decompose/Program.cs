@@ -1126,14 +1126,23 @@ namespace Decompose
 #endif
 #if true
             {
-                int count = 10000000;
+                int count = 1000000;
                 var random = new MersenneTwister(0).Create<ulong>();
-                var max = uint.MaxValue;
+                var max = ulong.MaxValue;
                 var timer = new Stopwatch();
                 timer.Start();
                 for (int i = 0; i < count; i++)
                 {
-                    var result = IntegerMath.IsProbablePrime(random.Next(max) | 1);
+                    var x = random.Next(max) | 1;
+#if false
+                    var result = BigInteger.ModPow(2, x - 1, x);
+#endif
+#if false
+                    var result = UInt128.ModularPower(2, x - 1, x);
+#endif
+#if true
+                    var result = IntegerMath.IsProbablePrime(x);
+#endif
                 }
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
