@@ -70,7 +70,11 @@ namespace Decompose.Numerics
                 return ModularProduct((uint)(result % modulus), ModularPower((uint)value, exponent, (uint)modulus), (uint)modulus);
 #else
             if (modulus <= uint.MaxValue)
-                return ModularPowerReduction((uint)(result % modulus), (uint)value, (uint)exponent, (uint)modulus);
+            {
+                if (exponent <= uint.MaxValue)
+                    return ModularPowerReduction((uint)(result % modulus), (uint)value, (uint)exponent, (uint)modulus);
+                return ModularProduct((uint)(result % modulus), ModularPower((uint)value, exponent, (uint)modulus), (uint)modulus);
+            }
 #endif
             return ModularPowerReduction(result, value, exponent, modulus);
         }

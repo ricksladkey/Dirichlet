@@ -332,8 +332,10 @@ namespace Decompose.Numerics
             t0 = (uint)carry;
             t1 = (uint)(carry >> 32);
 
-            var result = (ulong)t1 << 32 | t0;
-            return (uint)(result >= n0 ? result - n0 : result);
+            var result = t0;
+            if (t1 != 0)
+                result = t0 - n0;
+            return result;
         }
 
         private static void Add(out UInt128 w, ref UInt128 u, ref UInt128 v)
