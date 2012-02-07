@@ -308,20 +308,15 @@ namespace Decompose.Numerics
             t1 = (uint)carry;
             t2 = t3 + (uint)(carry >> 32);
 
-            if (t2 != 0)
-            {
-                var borrow = (ulong)t0 - n0;
-                t0 = (uint)borrow;
-                borrow = (ulong)((long)borrow >> 32) + t1 - n1;
-                t1 = (uint)borrow;
-                borrow = (ulong)((long)borrow >> 32);
-            }
-            var result = (ulong)t1 << 32 | t0;
-            return result >= n ? result - n : result;
+            var t = (ulong)t1 << 32 | t0;
+            if (t2 != 0 || t >= n)
+                t -= n;
+            return t;
         }
 
         public static uint Montgomery(uint u0, uint v0, uint n0, uint k0)
         {
+#if false
             var carry = (ulong)u0 * v0;
             var t0 = (uint)carry;
             var t1 = (uint)(carry >> 32);
@@ -332,10 +327,30 @@ namespace Decompose.Numerics
             t0 = (uint)carry;
             t1 = (uint)(carry >> 32);
 
-            var result = t0;
-            if (t1 != 0)
-                result = t0 - n0;
-            return result;
+            var t = t0;
+            if (t1 != 0 || t0 >= n0)
+                t -= n0;
+            return t;
+#endif
+#if true
+            var uv = (ulong)u0 * v0;
+            var mn = (ulong)((uint)uv * k0) * n0;
+            var t = (uv >> 32) + (mn >> 32);
+            if ((ulong)(uint)uv + (uint)mn >> 32 != 0)
+                ++t;
+            if (t >= n0)
+                t -= n0;
+            return (uint)t;
+#endif
+#if false
+            // Only works if n0 <= int.MaxValue.
+            var uv = (ulong)u0 * v0;
+            var mn = (ulong)((uint)uv * k0) * n0;
+            var t = (uv + mn) >> 32;
+            if (t >= n0)
+                t -= n0;
+            return (uint)t;
+#endif
         }
 
         private static void Add(out UInt128 w, ref UInt128 u, ref UInt128 v)
