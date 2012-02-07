@@ -231,7 +231,7 @@ namespace Decompose.Numerics.Test
                 xPrime.Set(x);
                 yPrime.Set(y);
                 zPrime.Set(xPrime).Multiply(yPrime);
-                var actual = reduction.ToBigInteger(zPrime.Value());
+                var actual = reduction.ToBigInteger(zPrime.Value);
                 Assert.AreEqual(expected, actual);
             }
         }

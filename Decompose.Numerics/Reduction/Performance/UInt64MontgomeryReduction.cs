@@ -49,6 +49,23 @@ namespace Decompose.Numerics
                     return this;
                 }
 
+                public override IResidue<ulong> Power(ulong exponent)
+                {
+                    var value = r;
+                    var result = r;
+                    --exponent;
+                    while (exponent != 0)
+                    {
+                        if ((exponent & 1) != 0)
+                            result = reducer.Reduce(result, value);
+                        if (exponent != 1)
+                            value = reducer.Reduce(value, value);
+                        exponent >>= 1;
+                    }
+                    r = result;
+                    return this;
+                }
+
                 public override IResidue<ulong> Add(IResidue<ulong> x)
                 {
                     r = UInt128.ModularSum(r, GetRep(x), reducer.modulus);
@@ -61,9 +78,9 @@ namespace Decompose.Numerics
                     return this;
                 }
 
-                public override ulong Value()
+                public override ulong Value
                 {
-                    return reducer.Reduce(r, 1);
+                    get { return reducer.Reduce(r, 1); }
                 }
             }
 

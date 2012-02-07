@@ -98,7 +98,7 @@ namespace Decompose
                 throw new InvalidOperationException();
 
             var reducer = new BarrettReduction().GetReducer(p);
-            var actual = reducer.ToResidue(z).Value();
+            var actual = reducer.ToResidue(z).Value;
             if (actual != expected)
                 throw new InvalidOperationException();
         }

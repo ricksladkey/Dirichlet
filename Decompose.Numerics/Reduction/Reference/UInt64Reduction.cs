@@ -55,9 +55,9 @@
                     return this;
                 }
 
-                public override ulong Value()
+                public override ulong Value
                 {
-                    return r;
+                    get { return r; }
                 }
             }
 

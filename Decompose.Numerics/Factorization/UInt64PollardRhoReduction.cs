@@ -99,7 +99,7 @@ namespace Decompose.Numerics
                         AdvanceF(y, cPrime);
                         q.Multiply(diff.Set(x).Subtract(y));
                     }
-                    g = IntegerMath.GreatestCommonDivisor(q.Value(), n);
+                    g = IntegerMath.GreatestCommonDivisor(q.Value, n);
                     k += limit;
                 }
                 r <<= 1;
@@ -112,7 +112,7 @@ namespace Decompose.Numerics
                 do
                 {
                     AdvanceF(ys, cPrime);
-                    g = IntegerMath.GreatestCommonDivisor(diff.Set(x).Subtract(ys).Value(), n);
+                    g = IntegerMath.GreatestCommonDivisor(diff.Set(x).Subtract(ys).Value, n);
                 }
                 while (g == 1);
             }

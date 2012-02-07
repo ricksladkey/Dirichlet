@@ -45,7 +45,7 @@ namespace Decompose.Numerics
 
         public override string ToString()
         {
-            return Value().ToString();
+            return Value.ToString();
         }
 
         public abstract bool IsZero { get; }
@@ -56,6 +56,6 @@ namespace Decompose.Numerics
         public abstract IResidue<TValue> Multiply(IResidue<TValue> x);
         public abstract IResidue<TValue> Add(IResidue<TValue> x);
         public abstract IResidue<TValue> Subtract(IResidue<TValue> x);
-        public abstract TValue Value();
+        public abstract TValue Value { get; }
     }
 }

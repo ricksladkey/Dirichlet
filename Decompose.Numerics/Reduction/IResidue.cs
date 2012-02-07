@@ -18,6 +18,6 @@ namespace Decompose.Numerics
         IResidue<T> Add(IResidue<T> x);
         IResidue<T> Subtract(IResidue<T> x);
         IResidue<T> Power(T x);
-        T Value();
+        T Value { get; }
     }
 }

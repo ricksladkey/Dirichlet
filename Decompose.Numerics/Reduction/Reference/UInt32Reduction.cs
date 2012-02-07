@@ -55,9 +55,9 @@
                     return this;
                 }
 
-                public override uint Value()
+                public override uint Value
                 {
-                    return r;
+                    get { return r; }
                 }
             }
 

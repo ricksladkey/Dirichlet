@@ -65,9 +65,13 @@ namespace Decompose.Numerics
             var result = ((ulong)1 << (int)(exponent & 63));
             exponent >>= 6;
 
-            // Not sure if this is faster or not.
+#if false
             if (modulus <= uint.MaxValue)
                 return ModularProduct((uint)(result % modulus), ModularPower((uint)value, exponent, (uint)modulus), (uint)modulus);
+#else
+            if (modulus <= uint.MaxValue)
+                return ModularPowerReduction((uint)(result % modulus), (uint)value, (uint)exponent, (uint)modulus);
+#endif
             return ModularPowerReduction(result, value, exponent, modulus);
         }
 
@@ -109,6 +113,37 @@ namespace Decompose.Numerics
             return (result << s) & mask;
         }
 
+        private static uint ModularPowerReduction(uint start, uint value, uint exponent, uint modulus)
+        {
+            if ((modulus & 1) != 0)
+                return ModularPowerReductionOdd(start, value, exponent, modulus);
+
+            // See: http://cs.ucsb.edu/~koc/docs/j34.pdf
+            Debug.Assert(modulus > 0);
+            var s = 0;
+            var modulusOdd = modulus;
+            while ((modulusOdd & 1) == 0)
+            {
+                modulusOdd >>= 1;
+                ++s;
+            }
+            var result1 = ModularPowerReductionOdd(start, value, exponent, modulusOdd);
+            var result2 = ModularPowerPowerOfTwoModulus(value, exponent, s);
+            var modulusOddInv = ModularInversePowerOfTwoModulus(modulusOdd, s);
+            var factor = ((result2 - result1) * modulusOddInv) & (((uint)1 << s) - 1);
+            var result = result1 + modulusOdd * factor;
+            Debug.Assert(result < modulus);
+            return result;
+        }
+
+        private static IReductionAlgorithm<uint> reductionUInt32 = new UInt32MontgomeryReduction();
+
+        private static uint ModularPowerReductionOdd(uint start, uint value, uint exponent, uint modulus)
+        {
+            var reducer = reductionUInt32.GetReducer(modulus);
+            return ModularProduct(start, reducer.ToResidue(value).Power(exponent).Value, modulus);
+        }
+
         private static ulong ModularPowerReduction(ulong start, ulong value, ulong exponent, ulong modulus)
         {
             if ((modulus & 1) != 0)
@@ -137,17 +172,7 @@ namespace Decompose.Numerics
         private static ulong ModularPowerReductionOdd(ulong start, ulong value, ulong exponent, ulong modulus)
         {
             var reducer = reductionUInt64.GetReducer(modulus);
-            var b = reducer.ToResidue(value);
-            var result = reducer.ToResidue(start);
-            while (exponent != 0)
-            {
-                if ((exponent & 1) != 0)
-                    result.Multiply(b);
-                if (exponent != 1)
-                    b.Multiply(b);
-                exponent >>= 1;
-            }
-            return result.Value();
+            return reducer.ToResidue(value).Power(exponent).Multiply(reducer.ToResidue(start)).Value;
         }
     }
 }

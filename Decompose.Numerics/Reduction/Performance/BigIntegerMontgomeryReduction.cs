@@ -95,14 +95,17 @@ namespace Decompose.Numerics
                     return this;
                 }
 
-                public override BigInteger Value()
+                public override BigInteger Value
                 {
-                    var reg1 = reducer.store.Allocate().Set(r);
-                    reg1.Set(r);
-                    reducer.Reduce(reg1);
-                    var result = (BigInteger)reg1;
-                    reducer.store.Release(reg1);
-                    return result;
+                    get
+                    {
+                        var reg1 = reducer.store.Allocate().Set(r);
+                        reg1.Set(r);
+                        reducer.Reduce(reg1);
+                        var result = (BigInteger)reg1;
+                        reducer.store.Release(reg1);
+                        return result;
+                    }
                 }
             }
 

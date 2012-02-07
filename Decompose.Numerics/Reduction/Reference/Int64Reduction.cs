@@ -76,14 +76,14 @@ namespace Decompose.Numerics
                     return this;
                 }
 
-                public long Value()
+                public long Value
                 {
-                    return r;
+                    get { return r; }
                 }
 
                 public override string ToString()
                 {
-                    return Value().ToString();
+                    return Value.ToString();
                 }
 
                 public bool Equals(IResidue<long> other)

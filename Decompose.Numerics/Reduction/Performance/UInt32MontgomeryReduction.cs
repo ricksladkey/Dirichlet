@@ -51,6 +51,23 @@ namespace Decompose.Numerics
                     return this;
                 }
 
+                public override IResidue<uint> Power(uint exponent)
+                {
+                    var value = r;
+                    var result = r;
+                    --exponent;
+                    while (exponent != 0)
+                    {
+                        if ((exponent & 1) != 0)
+                            result = reducer.Reduce(result, value);
+                        if (exponent != 1)
+                            value = reducer.Reduce(value, value);
+                        exponent >>= 1;
+                    }
+                    r = result;
+                    return this;
+                }
+
                 public override IResidue<uint> Add(IResidue<uint> x)
                 {
                     r = IntegerMath.ModularSum(r, GetRep(x), reducer.modulus);
@@ -63,9 +80,9 @@ namespace Decompose.Numerics
                     return this;
                 }
 
-                public override uint Value()
+                public override uint Value
                 {
-                    return reducer.Reduce(r, 1);
+                    get { return reducer.Reduce(r, 1); }
                 }
             }
 
