@@ -196,43 +196,52 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void TestUInt128Reduction()
+        public void TestUInt64Reduction()
         {
             var p = ulong.Parse("10023859281455311421");
             TestReduction(p, new UInt64Reduction());
         }
 
         [TestMethod]
-        public void TestUInt64MontgomeryReduction()
+        public void TestUInt32MontgomeryReduction()
         {
-            TestReduction(uint.Parse("46234103"), new UInt32MontgomeryReduction());
+            TestReduction(uint.MaxValue, new UInt32MontgomeryReduction());
+            TestReduction((uint)1 << 16, new UInt32MontgomeryReduction());
+            TestReduction((uint)1 << 8, new UInt32MontgomeryReduction());
         }
 
         [TestMethod]
-        public void TestUInt128MontgomeryReduction()
+        public void TestUInt64MontgomeryReduction()
         {
             TestReduction(ulong.Parse("259027704197601377"), new UInt64MontgomeryReduction());
         }
 
-        private void TestReduction<T>(T p, IReductionAlgorithm<T> reduction)
+        private void TestReduction<T>(T max, IReductionAlgorithm<T> reduction)
         {
             var random = new MersenneTwister(0).Create<T>();
-            var reducer = reduction.GetReducer(p);
-            var xPrime = reducer.ToResidue(p);
-            var yPrime = reducer.ToResidue(p);
-            var zPrime = reducer.ToResidue(p);
-            for (int i = 0; i < 100; i++)
+            for (int j = 0; j < 100; j++)
             {
-                var x = random.Next(p);
-                var y = random.Next(p);
-                var z = reduction.ToBigInteger(x) * reduction.ToBigInteger(y);
-                var expected = z % reduction.ToBigInteger(p);
+                var p = reduction.Or(random.Next(max), reduction.Convert(1));
+                var reducer = reduction.GetReducer(p);
+                var xBar = reducer.ToResidue(p);
+                var yBar = reducer.ToResidue(p);
+                var zBar = reducer.ToResidue(p);
+                for (int i = 0; i < 100; i++)
+                {
+                    var x = random.Next(p);
+                    var y = random.Next(p);
 
-                xPrime.Set(x);
-                yPrime.Set(y);
-                zPrime.Set(xPrime).Multiply(yPrime);
-                var actual = reduction.ToBigInteger(zPrime.Value);
-                Assert.AreEqual(expected, actual);
+                    xBar.Set(x);
+                    yBar.Set(y);
+                    zBar.Set(xBar).Multiply(yBar);
+                    Assert.AreEqual(reduction.ToBigInteger(x) * reduction.ToBigInteger(y) % reduction.ToBigInteger(p),
+                        reduction.ToBigInteger(zBar.Value));
+
+                    xBar.Set(x);
+                    zBar.Set(xBar).Power(y);
+                    Assert.AreEqual(BigInteger.ModPow(reduction.ToBigInteger(x), reduction.ToBigInteger(y), reduction.ToBigInteger(p)),
+                        reduction.ToBigInteger(zBar.Value));
+                }
             }
         }
 

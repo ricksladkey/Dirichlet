@@ -53,6 +53,13 @@ namespace Decompose.Numerics
 
                 public override IResidue<uint> Power(uint exponent)
                 {
+                    if (exponent == 0)
+                    {
+                        if (reducer.oneRep == 0)
+                            reducer.oneRep = reducer.Reduce(1, reducer.rSquaredModN);
+                        r = reducer.oneRep;
+                        return this;
+                    }
                     var value = r;
                     var result = r;
                     --exponent;
@@ -108,6 +115,7 @@ namespace Decompose.Numerics
 
             private uint Reduce(uint u, uint v)
             {
+                Debug.Assert(UInt128.Montgomery(u, v, modulus, k0) < modulus);
                 return UInt128.Montgomery(u, v, modulus, k0);
             }
         }

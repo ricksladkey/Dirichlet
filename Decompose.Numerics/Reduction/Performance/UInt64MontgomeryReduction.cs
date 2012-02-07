@@ -51,6 +51,11 @@ namespace Decompose.Numerics
 
                 public override IResidue<ulong> Power(ulong exponent)
                 {
+                    if (exponent == 0)
+                    {
+                        r = reducer.oneRep;
+                        return this;
+                    }
                     var value = r;
                     var result = r;
                     --exponent;
