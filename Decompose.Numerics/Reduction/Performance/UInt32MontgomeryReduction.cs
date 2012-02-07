@@ -54,12 +54,7 @@ namespace Decompose.Numerics
                 public override IResidue<uint> Power(uint exponent)
                 {
                     if (exponent == 0)
-                    {
-                        if (reducer.oneRep == 0)
-                            reducer.oneRep = reducer.Reduce(1, reducer.rSquaredModN);
-                        r = reducer.oneRep;
-                        return this;
-                    }
+                        return One();
                     var value = r;
                     var result = r;
                     --exponent;
@@ -72,6 +67,14 @@ namespace Decompose.Numerics
                         exponent >>= 1;
                     }
                     r = result;
+                    return this;
+                }
+
+                private IResidue<uint> One()
+                {
+                    if (reducer.oneRep == 0)
+                        reducer.oneRep = reducer.Reduce(1, reducer.rSquaredModN);
+                    r = reducer.oneRep;
                     return this;
                 }
 
