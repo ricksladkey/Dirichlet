@@ -323,16 +323,13 @@ namespace Decompose.Numerics
 
             var m = (ulong)(t0 * k0);
             carry = t0 + m * n0;
-            carry = (carry >> 32) + t1;
-            t0 = (uint)carry;
-            t1 = (uint)(carry >> 32);
+            var t = (carry >> 32) + t1;
 
-            var t = t0;
-            if (t1 != 0 || t0 >= n0)
+            if (t >= n0)
                 t -= n0;
-            return t;
+            return (uint)t;
 #endif
-#if true
+#if false
             var uv = (ulong)u0 * v0;
             var mn = (ulong)((uint)uv * k0) * n0;
             var t = (uv >> 32) + (mn >> 32);
@@ -350,6 +347,13 @@ namespace Decompose.Numerics
             if (t >= n0)
                 t -= n0;
             return (uint)t;
+#endif
+#if true
+            var uv = (ulong)u0 * v0;
+            var mn = (ulong)(0 - (uint)uv * k0) * n0;
+            if (uv < mn)
+                return (uint)(n0 - ((mn - uv) >> 32));
+            return (uint)((uv - mn) >> 32);
 #endif
         }
 
