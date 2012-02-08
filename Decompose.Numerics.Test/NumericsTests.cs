@@ -277,13 +277,20 @@ namespace Decompose.Numerics.Test
                         Assert.AreEqual(i >> k, (int)x);
                     }
 
+                    x.SetAnd(a, b, store);
+                    Assert.AreEqual(i & j, (int)x);
+                    x.SetOr(a, b, store);
+                    Assert.AreEqual(i | j, (int)x);
+                    x.SetExclusiveOr(a, b, store);
+                    Assert.AreEqual(i ^ j, (int)x);
+                    x.SetNot(a);
+                    Assert.AreEqual(~i, (int)x);
+
                     x.SetSum(a, b);
                     Assert.AreEqual(i + j, (int)x);
                     x.SetDifference(a, b);
                     Assert.AreEqual(i - j, (int)x);
                     x.SetProduct(a, b);
-                    Assert.AreEqual(i * j, (int)x);
-                    x.SetProduct(a, j);
                     Assert.AreEqual(i * j, (int)x);
                     if (j != 0)
                     {
@@ -350,6 +357,11 @@ namespace Decompose.Numerics.Test
             {
                 for (int j = -10; j < 10; j++)
                 {
+                    Assert.AreEqual((BigInteger)i & j, (int)((Word32Integer)i & j));
+                    Assert.AreEqual((BigInteger)i | j, (int)((Word32Integer)i | j));
+                    Assert.AreEqual((BigInteger)i ^ j, (int)((Word32Integer)i ^ j));
+                    Assert.AreEqual(~(BigInteger)i, (int)(~(Word32Integer)i));
+
                     Assert.AreEqual((BigInteger)i + j, (int)((Word32Integer)i + j));
                     Assert.AreEqual((BigInteger)i - j, (int)((Word32Integer)i - j));
                     Assert.AreEqual((BigInteger)i * j, (int)((Word32Integer)i * j));
@@ -358,6 +370,7 @@ namespace Decompose.Numerics.Test
                         Assert.AreEqual((BigInteger)i / j, (int)((Word32Integer)i / j));
                         Assert.AreEqual((BigInteger)i % j, (int)((Word32Integer)i % j));
                     }
+                    Assert.AreEqual(-(BigInteger)i, (int)(-(Word32Integer)i));
                 }
             }
         }

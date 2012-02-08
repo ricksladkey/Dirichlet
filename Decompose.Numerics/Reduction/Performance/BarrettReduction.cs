@@ -166,7 +166,7 @@ namespace Decompose.Numerics
 #endif
                 // if (r.Sign == -1) r += bToTheKPlusOne;
                 if (z < reg1)
-                    z.SetBit(bToTheKPlusOneLength);
+                    z.SetBit(bToTheKPlusOneLength, true);
                 z.Subtract(reg1);
                 // while (r >= p) r -= p;
                 while (z >= pRep)

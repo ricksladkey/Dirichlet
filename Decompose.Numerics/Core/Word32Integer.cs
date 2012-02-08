@@ -8,6 +8,8 @@ namespace Decompose.Numerics
     public class Word32Integer : IComparable<Word32Integer>, IEquatable<Word32Integer>
     {
         private const int wordLength = 32;
+        private const int wordLengthShift = 5;
+        private const int wordLengthMask = (1 << wordLengthShift) - 1;
 
         private uint[] bits;
         private int last;
@@ -586,6 +588,35 @@ namespace Decompose.Numerics
             return b.CompareTo(a) <= 0;
         }
 
+        public static Word32Integer operator &(Word32Integer a, Word32Integer b)
+        {
+            var length = Math.Max(a.last, b.last) + 2;
+            if (a.Sign == 1 && b.Sign == 1)
+                return new Word32Integer(length).SetUnsignedAnd(a, b);
+            return new Word32Integer(length).SetAnd(a, b, new Word32IntegerStore(length));
+        }
+
+        public static Word32Integer operator |(Word32Integer a, Word32Integer b)
+        {
+            var length = Math.Max(a.last, b.last) + 2;
+            if (a.Sign == 1 && b.Sign == 1)
+                return new Word32Integer(length).SetUnsignedOr(a, b);
+            return new Word32Integer(length).SetOr(a, b, new Word32IntegerStore(length));
+        }
+
+        public static Word32Integer operator ^(Word32Integer a, Word32Integer b)
+        {
+            var length = Math.Max(a.last, b.last) + 2;
+            if (a.Sign == 1 && b.Sign == 1)
+                return new Word32Integer(length).SetUnsignedExclusiveOr(a, b);
+            return new Word32Integer(length).SetExclusiveOr(a, b, new Word32IntegerStore(length));
+        }
+
+        public static Word32Integer operator ~(Word32Integer a)
+        {
+            return new Word32Integer(a.last).SetNot(a);
+        }
+
         public static Word32Integer operator +(Word32Integer a, Word32Integer b)
         {
             return new Word32Integer(Math.Max(a.last, b.last) + 2).SetSum(a, b);
@@ -594,6 +625,11 @@ namespace Decompose.Numerics
         public static Word32Integer operator -(Word32Integer a, Word32Integer b)
         {
             return new Word32Integer(Math.Max(a.last, b.last) + 2).SetDifference(a, b);
+        }
+
+        public static Word32Integer operator -(Word32Integer a)
+        {
+            return a.Copy().Negate();
         }
 
         public static Word32Integer operator *(Word32Integer a, Word32Integer b)
@@ -725,8 +761,8 @@ namespace Decompose.Numerics
         public Word32Integer Mask(int n)
         {
             CheckValid();
-            int i = n / 32;
-            int j = n - 32 * i;
+            int i = n >> wordLengthShift;
+            int j = n & wordLengthMask;
             if (j == 0)
             {
                 for (int k = last; k >= i; k--)
@@ -752,8 +788,8 @@ namespace Decompose.Numerics
             CheckValid();
             if (n == 0)
                 return this;
-            int i = n / 32;
-            int j = n - 32 * i;
+            int i = n >> wordLengthShift;
+            int j = n & wordLengthMask;
             CheckLast(last + i + 1);
             if (j == 0)
             {
@@ -793,13 +829,13 @@ namespace Decompose.Numerics
             CheckValid();
             if (n == 0)
                 return this;
-            int i = n / 32;
+            int i = n >> wordLengthShift;
             if (i > last)
             {
                 Clear();
                 return this;
             }
-            int j = n - 32 * i;
+            int j = n & wordLengthMask;
             int limit = last - i;
             if (j == 0)
             {
@@ -820,16 +856,164 @@ namespace Decompose.Numerics
             return SetLast(limit);
         }
 
-        public Word32Integer SetBit(int n)
+        public Word32Integer SetBit(int n, bool bit)
         {
             CheckValid();
-            Debug.Assert(n % 32 == 0);
-            int i = n / 32;
-            int j = n - 32 * i;
+            int i = n >> wordLengthShift;
+            int j = n & wordLengthMask;
             CheckLast(i);
-            ++bits[i];
+            var bitMask = (uint)1 << j;
+            if (bit)
+                bits[i] |= bitMask;
+            else
+                bits[i] &= ~bitMask;
             last = Math.Max(last, i);
             CheckValid();
+            return this;
+        }
+
+        public bool GetBit(int n)
+        {
+            int i = n >> wordLengthShift;
+            int j = n & wordLengthMask;
+            if (i > last + 1)
+                return false;
+            var bitMask = (uint)1 << j;
+            return (bits[i] & bitMask) != 0;
+        }
+
+        private enum LogicalOperation
+        {
+            And,
+            Or,
+            ExclusiveOr,
+        }
+
+        private Word32Integer SetSignedLogical(LogicalOperation op, Word32Integer a, Word32Integer b, Word32IntegerStore store)
+        {
+            int lastMax = Math.Max(a.last, b.last);
+            var r = store.Allocate().Set(1).LeftShift((lastMax + 1) * wordLength);
+            var reg1 = store.Allocate();
+            var reg2 = store.Allocate();
+            if (a.Sign == -1)
+                reg1.SetSum(r, a);
+            else
+                reg1.Set(a);
+            if (b.Sign == -1)
+                reg2.SetSum(r, b);
+            else
+                reg2.Set(b);
+            bool negative;
+            if (op == LogicalOperation.And)
+            {
+                SetUnsignedAnd(reg1, reg2);
+                negative = a.Sign == b.Sign;
+            }
+            else if (op == LogicalOperation.Or)
+            {
+                SetUnsignedOr(reg1, reg2);
+                negative = a.Sign == -1 || b.Sign == -1;
+            }
+            else
+            {
+                SetUnsignedExclusiveOr(reg1, reg2);
+                negative = a.Sign == b.Sign;
+            }
+            if (negative)
+            {
+                SetDifference(r, this);
+                Sign = -1;
+            }
+            store.Release(r);
+            store.Release(reg1);
+            store.Release(reg2);
+            return this;
+        }
+
+        public Word32Integer SetAnd(Word32Integer a, Word32Integer b, Word32IntegerStore store)
+        {
+            if (a.Sign == 1 && b.Sign == 1)
+                return SetUnsignedAnd(a, b);
+            return SetSignedLogical(LogicalOperation.And, a, b, store);
+        }
+
+        public Word32Integer SetOr(Word32Integer a, Word32Integer b, Word32IntegerStore store)
+        {
+            if (a.Sign == 1 && b.Sign == 1)
+                return SetUnsignedOr(a, b);
+            return SetSignedLogical(LogicalOperation.Or, a, b, store);
+        }
+
+        public Word32Integer SetExclusiveOr(Word32Integer a, Word32Integer b, Word32IntegerStore store)
+        {
+            if (a.Sign == 1 && b.Sign == 1)
+                return SetUnsignedExclusiveOr(a, b);
+            return SetSignedLogical(LogicalOperation.ExclusiveOr, a, b, store);
+        }
+
+        public Word32Integer SetUnsignedAnd(Word32Integer a, Word32Integer b)
+        {
+            CheckValid();
+            int lastMin = Math.Min(a.last, b.last);
+            CheckLast(lastMin);
+            for (int i = 0; i <= lastMin; i++)
+                bits[i] = a.bits[i] & b.bits[i];
+            for (int i = lastMin + 1; i <= last; i++)
+                bits[i] = 0;
+            sign = 1;
+            return SetLast(lastMin);
+        }
+
+        public Word32Integer SetUnsignedOr(Word32Integer a, Word32Integer b)
+        {
+            int lastMin = Math.Min(a.last, b.last);
+            int lastMax = Math.Max(a.last, b.last);
+            CheckLast(lastMax);
+            for (int i = 0; i <= lastMin; i++)
+                bits[i] = a.bits[i] | b.bits[i];
+            if (a.last > lastMin)
+            {
+                for (int i = lastMin + 1; i <= a.last; i++)
+                    bits[i] = a.bits[i];
+            }
+            else
+            {
+                for (int i = lastMin + 1; i <= b.last; i++)
+                    bits[i] = b.bits[i];
+            }
+            for (int i = lastMax + 1; i <= last; i++)
+                bits[i] = 0;
+            sign = 1;
+            return SetLast(lastMin);
+        }
+
+        public Word32Integer SetUnsignedExclusiveOr(Word32Integer a, Word32Integer b)
+        {
+            int lastMin = Math.Min(a.last, b.last);
+            int lastMax = Math.Max(a.last, b.last);
+            CheckLast(lastMax);
+            for (int i = 0; i <= lastMin; i++)
+                bits[i] = a.bits[i] ^ b.bits[i];
+            if (a.last > lastMin)
+            {
+                for (int i = lastMin + 1; i <= a.last; i++)
+                    bits[i] = a.bits[i];
+            }
+            else
+            {
+                for (int i = lastMin + 1; i <= b.last; i++)
+                    bits[i] = b.bits[i];
+            }
+            for (int i = lastMax + 1; i <= last; i++)
+                bits[i] = 0;
+            sign = 1;
+            return SetLast(lastMin);
+        }
+
+        public Word32Integer SetNot(Word32Integer a)
+        {
+            SetSum(a, 1);
+            Sign = -Sign;
             return this;
         }
 
@@ -1158,14 +1342,16 @@ namespace Decompose.Numerics
             }
         }
 
-        public void Negate()
+        public Word32Integer Negate()
         {
             sign = sign == -1 ? 1 : -1;
+            return this;
         }
 
-        public void AbsoluteValue()
+        public Word32Integer AbsoluteValue()
         {
             sign = 1;
+            return this;
         }
 
         public Word32Integer Multiply(Word32Integer a, Word32IntegerStore store)
@@ -1309,7 +1495,7 @@ namespace Decompose.Numerics
             CheckValid();
             Debug.Assert(n % 32 == 0);
             Clear();
-            int clast = (n + 31) / 32 - 1;
+            int clast = ((n + wordLength - 1) >> wordLengthShift) - 1;
             CheckLast(clast);
             int alast = Math.Min(a.last, clast);
             for (int i = 0; i <= alast; i++)
@@ -1345,7 +1531,7 @@ namespace Decompose.Numerics
             // Use product scanning algorithm.
             CheckValid();
             Debug.Assert(n % 32 == 0 && n > 0);
-            int shifted = n / 32;
+            int shifted = n >> wordLengthShift;
             Clear();
             CheckLast(a.last + b.last + 1 - shifted);
             ulong r0 = 0;
