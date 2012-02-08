@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Decompose.Numerics
 {
-    public class Word32IntegerStore
+    public class Word32IntegerStore : IStore<Word32Integer>
     {
         private int length;
         private Stack<Word32Integer> freeList;

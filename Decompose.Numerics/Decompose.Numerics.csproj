@@ -51,6 +51,8 @@
     <Compile Include="Core\BigIntegerOperations.cs" />
     <Compile Include="Core\Core.cs" />
     <Compile Include="Core\Int65.cs" />
+    <Compile Include="Core\IStore.cs" />
+    <Compile Include="Core\ShareableWord32IntegerStore.cs" />
     <Compile Include="Core\Word32IntegerExtensions.cs" />
     <Compile Include="Division\IDivisionAlgorithm.cs" />
     <Compile Include="Division\UInt32Division.cs" />

@@ -7,6 +7,8 @@ namespace Decompose.Numerics
 {
     public class Word32Integer : IComparable<Word32Integer>, IEquatable<Word32Integer>
     {
+        private static IStore<Word32Integer> shareableStore = new ShareableWord32IntegerStore();
+
         private const int wordLength = 32;
         private const int wordLengthShift = 5;
         private const int wordLengthMask = (1 << wordLengthShift) - 1;
@@ -593,7 +595,7 @@ namespace Decompose.Numerics
             var length = Math.Max(a.last, b.last) + 2;
             if (a.Sign == 1 && b.Sign == 1)
                 return new Word32Integer(length).SetUnsignedAnd(a, b);
-            return new Word32Integer(length).SetAnd(a, b, new Word32IntegerStore(length));
+            return new Word32Integer(length).SetAnd(a, b, shareableStore);
         }
 
         public static Word32Integer operator |(Word32Integer a, Word32Integer b)
@@ -601,7 +603,7 @@ namespace Decompose.Numerics
             var length = Math.Max(a.last, b.last) + 2;
             if (a.Sign == 1 && b.Sign == 1)
                 return new Word32Integer(length).SetUnsignedOr(a, b);
-            return new Word32Integer(length).SetOr(a, b, new Word32IntegerStore(length));
+            return new Word32Integer(length).SetOr(a, b, shareableStore);
         }
 
         public static Word32Integer operator ^(Word32Integer a, Word32Integer b)
@@ -609,7 +611,7 @@ namespace Decompose.Numerics
             var length = Math.Max(a.last, b.last) + 2;
             if (a.Sign == 1 && b.Sign == 1)
                 return new Word32Integer(length).SetUnsignedExclusiveOr(a, b);
-            return new Word32Integer(length).SetExclusiveOr(a, b, new Word32IntegerStore(length));
+            return new Word32Integer(length).SetExclusiveOr(a, b, shareableStore);
         }
 
         public static Word32Integer operator ~(Word32Integer a)
@@ -889,7 +891,7 @@ namespace Decompose.Numerics
             ExclusiveOr,
         }
 
-        private Word32Integer SetSignedLogical(LogicalOperation op, Word32Integer a, Word32Integer b, Word32IntegerStore store)
+        private Word32Integer SetSignedLogical(LogicalOperation op, Word32Integer a, Word32Integer b, IStore<Word32Integer> store)
         {
             int lastMax = Math.Max(a.last, b.last);
             var r = store.Allocate().Set(1).LeftShift((lastMax + 1) * wordLength);
@@ -930,21 +932,21 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer SetAnd(Word32Integer a, Word32Integer b, Word32IntegerStore store)
+        public Word32Integer SetAnd(Word32Integer a, Word32Integer b, IStore<Word32Integer> store)
         {
             if (a.Sign == 1 && b.Sign == 1)
                 return SetUnsignedAnd(a, b);
             return SetSignedLogical(LogicalOperation.And, a, b, store);
         }
 
-        public Word32Integer SetOr(Word32Integer a, Word32Integer b, Word32IntegerStore store)
+        public Word32Integer SetOr(Word32Integer a, Word32Integer b, IStore<Word32Integer> store)
         {
             if (a.Sign == 1 && b.Sign == 1)
                 return SetUnsignedOr(a, b);
             return SetSignedLogical(LogicalOperation.Or, a, b, store);
         }
 
-        public Word32Integer SetExclusiveOr(Word32Integer a, Word32Integer b, Word32IntegerStore store)
+        public Word32Integer SetExclusiveOr(Word32Integer a, Word32Integer b, IStore<Word32Integer> store)
         {
             if (a.Sign == 1 && b.Sign == 1)
                 return SetUnsignedExclusiveOr(a, b);
@@ -1354,7 +1356,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer Multiply(Word32Integer a, Word32IntegerStore store)
+        public Word32Integer Multiply(Word32Integer a, IStore<Word32Integer> store)
         {
             var reg1 = store.Allocate().Set(this);
             if (object.ReferenceEquals(this, a))
@@ -1566,7 +1568,7 @@ namespace Decompose.Numerics
         }
 #endif
 
-        public Word32Integer Divide(Word32Integer a, Word32IntegerStore store)
+        public Word32Integer Divide(Word32Integer a, IStore<Word32Integer> store)
         {
             var reg1 = store.Allocate().Set(this);
             reg1.Set(this);
@@ -1581,7 +1583,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer SetQuotient(Word32Integer a, Word32Integer b, Word32IntegerStore store)
+        public Word32Integer SetQuotient(Word32Integer a, Word32Integer b, IStore<Word32Integer> store)
         {
             var reg1 = store.Allocate();
             reg1.Set(a).ModuloWithQuotient(b, this);
@@ -1704,7 +1706,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer Divide(uint a, Word32IntegerStore store)
+        public Word32Integer Divide(uint a, IStore<Word32Integer> store)
         {
             var reg1 = store.Allocate();
             reg1.Set(this).ModuloWithQuotient(a, this);
@@ -1718,7 +1720,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer SetQuotient(Word32Integer a, int b, Word32IntegerStore store)
+        public Word32Integer SetQuotient(Word32Integer a, int b, IStore<Word32Integer> store)
         {
             var reg1 = store.Allocate();
             reg1.Set(a).ModuloWithQuotient((uint)Math.Abs(b), this);
@@ -1728,7 +1730,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer SetQuotient(Word32Integer a, uint b, Word32IntegerStore store)
+        public Word32Integer SetQuotient(Word32Integer a, uint b, IStore<Word32Integer> store)
         {
             var reg1 = store.Allocate();
             reg1.Set(a).ModuloWithQuotient(b, this);
