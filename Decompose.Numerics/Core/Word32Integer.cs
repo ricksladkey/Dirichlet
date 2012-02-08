@@ -641,7 +641,7 @@ namespace Decompose.Numerics
 
         public static Word32Integer operator /(Word32Integer a, Word32Integer b)
         {
-            return new Word32Integer(a.last + 1).SetQuotient(a, b, new Word32Integer(a.last + 1));
+            return new Word32Integer(a.last + 1).SetQuotient(a, b, shareableStore);
         }
 
         public static Word32Integer operator %(Word32Integer a, Word32Integer b)
@@ -1588,12 +1588,6 @@ namespace Decompose.Numerics
             var reg1 = store.Allocate();
             reg1.Set(a).ModuloWithQuotient(b, this);
             store.Release(reg1);
-            return this;
-        }
-
-        public Word32Integer SetQuotient(Word32Integer a, Word32Integer b, Word32Integer reg1)
-        {
-            reg1.Set(a).ModuloWithQuotient(b, this);
             return this;
         }
 

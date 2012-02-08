@@ -194,7 +194,27 @@ namespace Decompose.Numerics
         {
             return Modulus(ref a, (ulong)b.r1 << 32 | b.r0);
         }
-        
+
+        public static ulong MultiplyHigh(ulong a, ulong b)
+        {
+#if false
+            UInt128 c;
+            Multiply(out c, (uint)a, (uint)(a >> 32), (uint)b, (uint)(b >> 32));
+            return (ulong)c.r3 << 32 | c.r2;
+#endif
+#if true
+            var u0 = (uint)a;
+            var u1 = (uint)(a >> 32);
+            var v0 = (uint)b;
+            var v1 = (uint)(b >> 32);
+            var carry = (((ulong)u0 * v0) >> 32) + (ulong)u0 * v1;
+            var r1 = (uint)carry;
+            var r2 = (uint)(carry >> 32);
+            carry = (uint)carry + (ulong)u1 * v0;
+            return (carry >> 32) + r2 + (ulong)u1 * v1;
+#endif
+        }
+
         public static ulong ModularSum(ulong a, ulong b, ulong modulus)
         {
             var a0 = (uint)a;
@@ -672,16 +692,33 @@ namespace Decompose.Numerics
 
         private static void RightShift(out UInt128 w, ref UInt128 u, int d)
         {
-            if (d == 0)
+            var dneg = 32 - d;
+            if (d < 32)
             {
-                w = u;
+                if (d == 0)
+                {
+                    w = u;
+                    return;
+                }
+                w.r0 = u.r0 >> d | u.r1 << dneg;
+                w.r1 = u.r1 >> d | u.r2 << dneg;
+                w.r2 = u.r2 >> d | u.r3 << dneg;
+                w.r3 = u.r3 >> d;
                 return;
             }
-            if (d == 32)
+            if (d < 64)
             {
-                w.r0 = u.r1;
-                w.r1 = u.r2;
-                w.r2 = u.r3;
+                if (d == 32)
+                {
+                    w.r0 = u.r1;
+                    w.r1 = u.r2;
+                    w.r2 = u.r3;
+                    w.r3 = 0;
+                    return;
+                }
+                w.r0 = u.r1 >> d | u.r2 << dneg;
+                w.r1 = u.r2 >> d | u.r3 << dneg;
+                w.r2 = u.r3 >> d;
                 w.r3 = 0;
                 return;
             }
@@ -691,15 +728,6 @@ namespace Decompose.Numerics
                 w.r1 = u.r3;
                 w.r2 = 0;
                 w.r3 = 0;
-                return;
-            }
-            if (d < 32)
-            {
-                var dneg = 32 - d;
-                w.r0 = u.r0 >> d | u.r1 << dneg;
-                w.r1 = u.r1 >> d | u.r2 << dneg;
-                w.r2 = u.r2 >> d | u.r3 << dneg;
-                w.r3 = u.r3 >> d;
                 return;
             }
             throw new NotImplementedException();

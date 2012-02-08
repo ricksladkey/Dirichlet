@@ -56,6 +56,7 @@
     <Compile Include="Core\Word32IntegerExtensions.cs" />
     <Compile Include="Division\IDivisionAlgorithm.cs" />
     <Compile Include="Division\UInt32Division.cs" />
+    <Compile Include="Division\UInt64Division.cs" />
     <Compile Include="IntegerMath\GreatestCommonDivisor.cs" />
     <Compile Include="Core\Int32Operations.cs" />
     <Compile Include="Core\Int64Operations.cs" />

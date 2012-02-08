@@ -1,9 +1,9 @@
 ﻿namespace Decompose.Numerics
 {
-    public interface IDivisionAlgorithm<T>
+    public interface IDivisionAlgorithm<TDividend, TDivisor>
     {
-        T Divide(T k);
-        T Modulus(T k);
-        bool IsDivisible(T k);
+        TDividend Divide(TDividend k);
+        TDivisor Modulus(TDividend k);
+        bool IsDivisible(TDividend k);
     }
 }

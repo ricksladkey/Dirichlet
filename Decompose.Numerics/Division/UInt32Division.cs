@@ -3,7 +3,32 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public struct UInt32Division1 : IDivisionAlgorithm<uint>
+    public struct UInt32Division0 : IDivisionAlgorithm<uint, uint>
+    {
+        private uint d;
+
+        public UInt32Division0(uint d)
+        {
+            this.d = d;
+        }
+
+        public uint Divide(uint k)
+        {
+            return k / d;
+        }
+
+        public uint Modulus(uint k)
+        {
+            return (uint)(k % d);
+        }
+
+        public bool IsDivisible(uint k)
+        {
+            return k % d == 0;
+        }
+    }
+
+    public struct UInt32Division1 : IDivisionAlgorithm<uint, uint>
     {
         private uint d;
         private uint m;
@@ -14,7 +39,7 @@ namespace Decompose.Numerics
         {
             this.d = d;
             var l = (int)Math.Ceiling(Math.Log(d, 2));
-            m = (uint)(1 + (1ul << 32) * ((1ul << l) - d) / d);
+            m = (uint)((((1ul << l) - d) << 32) / d + 1);
             sh1 = Math.Min(l, 1);
             sh2 = Math.Max(l - 1, 0);
         }
@@ -22,13 +47,13 @@ namespace Decompose.Numerics
         public uint Divide(uint k)
         {
             var t = (uint)(((ulong)m * k) >> 32);
-            return ((uint)((k - t) >> sh1) + t) >> sh2;
+            return (((k - t) >> sh1) + t) >> sh2;
         }
 
         public uint Modulus(uint k)
         {
             var t = (uint)(((ulong)m * k) >> 32);
-            return k - (((uint)((k - t) >> sh1) + t) >> sh2) * d;
+            return k - ((((k - t) >> sh1) + t) >> sh2) * d;
         }
 
         public bool IsDivisible(uint k)
@@ -37,7 +62,7 @@ namespace Decompose.Numerics
         }
     }
 
-    public struct UInt32Division2 : IDivisionAlgorithm<uint>
+    public struct UInt32Division2 : IDivisionAlgorithm<uint, uint>
     {
         private ulong recip;
         private uint rcorrect;
@@ -46,9 +71,9 @@ namespace Decompose.Numerics
         public UInt32Division2(uint d)
         {
             this.d = d;
-            recip = (1ul << 32) / d;
+            recip = ((ulong)1 << 32) / d;
             rcorrect = (uint)1;
-            if ((ulong)Math.Round((double)(1ul << 32) / d + 0.5) != recip)
+            if ((ulong)Math.Round((double)((ulong)1 << 32) / d + 0.5) != recip)
             {
                 ++recip;
                 --rcorrect;
@@ -71,7 +96,7 @@ namespace Decompose.Numerics
         }
     }
 
-    public struct UInt32Division3 : IDivisionAlgorithm<uint>
+    public struct UInt32Division3 : IDivisionAlgorithm<uint, uint>
     {
         private const int shift = 42;
         private ulong recip;
@@ -80,17 +105,17 @@ namespace Decompose.Numerics
         public UInt32Division3(uint d)
         {
             this.d = d;
-            recip = (1ul << 42) / d + 1;
+            recip = ((ulong)1 << shift) / d + 1;
         }
 
         public uint Divide(uint k)
         {
-            return (uint)((recip * k) >> 42);
+            return (uint)((recip * k) >> shift);
         }
 
         public uint Modulus(uint k)
         {
-            return k - (uint)((recip * k) >> 42) * d;
+            return k - (uint)((recip * k) >> shift) * d;
         }
 
         public bool IsDivisible(uint k)
@@ -99,7 +124,7 @@ namespace Decompose.Numerics
         }
     }
 
-    public struct UInt32Division4 : IDivisionAlgorithm<uint>
+    public struct UInt32Division4 : IDivisionAlgorithm<uint, uint>
     {
         private uint d;
 
@@ -132,7 +157,7 @@ namespace Decompose.Numerics
         }
     }
 
-    public struct UInt32Division5 : IDivisionAlgorithm<uint>
+    public struct UInt32Division5 : IDivisionAlgorithm<uint, uint>
     {
         private uint dInv;
         private uint qmax;

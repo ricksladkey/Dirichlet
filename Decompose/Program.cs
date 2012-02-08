@@ -32,7 +32,7 @@ namespace Decompose
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
                 //QuadraticSieveStandardTest();
-                QuadraticSieveDebugTest();
+                //QuadraticSieveDebugTest();
                 //QuadraticSieveFactorTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
@@ -43,7 +43,8 @@ namespace Decompose
                 //ModularInverseTest2();
                 //PrimalityTest();
                 //OperationsTest();
-                //DivisionTest();
+                //DivisionTest1();
+                DivisionTest2();
             }
             catch (AggregateException ex)
             {
@@ -1269,7 +1270,7 @@ namespace Decompose
             }
         }
 
-        static void DivisionTest()
+        static void DivisionTest1()
         {
             var intervalSize = 256 * 1024;
             var count = 5000;
@@ -1282,9 +1283,9 @@ namespace Decompose
 
         private static void DivisionTest1(int intervalSize, int[] samples)
         {
-            //var divisions = samples.Select(d => new UInt32Division1((uint)d)).ToArray();
+            var divisions = samples.Select(d => new UInt32Division1((uint)d)).ToArray();
             //var divisions = samples.Select(d => new UInt32Division2((uint)d)).ToArray();
-            var divisions = samples.Select(d => new UInt32Division3((uint)d)).ToArray();
+            //var divisions = samples.Select(d => new UInt32Division3((uint)d)).ToArray();
             //var divisions = samples.Select(d => new UInt32Division4((uint)d)).ToArray();
             var timer = new Stopwatch();
             var hash = 0;
@@ -1358,6 +1359,59 @@ namespace Decompose
                     var d = samples[i];
                     var p = k % d == 0;
                     hash = (hash << 2 | hash >> 30) ^ p.GetHashCode();
+                }
+            }
+            output.WriteLine("elapsed = {0:F3} msec, hash = {1}", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000, hash);
+        }
+
+        static void DivisionTest2()
+        {
+            var count = 20000;
+            var dividendSize = (ulong)1 << 40;
+            var divisorSize = (uint)1 << 20;
+            var dividends = new MersenneTwister(0).Create<ulong>().Sequence(dividendSize).Take(count).ToArray();
+            var divisors = new MersenneTwister(0).Create<uint>().Sequence(divisorSize).Take(count).ToArray();
+            LongDivisionTest1(dividends, divisors);
+            LongDivisionTest2(dividends, divisors);
+        }
+
+        private static void LongDivisionTest1(ulong[] dividends, uint[] divisors)
+        {
+            //var divisions = divisors.Select(d => new UInt64Division0(d)).ToArray();
+            //var divisions = divisors.Select(d => new UInt64Division1(d)).ToArray();
+            var divisions = divisors.Select(d => new UInt64Division3(d)).ToArray();
+            var timer = new Stopwatch();
+            var hash = 0;
+            timer.Restart();
+            for (int j = 0; j < dividends.Length; j++)
+            {
+                var k = dividends[j];
+                for (int i = 0; i < divisors.Length; i++)
+                {
+                    var r = divisions[i].Modulus(k);
+#if false
+                    if (r != k % divisors[i])
+                        Debugger.Break();
+#endif
+                    hash = (hash << 2 | hash >> 30) ^ r.GetHashCode();
+                }
+            }
+            output.WriteLine("elapsed = {0:F3} msec, hash = {1}", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000, hash);
+        }
+
+        private static void LongDivisionTest2(ulong[] dividends, uint[] divisors)
+        {
+            var timer = new Stopwatch();
+            var hash = 0;
+            timer.Restart();
+            for (int j = 0; j < dividends.Length; j++)
+            {
+                var k = dividends[j];
+                for (int i = 0; i < divisors.Length; i++)
+                {
+                    var d = divisors[i];
+                    var r = k % d;
+                    hash = (hash << 2 | hash >> 30) ^ r.GetHashCode();
                 }
             }
             output.WriteLine("elapsed = {0:F3} msec, hash = {1}", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000, hash);
