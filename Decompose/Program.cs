@@ -42,9 +42,9 @@ namespace Decompose
                 //ModularInverseTest1();
                 //ModularInverseTest2();
                 //PrimalityTest();
-                //OperationsTest();
+                OperationsTest();
                 //DivisionTest1();
-                DivisionTest2();
+                //DivisionTest2();
             }
             catch (AggregateException ex)
             {
@@ -1157,8 +1157,8 @@ namespace Decompose
             var max = (BigInteger)1 << 128;
             var source = new MersenneTwister(0).Create<BigInteger>();
             var pairs = source.Sequence(max)
-                .Zip(source.Sequence(max), (a, b) => new { A = a, B = b })
-                .Where(pair => IntegerMath.GreatestCommonDivisor(pair.A, pair.B) == 1)
+                .Zip(source.Sequence(max), (a, b) => Tuple.Create(a, b))
+                .Where(pair => IntegerMath.GreatestCommonDivisor(pair.Item1, pair.Item2) == 1)
                 .Take(count)
                 .ToArray();
 #if false
@@ -1200,11 +1200,11 @@ namespace Decompose
                 var timer = new Stopwatch();
                 var random = new MersenneTwister(0).Create<BigInteger>();
                 timer.Restart();
-                for (int i = 0; i < count; i++)
+                for (int i = 0; i < pairs.Length; i++)
                 {
-                    var a = pairs[i].A;
-                    var b = pairs[i].B;
-                    IntegerMath.ExtendedGreatestCommonDivisor(a, b, out c, out d);
+                    var a = pairs[i].Item1;
+                    var b = pairs[i].Item2;
+                    ExtendedGreatestCommonDivisor(a, b, out c, out d);
                     if (c < 0)
                         c += b;
                     if (a * c % b != 1)
@@ -1213,7 +1213,7 @@ namespace Decompose
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
-#if true
+#if false
             {
                 Console.WriteLine("new BigInteger");
                 GC.Collect();
@@ -1222,8 +1222,8 @@ namespace Decompose
                 timer.Restart();
                 for (int i = 0; i < count; i++)
                 {
-                    var a = pairs[i].A;
-                    var b = pairs[i].B;
+                    var a = pairs[i].Item1;
+                    var b = pairs[i].Item2;
                     var c = IntegerMath.ModularInverse(a, b);
                     if (a * c % b != 1)
                         throw new InvalidOperationException("miscalculation");
@@ -1231,43 +1231,50 @@ namespace Decompose
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
-#if false
-            OperationsTest(new Int32Operations(), (int)1 << 30, count);
-            OperationsTest(new UInt64Operations(), (ulong)1 << 62, count);
-            OperationsTest(new BigIntegerOperations(), (BigInteger)1 << 128, count);
+#if true
+            //OperationsTest((int)1 << 30, count);
+            //OperationsTest((ulong)1 << 62, count);
+            OperationsTest(pairs);
 #endif
         }
 
-        static void OperationsTest<T>(T max, int count)
+        static void OperationsTest<T>(Tuple<T, T>[] pairs)
         {
-#if false
             Console.WriteLine("type = {0}", typeof(T));
-            T c;
-            T d;
-            for (int j = 0; j < 1; j++)
+#if true
             {
-#if true
+                Console.WriteLine("using Operation<T>");
+                GC.Collect();
+                var timer = new Stopwatch();
+                var random = new MersenneTwister(0).Create<T>();
+                T c;
+                T d;
+                timer.Restart();
+                for (int i = 0; i < pairs.Length; i++)
                 {
-                    GC.Collect();
-                    var timer = new Stopwatch();
-                    var random = new MersenneTwister(0).Create<T>();
-                    timer.Restart();
-                    for (int i = 0; i < count; i++)
-                        Core.ExtendedGreatestCommonDivisor(ops, random.Next(max), random.Next(max), out c, out d);
-                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                    var a = pairs[i].Item1;
+                    var b = pairs[i].Item2;
+                    Core.ExtendedGreatestCommonDivisor(a, b, out c, out d);
                 }
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
 #endif
 #if true
+            {
+                Console.WriteLine("using Integer<T>");
+                GC.Collect();
+                var timer = new Stopwatch();
+                var random = new MersenneTwister(0).Create<T>();
+                Integer<T> c;
+                Integer<T> d;
+                timer.Restart();
+                for (int i = 0; i < pairs.Length; i++)
                 {
-                    GC.Collect();
-                    var timer = new Stopwatch();
-                    var random = new MersenneTwister(0).Create<T>();
-                    timer.Restart();
-                    for (int i = 0; i < count; i++)
-                        ExtendedGreatestCommonDivisor(random.Next(max), random.Next(max), out c, out d);
-                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                    var a = pairs[i].Item1;
+                    var b = pairs[i].Item2;
+                    ExtendedGreatestCommonDivisor(a, b, out c, out d);
                 }
-#endif
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
         }
