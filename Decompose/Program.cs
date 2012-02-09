@@ -1366,55 +1366,56 @@ namespace Decompose
 
         static void DivisionTest2()
         {
-            var count = 20000;
-            var dividendSize = (ulong)1 << 40;
+            var count = 10000;
             var divisorSize = (uint)1 << 20;
-            var dividends = new MersenneTwister(0).Create<ulong>().Sequence(dividendSize).Take(count).ToArray();
-            var divisors = new MersenneTwister(0).Create<uint>().Sequence(divisorSize).Take(count).ToArray();
-            LongDivisionTest1(dividends, divisors);
-            LongDivisionTest2(dividends, divisors);
+            var dividendSize = (ulong)divisorSize << 32;
+            var divisors = new MersenneTwister(0).Create<uint>().Sequence(divisorSize)
+                .Select(a => a | 1).Take(count).ToArray();
+            var dividends = new MersenneTwister(0).Create<ulong>().Sequence(dividendSize)
+                .Zip(divisors, (dividend, divisor) => dividend % (divisor << 32))
+                .ToArray();
+
+            //var divisions1 = divisors.Select(d => new UInt64Division0(d)).Cast<IDivisionAlgorithm<ulong, uint>>().ToArray();
+            //var divisions1 = divisors.Select(d => new UInt64Division1(d)).Cast<IDivisionAlgorithm<ulong, uint>>().ToArray();
+            //var divisions1 = divisors.Select(d => new UInt64Division5(d)).Cast<IDivisionAlgorithm<ulong, uint>>().ToArray();
+
+            var divisions1 = divisors.Select(d => new UInt64Division1(d)).Cast<IDivisionAlgorithm<ulong, uint>>().ToArray();
+            var divisions2 = divisors.Select(d => new UInt64Division2(d)).Cast<IDivisionAlgorithm<ulong, uint>>().ToArray();
+            var divisions3 = divisors.Select(d => new UInt64Division3(d)).Cast<IDivisionAlgorithm<ulong, uint>>().ToArray();
+            var divisions4 = divisors.Select(d => new UInt64Division4(d)).Cast<IDivisionAlgorithm<ulong, uint>>().ToArray();
+
+            var divisions0 = divisors.Select(d => new UInt64Division0(d)).Cast<IDivisionAlgorithm<ulong, uint>>().ToArray();
+
+            for (int i = 0; i < 2; i++)
+            {
+                DivisionTest2(dividends, divisions1, true);
+                DivisionTest2(dividends, divisions2, true);
+                DivisionTest2(dividends, divisions3, true);
+                DivisionTest2(dividends, divisions4, true);
+                DivisionTest2(dividends, divisions0, true);
+            }
         }
 
-        private static void LongDivisionTest1(ulong[] dividends, uint[] divisors)
+        private static void DivisionTest2(ulong[] dividends, IDivisionAlgorithm<ulong, uint>[] divisions, bool check)
         {
-            //var divisions = divisors.Select(d => new UInt64Division0(d)).ToArray();
-            //var divisions = divisors.Select(d => new UInt64Division1(d)).ToArray();
-            var divisions = divisors.Select(d => new UInt64Division3(d)).ToArray();
             var timer = new Stopwatch();
-            var hash = 0;
             timer.Restart();
             for (int j = 0; j < dividends.Length; j++)
             {
                 var k = dividends[j];
-                for (int i = 0; i < divisors.Length; i++)
+                for (int i = 0; i < divisions.Length; i++)
                 {
                     var r = divisions[i].Modulus(k);
-#if false
-                    if (r != k % divisors[i])
-                        Debugger.Break();
-#endif
-                    hash = (hash << 2 | hash >> 30) ^ r.GetHashCode();
+                    if (check && r != k % divisions[i].Divisor)
+                    {
+                        if (Debugger.IsAttached)
+                            Debugger.Break();
+                        r = divisions[i].Modulus(k);
+                        throw new InvalidOperationException("miscalculation");
+                    }
                 }
             }
-            output.WriteLine("elapsed = {0:F3} msec, hash = {1}", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000, hash);
-        }
-
-        private static void LongDivisionTest2(ulong[] dividends, uint[] divisors)
-        {
-            var timer = new Stopwatch();
-            var hash = 0;
-            timer.Restart();
-            for (int j = 0; j < dividends.Length; j++)
-            {
-                var k = dividends[j];
-                for (int i = 0; i < divisors.Length; i++)
-                {
-                    var d = divisors[i];
-                    var r = k % d;
-                    hash = (hash << 2 | hash >> 30) ^ r.GetHashCode();
-                }
-            }
-            output.WriteLine("elapsed = {0:F3} msec, hash = {1}", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000, hash);
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
         }
 
         public static void ExtendedGreatestCommonDivisor(int a, int b, out int c, out int d)

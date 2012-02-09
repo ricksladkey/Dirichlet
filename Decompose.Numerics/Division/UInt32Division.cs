@@ -7,6 +7,11 @@ namespace Decompose.Numerics
     {
         private uint d;
 
+        public uint Divisor
+        {
+            get { return d; }
+        }
+
         public UInt32Division0(uint d)
         {
             this.d = d;
@@ -34,6 +39,11 @@ namespace Decompose.Numerics
         private uint m;
         private int sh1;
         private int sh2;
+
+        public uint Divisor
+        {
+            get { return d; }
+        }
 
         public UInt32Division1(uint d)
         {
@@ -67,6 +77,11 @@ namespace Decompose.Numerics
         private ulong recip;
         private uint rcorrect;
         private uint d;
+
+        public uint Divisor
+        {
+            get { return d; }
+        }
 
         public UInt32Division2(uint d)
         {
@@ -102,6 +117,11 @@ namespace Decompose.Numerics
         private ulong recip;
         private uint d;
 
+        public uint Divisor
+        {
+            get { return d; }
+        }
+
         public UInt32Division3(uint d)
         {
             this.d = d;
@@ -127,6 +147,11 @@ namespace Decompose.Numerics
     public struct UInt32Division4 : IDivisionAlgorithm<uint, uint>
     {
         private uint d;
+
+        public uint Divisor
+        {
+            get { return d; }
+        }
 
         public UInt32Division4(uint d)
         {
@@ -162,6 +187,11 @@ namespace Decompose.Numerics
         private uint dInv;
         private uint qmax;
         private uint d;
+
+        public uint Divisor
+        {
+            get { return d; }
+        }
 
         public UInt32Division5(uint d)
         {

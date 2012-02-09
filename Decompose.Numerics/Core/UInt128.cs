@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public struct UInt128
+    public struct UInt128 : IComparable<UInt128>, IEquatable<UInt128>
     {
         private uint r0;
         private uint r1;
@@ -195,6 +195,64 @@ namespace Decompose.Numerics
             return Modulus(ref a, (ulong)b.r1 << 32 | b.r0);
         }
 
+        public static bool operator <(UInt128 a, UInt128 b)
+        {
+            return a.CompareTo(b) < 0;
+        }
+
+        public static bool operator <=(UInt128 a, UInt128 b)
+        {
+            return a.CompareTo(b) <= 0;
+        }
+
+        public static bool operator >(UInt128 a, UInt128 b)
+        {
+            return a.CompareTo(b) > 0;
+        }
+
+        public static bool operator >=(UInt128 a, UInt128 b)
+        {
+            return a.CompareTo(b) >= 0;
+        }
+
+        public static bool operator ==(UInt128 a, UInt128 b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(UInt128 a, UInt128 b)
+        {
+            return !a.Equals(b);
+        }
+
+        public int CompareTo(UInt128 other)
+        {
+            if (r3 != other.r3)
+                return r3.CompareTo(other.r3);
+            if (r2 != other.r2)
+                return r2.CompareTo(other.r2);
+            if (r1 != other.r1)
+                return r1.CompareTo(other.r1);
+            return r0.CompareTo(other.r0);
+        }
+
+        public bool Equals(UInt128 other)
+        {
+            return r0 == other.r0 && r1 == other.r1 && r2 == other.r2 && r3 == other.r3;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is UInt128))
+                return false;
+            return Equals((UInt128)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return r0.GetHashCode() ^ r1.GetHashCode() ^ r2.GetHashCode() ^ r3.GetHashCode();
+        }
+
         public static ulong MultiplyHigh(ulong a, ulong b)
         {
 #if false
@@ -208,11 +266,18 @@ namespace Decompose.Numerics
             var v0 = (uint)b;
             var v1 = (uint)(b >> 32);
             var carry = (((ulong)u0 * v0) >> 32) + (ulong)u0 * v1;
-            var r1 = (uint)carry;
-            var r2 = (uint)(carry >> 32);
-            carry = (uint)carry + (ulong)u1 * v0;
-            return (carry >> 32) + r2 + (ulong)u1 * v1;
+            return (((uint)carry + (ulong)u1 * v0) >> 32) + (carry >> 32) + (ulong)u1 * v1;
 #endif
+        }
+
+        public static ulong MultiplyHighApprox(ulong a, ulong b)
+        {
+            var u0 = (uint)a;
+            var u1 = (uint)(a >> 32);
+            var v0 = (uint)b;
+            var v1 = (uint)(b >> 32);
+            var carry = (ulong)u0 * v1;
+            return (((uint)carry + (ulong)u1 * v0) >> 32) + (carry >> 32) + (ulong)u1 * v1;
         }
 
         public static ulong ModularSum(ulong a, ulong b, ulong modulus)
@@ -657,37 +722,64 @@ namespace Decompose.Numerics
         
         private static void LeftShift(out UInt128 w, ref UInt128 u, int d)
         {
-            if (d == 0)
-            {
-                w = u;
-                return;
-            }
-            if (d == 32)
-            {
-                w.r0 = 0;
-                w.r1 = u.r0;
-                w.r2 = u.r1;
-                w.r3 = u.r2;
-                return;
-            }
-            if (d == 64)
-            {
-                w.r0 = 0;
-                w.r1 = 0;
-                w.r2 = u.r0;
-                w.r3 = u.r1;
-                return;
-            }
+            var dneg = 32 - d;
             if (d < 32)
             {
-                var dneg = 32 - d;
+                if (d == 0)
+                {
+                    w = u;
+                    return;
+                }
                 w.r0 = u.r0 << d;
                 w.r1 = u.r1 << d | u.r0 >> dneg;
                 w.r2 = u.r2 << d | u.r1 >> dneg;
                 w.r3 = u.r3 << d | u.r2 >> dneg;
                 return;
             }
-            throw new NotImplementedException();
+            if (d < 64)
+            {
+                if (d == 32)
+                {
+                    w.r0 = 0;
+                    w.r1 = u.r0;
+                    w.r2 = u.r1;
+                    w.r3 = u.r2;
+                    return;
+                }
+                w.r0 = 0;
+                w.r1 = u.r0 << d;
+                w.r2 = u.r1 << d | u.r0 >> dneg;
+                w.r3 = u.r2 << d | u.r1 >> dneg;
+                return;
+            }
+            if (d < 96)
+            {
+                if (d == 64)
+                {
+                    w.r0 = 0;
+                    w.r1 = 0;
+                    w.r2 = u.r0;
+                    w.r3 = u.r1;
+                    return;
+                }
+                w.r0 = 0;
+                w.r1 = 0;
+                w.r2 = u.r0 << d;
+                w.r3 = u.r1 << d | u.r0 >> dneg;
+                return;
+            }
+            if (d == 96)
+            {
+                w.r0 = 0;
+                w.r1 = 0;
+                w.r2 = 0;
+                w.r3 = u.r0;
+                return;
+            }
+            w.r0 = 0;
+            w.r1 = 0;
+            w.r2 = 0;
+            w.r3 = u.r0 << d;
         }
 
         private static void RightShift(out UInt128 w, ref UInt128 u, int d)
