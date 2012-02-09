@@ -48,6 +48,7 @@ namespace Decompose.Numerics
         public abstract T And(T a, T b);
         public abstract T Or(T a, T b);
         public abstract T ExclusiveOr(T a, T b);
+        public abstract T Not(T a);
         public abstract bool IsZero(T a);
         public abstract bool IsOne(T a);
         public abstract bool IsEven(T a);

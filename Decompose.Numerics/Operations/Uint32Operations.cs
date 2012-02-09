@@ -24,6 +24,7 @@ namespace Decompose.Numerics
         public override uint And(uint a, uint b) { return a & b; }
         public override uint Or(uint a, uint b) { return a | b; }
         public override uint ExclusiveOr(uint a, uint b) { return a ^ b; }
+        public override uint Not(uint a) { return ~a; }
         public override bool IsZero(uint a) { return a == 0; }
         public override bool IsOne(uint a) { return a == 1; }
         public override bool IsEven(uint a) { return (a & 1) == 0; }

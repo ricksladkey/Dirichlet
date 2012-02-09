@@ -24,6 +24,7 @@ namespace Decompose.Numerics
         public override long And(long a, long b) { return a & b; }
         public override long Or(long a, long b) { return a | b; }
         public override long ExclusiveOr(long a, long b) { return a ^ b; }
+        public override long Not(long a) { return ~a; }
         public override bool IsZero(long a) { return a == 0; }
         public override bool IsOne(long a) { return a == 1; }
         public override bool IsEven(long a) { return (a & 1) == 0; }

@@ -24,6 +24,7 @@ namespace Decompose.Numerics
         public override BigInteger And(BigInteger a, BigInteger b) { return a & b; }
         public override BigInteger Or(BigInteger a, BigInteger b) { return a | b; }
         public override BigInteger ExclusiveOr(BigInteger a, BigInteger b) { return a ^ b; }
+        public override BigInteger Not(BigInteger a) { return ~a; }
         public override bool IsZero(BigInteger a) { return a.IsZero; }
         public override bool IsOne(BigInteger a) { return a.IsOne; }
         public override bool IsEven(BigInteger a) { return a.IsEven; }

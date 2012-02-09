@@ -29,6 +29,7 @@ namespace Decompose.Numerics
         T And(T a, T b);
         T Or(T a, T b);
         T ExclusiveOr(T a, T b);
+        T Not(T a);
         bool IsZero(T a);
         bool IsOne(T a);
         bool IsEven(T a);

@@ -24,6 +24,7 @@ namespace Decompose.Numerics
         public override ulong And(ulong a, ulong b) { return a & b; }
         public override ulong Or(ulong a, ulong b) { return a | b; }
         public override ulong ExclusiveOr(ulong a, ulong b) { return a ^ b; }
+        public override ulong Not(ulong a) { return ~a; }
         public override bool IsZero(ulong a) { return a == 0; }
         public override bool IsOne(ulong a) { return a == 1; }
         public override bool IsEven(ulong a) { return (a & 1) == 0; }

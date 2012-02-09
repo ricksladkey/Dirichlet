@@ -18,7 +18,6 @@ namespace Decompose.Numerics
         public bool IsZero { get { return ops.IsZero(value); } }
         public bool IsOne { get { return ops.IsOne(value); } }
         public bool IsEven { get { return ops.IsEven(value); } }
-        public override string ToString() { return value.ToString(); }
         public static implicit operator Integer<T>(int value) { var ops = Operations.Get<T>(); return ops.Wrap(ops.Convert(value)); }
         public static implicit operator Integer<T>(T value) { return Operations.Get<T>().Wrap(value); }
         public static implicit operator T(Integer<T> integer) { return integer.value; }
@@ -36,6 +35,7 @@ namespace Decompose.Numerics
         public static Integer<T> operator &(Integer<T> a, Integer<T> b) { return new Integer<T>(a.ops.And(a.value, b.value), a.ops); }
         public static Integer<T> operator |(Integer<T> a, Integer<T> b) { return new Integer<T>(a.ops.Or(a.value, b.value), a.ops); }
         public static Integer<T> operator ^(Integer<T> a, Integer<T> b) { return new Integer<T>(a.ops.ExclusiveOr(a.value, b.value), a.ops); }
+        public static Integer<T> operator ~(Integer<T> a) { return new Integer<T>(a.ops.Not(a.value), a.ops); }
         public static bool operator ==(Integer<T> a, Integer<T> b) { return a.ops.Equals(a.value, b.value); }
         public static bool operator !=(Integer<T> a, Integer<T> b) { return !a.ops.Equals(a.value, b.value); }
         public static bool operator <(Integer<T> a, Integer<T> b) { return a.ops.Compare(a.value, b.value) < 0; }
@@ -51,6 +51,7 @@ namespace Decompose.Numerics
         public static Integer<T> ModularInverse(Integer<T> a, Integer<T> modulus) { return new Integer<T>(a.ops.ModularInverse(a.value, modulus.value), a.ops); }
         public int CompareTo(Integer<T> other) { return ops.Compare(value, other.value); }
         public bool Equals(Integer<T> other) { return ops.Equals(value, other.value); }
+        public override string ToString() { return value.ToString(); }
         public override bool Equals(object obj) { return obj is Integer<T> ? ops.Equals(value, ((Integer<T>)obj).value) : false; }
         public override int GetHashCode() { return value.GetHashCode(); }
     }
