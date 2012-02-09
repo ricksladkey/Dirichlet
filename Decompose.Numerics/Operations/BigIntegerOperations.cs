@@ -6,7 +6,6 @@ namespace Decompose.Numerics
     public class BigIntegerOperations : Operations<BigInteger>
     {
         public override Type Type { get { return typeof(BigInteger); } }
-        public override Integer<BigInteger> Wrap(BigInteger value) { return new Integer<BigInteger>(value, this); }
         public override BigInteger Zero { get { return BigInteger.Zero; } }
         public override BigInteger One { get { return BigInteger.One; } }
         public override BigInteger Two { get { return 2; } }

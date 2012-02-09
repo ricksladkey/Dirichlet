@@ -6,7 +6,6 @@ namespace Decompose.Numerics
     public class Int32Operations : Operations<int>
     {
         public override Type Type { get { return typeof(int); } }
-        public override Integer<int> Wrap(int value) { return new Integer<int>(value, this); }
         public override int Zero { get { return 0; } }
         public override int One { get { return 1; } }
         public override int Two { get { return 2; } }

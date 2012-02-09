@@ -1238,8 +1238,9 @@ namespace Decompose
 #endif
         }
 
-        static void OperationsTest<T>(IOperations<T> ops, T max, int count)
+        static void OperationsTest<T>(T max, int count)
         {
+#if false
             Console.WriteLine("type = {0}", typeof(T));
             T c;
             T d;
@@ -1263,11 +1264,12 @@ namespace Decompose
                     var random = new MersenneTwister(0).Create<T>();
                     timer.Restart();
                     for (int i = 0; i < count; i++)
-                        ExtendedGreatestCommonDivisor(ops, random.Next(max), random.Next(max), out c, out d);
+                        ExtendedGreatestCommonDivisor(random.Next(max), random.Next(max), out c, out d);
                     output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
                 }
 #endif
             }
+#endif
         }
 
         static void DivisionTest1()
@@ -1487,18 +1489,16 @@ namespace Decompose
             d = lasty;
         }
 
-        public static void ExtendedGreatestCommonDivisor<T>(IOperations<T> ops, T a, T b, out T c, out T d)
+        public static void ExtendedGreatestCommonDivisor<T>(Integer<T> a, Integer<T> b, out Integer<T> c, out Integer<T> d)
         {
-            var zero = ops.Wrap(ops.Convert(0));
-            var one = ops.Wrap(ops.Convert(1));
-            var x = zero;
-            var lastx = one;
-            var y = one;
-            var lasty = zero;
+            var x = Integer<T>.Zero;
+            var lastx = Integer<T>.One;
+            var y = Integer<T>.One;
+            var lasty = Integer<T>.Zero;
 
-            var p = ops.Wrap(a);
-            var q = ops.Wrap(b);
-            while (q != zero)
+            var p = a;
+            var q = b;
+            while (!q.IsZero)
             {
                 var quotient = p / q;
                 var tmpa = p;

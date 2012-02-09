@@ -16,7 +16,6 @@ namespace Decompose.Numerics
         T One { get; }
         T Two { get; }
         T Convert(int a);
-        Integer<T> Wrap(T value);
         BigInteger ToBigInteger(T a);
         T Add(T a, T b);
         T Subtract(T a, T b);

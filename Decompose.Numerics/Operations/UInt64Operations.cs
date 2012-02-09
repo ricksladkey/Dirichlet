@@ -6,7 +6,6 @@ namespace Decompose.Numerics
     public class UInt64Operations : Operations<ulong>
     {
         public override Type Type { get { return typeof(ulong); } }
-        public override Integer<ulong> Wrap(ulong value) { return new Integer<ulong>(value, this); }
         public override ulong Zero { get { return 0; } }
         public override ulong One { get { return 1; } }
         public override ulong Two { get { return 2; } }

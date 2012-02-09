@@ -30,7 +30,6 @@ namespace Decompose.Numerics
     public abstract class Operations<T> : IOperations<T>
     {
         public abstract Type Type { get; }
-        public abstract Integer<T> Wrap(T value);
         public abstract bool IsUnsigned { get; }
         public abstract T Zero { get; }
         public abstract T One { get; }

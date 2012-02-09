@@ -8,18 +8,31 @@ namespace Decompose.Numerics
 {
     public struct Integer<T> : IComparable<Integer<T>>, IEquatable<Integer<T>>
     {
+        private static Integer<T> zero;
+        private static Integer<T> one;
+        private static Integer<T> two;
+
+        static Integer()
+        {
+            var ops = Operations.Get<T>();
+            zero = new Integer<T>(ops.Zero, ops);
+            one = new Integer<T>(ops.One, ops);
+            two = new Integer<T>(ops.Two, ops);
+        }
+
         private T value;
         private IOperations<T> ops;
+        public Integer(T value) { this.value = value; this.ops = Operations.Get<T>(); }
         public Integer(T value, IOperations<T> ops) { this.value = value; this.ops = ops; }
         public T Value { get { return value; } }
-        public static Integer<T> Zero { get { return Operations.Get<T>().Zero; } }
-        public static Integer<T> One { get { return Operations.Get<T>().One; } }
-        public static Integer<T> Two { get { return Operations.Get<T>().Two; } }
+        public static Integer<T> Zero { get { return zero; } }
+        public static Integer<T> One { get { return one; } }
+        public static Integer<T> Two { get { return two; } }
         public bool IsZero { get { return ops.IsZero(value); } }
         public bool IsOne { get { return ops.IsOne(value); } }
         public bool IsEven { get { return ops.IsEven(value); } }
-        public static implicit operator Integer<T>(int value) { var ops = Operations.Get<T>(); return ops.Wrap(ops.Convert(value)); }
-        public static implicit operator Integer<T>(T value) { return Operations.Get<T>().Wrap(value); }
+        public static implicit operator Integer<T>(int value) { var ops = Operations.Get<T>(); return new Integer<T>(ops.Convert(value), ops); }
+        public static implicit operator Integer<T>(T value) { return new Integer<T>(value); }
         public static implicit operator T(Integer<T> integer) { return integer.value; }
         public static implicit operator BigInteger(Integer<T> integer) { return integer.ops.ToBigInteger(integer.value); }
         public static Integer<T> operator +(Integer<T> a, Integer<T> b) { return new Integer<T>(a.ops.Add(a.value, b.value), a.ops); }

@@ -80,10 +80,10 @@ namespace Decompose.Numerics.Test
 
         private void TestPrimality3<T>(T startValue, T countValue, IPrimalityAlgorithm<T> primalityOld, IReductionAlgorithm<T> reduction)
         {
-            var start = reduction.Wrap(startValue);
-            var count = reduction.Wrap(countValue);
+            var start = (Integer<T>)startValue;
+            var count = (Integer<T>)countValue;
             var primalityNew = MillerRabin.Create(16, reduction);
-            for (var i = reduction.Wrap(reduction.Zero); i < count; i++)
+            for (var i = (Integer<T>)0; i < count; i++)
             {
                 var n = start + i;
                 var isPrimeOld = primalityOld.IsPrime(n);
