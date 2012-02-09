@@ -1386,14 +1386,11 @@ namespace Decompose
 
             var divisions0 = divisors.Select(d => new UInt64Division0(d)).Cast<IDivisionAlgorithm<ulong, uint>>().ToArray();
 
-            for (int i = 0; i < 2; i++)
-            {
-                DivisionTest2(dividends, divisions1, true);
-                DivisionTest2(dividends, divisions2, true);
-                DivisionTest2(dividends, divisions3, true);
-                DivisionTest2(dividends, divisions4, true);
-                DivisionTest2(dividends, divisions0, true);
-            }
+            DivisionTest2(dividends, divisions0, true);
+            DivisionTest2(dividends, divisions1, true);
+            DivisionTest2(dividends, divisions2, true);
+            DivisionTest2(dividends, divisions3, true);
+            DivisionTest2(dividends, divisions4, true);
         }
 
         private static void DivisionTest2(ulong[] dividends, IDivisionAlgorithm<ulong, uint>[] divisions, bool check)

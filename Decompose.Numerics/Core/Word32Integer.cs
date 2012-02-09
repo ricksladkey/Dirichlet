@@ -33,7 +33,13 @@ namespace Decompose.Numerics
         public int Sign
         {
             get { return last == 0 && bits[0] == 0 ? 0 : sign; }
-            set { sign = value; }
+            set
+            {
+                if (value == 0)
+                    Clear();
+                else
+                    sign = value;
+            }
         }
 
         public bool IsZero
@@ -94,8 +100,16 @@ namespace Decompose.Numerics
             for (int i = 0; i <= last; i++)
                 bits[i] = 0;
             last = 0;
+            sign = 1;
             CheckValid();
             return this;
+        }
+
+        private void ClearBits()
+        {
+            for (int i = 0; i <= last; i++)
+                bits[i] = 0;
+            last = 0;
         }
 
         public Word32Integer Set(int a)
@@ -616,7 +630,7 @@ namespace Decompose.Numerics
 
         public static Word32Integer operator ~(Word32Integer a)
         {
-            return new Word32Integer(a.last).SetNot(a);
+            return new Word32Integer(a.last + 1).SetNot(a);
         }
 
         public static Word32Integer operator +(Word32Integer a, Word32Integer b)
@@ -834,7 +848,7 @@ namespace Decompose.Numerics
             int i = n >> wordLengthShift;
             if (i > last)
             {
-                Clear();
+                ClearBits();
                 return this;
             }
             int j = n & wordLengthMask;
@@ -921,7 +935,7 @@ namespace Decompose.Numerics
                 SetUnsignedExclusiveOr(reg1, reg2);
                 negative = a.Sign == b.Sign;
             }
-            if (negative)
+            if (negative && !IsZero)
             {
                 SetDifference(r, this);
                 Sign = -1;
@@ -1496,7 +1510,7 @@ namespace Decompose.Numerics
         {
             CheckValid();
             Debug.Assert(n % 32 == 0);
-            Clear();
+            ClearBits();
             int clast = ((n + wordLength - 1) >> wordLengthShift) - 1;
             CheckLast(clast);
             int alast = Math.Min(a.last, clast);
@@ -1534,7 +1548,7 @@ namespace Decompose.Numerics
             CheckValid();
             Debug.Assert(n % 32 == 0 && n > 0);
             int shifted = n >> wordLengthShift;
-            Clear();
+            ClearBits();
             CheckLast(a.last + b.last + 1 - shifted);
             ulong r0 = 0;
             ulong r1 = 0;
@@ -1610,7 +1624,7 @@ namespace Decompose.Numerics
             if (UnsignedCompareTo(v) < 0)
             {
                 if (q != null)
-                    q.Clear();
+                    q.ClearBits();
                 return this;
             }
             if (v.IsZero)
@@ -1767,7 +1781,7 @@ namespace Decompose.Numerics
             if (q == null)
             {
                 var result = GetRemainder(v);
-                Clear();
+                ClearBits();
                 bits[0] = result;
                 return this;
             }
@@ -1801,7 +1815,7 @@ namespace Decompose.Numerics
         {
             // Use product scanning algorithm.
             CheckValid();
-            Clear();
+            ClearBits();
             CheckLast(z.last + mu.last + 1);
             var abits = z.bits;
             var mubits = mu.bits;

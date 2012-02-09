@@ -16,22 +16,22 @@ namespace Decompose.Numerics.Test
         {
             var p = BigInteger.Parse("12345678901234567890");
             var n = p * p;
-            var p2 = IntegerMath.Sqrt(n);
+            var p2 = IntegerMath.SquareRoot(n);
             Assert.AreEqual(p, p2);
         }
 
         [TestMethod]
         public void TestSqrt2()
         {
-            Assert.AreEqual(0, (int)IntegerMath.Sqrt(0));
-            Assert.AreEqual(1, (int)IntegerMath.Sqrt(1));
-            Assert.AreEqual(1, (int)IntegerMath.Sqrt(2));
-            Assert.AreEqual(1, (int)IntegerMath.Sqrt(3));
-            Assert.AreEqual(2, (int)IntegerMath.Sqrt(4));
-            Assert.AreEqual(2, (int)IntegerMath.Sqrt(5));
-            Assert.AreEqual(2, (int)IntegerMath.Sqrt(8));
-            Assert.AreEqual(3, (int)IntegerMath.Sqrt(9));
-            Assert.AreEqual(3, (int)IntegerMath.Sqrt(10));        
+            Assert.AreEqual(0, (int)IntegerMath.SquareRoot(0));
+            Assert.AreEqual(1, (int)IntegerMath.SquareRoot(1));
+            Assert.AreEqual(1, (int)IntegerMath.SquareRoot(2));
+            Assert.AreEqual(1, (int)IntegerMath.SquareRoot(3));
+            Assert.AreEqual(2, (int)IntegerMath.SquareRoot(4));
+            Assert.AreEqual(2, (int)IntegerMath.SquareRoot(5));
+            Assert.AreEqual(2, (int)IntegerMath.SquareRoot(8));
+            Assert.AreEqual(3, (int)IntegerMath.SquareRoot(9));
+            Assert.AreEqual(3, (int)IntegerMath.SquareRoot(10));        
         }
 
         [TestMethod]
@@ -657,20 +657,32 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void ModularInverseTest()
         {
-            var n = BigInteger.Parse("10023859281455311421");
-            var random = new MersenneTwister(0).Create<BigInteger>();
+            ModularInverseTest(int.MaxValue);
+            ModularInverseTest(uint.MaxValue);
+            ModularInverseTest(long.MaxValue);
+            ModularInverseTest(ulong.MaxValue);
+            ModularInverseTest(BigInteger.Parse("10023859281455311421"));
+        }
+
+        public void ModularInverseTest<T>(T max)
+        {
+            var random = new MersenneTwister(0).Create<T>();
+            var ops = Operations.Create<T>();
             for (int i = 0; i < 1000; i++)
             {
-                var p = random.Next(n);
-                var q = random.Next(n);
-                while (!BigInteger.GreatestCommonDivisor(p, q).IsOne)
+                var q = random.Next(max);
+                var p = random.Next(q);
+                while (!ops.IsOne(ops.GreatestCommonDivisor(p, q)))
                 {
-                    p = random.Next(n);
-                    q = random.Next(n);
+                    q = random.Next(max);
+                    p = random.Next(q);
                 }
-                var pInv = IntegerMath.ModularInverse(p, q);
-                var result = p * pInv % q;
-                Assert.AreEqual(BigInteger.One, result);
+                var r = ops.SquareRoot(random.Next(q));
+                r = ops.Subtract(r, ops.Modulus(r, p));
+                var pInv = ops.ModularInverse(p, q);
+                var result = ops.ModularProduct(p, pInv, q);
+                Assert.AreEqual(ops.One, result);
+                Assert.AreEqual(ops.Modulus(ops.Divide(r, p), q), ops.ModularProduct(r, pInv, q));
             }
         }
 

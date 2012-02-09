@@ -28,8 +28,14 @@ namespace Decompose.Numerics
         public override bool Equals(long x, long y) { return x.Equals(y); }
         public override int GetHashCode(long obj) { return obj.GetHashCode(); }
         public override int Compare(long x, long y) { return x.CompareTo(y); }
-        public override long ModularProduct(long a, long b, long modulus) { return a * b % modulus; }
-        public override long ModularPower(long value, long exponent, long modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
         public override uint LeastSignificantWord(long a) { return (uint)(a & uint.MaxValue); }
+
+        public override long SquareRoot(long a) { return IntegerMath.SquareRoot(a); }
+        public override long GreatestCommonDivisor(long a, long b) { return IntegerMath.GreatestCommonDivisor(a, b); }
+        public override long ModularSum(long a, long b, long modulus) { return IntegerMath.ModularSum(a, b, modulus); }
+        public override long ModularDifference(long a, long b, long modulus) { return IntegerMath.ModularDifference(a, b, modulus); }
+        public override long ModularProduct(long a, long b, long modulus) { return IntegerMath.ModularProduct(a, b, modulus); }
+        public override long ModularPower(long value, long exponent, long modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
+        public override long ModularInverse(long value, long modulus) { return IntegerMath.ModularInverse(value, modulus); }
     }
 }

@@ -19,7 +19,28 @@ namespace Decompose.Numerics
 
         public static uint ModularInverse(uint a, uint b)
         {
-            return (uint)ModularInverse((int)a, (int)b);
+            Debug.Assert(GreatestCommonDivisor(a, b) == 1);
+            var x0 = (long)0;
+            var x1 = (long)1;
+            var p = b;
+            var q = a < b ? a : a % b;
+            var tmpx = (long)0;
+            while (q != 0)
+            {
+                Debug.Assert(p >= q);
+                var quotient = p / q;
+                var tmpp = p;
+                p = q;
+                q = tmpp - quotient * q;
+                tmpx = x1;
+                x1 = x0 - quotient * x1;
+                x0 = tmpx;
+            }
+            if (x0 < 0)
+                x0 += b;
+            var result = (uint)x0;
+            Debug.Assert((BigInteger)a * result % b == 1);
+            return result;
         }
 
         public static long ModularInverse(long a, long b)

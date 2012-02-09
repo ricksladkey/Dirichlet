@@ -28,8 +28,14 @@ namespace Decompose.Numerics
         public override bool Equals(ulong x, ulong y) { return x.Equals(y); }
         public override int GetHashCode(ulong obj) { return obj.GetHashCode(); }
         public override int Compare(ulong x, ulong y) { return x.CompareTo(y); }
-        public override ulong ModularProduct(ulong a, ulong b, ulong modulus) { return a * b % modulus; }
-        public override ulong ModularPower(ulong value, ulong exponent, ulong modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
         public override uint LeastSignificantWord(ulong a) { return (uint)(a & uint.MaxValue); }
+
+        public override ulong SquareRoot(ulong a) { return IntegerMath.SquareRoot(a); }
+        public override ulong GreatestCommonDivisor(ulong a, ulong b) { return IntegerMath.GreatestCommonDivisor(a, b); }
+        public override ulong ModularSum(ulong a, ulong b, ulong modulus) { return IntegerMath.ModularSum(a, b, modulus); }
+        public override ulong ModularDifference(ulong a, ulong b, ulong modulus) { return IntegerMath.ModularDifference(a, b, modulus); }
+        public override ulong ModularProduct(ulong a, ulong b, ulong modulus) { return IntegerMath.ModularProduct(a, b, modulus); }
+        public override ulong ModularPower(ulong value, ulong exponent, ulong modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
+        public override ulong ModularInverse(ulong value, ulong modulus) { return IntegerMath.ModularInverse(value, modulus); }
     }
 }

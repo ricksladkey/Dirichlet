@@ -28,8 +28,14 @@ namespace Decompose.Numerics
         public override bool Equals(BigInteger x, BigInteger y) { return x.Equals(y); }
         public override int GetHashCode(BigInteger obj) { return obj.GetHashCode(); }
         public override int Compare(BigInteger x, BigInteger y) { return x.CompareTo(y); }
-        public override BigInteger ModularProduct(BigInteger a, BigInteger b, BigInteger modulus) { return a * b % modulus; }
-        public override BigInteger ModularPower(BigInteger value, BigInteger exponent, BigInteger modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
         public override uint LeastSignificantWord(BigInteger a) { return (uint)(a & uint.MaxValue); }
+
+        public override BigInteger SquareRoot(BigInteger a) { return IntegerMath.SquareRoot(a); }
+        public override BigInteger GreatestCommonDivisor(BigInteger a, BigInteger b) { return IntegerMath.GreatestCommonDivisor(a, b); }
+        public override BigInteger ModularSum(BigInteger a, BigInteger b, BigInteger modulus) { return IntegerMath.ModularSum(a, b, modulus); }
+        public override BigInteger ModularDifference(BigInteger a, BigInteger b, BigInteger modulus) { return IntegerMath.ModularDifference(a, b, modulus); }
+        public override BigInteger ModularProduct(BigInteger a, BigInteger b, BigInteger modulus) { return IntegerMath.ModularProduct(a, b, modulus); }
+        public override BigInteger ModularPower(BigInteger value, BigInteger exponent, BigInteger modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
+        public override BigInteger ModularInverse(BigInteger value, BigInteger modulus) { return IntegerMath.ModularInverse(value, modulus); }
     }
 }

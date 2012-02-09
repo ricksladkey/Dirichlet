@@ -154,14 +154,29 @@ namespace Decompose.Numerics
                 .All(grouping => grouping.Count() < 2);
         }
 
-        public static int Sqrt(int n)
+        public static int SquareRoot(int n)
         {
             return (int)Math.Floor(Math.Sqrt(n));
         }
 
+        public static uint SquareRoot(uint n)
+        {
+            return (uint)Math.Floor(Math.Sqrt(n));
+        }
+
+        public static long SquareRoot(long n)
+        {
+            return (long)Math.Floor(Math.Sqrt(n));
+        }
+
+        public static ulong SquareRoot(ulong n)
+        {
+            return (ulong)Math.Floor(Math.Sqrt(n));
+        }
+
         private static ISqrtAlgorithm<BigInteger> sqrt = new SqrtNewtonsMethod();
 
-        public static BigInteger Sqrt(BigInteger n)
+        public static BigInteger SquareRoot(BigInteger n)
         {
             return sqrt.Sqrt(n);
         }

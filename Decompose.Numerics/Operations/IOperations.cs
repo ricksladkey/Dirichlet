@@ -26,8 +26,14 @@ namespace Decompose.Numerics
         bool IsZero(T a);
         bool IsOne(T a);
         bool IsEven(T a);
+        uint LeastSignificantWord(T a);
+
+        T SquareRoot(T a);
+        T GreatestCommonDivisor(T a, T b);
+        T ModularSum(T a, T b, T modulus);
+        T ModularDifference(T a, T b, T modulus);
         T ModularProduct(T a, T b, T modulus);
         T ModularPower(T value, T exponent, T modulus);
-        uint LeastSignificantWord(T a);
+        T ModularInverse(T value, T modulus);
     }
 }
