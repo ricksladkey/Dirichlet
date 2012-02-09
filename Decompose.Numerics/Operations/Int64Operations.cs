@@ -1,9 +1,11 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 
 namespace Decompose.Numerics
 {
     public class Int64Operations : Operations<long>
     {
+        public override Type Type { get { return typeof(long); } }
         public override Integer<long> Wrap(long value) { return new Integer<long>(value, this); }
         public override long Zero { get { return 0; } }
         public override long One { get { return 1; } }

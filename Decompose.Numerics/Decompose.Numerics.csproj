@@ -60,7 +60,7 @@
     <Compile Include="IntegerMath\GreatestCommonDivisor.cs" />
     <Compile Include="Operations\Int32Operations.cs" />
     <Compile Include="Operations\Int64Operations.cs" />
-    <Compile Include="Core\Integer.cs" />
+    <Compile Include="Operations\Integer.cs" />
     <Compile Include="Operations\IOperations.cs" />
     <Compile Include="IntegerMath\JacobiSymbol.cs" />
     <Compile Include="IntegerMath\ModularDifference.cs" />
@@ -72,6 +72,7 @@
     <Compile Include="IntegerMath\ModularSum.cs" />
     <Compile Include="IntegerMath\Primality.cs" />
     <Compile Include="Core\UInt128.cs" />
+    <Compile Include="Operations\RandomInteger.cs" />
     <Compile Include="Operations\Uint32Operations.cs" />
     <Compile Include="Operations\UInt64Operations.cs" />
     <Compile Include="Factorization\OldPollardRhoLong.cs" />

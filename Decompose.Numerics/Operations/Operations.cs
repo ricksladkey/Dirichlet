@@ -8,25 +8,28 @@ namespace Decompose.Numerics
 {
     public static class Operations
     {
-        public static IOperations<T> Create<T>()
+        private static Dictionary<Type, IOperations> operations = new Dictionary<Type, IOperations>
+        {
+            { typeof(int), new Int32Operations() },
+            { typeof(uint), new UInt32Operations() },
+            { typeof(long), new Int64Operations() },
+            { typeof(ulong), new UInt64Operations() },
+            { typeof(BigInteger), new BigIntegerOperations() },
+        };
+
+        public static IOperations<T> Get<T>()
         {
             var type = typeof(T);
-            if (type == typeof(int))
-                return (IOperations<T>)new Int32Operations();
-            if (type == typeof(uint))
-                return (IOperations<T>)new UInt32Operations();
-            if (type == typeof(long))
-                return (IOperations<T>)new Int64Operations();
-            if (type == typeof(ulong))
-                return (IOperations<T>)new UInt64Operations();
-            if (type == typeof(BigInteger))
-                return (IOperations<T>)new BigIntegerOperations();
-            throw new NotImplementedException("type not supported");
+            IOperations ops;
+            if (!operations.TryGetValue(typeof(T), out ops))
+                throw new NotImplementedException("type not supported");
+            return (IOperations<T>)ops;
         }
     }
 
     public abstract class Operations<T> : IOperations<T>
     {
+        public abstract Type Type { get; }
         public abstract Integer<T> Wrap(T value);
         public abstract bool IsUnsigned { get; }
         public abstract T Zero { get; }

@@ -666,23 +666,22 @@ namespace Decompose.Numerics.Test
 
         public void ModularInverseTest<T>(T max)
         {
-            var random = new MersenneTwister(0).Create<T>();
-            var ops = Operations.Create<T>();
+            var random = new RandomInteger<T>(0);
             for (int i = 0; i < 1000; i++)
             {
                 var q = random.Next(max);
                 var p = random.Next(q);
-                while (!ops.IsOne(ops.GreatestCommonDivisor(p, q)))
+                while (!Integer<T>.GreatestCommonDivisor(p, q).IsOne)
                 {
                     q = random.Next(max);
                     p = random.Next(q);
                 }
-                var r = ops.SquareRoot(random.Next(q));
-                r = ops.Subtract(r, ops.Modulus(r, p));
-                var pInv = ops.ModularInverse(p, q);
-                var result = ops.ModularProduct(p, pInv, q);
-                Assert.AreEqual(ops.One, result);
-                Assert.AreEqual(ops.Modulus(ops.Divide(r, p), q), ops.ModularProduct(r, pInv, q));
+                var r = Integer<T>.SquareRoot(random.Next(q));
+                r -= r % p;
+                var pInv = Integer<T>.ModularInverse(p, q);
+                var result = Integer<T>.ModularProduct(p, pInv, q);
+                Assert.AreEqual(Integer<T>.One, result);
+                Assert.AreEqual(r / p % q, Integer<T>.ModularProduct(r, pInv, q));
             }
         }
 

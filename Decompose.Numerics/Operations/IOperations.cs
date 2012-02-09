@@ -1,9 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public interface IOperations<T> : IEqualityComparer<T>, IComparer<T>
+    public interface IOperations
+    {
+        Type Type { get; }
+    }
+
+    public interface IOperations<T> : IOperations, IEqualityComparer<T>, IComparer<T>
     {
         bool IsUnsigned { get; }
         T Zero { get; }

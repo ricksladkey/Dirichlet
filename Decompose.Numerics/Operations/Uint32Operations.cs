@@ -1,9 +1,11 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 
 namespace Decompose.Numerics
 {
     public class UInt32Operations : Operations<uint>
     {
+        public override Type Type { get { return typeof(uint); } }
         public override Integer<uint> Wrap(uint value) { return new Integer<uint>(value, this); }
         public override uint Zero { get { return 0; } }
         public override uint One { get { return 1; } }
