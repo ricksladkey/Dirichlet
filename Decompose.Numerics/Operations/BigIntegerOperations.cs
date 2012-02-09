@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public class BigIntegerOperations : Operations<BigInteger>
+    public sealed class BigIntegerOperations : Operations<BigInteger>
     {
         public override Type Type { get { return typeof(BigInteger); } }
         public override BigInteger Zero { get { return BigInteger.Zero; } }

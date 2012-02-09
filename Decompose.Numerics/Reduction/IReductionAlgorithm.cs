@@ -2,7 +2,7 @@
 
 namespace Decompose.Numerics
 {
-    public interface IReductionAlgorithm<T> : IOperations<T>
+    public interface IReductionAlgorithm<T>
     {
         IReducer<T> GetReducer(T n);
     }

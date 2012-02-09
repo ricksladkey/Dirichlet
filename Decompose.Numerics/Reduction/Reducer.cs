@@ -10,11 +10,13 @@ namespace Decompose.Numerics
     {
         protected TReduction reduction;
         protected TValue modulus;
+        protected IOperations<TValue> ops;
 
         protected Reducer(TReduction reduction, TValue modulus)
         {
             this.reduction = reduction;
             this.modulus = modulus;
+            this.ops = Operations.Get<TValue>();
         }
 
         public IReductionAlgorithm<TValue> Reduction
@@ -25,6 +27,11 @@ namespace Decompose.Numerics
         public TValue Modulus
         {
             get { return modulus; }
+        }
+
+        public IResidue<TValue> ToResidue(int x)
+        {
+            return ToResidue(ops.Convert(x));
         }
 
         public abstract IResidue<TValue> ToResidue(TValue x);

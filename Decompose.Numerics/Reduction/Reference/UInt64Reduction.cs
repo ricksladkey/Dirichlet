@@ -1,6 +1,6 @@
 ﻿namespace Decompose.Numerics
 {
-    public class UInt64Reduction : UInt64Operations, IReductionAlgorithm<ulong>
+    public class UInt64Reduction : IReductionAlgorithm<ulong>
     {
         private class Reducer : Reducer<UInt64Reduction, ulong>
         {

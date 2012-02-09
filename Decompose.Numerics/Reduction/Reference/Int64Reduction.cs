@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class Int64Reduction : Int64Operations, IReductionAlgorithm<long>
+    public class Int64Reduction : IReductionAlgorithm<long>
     {
         private class Reducer : IReducer<long>
         {
@@ -110,6 +110,11 @@ namespace Decompose.Numerics
             }
 
             public IResidue<long> ToResidue(long x)
+            {
+                return new Residue(this, x);
+            }
+
+            public IResidue<long> ToResidue(int x)
             {
                 return new Residue(this, x);
             }

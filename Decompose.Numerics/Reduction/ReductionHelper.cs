@@ -10,7 +10,7 @@ namespace Decompose.Numerics
         public static void Power<T>(IResidue<T> value, T exponent)
         {
             var reducer = value.Reducer;
-            var ops = reducer.Reduction;
+            var ops = Operations.Get<T>();
             var result = reducer.ToResidue(ops.One);
             while (!ops.IsZero(exponent))
             {

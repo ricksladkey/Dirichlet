@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public class Int64Operations : Operations<long>
+    public sealed class Int64Operations : Operations<long>
     {
         public override Type Type { get { return typeof(long); } }
         public override long Zero { get { return 0; } }

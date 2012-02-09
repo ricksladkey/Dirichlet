@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class Int32Reduction : Int32Operations, IReductionAlgorithm<int>
+    public class Int32Reduction : IReductionAlgorithm<int>
     {
         private class Reducer : IReducer<int>
         {

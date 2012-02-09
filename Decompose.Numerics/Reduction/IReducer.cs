@@ -7,5 +7,6 @@ namespace Decompose.Numerics
         IReductionAlgorithm<T> Reduction { get; }
         T Modulus { get; }
         IResidue<T> ToResidue(T x);
+        IResidue<T> ToResidue(int x);
     }
 }

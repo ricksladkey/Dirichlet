@@ -8,7 +8,7 @@ namespace Decompose.Numerics
         private class PrimalityAlgorithm<T> : IPrimalityAlgorithm<T>
         {
             private IReductionAlgorithm<T> reduction;
-            private IRandomNumberGenerator generator = new MersenneTwister(0);
+            private IRandomNumberAlgorithm<Integer<T>> random = new RandomInteger<T>(0);
             private int k;
 
             public PrimalityAlgorithm(int k, IReductionAlgorithm<T> reduction)
@@ -17,29 +17,28 @@ namespace Decompose.Numerics
                 this.reduction = reduction;
             }
 
-            public bool IsPrime(T n)
+            public bool IsPrime(T nValue)
             {
-                if (reduction.Compare(n, reduction.Two) < 0)
+                var n = (Integer<T>)nValue;
+                if (n < 2)
                     return false;
-                if (reduction.Equals(n, reduction.Two) || reduction.Equals(n, reduction.Convert(3)))
+                if (n == 2 || n == 3)
                     return true;
-                if (reduction.IsEven(n))
+                if (n.IsEven)
                     return false;
-                var random = generator.Create<T>();
                 var reducer = reduction.GetReducer(n);
-                var four = reduction.Convert(4);
                 var s = 0;
-                var d = reduction.Subtract(n, reduction.One);
-                while (reduction.IsEven(d))
+                var d = n - 1;
+                while (d.IsEven)
                 {
-                    d = reduction.RightShift(d, 1);
+                    d >>= 1;
                     ++s;
                 }
-                var nMinusOne = reducer.ToResidue(reduction.Subtract(n, reduction.One));
-                var x = reducer.ToResidue(reduction.Zero);
+                var nMinusOne = reducer.ToResidue(n - 1);
+                var x = reducer.ToResidue(0);
                 for (int i = 0; i < k; i++)
                 {
-                    var a = reduction.Add(random.Next(reduction.Subtract(n, four)), reduction.Two);
+                    var a = random.Next(n - 4) + 2;
                     x.Set(a).Power(d);
                     if (x.IsOne || x.Equals(nMinusOne))
                         continue;

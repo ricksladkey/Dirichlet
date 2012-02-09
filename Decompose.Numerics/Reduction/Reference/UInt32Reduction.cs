@@ -1,6 +1,6 @@
 ﻿namespace Decompose.Numerics
 {
-    public class UInt32Reduction : UInt32Operations, IReductionAlgorithm<uint>
+    public class UInt32Reduction : IReductionAlgorithm<uint>
     {
         private class Reducer : Reducer<UInt32Reduction, uint>
         {

@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public class BigIntegerMontgomeryReduction : BigIntegerOperations, IReductionAlgorithm<BigInteger>
+    public class BigIntegerMontgomeryReduction : IReductionAlgorithm<BigInteger>
     {
         private class Reducer : Reducer<BigIntegerMontgomeryReduction, BigInteger>
         {

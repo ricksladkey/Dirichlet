@@ -216,12 +216,12 @@ namespace Decompose.Numerics.Test
             TestReduction(ulong.Parse("259027704197601377"), new UInt64MontgomeryReduction());
         }
 
-        private void TestReduction<T>(T max, IReductionAlgorithm<T> reduction)
+        private void TestReduction<T>(Integer<T> max, IReductionAlgorithm<T> reduction)
         {
-            var random = new MersenneTwister(0).Create<T>();
+            var random = new RandomInteger<T>(0);
             for (int j = 0; j < 100; j++)
             {
-                var p = reduction.Or(random.Next(max), reduction.Convert(1));
+                var p = random.Next(max) | 1;
                 var reducer = reduction.GetReducer(p);
                 var xBar = reducer.ToResidue(p);
                 var yBar = reducer.ToResidue(p);
@@ -234,13 +234,11 @@ namespace Decompose.Numerics.Test
                     xBar.Set(x);
                     yBar.Set(y);
                     zBar.Set(xBar).Multiply(yBar);
-                    Assert.AreEqual(reduction.ToBigInteger(x) * reduction.ToBigInteger(y) % reduction.ToBigInteger(p),
-                        reduction.ToBigInteger(zBar.Value));
+                    Assert.AreEqual((BigInteger)x * y % p, (Integer<T>)zBar.Value);
 
                     xBar.Set(x);
                     zBar.Set(xBar).Power(y);
-                    Assert.AreEqual(BigInteger.ModPow(reduction.ToBigInteger(x), reduction.ToBigInteger(y), reduction.ToBigInteger(p)),
-                        reduction.ToBigInteger(zBar.Value));
+                    Assert.AreEqual(BigInteger.ModPow(x, y, p), (Integer<T>)zBar.Value);
                 }
             }
         }

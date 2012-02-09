@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class BigIntegerReduction : BigIntegerOperations, IReductionAlgorithm<BigInteger>
+    public class BigIntegerReduction : IReductionAlgorithm<BigInteger>
     {
         private class Reducer : IReducer<BigInteger>
         {
@@ -108,6 +108,11 @@ namespace Decompose.Numerics
             }
 
             public IResidue<BigInteger> ToResidue(BigInteger x)
+            {
+                return new Residue(this, x);
+            }
+
+            public IResidue<BigInteger> ToResidue(int x)
             {
                 return new Residue(this, x);
             }

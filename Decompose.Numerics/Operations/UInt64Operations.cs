@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public class UInt64Operations : Operations<ulong>
+    public sealed class UInt64Operations : Operations<ulong>
     {
         public override Type Type { get { return typeof(ulong); } }
         public override ulong Zero { get { return 0; } }

@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class Word32IntegerReduction : BigIntegerOperations, IReductionAlgorithm<BigInteger>
+    public class Word32IntegerReduction : IReductionAlgorithm<BigInteger>
     {
         private class Reducer : IReducer<BigInteger>
         {
@@ -137,6 +137,11 @@ namespace Decompose.Numerics
             private void Reduce(Word32Integer r)
             {
                 r.Modulo(nRep);
+            }
+
+            public IResidue<BigInteger> ToResidue(int x)
+            {
+                return new Residue(this, x);
             }
         }
 

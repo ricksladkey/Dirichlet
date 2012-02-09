@@ -2,7 +2,7 @@
 
 namespace Decompose.Numerics
 {
-    public class UInt64MontgomeryReduction : UInt64Operations, IReductionAlgorithm<ulong>
+    public class UInt64MontgomeryReduction : IReductionAlgorithm<ulong>
     {
         private class Reducer : Reducer<UInt64MontgomeryReduction, ulong>
         {
