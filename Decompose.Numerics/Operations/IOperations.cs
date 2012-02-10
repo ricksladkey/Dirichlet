@@ -16,6 +16,8 @@ namespace Decompose.Numerics
         T One { get; }
         T Two { get; }
         T Convert(int a);
+        T Convert(BigInteger a);
+        int ToInt32(T a);
         BigInteger ToBigInteger(T a);
         T Add(T a, T b);
         T Subtract(T a, T b);
