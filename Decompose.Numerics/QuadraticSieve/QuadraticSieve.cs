@@ -206,7 +206,11 @@ namespace Decompose.Numerics
             public CountInt LogP { get; set; }
             public int Root { get; set; }
             public int RootDiff { get; set; }
+#if false
             public long Reciprocal { get; set; }
+#endif
+            public uint PInv { get; set; }
+            public uint QMax { get; set; }
             public FactorBaseEntry(int p, BigInteger n)
             {
                 P = p;
@@ -215,12 +219,16 @@ namespace Decompose.Numerics
                 Root = n % p == 0 ? 0 : IntegerMath.ModularSquareRoot(n, p);
                 Debug.Assert(((BigInteger)Root * Root - n) % p == 0);
                 RootDiff = ((P - Root) - Root) % p;
+#if false
                 if (p < 1 << reciprocalShift / 2)
                 {
                     Reciprocal = ((long)1 << reciprocalShift) / p + 1;
                     Debug.Assert(Reciprocal * p >= (long)1 << reciprocalShift);
                     Debug.Assert(Reciprocal * p <= ((long)1 << reciprocalShift) + (1 << reciprocalShift / 2));
                 }
+#endif
+                PInv = IntegerMath.ModularInversePowerOfTwoModulus((uint)P, 32);
+                QMax = uint.MaxValue / (uint)P;
             }
             public override string ToString()
             {
@@ -234,7 +242,12 @@ namespace Decompose.Numerics
             public CountInt LogP { get; set; }
             public int Offset1 { get; set; }
             public int Offset2 { get; set; }
+#if false
             public long Reciprocal { get; set; }
+#endif
+            public uint PInv { get; set; }
+            public uint QMax { get; set; }
+            public uint OffsetDiffInv { get; set; }
         }
 
         private struct CountEntry
@@ -949,7 +962,12 @@ namespace Decompose.Numerics
                 offsets[i].LogP = entry.LogP;
                 offsets[i].Offset1 = (int)((aInv * root1 - x) % p);
                 offsets[i].Offset2 = (int)((aInv * root2 - x) % p);
+#if false
                 offsets[i].Reciprocal = entry.Reciprocal;
+#endif
+                offsets[i].PInv = entry.PInv;
+                offsets[i].QMax = entry.QMax;
+                offsets[i].OffsetDiffInv = (uint)(offsets[i].P + offsets[i].Offset1 - offsets[i].Offset2) * offsets[i].PInv;
                 Debug.Assert(offsets[i].Offset1 >= 0 && polynomial.Evaluate(x + offsets[i].Offset1) % p == 0);
                 Debug.Assert(offsets[i].Offset2 >= 0 && polynomial.Evaluate(x + offsets[i].Offset2) % p == 0);
             }
@@ -1827,14 +1845,38 @@ namespace Decompose.Numerics
                 var p = offsets[i].P;
 #if false
                 var offset = k % p;
-#else
-                var offset = k - (int)((offsets[i].Reciprocal * k) >> reciprocalShift) * p;
-#endif
                 if (offset != offsets[i].Offset1 && offset != offsets[i].Offset2)
                 {
                     Debug.Assert(y % p != 0);
                     continue;
                 }
+#endif
+#if false
+                var offset = k - (int)((offsets[i].Reciprocal * k) >> reciprocalShift) * p;
+                if (offset != offsets[i].Offset1 && offset != offsets[i].Offset2)
+                {
+                    Debug.Assert(y % p != 0);
+                    continue;
+                }
+#endif
+#if false
+                var pInv = offsets[i].PInv;
+                var qMax = offsets[i].QMax;
+                var kp = k + p;
+                if ((uint)(kp - offsets[i].Offset1) * pInv > qMax && (uint)(kp - offsets[i].Offset2) * pInv > qMax)
+                {
+                    Debug.Assert(y % p != 0);
+                    continue;
+                }
+#endif
+#if true
+                var kpInv1 = (uint)(k + p - offsets[i].Offset1) * offsets[i].PInv;
+                if (kpInv1 > offsets[i].QMax && kpInv1 + offsets[i].OffsetDiffInv > offsets[i].QMax)
+                {
+                    Debug.Assert(y % p != 0);
+                    continue;
+                }
+#endif
                 Debug.Assert(y % p == 0);
                 do
                 {
