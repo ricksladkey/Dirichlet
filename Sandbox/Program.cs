@@ -452,10 +452,10 @@ namespace Sandbox
 #endif
                 Diagnostics = QuadraticSieve.Diag.Verbose,
                 DiagnosticsOutput = output,
-                ReportingInterval = 60,
+                //ReportingInterval = 60,
                 //MergeLimit = 10,
-                ProcessPartialPartialRelations = true,
-                //ThresholdExponent = 2.6,
+                //ProcessPartialPartialRelations = true,
+                ThresholdExponent = 2.5,
 
                 //FactorBaseSize = 14000,
                 //BlockSize = 64 * 1024,
@@ -463,11 +463,11 @@ namespace Sandbox
                 //CofactorCutoff = 4096 * 4,
                 //ErrorLimit = 1,
                 //NumberOfFactors = 12,
-                //UseCountTable = true,
+                UseCountTable = true,
                 //CofactorCutoff = 1024,
-                SieveTimeLimit = 120,
+                SieveTimeLimit = 10,
             };
-            var i = 35;
+            var i = 40;
             var sample = samples[i];
             var p = sample.P;
             var q = sample.Q;

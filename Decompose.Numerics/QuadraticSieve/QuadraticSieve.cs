@@ -45,7 +45,9 @@ namespace Decompose.Numerics
         private const int maximumAfactor = 4000;
         private const int maximumNumberOfFactors = 20;
         private const int minimumCounTableDigits = 85;
+#if USE_RECIPROCAL
         private const int reciprocalShift = 42;
+#endif
 
         [Flags]
         public enum Diag
@@ -206,7 +208,7 @@ namespace Decompose.Numerics
             public CountInt LogP { get; set; }
             public int Root { get; set; }
             public int RootDiff { get; set; }
-#if false
+#if USE_RECIPROCAL
             public long Reciprocal { get; set; }
 #endif
             public uint PInv { get; set; }
@@ -219,7 +221,7 @@ namespace Decompose.Numerics
                 Root = n % p == 0 ? 0 : IntegerMath.ModularSquareRoot(n, p);
                 Debug.Assert(((BigInteger)Root * Root - n) % p == 0);
                 RootDiff = ((P - Root) - Root) % p;
-#if false
+#if USE_RECIPROCAL
                 if (p < 1 << reciprocalShift / 2)
                 {
                     Reciprocal = ((long)1 << reciprocalShift) / p + 1;
@@ -242,7 +244,7 @@ namespace Decompose.Numerics
             public CountInt LogP { get; set; }
             public int Offset1 { get; set; }
             public int Offset2 { get; set; }
-#if false
+#if USE_RECIPROCAL
             public long Reciprocal { get; set; }
 #endif
             public uint PInv { get; set; }
@@ -962,7 +964,7 @@ namespace Decompose.Numerics
                 offsets[i].LogP = entry.LogP;
                 offsets[i].Offset1 = (int)((aInv * root1 - x) % p);
                 offsets[i].Offset2 = (int)((aInv * root2 - x) % p);
-#if false
+#if USE_RECIPROCAL
                 offsets[i].Reciprocal = entry.Reciprocal;
 #endif
                 offsets[i].PInv = entry.PInv;
@@ -1324,7 +1326,9 @@ namespace Decompose.Numerics
                 intervalSize = config.IntervalSize;
             else
                 intervalSize = LookupValue(parameters => parameters.IntervalSize);
+#if USE_RECIPROCAL
             Debug.Assert(intervalSize <= 1 << reciprocalShift / 2);
+#endif
             blockSize = IntegerMath.MultipleOfCeiling(blockSize, thresholdInterval);
             intervalSize = IntegerMath.MultipleOfCeiling(intervalSize, blockSize);
             int numberOfIncrements = intervalSize / blockSize;
@@ -1851,7 +1855,7 @@ namespace Decompose.Numerics
                     continue;
                 }
 #endif
-#if false
+#if USE_RECIPROCAL
                 var offset = k - (int)((offsets[i].Reciprocal * k) >> reciprocalShift) * p;
                 if (offset != offsets[i].Offset1 && offset != offsets[i].Offset2)
                 {
