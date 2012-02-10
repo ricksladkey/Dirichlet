@@ -263,7 +263,7 @@ namespace Decompose.Numerics
 
             // If the path neither starts nor ends in the
             // partial relation map, try to find a path
-            // from the start the the partial relation map
+            // from the start of the partial relation map
             // and another from the end to the partial
             // relation map.  Then combine them.
             if (!prHasStart && !prHasEnd)

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace Decompose
+namespace Sandbox
 {
     public class ConsoleLogger : TextWriter
     {

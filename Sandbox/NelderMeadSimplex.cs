@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Decompose
+namespace Sandbox
 {
     public sealed class SimplexConstant
     {

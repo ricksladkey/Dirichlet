@@ -49,7 +49,6 @@
     <Compile Include="Collections\SetBitMatrix.cs" />
     <Compile Include="Collections\IntegerSet.cs" />
     <Compile Include="Operations\BigIntegerOperations.cs" />
-    <Compile Include="Core\Core.cs" />
     <Compile Include="Core\Int65.cs" />
     <Compile Include="Core\IStore.cs" />
     <Compile Include="Core\ShareableWord32IntegerStore.cs" />
