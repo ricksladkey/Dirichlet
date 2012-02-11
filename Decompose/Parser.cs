@@ -36,10 +36,6 @@ namespace Decompose
             IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
         }
 
-        public class Node
-        {
-            public virtual object Get(Engine engine) { return null; }
-        }
         public class InitializerProperty
         {
             public string PropertyName { get; set; }
@@ -56,13 +52,36 @@ namespace Decompose
         public class ParameterCollection : List<Parameter>
         {
         }
+
+        public class Node
+        {
+            public virtual object Get(Engine engine) { return null; }
+        }
         public class StatementNode : Node { }
+        public class ExpressionNode : StatementNode
+        {
+            public virtual object Set(Engine engine, object value) { return null; }
+        }
+
         public class PathNode : Node
         {
             public ExpressionNode Path { get; set; }
             public override object Get(Engine engine)
             {
                 return Path.Get(engine);
+            }
+        }
+        public class PropertyNode : ExpressionNode
+        {
+            public ExpressionNode Context { get; set; }
+            public string PropertyName { get; set; }
+            public override object Get(Engine engine)
+            {
+                return engine.GetProperty(Context.Get(engine), PropertyName);
+            }
+            public override object Set(Engine engine, object value)
+            {
+                return engine.SetProperty(Context.Get(engine), PropertyName, value);
             }
         }
         public class SetNode : ExpressionNode
@@ -74,16 +93,76 @@ namespace Decompose
                 return LValue.Set(engine, RValue.Get(engine));
             }
         }
-        public class EventNode : ExpressionNode
+        public class ValueNode : ExpressionNode
         {
-            public ExpressionNode Context { get; set; }
-            public string EventName { get; set; }
-            public ExpressionNode Handler { get; set; }
+            public object Value { get; set; }
+            public override object Get(Engine engine)
+            {
+                return Value;
+            }
         }
-        public class ExpressionNode : StatementNode
+        public class ScriptNode : StatementNode
         {
-            public virtual object Set(Engine engine, object value) { return null; }
+            public IList<StatementNode> Nodes { get; set; }
+            public override object Get(Engine engine)
+            {
+                return Nodes.Select(node => node.Get(engine)).Last();
+            }
         }
+        public class VariableNode : ExpressionNode
+        {
+            public string VariableName { get; set; }
+            public override object Get(Engine engine)
+            {
+                return engine.GetVariable(VariableName);
+            }
+            public override object Set(Engine engine, object value)
+            {
+                return engine.SetVariable(VariableName, value);
+            }
+        }
+        public class FirstNode : ExpressionNode
+        {
+            public ExpressionNode Operand1 { get; set; }
+            public ExpressionNode Operand2 { get; set; }
+            public override object Get(Engine engine)
+            {
+                var result = Operand1.Get(engine);
+                Operand2.Get(engine);
+                return result;
+            }
+        }
+        public class LastNode : ExpressionNode
+        {
+            public ExpressionNode Operand1 { get; set; }
+            public ExpressionNode Operand2 { get; set; }
+            public override object Get(Engine engine)
+            {
+                Operand1.Get(engine);
+                return Operand2.Get(engine);
+            }
+        }
+        public class ConditionalNode : ExpressionNode
+        {
+            public ExpressionNode Conditional { get; set; }
+            public ExpressionNode IfTrue { get; set; }
+            public ExpressionNode IfFalse { get; set; }
+            public override object Get(Engine engine)
+            {
+                return (bool)Conditional.Get(engine) ? IfTrue.Get(engine) : IfFalse.Get(engine);
+            }
+        }
+        public class OpNode : ExpressionNode
+        {
+            public OpNode() { Operands = new List<ExpressionNode>(); }
+            public Op Op { get; set; }
+            public IList<ExpressionNode> Operands { get; set; }
+            public override object Get(Engine engine)
+            {
+                return engine.Operator(Op, Operands.Select(operand => operand.Get(engine)).ToArray());
+            }
+        }
+
         public class IfNode : StatementNode
         {
             public struct Pair
@@ -117,34 +196,6 @@ namespace Decompose
             public ExpressionNode Type { get; set; }
             public IList<ExpressionNode> Items { get; set; }
         }
-        public class ValueNode : ExpressionNode
-        {
-            public object Value { get; set; }
-            public override object Get(Engine engine)
-            {
-                return Value;
-            }
-        }
-        public class ScriptNode : StatementNode
-        {
-            public IList<StatementNode> Nodes { get; set; }
-            public override object Get(Engine engine)
-            {
-                return Nodes.Select(node => node.Get(engine)).Last();
-            }
-        }
-        public class VariableNode : ExpressionNode
-        {
-            public string VariableName { get; set; }
-            public override object Get(Engine engine)
-            {
-                return engine.GetVariable(VariableName);
-            }
-            public override object Set(Engine engine, object value)
-            {
-                return engine.SetVariable(VariableName, value);
-            }
-        }
         public class VarNode : StatementNode
         {
             public string VariableName { get; set; }
@@ -167,27 +218,6 @@ namespace Decompose
         {
             public ExpressionNode Key { get; set; }
             public ExpressionNode Value { get; set; }
-        }
-        public class CommaNode : ExpressionNode
-        {
-            public ExpressionNode Operand1 { get; set; }
-            public ExpressionNode Operand2 { get; set; }
-        }
-        public class ConditionalNode : ExpressionNode
-        {
-            public ExpressionNode Conditional { get; set; }
-            public ExpressionNode IfTrue { get; set; }
-            public ExpressionNode IfFalse { get; set; }
-        }
-        public class OpNode : ExpressionNode
-        {
-            public OpNode() { Operands = new List<ExpressionNode>(); }
-            public Op Op { get; set; }
-            public IList<ExpressionNode> Operands { get; set; }
-            public override object Get(Engine engine)
-            {
-                return engine.Operator(Op, Operands.Select(operand => operand.Get(engine)).ToArray());
-            }
         }
         public class IncrementNode : ExpressionNode
         {
@@ -242,19 +272,6 @@ namespace Decompose
         {
             public string FunctionName { get; set; }
         }
-        public class PropertyNode : ExpressionNode
-        {
-            public ExpressionNode Context { get; set; }
-            public string PropertyName { get; set; }
-            public override object Get(Engine engine)
-            {
-                return engine.GetProperty(Context.Get(engine), PropertyName);
-            }
-            public override object Set(Engine engine, object value)
-            {
-                return engine.SetProperty(Context.Get(engine), PropertyName, value);
-            }
-        }
         public class StaticMethodNode : CallNode
         {
             public TypeNode Type { get; set; }
@@ -264,6 +281,12 @@ namespace Decompose
         {
             public TypeNode Type { get; set; }
             public string PropertyName { get; set; }
+        }
+        public class EventNode : ExpressionNode
+        {
+            public ExpressionNode Context { get; set; }
+            public string EventName { get; set; }
+            public ExpressionNode Handler { get; set; }
         }
 
         private Engine engine;
@@ -721,9 +744,17 @@ namespace Decompose
                 operands.Push(new SetNode { LValue = operand1, RValue = rvalue });
             }
             else if (operatorMap.ContainsKey(token))
-                operands.Push(new OpNode { Op = operatorMap[token], Operands = { operand1, operand2 } });
+            {
+                var op = operatorMap[token];
+                if (op == Op.AndAnd)
+                    operands.Push(new ConditionalNode { Conditional = operand1, IfTrue = operand2, IfFalse = new ValueNode { Value = false } });
+                else if (op == Op.OrOr)
+                    operands.Push(new ConditionalNode { Conditional = operand1, IfTrue = new ValueNode { Value = true }, IfFalse = operand2 });
+                else
+                    operands.Push(new OpNode { Op = operatorMap[token], Operands = { operand1, operand2 } });
+            }
             else if (token == ",")
-                operands.Push(new CommaNode { Operand1 = operand1, Operand2 = operand2 });
+                operands.Push(new LastNode { Operand1 = operand1, Operand2 = operand2 });
             else if (token == ":")
             {
                 if (operators.Peek() != "?") engine.Throw("incomplete conditional operator");
@@ -755,8 +786,10 @@ namespace Decompose
             if (token == "++" || token == "--")
             {
                 Tokens.Dequeue();
-                var op = token == "++" ? AssignmentOp.Increment : AssignmentOp.Decrement;
-                return new IncrementNode { Op = op, LValue = ParseUnary(level) };
+                var node = ParseUnary(level);
+                var op = token == "++" ? Op.Plus : Op.Minus;
+                var opNode = new OpNode { Op = op, Operands = { node, new ValueNode { Value = 1 } } };
+                return new SetNode { LValue = node, RValue = opNode };
             }
             return ParsePrimary(level);
         }
@@ -780,8 +813,9 @@ namespace Decompose
                 else if (token == "++" || token == "--")
                 {
                     Tokens.Dequeue();
-                    var op = token == "++" ? AssignmentOp.PostIncrement : AssignmentOp.PostDecrement;
-                    return new IncrementNode { Op = op, LValue = node };
+                    var op = token == "++" ? Op.Plus : Op.Minus;
+                    var opNode = new OpNode { Op = op, Operands = { node, new ValueNode { Value = 1 } } };
+                    return new FirstNode { Operand1 = node, Operand2 = new SetNode { LValue = node, RValue = opNode } };
                 }
                 else
                     break;
@@ -1109,7 +1143,7 @@ namespace Decompose
                     Tokens.Enqueue(c2);
                     i += 2;
                 }
-                else if (operatorMap.ContainsKey(c.ToString()) || "=.[](){},?:;".Contains(c))
+                else if (operatorMap.ContainsKey(c.ToString()) || assignmentOperatorMap.ContainsKey(c.ToString()) || ".[](){},?:;".Contains(c))
                 {
                     Tokens.Enqueue(c.ToString());
                     ++i;

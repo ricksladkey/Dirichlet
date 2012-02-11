@@ -22,11 +22,18 @@ namespace Decompose
                 var text = Console.ReadLine();
                 if (text == null)
                     break;
-                var value = new Parser().Compile(engine, CodeType.Statement, text).Root.Get(engine);
-                if (value != null)
+                try
                 {
-                    engine.SetVariable("@", value);
-                    Console.WriteLine(value);
+                    var value = new Parser().Compile(engine, CodeType.Statement, text).Root.Get(engine);
+                    if (value != null)
+                    {
+                        engine.SetVariable("@", value);
+                        Console.WriteLine(value);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error: " + ex.Message);
                 }
             }
         }
