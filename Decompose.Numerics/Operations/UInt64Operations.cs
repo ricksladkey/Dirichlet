@@ -34,6 +34,7 @@ namespace Decompose.Numerics
         public int Compare(ulong x, ulong y) { return x.CompareTo(y); }
         public uint LeastSignificantWord(ulong a) { return (uint)(a & uint.MaxValue); }
 
+        public ulong Power(ulong a, ulong b) { return IntegerMath.Power(a, b); }
         public ulong SquareRoot(ulong a) { return IntegerMath.SquareRoot(a); }
         public ulong GreatestCommonDivisor(ulong a, ulong b) { return IntegerMath.GreatestCommonDivisor(a, b); }
         public ulong ModularSum(ulong a, ulong b, ulong modulus) { return IntegerMath.ModularSum(a, b, modulus); }

@@ -1,13 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.IO.Compression;
+using System.Collections;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Numerics;
-using System.Reflection;
-using Decompose.Numerics;
 
 namespace Decompose
 {
@@ -28,7 +21,10 @@ namespace Decompose
                     if (value != null)
                     {
                         engine.SetVariable("@", value);
-                        Console.WriteLine(value);
+                        if (value is IEnumerable)
+                            Console.WriteLine(string.Join(", ", (value as IEnumerable).Cast<object>().Select(item => item.ToString())));
+                        else
+                            Console.WriteLine(value);
                     }
                 }
                 catch (Exception ex)

@@ -123,19 +123,76 @@ namespace Decompose.Numerics
             return (n % p + p) % p;
         }
 
-        public static int Power(int n, int e)
+        public static int Power(int value, int exponent)
         {
-            return (int)Math.Round(Math.Pow(n, e));
+            var result = (int)1;
+            while (exponent != 0)
+            {
+                if ((exponent & 1) != 0)
+                    result = result * value;
+                if (exponent != 1)
+                    value = value * value;
+                exponent >>= 1;
+            }
+            return result;
         }
 
-        public static BigInteger Power(BigInteger n, int e)
+        public static uint Power(uint value, uint exponent)
         {
-            return BigInteger.Pow(n, e);
+            var result = (uint)1;
+            while (exponent != 0)
+            {
+                if ((exponent & 1) != 0)
+                    result = result * value;
+                if (exponent != 1)
+                    value = value * value;
+                exponent >>= 1;
+            }
+            return result;
         }
 
-        public static BigInteger Power(BigInteger n, BigInteger e)
+        public static long Power(long value, long exponent)
         {
-            return BigInteger.Pow(n, (int)e);
+            var result = (long)1;
+            while (exponent != 0)
+            {
+                if ((exponent & 1) != 0)
+                    result = result * value;
+                if (exponent != 1)
+                    value = value * value;
+                exponent >>= 1;
+            }
+            return result;
+        }
+
+        public static ulong Power(ulong value, ulong exponent)
+        {
+            var result = (ulong)1;
+            while (exponent != 0)
+            {
+                if ((exponent & 1) != 0)
+                    result = result * value;
+                if (exponent != 1)
+                    value = value * value;
+                exponent >>= 1;
+            }
+            return result;
+        }
+
+        public static BigInteger Power(BigInteger value, BigInteger exponent)
+        {
+            if (exponent < int.MaxValue)
+                return BigInteger.Pow(value, (int)exponent);
+            var result = (BigInteger)1;
+            while (exponent != 0)
+            {
+                if ((exponent & 1) != 0)
+                    result = result * value;
+                if (exponent != 1)
+                    value = value * value;
+                exponent >>= 1;
+            }
+            return result;
         }
 
         public static bool IsSquareFree(IEnumerable<int> factors)

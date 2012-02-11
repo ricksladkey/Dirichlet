@@ -34,6 +34,7 @@ namespace Decompose.Numerics
         public int Compare(uint x, uint y) { return x.CompareTo(y); }
         public uint LeastSignificantWord(uint a) { return (uint)(a & uint.MaxValue); }
 
+        public uint Power(uint a, uint b) { return IntegerMath.Power(a, b); }
         public uint SquareRoot(uint a) { return IntegerMath.SquareRoot(a); }
         public uint GreatestCommonDivisor(uint a, uint b) { return IntegerMath.GreatestCommonDivisor(a, b); }
         public uint ModularSum(uint a, uint b, uint modulus) { return IntegerMath.ModularSum(a, b, modulus); }

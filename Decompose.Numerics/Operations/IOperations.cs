@@ -24,6 +24,7 @@ namespace Decompose.Numerics
         T Multiply(T a, T b);
         T Divide(T a, T b);
         T Modulus(T a, T b);
+        T Power(T a, T b);
         T Negate(T a);
         T LeftShift(T a, int n);
         T RightShift(T a, int n);

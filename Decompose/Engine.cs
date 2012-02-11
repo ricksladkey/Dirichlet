@@ -44,6 +44,7 @@ namespace Decompose
         {
             private Dictionary<Op, Func<T, object>> unaryOps = new Dictionary<Op, Func<T, object>>();
             private Dictionary<Op, Func<T, T, object>> binaryOps = new Dictionary<Op, Func<T, T, object>>();
+            private Dictionary<Op, Func<T, T, T, object>> ternaryOps = new Dictionary<Op, Func<T, T, T, object>>();
             public IntegerOperatorMap()
             {
                 var ops = Operations.Get<T>();
@@ -54,6 +55,7 @@ namespace Decompose
                 binaryOps.Add(Op.Times, (a, b) => ops.Multiply(a, b));
                 binaryOps.Add(Op.Divide, (a, b) => ops.Divide(a, b));
                 binaryOps.Add(Op.Mod, (a, b) => ops.Modulus(a, b));
+                binaryOps.Add(Op.Pow, (a, b) => ops.Power(a, b));
                 binaryOps.Add(Op.BitwiseAnd, (a, b) => ops.And(a, b));
                 binaryOps.Add(Op.BitwiseOr, (a, b) => ops.Or(a, b));
                 binaryOps.Add(Op.BitwiseXor, (a, b) => ops.ExclusiveOr(a, b));
@@ -65,6 +67,23 @@ namespace Decompose
                 binaryOps.Add(Op.LessThanOrEqual, (a, b) => ops.Compare(a, b) <= 0);
                 binaryOps.Add(Op.GreaterThan, (a, b) => ops.Compare(a, b) > 0);
                 binaryOps.Add(Op.GreaterThanOrEqual, (a, b) => ops.Compare(a, b) >= 0);
+                binaryOps.Add(Op.Modulo, (a, b) =>
+                    {
+                        var result = ops.Modulus(a, b);
+                        if (ops.Compare(result, ops.Zero) < 0)
+                            result = ops.Add(result, b);
+                        return result;
+                    });
+                ternaryOps.Add(Op.ModularSum, (a, b, c) => ops.ModularSum(a, b, c));
+                ternaryOps.Add(Op.ModularDifference, (a, b, c) => ops.ModularDifference(a, b, c));
+                ternaryOps.Add(Op.ModularProduct, (a, b, c) => ops.ModularProduct(a, b, c));
+                ternaryOps.Add(Op.ModularQuotient, (a, b, c) => ops.ModularProduct(a, ops.ModularInverse(b, c), c));
+                ternaryOps.Add(Op.ModularPower, (a, b, c) =>
+                    {
+                        if (ops.Equals(b, ops.Negate(ops.One)))
+                            return ops.ModularInverse(a, c);
+                        return ops.ModularPower(a, b, c);
+                    });
             }
             public override object Operator(Op op, params T[] args)
             {
@@ -72,6 +91,8 @@ namespace Decompose
                     return unaryOps[op](args[0]);
                 if (binaryOps.ContainsKey(op))
                     return binaryOps[op](args[0], args[1]);
+                if (ternaryOps.ContainsKey(op))
+                    return ternaryOps[op](args[0], args[1], args[2]);
                 throw new NotImplementedException();
             }
         }
@@ -82,9 +103,11 @@ namespace Decompose
         public object Throw(string message) { throw new Exception(message); }
         public void Trace(TraceFlags flags, string message, params object[] args) { }
 
+        private object globalContext = new Dictionary<string, object>();
+
         public Engine()
         {
-            SetVariable(ContextKey, new Dictionary<string, object>());
+            SetVariable(ContextKey, globalContext);
         }
 
         private Dictionary<Op, Func<object, object>> opMapCast = new Dictionary<Op, Func<object, object>>
@@ -220,6 +243,30 @@ namespace Decompose
             if (context is Dictionary<string, object>)
                 return (context as Dictionary<string, object>)[name] = value;
             throw new NotImplementedException();
+        }
+
+        private Dictionary<string, Func<Engine, object[], object>> globalMethods = new Dictionary<string, Func<Engine, object[], object>>
+        {
+            { "factor", Factor },
+        };
+
+        public object CallMethod(object context, string name, params object[] args)
+        {
+            if (context == globalContext)
+            {
+                if (globalMethods.ContainsKey(name))
+                {
+                    var method = globalMethods[name];
+                    return method(this, args);
+                }
+            }
+            return null;
+        }
+
+        public static object Factor(Engine engine, params object[] args)
+        {
+            var algorithm = new HybridPollardRhoQuadraticSieve(8, 10000, new QuadraticSieve.Config());
+            return algorithm.Factor(ToBigInteger(args[0])).ToArray();
         }
     }
 }

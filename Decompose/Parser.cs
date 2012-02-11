@@ -199,6 +199,10 @@ namespace Decompose
         {
             public IList<ExpressionNode> Arguments { get; set; }
             public virtual object Call(Engine engine, params object[] args) { return null; }
+            public override object Get(Engine engine)
+            {
+                return Call(engine, Arguments.Select(arg => arg.Get(engine)).ToArray());
+            }
         }
         public class CollectionNode : ExpressionNode
         {
@@ -265,6 +269,10 @@ namespace Decompose
         {
             public ExpressionNode Callee { get; set; }
             public string MethodName { get; set; }
+            public override object Call(Engine engine, params object[] args)
+            {
+                return engine.CallMethod(Callee.Get(engine), MethodName, args);
+            }
         }
         public class EmptyNode : StatementNode { }
         public class ForEachNode : BlockNode
@@ -329,11 +337,25 @@ namespace Decompose
             { ">", Op.GreaterThan },
             { ">=", Op.GreaterThanOrEqual },
             { "??", Op.FirstNonNull },
+            { "**", Op.Pow },
             { "`int", Op.Int32 },
             { "`uint", Op.UInt32 },
             { "`long", Op.Int64 },
             { "`ulong", Op.UInt64 },
             { "`integer", Op.BigInteger },
+            { "`mod", Op.Modulo },
+        };
+        private static Dictionary<string, Op> functionOperatorMap = new Dictionary<string, Op>
+        {
+            { "`pow", Op.Pow },
+        };
+        private static Dictionary<Op, Op> modularOperatorMap = new Dictionary<Op, Op>
+        {
+            { Op.Plus, Op.ModularSum },
+            { Op.Minus, Op.ModularDifference },
+            { Op.Times, Op.ModularProduct },
+            { Op.Divide, Op.ModularQuotient },
+            { Op.Pow, Op.ModularPower },
         };
         private static Dictionary<string, AssignmentOp> assignmentOperatorMap = new Dictionary<string, AssignmentOp>
         {
@@ -354,6 +376,8 @@ namespace Decompose
 
         private static Dictionary<string, int> precedenceMap = new Dictionary<string, int>()
         {
+            { "**", 21 },
+
             { "*", 20 },
             { "%", 20},
             { "/", 20 },
@@ -383,6 +407,8 @@ namespace Decompose
 
             { ":", 9 },
             { "?", 8 },
+
+            { "`mod", 2 },
 
             { "=", 1 },
             { "+=", 1 },
@@ -753,7 +779,11 @@ namespace Decompose
             if (operatorMap.ContainsKey(token))
             {
                 var op = operatorMap[token];
-                if (op == Op.AndAnd)
+                if (op == Op.Modulo)
+                {
+                    operands.Push(ConvertToModularOperations(operand1, operand2));
+                }
+                else if (op == Op.AndAnd)
                     operands.Push(new ConditionalNode { Conditional = operand1, IfTrue = operand2, IfFalse = new ValueNode { Value = false } });
                 else if (op == Op.OrOr)
                     operands.Push(new ConditionalNode { Conditional = operand1, IfTrue = new ValueNode { Value = true }, IfFalse = operand2 });
@@ -781,6 +811,38 @@ namespace Decompose
             }
         }
 
+        private ExpressionNode ConvertToModularOperations(ExpressionNode node, ExpressionNode modulus)
+        {
+            if (node is OpNode)
+            {
+                var opNode = node as OpNode;
+                if (modularOperatorMap.ContainsKey(opNode.Op))
+                {
+                    var op = modularOperatorMap[opNode.Op];
+                    var operand1 = opNode.Operands[0];
+                    var operand2 = opNode.Operands[1];
+                    if (op == Op.ModularPower)
+                    {
+                        return new OpNode { Op = Op.ModularPower, Operands =
+                            {
+                                ConvertToModularOperations(operand1, modulus),
+                                operand2,
+                                modulus,
+                            }
+                        };
+                    }
+                    return new OpNode { Op = op, Operands =
+                        {
+                            ConvertToModularOperations(operand1, modulus),
+                            ConvertToModularOperations(operand2, modulus),
+                            modulus,
+                        }
+                    };
+                }
+            }
+            return new OpNode { Op = Op.Modulo, Operands = { node, modulus } };
+        }
+
         private ExpressionNode ParseUnary(int level)
         {
             var token = Tokens.Peek();
@@ -799,6 +861,11 @@ namespace Decompose
             {
                 Tokens.Dequeue();
                 return new OpNode { Op = operatorMap[token], Operands = { ParseUnary(level) } };
+            }
+            if (functionOperatorMap.ContainsKey(token))
+            {
+                Tokens.Dequeue();
+                return new OpNode { Op = functionOperatorMap[token], Operands = ParseArguments() };
             }
             if (token == "++" || token == "--")
             {

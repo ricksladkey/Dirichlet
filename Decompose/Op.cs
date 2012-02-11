@@ -17,6 +17,13 @@ namespace Decompose
         Mod,
         Divide,
         Negate,
+        Pow,
+
+        ModularSum,
+        ModularDifference,
+        ModularProduct,
+        ModularQuotient,
+        ModularPower,
 
         AndAnd,
         OrOr,
@@ -42,6 +49,8 @@ namespace Decompose
         Int64,
         UInt64,
         BigInteger,
+
+        Modulo,
 
         Comma,
         Conditional,
