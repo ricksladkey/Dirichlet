@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Numerics;
 
 namespace Decompose
 {
@@ -69,6 +70,11 @@ namespace Decompose
             public ExpressionNode LValue { get; set; }
             public ExpressionNode RValue { get; set; }
             public AssignmentOp Op { get; set; }
+            public override object Get(Engine engine)
+            {
+                if (Op == AssignmentOp.Assign) return LValue.Set(engine, RValue.Get(engine));
+                return LValue.Set(engine, engine.Operator(Op, LValue.Get(engine), RValue.Get(engine)));
+            }
         }
         public class EventNode : ExpressionNode
         {
@@ -132,6 +138,14 @@ namespace Decompose
         public class VariableNode : ExpressionNode
         {
             public string VariableName { get; set; }
+            public override object Get(Engine engine)
+            {
+                return engine.GetVariable(VariableName);
+            }
+            public override object Set(Engine engine, object value)
+            {
+                return engine.SetVariable(VariableName, value);
+            }
         }
         public class VarNode : StatementNode
         {
@@ -174,9 +188,7 @@ namespace Decompose
             public IList<ExpressionNode> Operands { get; set; }
             public override object Get(Engine engine)
             {
-                if (Op == Op.Plus)
-                    return (int)Operands[0].Get(engine) + (int)Operands[1].Get(engine);
-                return null;
+                return engine.Operator(Op, Operands.Select(operand => operand.Get(engine)).ToArray());
             }
         }
         public class IncrementNode : ExpressionNode
@@ -980,8 +992,8 @@ namespace Decompose
 
         private object ParseInt(string token)
         {
-            int i;
-            if (!int.TryParse(token, out i)) engine.Throw("bad int: " + token);
+            BigInteger i;
+            if (!BigInteger.TryParse(token, out i)) engine.Throw("bad int: " + token);
             return i;
         }
 
