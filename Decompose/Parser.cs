@@ -69,11 +69,9 @@ namespace Decompose
         {
             public ExpressionNode LValue { get; set; }
             public ExpressionNode RValue { get; set; }
-            public AssignmentOp Op { get; set; }
             public override object Get(Engine engine)
             {
-                if (Op == AssignmentOp.Assign) return LValue.Set(engine, RValue.Get(engine));
-                return LValue.Set(engine, engine.Operator(Op, LValue.Get(engine), RValue.Get(engine)));
+                return LValue.Set(engine, RValue.Get(engine));
             }
         }
         public class EventNode : ExpressionNode
@@ -248,6 +246,14 @@ namespace Decompose
         {
             public ExpressionNode Context { get; set; }
             public string PropertyName { get; set; }
+            public override object Get(Engine engine)
+            {
+                return engine.GetProperty(Context.Get(engine), PropertyName);
+            }
+            public override object Set(Engine engine, object value)
+            {
+                return engine.SetProperty(Context.Get(engine), PropertyName, value);
+            }
         }
         public class StaticMethodNode : CallNode
         {
@@ -303,6 +309,8 @@ namespace Decompose
             { "&=", AssignmentOp.BitwiseAndEquals },
             { "|=", AssignmentOp.BitwiseOrEquals },
             { "^=", AssignmentOp.BitwiseXorEquals },
+            { "<<=", AssignmentOp.LeftShiftEquals },
+            { ">>=", AssignmentOp.RightShiftEquals },
             { "++", AssignmentOp.Increment },
             { "--", AssignmentOp.Increment },
         };
@@ -705,7 +713,13 @@ namespace Decompose
             var operand2 = operands.Pop();
             var operand1 = operands.Pop();
             if (assignmentOperatorMap.ContainsKey(token))
-                operands.Push(new SetNode { LValue = operand1, Op = assignmentOperatorMap[token], RValue = operand2 });
+            {
+                var op = assignmentOperatorMap[token];
+                var rvalue = operand2;
+                if (op != AssignmentOp.Assign)
+                    rvalue = new OpNode { Op = (Op)assignmentOperatorMap[token], Operands = { operand1, operand2 } };
+                operands.Push(new SetNode { LValue = operand1, RValue = rvalue });
+            }
             else if (operatorMap.ContainsKey(token))
                 operands.Push(new OpNode { Op = operatorMap[token], Operands = { operand1, operand2 } });
             else if (token == ",")
@@ -722,6 +736,7 @@ namespace Decompose
         private ExpressionNode ParseUnary(int level)
         {
             var token = Tokens.Peek();
+            if (token == null) engine.Throw("missing expression");
             if (token == "+")
             {
                 Tokens.Dequeue();
@@ -1078,11 +1093,17 @@ namespace Decompose
             {
                 char c = Code[i];
                 string c2 = Code.Substring(i, Math.Min(2, Code.Length - i));
+                string c3 = Code.Substring(i, Math.Min(3, Code.Length - i));
                 if (char.IsWhiteSpace(c)) ++i;
                 else if (c2 == "/*")
                     i = EatMultiLineComment(i);
                 else if (c2 == "//")
                     i = EatSingleLineComment(i);
+                else if (operatorMap.ContainsKey(c3) || assignmentOperatorMap.ContainsKey(c3))
+                {
+                    Tokens.Enqueue(c3);
+                    i += 3;
+                }
                 else if (operatorMap.ContainsKey(c2) || assignmentOperatorMap.ContainsKey(c2) || c2 == "=>")
                 {
                     Tokens.Enqueue(c2);

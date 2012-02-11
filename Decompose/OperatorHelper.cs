@@ -19,16 +19,7 @@ namespace Decompose
                 case Op.Not:
                 case Op.Negate:
                 case Op.BitwiseNot:
-                case Op.IsNull:
-                case Op.NotIsNull:
-                case Op.IsZero:
-                case Op.NotIsZero:
-                case Op.ToString:
-                case Op.ToArray:
                     return 1;
-                case Op.Format:
-                case Op.GetItem:
-                case Op.SetItem:
                 case Op.New:
                 case Op.FirstNonNull:
                     return 0;
@@ -60,14 +51,11 @@ namespace Decompose
                 case Op.Divide:
                 case Op.AndAnd:
                 case Op.OrOr:
-                case Op.And:
-                case Op.Or:
                 case Op.BitwiseAnd:
                 case Op.BitwiseOr:
                 case Op.BitwiseXor:
                 case Op.LeftShift:
                 case Op.RightShift:
-                case Op.GetProperty:
                     return true;
             }
             return false;

@@ -21,8 +21,6 @@ namespace Decompose
         AndAnd,
         OrOr,
 
-        And,
-        Or,
         Not,
 
         BitwiseAnd,
@@ -44,25 +42,7 @@ namespace Decompose
         FirstNonNull,
         As,
         Is,
-        Equate,
-        Compare,
-        ToArray,
-        GetProperty,
-        SetProperty,
-        GetItem,
-        SetItem,
         New,
-
-        IsNull,
-        NotIsNull,
-        ToString,
-        IsZero,
-        NotIsZero,
-        GreaterThanZero,
-        LessThanZero,
-        GreaterThanOrEqualToZero,
-        LessThanOrEqualToZero,
-        Format,
     }
 
     /// <summary>

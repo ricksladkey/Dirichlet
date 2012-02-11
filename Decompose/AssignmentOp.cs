@@ -17,11 +17,11 @@ namespace Decompose
         TimesEquals = Op.Times,
         ModEquals = Op.Mod,
         DivideEquals = Op.Divide,
-        AndEquals = Op.And,
-        OrEquals = Op.Or,
         BitwiseAndEquals = Op.BitwiseAnd,
         BitwiseOrEquals = Op.BitwiseOr,
         BitwiseXorEquals = Op.BitwiseXor,
+        LeftShiftEquals = Op.LeftShift,
+        RightShiftEquals = Op.RightShift,
 
         Increment = 1000,
         Decrement,
