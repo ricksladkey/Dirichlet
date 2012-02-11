@@ -37,6 +37,12 @@ namespace Decompose
         GreaterThan,
         GreaterThanOrEqual,
 
+        Int32,
+        UInt32,
+        Int64,
+        UInt64,
+        BigInteger,
+
         Comma,
         Conditional,
         FirstNonNull,

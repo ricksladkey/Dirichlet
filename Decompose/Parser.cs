@@ -132,6 +132,15 @@ namespace Decompose
                 return result;
             }
         }
+        public class FirstNonNullNode : ExpressionNode
+        {
+            public ExpressionNode Operand1 { get; set; }
+            public ExpressionNode Operand2 { get; set; }
+            public override object Get(Engine engine)
+            {
+                return Operand1.Get(engine) ?? Operand2.Get(engine);
+            }
+        }
         public class LastNode : ExpressionNode
         {
             public ExpressionNode Operand1 { get; set; }
@@ -337,6 +346,15 @@ namespace Decompose
             { "++", AssignmentOp.Increment },
             { "--", AssignmentOp.Increment },
         };
+        private static Dictionary<string, Op> keywordOperatorMap = new Dictionary<string, Op>
+        {
+            { "int", Op.Int32 },
+            { "uint", Op.UInt32 },
+            { "long", Op.Int64 },
+            { "ulong", Op.UInt64 },
+            { "integer", Op.BigInteger },
+        };
+
         private static Dictionary<string, int> precedenceMap = new Dictionary<string, int>()
         {
             { "*", 20 },
@@ -708,7 +726,7 @@ namespace Decompose
             {
                 var token = Tokens.Peek();
                 if (token == null) break;
-                if (assignmentOperatorMap.ContainsKey(token) || operatorMap.ContainsKey(token))
+                if (assignmentOperatorMap.ContainsKey(token) || operatorMap.ContainsKey(token) || keywordOperatorMap.ContainsKey(token))
                     Tokens.Dequeue();
                 else if ((token == "," && !noComma) || token == "?" || token == ":")
                     Tokens.Dequeue();
@@ -735,7 +753,19 @@ namespace Decompose
             var token = operators.Pop();
             var operand2 = operands.Pop();
             var operand1 = operands.Pop();
-            if (assignmentOperatorMap.ContainsKey(token))
+            if (operatorMap.ContainsKey(token))
+            {
+                var op = operatorMap[token];
+                if (op == Op.AndAnd)
+                    operands.Push(new ConditionalNode { Conditional = operand1, IfTrue = operand2, IfFalse = new ValueNode { Value = false } });
+                else if (op == Op.OrOr)
+                    operands.Push(new ConditionalNode { Conditional = operand1, IfTrue = new ValueNode { Value = true }, IfFalse = operand2 });
+                else if (op == Op.FirstNonNull)
+                    operands.Push(new FirstNonNullNode { Operand1 = operand1, Operand2 = operand2 });
+                else
+                    operands.Push(new OpNode { Op = operatorMap[token], Operands = { operand1, operand2 } });
+            }
+            else if (assignmentOperatorMap.ContainsKey(token))
             {
                 var op = assignmentOperatorMap[token];
                 var rvalue = operand2;
@@ -743,16 +773,8 @@ namespace Decompose
                     rvalue = new OpNode { Op = (Op)assignmentOperatorMap[token], Operands = { operand1, operand2 } };
                 operands.Push(new SetNode { LValue = operand1, RValue = rvalue });
             }
-            else if (operatorMap.ContainsKey(token))
-            {
-                var op = operatorMap[token];
-                if (op == Op.AndAnd)
-                    operands.Push(new ConditionalNode { Conditional = operand1, IfTrue = operand2, IfFalse = new ValueNode { Value = false } });
-                else if (op == Op.OrOr)
-                    operands.Push(new ConditionalNode { Conditional = operand1, IfTrue = new ValueNode { Value = true }, IfFalse = operand2 });
-                else
-                    operands.Push(new OpNode { Op = operatorMap[token], Operands = { operand1, operand2 } });
-            }
+            else if (keywordOperatorMap.ContainsKey(token))
+                operands.Push(new OpNode { Op = keywordOperatorMap[token], Operands = { operand1, operand2 } });
             else if (token == ",")
                 operands.Push(new LastNode { Operand1 = operand1, Operand2 = operand2 });
             else if (token == ":")
@@ -782,6 +804,11 @@ namespace Decompose
             {
                 Tokens.Dequeue();
                 return new OpNode { Op = operatorMap[token], Operands = { ParseUnary(level) } };
+            }
+            if (token[0] == '`' && keywordOperatorMap.ContainsKey(token.Substring(1)))
+            {
+                Tokens.Dequeue();
+                return new OpNode { Op = keywordOperatorMap[token.Substring(1)], Operands = { ParseUnary(level) } };
             }
             if (token == "++" || token == "--")
             {

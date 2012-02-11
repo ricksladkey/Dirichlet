@@ -34,16 +34,21 @@ namespace Decompose
             {
                 if (binaryOps.ContainsKey(op))
                     return binaryOps[op](args[0], args[1]);
+                if (op == Op.Not || op == Op.BitwiseNot)
+                    return !args[0];
                 throw new NotImplementedException();
             }
         }
 
         private class IntegerOperatorMap<T> : OperatorMap<T>
         {
+            private Dictionary<Op, Func<T, object>> unaryOps = new Dictionary<Op, Func<T, object>>();
             private Dictionary<Op, Func<T, T, object>> binaryOps = new Dictionary<Op, Func<T, T, object>>();
             public IntegerOperatorMap()
             {
                 var ops = Operations.Get<T>();
+                unaryOps.Add(Op.Negate, a => ops.Negate(a));
+                unaryOps.Add(Op.BitwiseNot, a => ops.Not(a));
                 binaryOps.Add(Op.Plus, (a, b) => ops.Add(a, b));
                 binaryOps.Add(Op.Minus, (a, b) => ops.Subtract(a, b));
                 binaryOps.Add(Op.Times, (a, b) => ops.Multiply(a, b));
@@ -63,6 +68,8 @@ namespace Decompose
             }
             public override object Operator(Op op, params T[] args)
             {
+                if (unaryOps.ContainsKey(op))
+                    return unaryOps[op](args[0]);
                 if (binaryOps.ContainsKey(op))
                     return binaryOps[op](args[0], args[1]);
                 throw new NotImplementedException();
@@ -80,22 +87,31 @@ namespace Decompose
             SetVariable(ContextKey, new Dictionary<string, object>());
         }
 
+        private Dictionary<Op, Func<object, object>> opMapCast = new Dictionary<Op, Func<object, object>>
+        {
+            { Op.Int32, a => ToInt32(a) },
+            { Op.BigInteger, a => ToBigInteger(a) },
+        };
+
         private OperatorMap<bool> opMapBoolean = new BooleanOperatorMap();
         private OperatorMap<int> opMapInt32 = new IntegerOperatorMap<int>();
         private OperatorMap<BigInteger> opMapBigInteger = new IntegerOperatorMap<BigInteger>();
 
         public object Operator(Op op, params object[] args)
         {
-            if (args[0] is BigInteger || args[1] is BigInteger)
+            if (opMapCast.ContainsKey(op))
+                return opMapCast[op](args[0]);
+            var n = args.Length;
+            if (args[0] is BigInteger || n >= 2 && args[1] is BigInteger)
                 return opMapBigInteger.Operator(op, args.Select(arg => ToBigInteger(arg)).ToArray());
-            if (args[0] is int || args[1] is int)
+            if (args[0] is int || n >= 2 && args[1] is int)
                 return opMapInt32.Operator(op, args.Select(arg => ToInt32(arg)).ToArray());
-            if (args[0] is bool || args[1] is bool)
+            if (args[0] is bool || n >= 2 && args[1] is bool)
                 return opMapBoolean.Operator(op, args.Select(arg => (bool)arg).ToArray());
             throw new NotImplementedException();
         }
 
-        public int ToInt32(object value)
+        public static int ToInt32(object value)
         {
             if (value is int)
                 return (int)value;
@@ -110,7 +126,7 @@ namespace Decompose
             throw new NotImplementedException();
         }
 
-        public BigInteger ToBigInteger(object value)
+        public static BigInteger ToBigInteger(object value)
         {
             if (value is int)
                 return (int)value;
@@ -146,6 +162,8 @@ namespace Decompose
         {
             if (context is Dictionary<string, object>)
                 return (context as Dictionary<string, object>)[name];
+            if (name == "Type")
+                return context.GetType().Name;
             throw new NotImplementedException();
         }
 
