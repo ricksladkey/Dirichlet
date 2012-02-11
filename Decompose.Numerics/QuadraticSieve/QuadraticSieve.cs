@@ -1,4 +1,7 @@
-﻿using System;
+﻿#define USE_RECIPROCAL
+#undef USE_INVERSE
+
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -211,8 +214,10 @@ namespace Decompose.Numerics
 #if USE_RECIPROCAL
             public long Reciprocal { get; set; }
 #endif
+#if USE_INVERSE
             public uint PInv { get; set; }
             public uint QMax { get; set; }
+#endif
             public FactorBaseEntry(int p, BigInteger n)
             {
                 P = p;
@@ -229,8 +234,10 @@ namespace Decompose.Numerics
                     Debug.Assert(Reciprocal * p <= ((long)1 << reciprocalShift) + (1 << reciprocalShift / 2));
                 }
 #endif
+#if USE_INVERSE
                 PInv = IntegerMath.ModularInversePowerOfTwoModulus((uint)P, 32);
                 QMax = uint.MaxValue / (uint)P;
+#endif
             }
             public override string ToString()
             {
@@ -247,9 +254,11 @@ namespace Decompose.Numerics
 #if USE_RECIPROCAL
             public long Reciprocal { get; set; }
 #endif
+#if USE_INVERSE
             public uint PInv { get; set; }
             public uint QMax { get; set; }
             public uint OffsetDiffInv { get; set; }
+#endif
         }
 
         private struct CountEntry
@@ -967,9 +976,11 @@ namespace Decompose.Numerics
 #if USE_RECIPROCAL
                 offsets[i].Reciprocal = entry.Reciprocal;
 #endif
+#if USE_INVERSE
                 offsets[i].PInv = entry.PInv;
                 offsets[i].QMax = entry.QMax;
                 offsets[i].OffsetDiffInv = (uint)(offsets[i].P + offsets[i].Offset1 - offsets[i].Offset2) * offsets[i].PInv;
+#endif
                 Debug.Assert(offsets[i].Offset1 >= 0 && polynomial.Evaluate(x + offsets[i].Offset1) % p == 0);
                 Debug.Assert(offsets[i].Offset2 >= 0 && polynomial.Evaluate(x + offsets[i].Offset2) % p == 0);
             }
@@ -1863,6 +1874,7 @@ namespace Decompose.Numerics
                     continue;
                 }
 #endif
+#if USE_INVERSE
 #if false
                 var pInv = offsets[i].PInv;
                 var qMax = offsets[i].QMax;
@@ -1880,6 +1892,7 @@ namespace Decompose.Numerics
                     Debug.Assert(y % p != 0);
                     continue;
                 }
+#endif
 #endif
                 Debug.Assert(y % p == 0);
                 do
