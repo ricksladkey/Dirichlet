@@ -90,6 +90,9 @@ namespace Decompose
         private Dictionary<Op, Func<object, object>> opMapCast = new Dictionary<Op, Func<object, object>>
         {
             { Op.Int32, a => ToInt32(a) },
+            { Op.UInt32, a => ToUInt32(a) },
+            { Op.Int64, a => ToInt64(a) },
+            { Op.UInt64, a => ToUInt64(a) },
             { Op.BigInteger, a => ToBigInteger(a) },
         };
 
@@ -111,10 +114,25 @@ namespace Decompose
             throw new NotImplementedException();
         }
 
+        public static BigInteger ToBigInteger(object value)
+        {
+            if (value is int)
+                return (BigInteger)(int)value;
+            if (value is uint)
+                return (BigInteger)(uint)value;
+            if (value is long)
+                return (BigInteger)(long)value;
+            if (value is ulong)
+                return (BigInteger)(ulong)value;
+            if (value is BigInteger)
+                return (BigInteger)(BigInteger)value;
+            throw new NotImplementedException();
+        }
+
         public static int ToInt32(object value)
         {
             if (value is int)
-                return (int)value;
+                return (int)(int)value;
             if (value is uint)
                 return (int)(uint)value;
             if (value is long)
@@ -126,18 +144,48 @@ namespace Decompose
             throw new NotImplementedException();
         }
 
-        public static BigInteger ToBigInteger(object value)
+        public static uint ToUInt32(object value)
         {
             if (value is int)
-                return (int)value;
+                return (uint)(int)value;
             if (value is uint)
-                return (uint)value;
+                return (uint)(uint)value;
             if (value is long)
-                return (long)value;
+                return (uint)(long)value;
             if (value is ulong)
-                return (ulong)value;
+                return (uint)(ulong)value;
             if (value is BigInteger)
-                return (BigInteger)value;
+                return (uint)(BigInteger)value;
+            throw new NotImplementedException();
+        }
+
+        public static long ToInt64(object value)
+        {
+            if (value is int)
+                return (long)(int)value;
+            if (value is uint)
+                return (long)(uint)value;
+            if (value is long)
+                return (long)(long)value;
+            if (value is ulong)
+                return (long)(ulong)value;
+            if (value is BigInteger)
+                return (long)(BigInteger)value;
+            throw new NotImplementedException();
+        }
+
+        public static ulong ToUInt64(object value)
+        {
+            if (value is int)
+                return (ulong)(int)value;
+            if (value is uint)
+                return (ulong)(uint)value;
+            if (value is long)
+                return (ulong)(long)value;
+            if (value is ulong)
+                return (ulong)(ulong)value;
+            if (value is BigInteger)
+                return (ulong)(BigInteger)value;
             throw new NotImplementedException();
         }
 
