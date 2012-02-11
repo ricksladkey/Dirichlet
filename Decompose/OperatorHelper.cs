@@ -19,6 +19,11 @@ namespace Decompose
                 case Op.Not:
                 case Op.Negate:
                 case Op.BitwiseNot:
+                case Op.Int32:
+                case Op.UInt32:
+                case Op.Int64:
+                case Op.UInt64:
+                case Op.BigInteger:
                     return 1;
                 case Op.New:
                 case Op.FirstNonNull:

@@ -329,6 +329,11 @@ namespace Decompose
             { ">", Op.GreaterThan },
             { ">=", Op.GreaterThanOrEqual },
             { "??", Op.FirstNonNull },
+            { "`int", Op.Int32 },
+            { "`uint", Op.UInt32 },
+            { "`long", Op.Int64 },
+            { "`ulong", Op.UInt64 },
+            { "`integer", Op.BigInteger },
         };
         private static Dictionary<string, AssignmentOp> assignmentOperatorMap = new Dictionary<string, AssignmentOp>
         {
@@ -345,14 +350,6 @@ namespace Decompose
             { ">>=", AssignmentOp.RightShiftEquals },
             { "++", AssignmentOp.Increment },
             { "--", AssignmentOp.Increment },
-        };
-        private static Dictionary<string, Op> keywordOperatorMap = new Dictionary<string, Op>
-        {
-            { "int", Op.Int32 },
-            { "uint", Op.UInt32 },
-            { "long", Op.Int64 },
-            { "ulong", Op.UInt64 },
-            { "integer", Op.BigInteger },
         };
 
         private static Dictionary<string, int> precedenceMap = new Dictionary<string, int>()
@@ -726,7 +723,7 @@ namespace Decompose
             {
                 var token = Tokens.Peek();
                 if (token == null) break;
-                if (assignmentOperatorMap.ContainsKey(token) || operatorMap.ContainsKey(token) || keywordOperatorMap.ContainsKey(token))
+                if (assignmentOperatorMap.ContainsKey(token) || operatorMap.ContainsKey(token))
                     Tokens.Dequeue();
                 else if ((token == "," && !noComma) || token == "?" || token == ":")
                     Tokens.Dequeue();
@@ -773,8 +770,6 @@ namespace Decompose
                     rvalue = new OpNode { Op = (Op)assignmentOperatorMap[token], Operands = { operand1, operand2 } };
                 operands.Push(new SetNode { LValue = operand1, RValue = rvalue });
             }
-            else if (keywordOperatorMap.ContainsKey(token))
-                operands.Push(new OpNode { Op = keywordOperatorMap[token], Operands = { operand1, operand2 } });
             else if (token == ",")
                 operands.Push(new LastNode { Operand1 = operand1, Operand2 = operand2 });
             else if (token == ":")
@@ -804,11 +799,6 @@ namespace Decompose
             {
                 Tokens.Dequeue();
                 return new OpNode { Op = operatorMap[token], Operands = { ParseUnary(level) } };
-            }
-            if (token[0] == '`' && keywordOperatorMap.ContainsKey(token.Substring(1)))
-            {
-                Tokens.Dequeue();
-                return new OpNode { Op = keywordOperatorMap[token.Substring(1)], Operands = { ParseUnary(level) } };
             }
             if (token == "++" || token == "--")
             {
