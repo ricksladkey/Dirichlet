@@ -31,7 +31,7 @@ namespace Sandbox
                 //MsieveTest();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                //QuadraticSieveStandardTest();
+                QuadraticSieveStandardTest();
                 //QuadraticSieveDebugTest();
                 //QuadraticSieveFactorTest();
                 //CunninghamTest();
@@ -42,7 +42,7 @@ namespace Sandbox
                 //ModularInverseTest1();
                 //ModularInverseTest2();
                 //PrimalityTest();
-                OperationsTest();
+                //OperationsTest();
                 //DivisionTest1();
                 //DivisionTest2();
             }
