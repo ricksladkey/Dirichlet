@@ -32,7 +32,7 @@ namespace Sandbox
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
                 //QuadraticSieveStandardTest();
-                QuadraticSieveDebugTest();
+                //QuadraticSieveDebugTest();
                 //QuadraticSieveFactorTest();
                 //CunninghamTest();
                 //GaussianEliminationTest1();
@@ -42,7 +42,7 @@ namespace Sandbox
                 //ModularInverseTest1();
                 //ModularInverseTest2();
                 //PrimalityTest();
-                //OperationsTest();
+                OperationsTest();
                 //DivisionTest1();
                 //DivisionTest2();
             }
@@ -452,10 +452,10 @@ namespace Sandbox
 #endif
                 Diagnostics = QuadraticSieve.Diag.Verbose,
                 DiagnosticsOutput = output,
-                //ReportingInterval = 60,
-                //MergeLimit = 10,
+                ReportingInterval = 60,
+                MergeLimit = 10,
                 //ProcessPartialPartialRelations = true,
-                ThresholdExponent = 2.5,
+                ThresholdExponent = 2.6,
 
                 //FactorBaseSize = 14000,
                 //BlockSize = 64 * 1024,
@@ -463,11 +463,11 @@ namespace Sandbox
                 //CofactorCutoff = 4096 * 4,
                 //ErrorLimit = 1,
                 //NumberOfFactors = 12,
-                UseCountTable = true,
+                //UseCountTable = true,
                 //CofactorCutoff = 1024,
-                SieveTimeLimit = 10,
+                SieveTimeLimit = 120,
             };
-            var i = 40;
+            var i = 50;
             var sample = samples[i];
             var p = sample.P;
             var q = sample.Q;
