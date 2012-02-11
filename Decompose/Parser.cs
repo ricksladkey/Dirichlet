@@ -9,11 +9,12 @@ namespace Decompose
 {
     public enum CodeType
     {
+        Expression,
+        Statement,
         Call,
         Event,
         Script,
         Set,
-        Statement,
         Variable,
     }
 
@@ -34,21 +35,9 @@ namespace Decompose
             IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
         }
 
-        public enum TraceFlags
-        {
-            Path,
-        }
-
-        public class Engine
-        {
-            public static string AttachedKey { get { return "@Attached"; } }
-            public static string ContextKey { get { return "@Context"; } }
-            public static string AssociatedObjectKey { get { return "@AssociatedObject"; } }
-            public object Throw(string message) { throw new Exception(message); return null; }
-            public void Trace(TraceFlags flags, string message, params object[] args) { }
-        }
         public class Node
         {
+            public virtual object Get(Engine engine) { return null; }
         }
         public class InitializerProperty
         {
@@ -70,6 +59,10 @@ namespace Decompose
         public class PathNode : Node
         {
             public ExpressionNode Path { get; set; }
+            public override object Get(Engine engine)
+            {
+                return Path.Get(engine);
+            }
         }
         public class SetNode : ExpressionNode
         {
@@ -85,7 +78,6 @@ namespace Decompose
         }
         public class ExpressionNode : StatementNode
         {
-            public virtual object Get(Engine engine) { return null; }
             public virtual object Set(Engine engine, object value) { return null; }
         }
         public class IfNode : StatementNode
@@ -124,11 +116,18 @@ namespace Decompose
         public class ValueNode : ExpressionNode
         {
             public object Value { get; set; }
+            public override object Get(Engine engine)
+            {
+                return Value;
+            }
         }
         public class ScriptNode : StatementNode
         {
             public IList<StatementNode> Nodes { get; set; }
-            public virtual void Execute(Engine engine) { }
+            public override object Get(Engine engine)
+            {
+                return Nodes.Select(node => node.Get(engine)).Last();
+            }
         }
         public class VariableNode : ExpressionNode
         {
@@ -173,6 +172,12 @@ namespace Decompose
             public OpNode() { Operands = new List<ExpressionNode>(); }
             public Op Op { get; set; }
             public IList<ExpressionNode> Operands { get; set; }
+            public override object Get(Engine engine)
+            {
+                if (Op == Op.Plus)
+                    return (int)Operands[0].Get(engine) + (int)Operands[1].Get(engine);
+                return null;
+            }
         }
         public class IncrementNode : ExpressionNode
         {
@@ -438,7 +443,7 @@ namespace Decompose
         {
             engine.Trace(TraceFlags.Path, "Code: Execute {0}", Code);
             if (!(Root is ScriptNode)) engine.Throw("not a script");
-            (Root as ScriptNode).Execute(engine);
+            (Root as ScriptNode).Get(engine);
         }
 
         private PathNode ParsePath()

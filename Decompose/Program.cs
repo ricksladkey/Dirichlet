@@ -15,6 +15,17 @@ namespace Decompose
     {
         static void Main(string[] args)
         {
+            var engine = new Engine();
+            while (true)
+            {
+                Console.Write(">> ");
+                var text = Console.ReadLine();
+                if (text == null)
+                    break;
+                var value = new Parser().Compile(null, CodeType.Statement, text).Root.Get(engine);
+                if (value != null)
+                    Console.WriteLine(value);
+            }
         }
     }
 }

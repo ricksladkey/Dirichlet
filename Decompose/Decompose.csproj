@@ -107,6 +107,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssignmentOp.cs" />
+    <Compile Include="Engine.cs" />
     <Compile Include="Op.cs" />
     <Compile Include="OperatorHelper.cs" />
     <Compile Include="Parser.cs" />
