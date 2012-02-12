@@ -213,6 +213,10 @@ namespace Decompose
         {
             public string VariableName { get; set; }
             public ExpressionNode Value { get; set; }
+            public override object Get(Engine engine)
+            {
+                return engine.SetVariable(VariableName, Value.Get(engine));
+            }
         }
         public class ItemNode : ExpressionNode
         {
@@ -285,6 +289,15 @@ namespace Decompose
         {
             public ExpressionNode Collection { get; set; }
             public string VariableName { get; set; }
+            public override object Get(Engine engine)
+            {
+                foreach (var item in Collection.Get(engine) as IEnumerable)
+                {
+                    engine.SetVariable(VariableName, item);
+                    Body.Get(engine);
+                }
+                return null;
+            }
         }
         public class DictionaryNode : ExpressionNode
         {
@@ -349,6 +362,7 @@ namespace Decompose
             { "`long", Op.Int64 },
             { "`ulong", Op.UInt64 },
             { "`integer", Op.BigInteger },
+            { "`rand", Op.Random },
             { "`mod", Op.Modulo },
         };
         private static Dictionary<string, Op> functionOperatorMap = new Dictionary<string, Op>
@@ -776,7 +790,7 @@ namespace Decompose
         private bool ShouldPerformOperation(string o1, string o2)
         {
             var delta = precedenceMap[o1] - precedenceMap[o2];
-            bool rightAssociative = assignmentOperatorMap.ContainsKey(o1) || o1 == ":";
+            bool rightAssociative = assignmentOperatorMap.ContainsKey(o1) || o1 == ":" || o1 == "**";
             return rightAssociative ? delta < 0 : delta <= 0;
         }
 

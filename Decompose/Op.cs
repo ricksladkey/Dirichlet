@@ -54,6 +54,7 @@ namespace Decompose
         Int64,
         UInt64,
         BigInteger,
+        Random,
 
         Modulo,
 

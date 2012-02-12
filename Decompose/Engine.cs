@@ -45,11 +45,13 @@ namespace Decompose
             private Dictionary<Op, Func<T, object>> unaryOps = new Dictionary<Op, Func<T, object>>();
             private Dictionary<Op, Func<T, T, object>> binaryOps = new Dictionary<Op, Func<T, T, object>>();
             private Dictionary<Op, Func<T, T, T, object>> ternaryOps = new Dictionary<Op, Func<T, T, T, object>>();
-            public IntegerOperatorMap()
+            public IntegerOperatorMap(IRandomNumberGenerator generator)
             {
                 var ops = Operations.Get<T>();
+                var rand = generator.Create<T>();
                 unaryOps.Add(Op.Negate, a => ops.Negate(a));
                 unaryOps.Add(Op.OnesComplement, a => ops.OnesComplement(a));
+                unaryOps.Add(Op.Random, a => rand.Next(a));
                 binaryOps.Add(Op.Plus, (a, b) => ops.Add(a, b));
                 binaryOps.Add(Op.Minus, (a, b) => ops.Subtract(a, b));
                 binaryOps.Add(Op.Times, (a, b) => ops.Multiply(a, b));
@@ -111,10 +113,30 @@ namespace Decompose
         public object Throw(string message) { throw new Exception(message); }
         public void Trace(TraceFlags flags, string message, params object[] args) { }
 
-        private object globalContext = new Dictionary<string, object>();
+        private object globalContext;
+        private RandomNumberGenerator generator;
+        private OperatorMap<bool> opMapBoolean;
+        private OperatorMap<int> opMapInt32;
+        private OperatorMap<uint> opMapUInt32;
+        private OperatorMap<long> opMapInt64;
+        private OperatorMap<ulong> opMapUInt64;
+        private OperatorMap<BigInteger> opMapBigInteger;
+        private Dictionary<string, object> variables;
+        private Dictionary<string, Func<object[], object>> globalMethods;
 
         public Engine()
         {
+            globalContext = new Dictionary<string, object>();
+            generator = new MersenneTwister(0);
+            opMapBoolean = new BooleanOperatorMap();
+            opMapInt32 = new IntegerOperatorMap<int>(generator);
+            opMapUInt32 = new IntegerOperatorMap<uint>(generator);
+            opMapInt64 = new IntegerOperatorMap<long>(generator);
+            opMapUInt64 = new IntegerOperatorMap<ulong>(generator);
+            opMapBigInteger = new IntegerOperatorMap<BigInteger>(generator);
+            variables = new Dictionary<string, object>();
+            globalMethods = new Dictionary<string, Func<object[], object>>();
+
             SetVariable(ContextKey, globalContext);
             AddGlobalMethods();
         }
@@ -128,9 +150,6 @@ namespace Decompose
             { Op.BigInteger, a => ToBigInteger(a) },
         };
 
-        private OperatorMap<bool> opMapBoolean = new BooleanOperatorMap();
-        private OperatorMap<int> opMapInt32 = new IntegerOperatorMap<int>();
-        private OperatorMap<BigInteger> opMapBigInteger = new IntegerOperatorMap<BigInteger>();
 
         public object Operator(Op op, params object[] args)
         {
@@ -139,6 +158,12 @@ namespace Decompose
             var n = args.Length;
             if (args[0] is BigInteger || n >= 2 && args[1] is BigInteger)
                 return opMapBigInteger.Operator(op, args.Select(arg => ToBigInteger(arg)).ToArray());
+            if (args[0] is ulong || n >= 2 && args[1] is ulong)
+                return opMapUInt64.Operator(op, args.Select(arg => ToUInt64(arg)).ToArray());
+            if (args[0] is long || n >= 2 && args[1] is long)
+                return opMapInt64.Operator(op, args.Select(arg => ToInt64(arg)).ToArray());
+            if (args[0] is uint || n >= 2 && args[1] is uint)
+                return opMapUInt32.Operator(op, args.Select(arg => ToUInt32(arg)).ToArray());
             if (args[0] is int || n >= 2 && args[1] is int)
                 return opMapInt32.Operator(op, args.Select(arg => ToInt32(arg)).ToArray());
             if (args[0] is bool || n >= 2 && args[1] is bool)
@@ -226,11 +251,11 @@ namespace Decompose
             return null;
         }
 
-        private Dictionary<string, object> variables = new Dictionary<string, object>();
-
         public object GetVariable(string name)
         {
-            return variables[name];
+            if (variables.ContainsKey(name))
+                return variables[name];
+            throw new InvalidOperationException("unknown variable: " + name);
         }
 
         public object SetVariable(string name, object value)
@@ -241,7 +266,12 @@ namespace Decompose
         public object GetProperty(object context, string name)
         {
             if (context is Dictionary<string, object>)
-                return (context as Dictionary<string, object>)[name];
+            {
+                var dict = context as Dictionary<string, object>;
+                if (dict.ContainsKey(name))
+                    return dict[name];
+                throw new InvalidOperationException("unknown property: " + name);
+            }
             if (name == "Type")
                 return context.GetType().Name;
             throw new NotImplementedException();
@@ -254,8 +284,6 @@ namespace Decompose
             throw new NotImplementedException();
         }
 
-        private Dictionary<string, Func<object[], object>> globalMethods = new Dictionary<string, Func<object[], object>>();
-
         public object CallMethod(object context, string name, params object[] args)
         {
             if (context == globalContext)
@@ -266,13 +294,15 @@ namespace Decompose
                     return method(args);
                 }
             }
-            return null;
+            throw new InvalidOperationException("unknown function: " + name);
         }
 
         private void AddGlobalMethods()
         {
             globalMethods.Add("exit", Exit);
             globalMethods.Add("print", Print);
+            globalMethods.Add("isprime", IsPrime);
+            globalMethods.Add("nextprime", NextPrime);
             globalMethods.Add("factor", Factor);
         }
 
@@ -287,9 +317,21 @@ namespace Decompose
             var value = args[0];
             if (value is IEnumerable)
                 Console.WriteLine(string.Join(", ", (value as IEnumerable).Cast<object>().Select(item => item.ToString())));
+            else if (value is bool)
+                Console.WriteLine((bool)value ? "true" : "false");
             else
                 Console.WriteLine(value);
             return value;
+        }
+
+        public object IsPrime(params object[] args)
+        {
+            return IntegerMath.IsPrime(ToBigInteger(args[0]));
+        }
+
+        public object NextPrime(params object[] args)
+        {
+            return IntegerMath.NextPrime(ToBigInteger(args[0]));
         }
 
         public object Factor(params object[] args)
