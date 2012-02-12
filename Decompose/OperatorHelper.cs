@@ -18,7 +18,7 @@ namespace Decompose
             {
                 case Op.Not:
                 case Op.Negate:
-                case Op.BitwiseNot:
+                case Op.OnesComplement:
                 case Op.Int32:
                 case Op.UInt32:
                 case Op.Int64:
@@ -26,7 +26,7 @@ namespace Decompose
                 case Op.BigInteger:
                     return 1;
                 case Op.New:
-                case Op.FirstNonNull:
+                case Op.NullCoalescing:
                     return 0;
                 default:
                     return 2;
@@ -56,9 +56,9 @@ namespace Decompose
                 case Op.Divide:
                 case Op.AndAnd:
                 case Op.OrOr:
-                case Op.BitwiseAnd:
-                case Op.BitwiseOr:
-                case Op.BitwiseXor:
+                case Op.And:
+                case Op.Or:
+                case Op.ExclusiveOr:
                 case Op.LeftShift:
                 case Op.RightShift:
                     return true;

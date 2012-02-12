@@ -330,10 +330,10 @@ namespace Decompose
             { "&&", Op.AndAnd },
             { "||", Op.OrOr },
             { "!", Op.Not },
-            { "&", Op.BitwiseAnd },
-            { "|", Op.BitwiseOr },
-            { "^", Op.BitwiseXor },
-            { "~", Op.BitwiseNot },
+            { "&", Op.And },
+            { "|", Op.Or },
+            { "^", Op.ExclusiveOr },
+            { "~", Op.OnesComplement },
             { "<<", Op.LeftShift },
             { ">>", Op.RightShift },
             { "==", Op.Equals },
@@ -342,7 +342,7 @@ namespace Decompose
             { "<=", Op.LessThanOrEqual },
             { ">", Op.GreaterThan },
             { ">=", Op.GreaterThanOrEqual },
-            { "??", Op.FirstNonNull },
+            { "??", Op.NullCoalescing },
             { "**", Op.Power },
             { "`int", Op.Int32 },
             { "`uint", Op.UInt32 },
@@ -417,17 +417,17 @@ namespace Decompose
             { ":", 9 },
             { "?", 8 },
 
-            { "`mod", 2 },
+            { "=", 2 },
+            { "+=", 2 },
+            { "-=", 2 },
+            { "*=", 2 },
+            { "%=", 2 },
+            { "/=", 2 },
+            { "&=", 2 },
+            { "|=", 2 },
+            { "^=", 2 },
 
-            { "=", 1 },
-            { "+=", 1 },
-            { "-=", 1 },
-            { "*=", 1 },
-            { "%=", 1 },
-            { "/=", 1 },
-            { "&=", 1 },
-            { "|=", 1 },
-            { "^=", 1 },
+            { "`mod", 1 },
 
             { ",", 0 },
 
@@ -796,7 +796,7 @@ namespace Decompose
                     operands.Push(new ConditionalNode { Conditional = operand1, IfTrue = operand2, IfFalse = new ValueNode { Value = false } });
                 else if (op == Op.OrOr)
                     operands.Push(new ConditionalNode { Conditional = operand1, IfTrue = new ValueNode { Value = true }, IfFalse = operand2 });
-                else if (op == Op.FirstNonNull)
+                else if (op == Op.NullCoalescing)
                     operands.Push(new FirstNonNullNode { Operand1 = operand1, Operand2 = operand2 });
                 else
                     operands.Push(new OpNode { Op = operatorMap[token], Operands = { operand1, operand2 } });
@@ -822,6 +822,11 @@ namespace Decompose
 
         private ExpressionNode ConvertToModularOperations(ExpressionNode node, ExpressionNode modulus)
         {
+            if (node is SetNode)
+            {
+                var setNode = node as SetNode;
+                return new SetNode { LValue = setNode.LValue, RValue = ConvertToModularOperations(setNode.RValue, modulus) };
+            }
             if (node is OpNode)
             {
                 var opNode = node as OpNode;

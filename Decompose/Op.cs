@@ -35,10 +35,10 @@ namespace Decompose
 
         Not,
 
-        BitwiseAnd,
-        BitwiseOr,
-        BitwiseXor,
-        BitwiseNot,
+        And,
+        Or,
+        ExclusiveOr,
+        OnesComplement,
         LeftShift,
         RightShift,
 
@@ -59,7 +59,7 @@ namespace Decompose
 
         Comma,
         Conditional,
-        FirstNonNull,
+        NullCoalescing,
         As,
         Is,
         New,

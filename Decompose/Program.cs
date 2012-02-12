@@ -13,7 +13,7 @@ namespace Decompose
             {
                 Console.Write(">> ");
                 var text = Console.ReadLine();
-                if (text == null)
+                if (text == null || text == "quit")
                     break;
                 try
                 {

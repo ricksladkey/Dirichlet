@@ -63,7 +63,7 @@ namespace Decompose.Numerics
         public static Integer<T> operator ^(Integer<T> a, Integer<T> b) { return new Integer<T>(ops.ExclusiveOr(a.value, b.value)); }
         public static Integer<T> operator ^(T a, Integer<T> b) { return new Integer<T>(ops.ExclusiveOr(a, b.value)); }
         public static Integer<T> operator ^(Integer<T> a, T b) { return new Integer<T>(ops.ExclusiveOr(a.value, b)); }
-        public static Integer<T> operator ~(Integer<T> a) { return new Integer<T>(ops.Not(a.value)); }
+        public static Integer<T> operator ~(Integer<T> a) { return new Integer<T>(ops.OnesComplement(a.value)); }
         public static bool operator ==(Integer<T> a, Integer<T> b) { return ops.Equals(a.value, b.value); }
         public static bool operator ==(T a, Integer<T> b) { return ops.Equals(a, b.value); }
         public static bool operator ==(Integer<T> a, T b) { return ops.Equals(a.value, b); }

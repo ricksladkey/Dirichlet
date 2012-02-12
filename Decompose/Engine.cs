@@ -24,9 +24,9 @@ namespace Decompose
             private Dictionary<Op, Func<bool, bool, bool>> binaryOps = new Dictionary<Op, Func<bool, bool, bool>>();
             public BooleanOperatorMap()
             {
-                binaryOps.Add(Op.BitwiseAnd, (a, b) => a & b);
-                binaryOps.Add(Op.BitwiseOr, (a, b) => a | b);
-                binaryOps.Add(Op.BitwiseXor, (a, b) => a ^ b);
+                binaryOps.Add(Op.And, (a, b) => a & b);
+                binaryOps.Add(Op.Or, (a, b) => a | b);
+                binaryOps.Add(Op.ExclusiveOr, (a, b) => a ^ b);
                 binaryOps.Add(Op.Equals, (a, b) => a == b);
                 binaryOps.Add(Op.NotEquals, (a, b) => a != b);
             }
@@ -34,7 +34,7 @@ namespace Decompose
             {
                 if (binaryOps.ContainsKey(op))
                     return binaryOps[op](args[0], args[1]);
-                if (op == Op.Not || op == Op.BitwiseNot)
+                if (op == Op.Not)
                     return !args[0];
                 throw new NotImplementedException();
             }
@@ -49,16 +49,16 @@ namespace Decompose
             {
                 var ops = Operations.Get<T>();
                 unaryOps.Add(Op.Negate, a => ops.Negate(a));
-                unaryOps.Add(Op.BitwiseNot, a => ops.Not(a));
+                unaryOps.Add(Op.OnesComplement, a => ops.OnesComplement(a));
                 binaryOps.Add(Op.Plus, (a, b) => ops.Add(a, b));
                 binaryOps.Add(Op.Minus, (a, b) => ops.Subtract(a, b));
                 binaryOps.Add(Op.Times, (a, b) => ops.Multiply(a, b));
                 binaryOps.Add(Op.Divide, (a, b) => ops.Divide(a, b));
                 binaryOps.Add(Op.Mod, (a, b) => ops.Modulus(a, b));
                 binaryOps.Add(Op.Power, (a, b) => ops.Power(a, b));
-                binaryOps.Add(Op.BitwiseAnd, (a, b) => ops.And(a, b));
-                binaryOps.Add(Op.BitwiseOr, (a, b) => ops.Or(a, b));
-                binaryOps.Add(Op.BitwiseXor, (a, b) => ops.ExclusiveOr(a, b));
+                binaryOps.Add(Op.And, (a, b) => ops.And(a, b));
+                binaryOps.Add(Op.Or, (a, b) => ops.Or(a, b));
+                binaryOps.Add(Op.ExclusiveOr, (a, b) => ops.ExclusiveOr(a, b));
                 binaryOps.Add(Op.LeftShift, (a, b) => ops.LeftShift(a, ops.ToInt32(b)));
                 binaryOps.Add(Op.RightShift, (a, b) => ops.RightShift(a, ops.ToInt32(b)));
                 binaryOps.Add(Op.Equals, (a, b) => ops.Equals(a, b));
@@ -271,12 +271,12 @@ namespace Decompose
 
         private void AddGlobalMethods()
         {
-            globalMethods.Add("quit", Quit);
+            globalMethods.Add("exit", Exit);
             globalMethods.Add("print", Print);
             globalMethods.Add("factor", Factor);
         }
 
-        public object Quit(params object[] args)
+        public object Exit(params object[] args)
         {
             Environment.Exit(args.Length > 0 ? ToInt32(args[0]) : 0);
             return null;

@@ -25,7 +25,7 @@ namespace Decompose.Numerics
         public ulong And(ulong a, ulong b) { return a & b; }
         public ulong Or(ulong a, ulong b) { return a | b; }
         public ulong ExclusiveOr(ulong a, ulong b) { return a ^ b; }
-        public ulong Not(ulong a) { return ~a; }
+        public ulong OnesComplement(ulong a) { return ~a; }
         public bool IsZero(ulong a) { return a == 0; }
         public bool IsOne(ulong a) { return a == 1; }
         public bool IsEven(ulong a) { return (a & 1) == 0; }
