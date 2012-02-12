@@ -123,6 +123,12 @@ namespace Decompose
         private OperatorMap<BigInteger> opMapBigInteger;
         private Dictionary<string, object> variables;
         private Dictionary<string, Func<object[], object>> globalMethods;
+        private List<Frame> stack;
+
+        private class Frame
+        {
+            public Dictionary<string, object> Variables { get; set; }
+        }
 
         public Engine()
         {
@@ -136,6 +142,7 @@ namespace Decompose
             opMapBigInteger = new IntegerOperatorMap<BigInteger>(generator);
             variables = new Dictionary<string, object>();
             globalMethods = new Dictionary<string, Func<object[], object>>();
+            stack = new List<Frame>();
 
             SetVariable(ContextKey, globalContext);
             AddGlobalMethods();
@@ -150,6 +157,15 @@ namespace Decompose
             { Op.BigInteger, a => ToBigInteger(a) },
         };
 
+        public void PushFrame()
+        {
+            stack.Add(new Frame { Variables = new Dictionary<string, object>() });
+        }
+
+        public void PopFrame()
+        {
+            stack.RemoveAt(stack.Count - 1);
+        }
 
         public object Operator(Op op, params object[] args)
         {
@@ -253,13 +269,35 @@ namespace Decompose
 
         public object GetVariable(string name)
         {
+            for (int i = stack.Count - 1; i >= 0; i--)
+            {
+                if (stack[i].Variables.ContainsKey(name))
+                    return stack[i].Variables[name];
+            }
             if (variables.ContainsKey(name))
                 return variables[name];
             throw new InvalidOperationException("unknown variable: " + name);
         }
 
+        public object SetGlobalVariable(string name, object value)
+        {
+            return variables[name] = value;
+        }
+
+        public object NewVariable(string name, object value)
+        {
+            if (!stack[stack.Count - 1].Variables.ContainsKey(name))
+                return stack[stack.Count - 1].Variables[name] = value;
+            throw new InvalidOperationException("variable exists");
+        }
+
         public object SetVariable(string name, object value)
         {
+            for (int i = stack.Count - 1; i >= 0; i--)
+            {
+                if (stack[i].Variables.ContainsKey(name))
+                    return stack[i].Variables[name] = value;
+            }
             return variables[name] = value;
         }
 

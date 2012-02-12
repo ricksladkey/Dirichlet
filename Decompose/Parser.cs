@@ -106,7 +106,10 @@ namespace Decompose
             public IList<StatementNode> Nodes { get; set; }
             public override object Get(Engine engine)
             {
-                return Nodes.Select(node => node.Get(engine)).Last();
+                engine.PushFrame();
+                var result = Nodes.Select(node => node.Get(engine)).Last();
+                engine.PopFrame();
+                return result;
             }
         }
         public class VariableNode : ExpressionNode
@@ -215,7 +218,7 @@ namespace Decompose
             public ExpressionNode Value { get; set; }
             public override object Get(Engine engine)
             {
-                return engine.SetVariable(VariableName, Value.Get(engine));
+                return engine.NewVariable(VariableName, Value != null ? Value.Get(engine) : null);
             }
         }
         public class ItemNode : ExpressionNode
@@ -554,6 +557,13 @@ namespace Decompose
             (Root as ScriptNode).Get(engine);
         }
 
+        private int registerCount = 0;
+
+        private string AllocateRegister()
+        {
+            return "@register" + registerCount++;
+        }
+
         private PathNode ParsePath()
         {
             return new PathNode { Path = ParseExpression(0) };
@@ -804,9 +814,7 @@ namespace Decompose
             {
                 var op = operatorMap[token];
                 if (op == Op.Modulo)
-                {
                     operands.Push(ConvertToModularOperations(operand1, operand2));
-                }
                 else if (op == Op.AndAnd)
                     operands.Push(new ConditionalNode { Conditional = operand1, IfTrue = operand2, IfFalse = new ValueNode { Value = false } });
                 else if (op == Op.OrOr)
@@ -837,10 +845,20 @@ namespace Decompose
 
         private ExpressionNode ConvertToModularOperations(ExpressionNode node, ExpressionNode modulus)
         {
+            var variable = new VariableNode { VariableName = AllocateRegister() };
+            return new LastNode
+            {
+                Operand1 = new SetNode { LValue = variable, RValue = modulus },
+                Operand2 = ConvertToModularOperation(node, variable),
+            };
+        }
+
+        private ExpressionNode ConvertToModularOperation(ExpressionNode node, VariableNode modulus)
+        {
             if (node is SetNode)
             {
                 var setNode = node as SetNode;
-                return new SetNode { LValue = setNode.LValue, RValue = ConvertToModularOperations(setNode.RValue, modulus) };
+                return new SetNode { LValue = setNode.LValue, RValue = ConvertToModularOperation(setNode.RValue, modulus) };
             }
             if (node is OpNode)
             {
@@ -852,14 +870,14 @@ namespace Decompose
                     {
                         return new OpNode { Op = Op.ModularPower, Operands =
                             {
-                                ConvertToModularOperations(opNode.Operands[0], modulus),
+                                ConvertToModularOperation(opNode.Operands[0], modulus),
                                 opNode.Operands[1],
                                 modulus,
                             }
                         };
                     }
                     var operands = opNode.Operands
-                        .Select(operand => ConvertToModularOperations(operand, modulus))
+                        .Select(operand => ConvertToModularOperation(operand, modulus))
                         .Concat(new[] { modulus })
                         .ToArray();
                     return new OpNode { Op = op, Operands = operands };
