@@ -60,7 +60,7 @@ namespace Decompose
         public class StatementNode : Node { }
         public class ExpressionNode : StatementNode
         {
-            public virtual object Set(Engine engine, object value) { return null; }
+            public virtual object Set(Engine engine, object value) { throw new InvalidOperationException("not an lvalue"); }
         }
 
         public class PathNode : Node
@@ -386,8 +386,9 @@ namespace Decompose
             { "+=", AssignmentOp.PlusEquals },
             { "-=", AssignmentOp.MinusEquals },
             { "*=", AssignmentOp.TimesEquals },
-            { "%=", AssignmentOp.ModEquals },
             { "/=", AssignmentOp.DivideEquals },
+            { "%=", AssignmentOp.ModEquals },
+            { "**=", AssignmentOp.PowerEquals },
             { "&=", AssignmentOp.BitwiseAndEquals },
             { "|=", AssignmentOp.BitwiseOrEquals },
             { "^=", AssignmentOp.BitwiseXorEquals },

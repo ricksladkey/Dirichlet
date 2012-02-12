@@ -47,7 +47,18 @@ namespace Decompose.Numerics
         {
             if (modulus <= uint.MaxValue)
                 return ModularPower((uint)(value % modulus), exponent, (uint)modulus);
-            return ModularPowerReduction(1, value, exponent, modulus);
+            if (exponent >= 256)
+                return ModularPowerReduction(1, value, exponent, modulus);
+            var result = (ulong)1;
+            while (exponent != 0)
+            {
+                if ((exponent & 1) != 0)
+                    result = ModularProduct(result, value, modulus);
+                if (exponent != 1)
+                    value = ModularProduct(value, value, modulus);
+                exponent >>= 1;
+            }
+            return result;
         }
 
         public static BigInteger ModularPower(BigInteger value, BigInteger exponent, BigInteger modulus)

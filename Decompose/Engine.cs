@@ -126,7 +126,7 @@ namespace Decompose
 
         public Engine()
         {
-            globalContext = new Dictionary<string, object>();
+            globalContext = new object();
             generator = new MersenneTwister(0);
             opMapBoolean = new BooleanOperatorMap();
             opMapInt32 = new IntegerOperatorMap<int>(generator);
@@ -265,13 +265,8 @@ namespace Decompose
 
         public object GetProperty(object context, string name)
         {
-            if (context is Dictionary<string, object>)
-            {
-                var dict = context as Dictionary<string, object>;
-                if (dict.ContainsKey(name))
-                    return dict[name];
-                throw new InvalidOperationException("unknown property: " + name);
-            }
+            if (context == globalContext)
+                return GetVariable(name);
             if (name == "Type")
                 return context.GetType().Name;
             throw new NotImplementedException();
@@ -279,8 +274,8 @@ namespace Decompose
 
         public object SetProperty(object context, string name, object value)
         {
-            if (context is Dictionary<string, object>)
-                return (context as Dictionary<string, object>)[name] = value;
+            if (context == globalContext)
+                return SetVariable(name, value);
             throw new NotImplementedException();
         }
 
@@ -336,7 +331,7 @@ namespace Decompose
 
         public object Factor(params object[] args)
         {
-            var algorithm = new HybridPollardRhoQuadraticSieve(8, 10000, new QuadraticSieve.Config());
+            var algorithm = new HybridPollardRhoQuadraticSieve(8, 1000000, new QuadraticSieve.Config { Threads = 8 });
             return algorithm.Factor(ToBigInteger(args[0])).ToArray();
         }
     }
