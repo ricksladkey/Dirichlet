@@ -17,13 +17,18 @@ namespace Decompose
         Mod,
         Divide,
         Negate,
-        Pow,
+        Power,
 
+        GreatestCommonDivisor,
         ModularSum,
         ModularDifference,
         ModularProduct,
         ModularQuotient,
         ModularPower,
+        ModularNegate,
+
+        Divides,
+        NotDivides,
 
         AndAnd,
         OrOr,

@@ -55,7 +55,7 @@ namespace Decompose
                 binaryOps.Add(Op.Times, (a, b) => ops.Multiply(a, b));
                 binaryOps.Add(Op.Divide, (a, b) => ops.Divide(a, b));
                 binaryOps.Add(Op.Mod, (a, b) => ops.Modulus(a, b));
-                binaryOps.Add(Op.Pow, (a, b) => ops.Power(a, b));
+                binaryOps.Add(Op.Power, (a, b) => ops.Power(a, b));
                 binaryOps.Add(Op.BitwiseAnd, (a, b) => ops.And(a, b));
                 binaryOps.Add(Op.BitwiseOr, (a, b) => ops.Or(a, b));
                 binaryOps.Add(Op.BitwiseXor, (a, b) => ops.ExclusiveOr(a, b));
@@ -74,6 +74,10 @@ namespace Decompose
                             result = ops.Add(result, b);
                         return result;
                     });
+                binaryOps.Add(Op.GreatestCommonDivisor, (a, b) => ops.GreatestCommonDivisor(a, b));
+                binaryOps.Add(Op.Divides, (a, b) => ops.IsZero(ops.Modulus(b, a)));
+                binaryOps.Add(Op.NotDivides, (a, b) => !ops.IsZero(ops.Modulus(b, a)));
+                binaryOps.Add(Op.ModularNegate, (a, b) => ops.ModularDifference(ops.Zero, a, b));
                 ternaryOps.Add(Op.ModularSum, (a, b, c) => ops.ModularSum(a, b, c));
                 ternaryOps.Add(Op.ModularDifference, (a, b, c) => ops.ModularDifference(a, b, c));
                 ternaryOps.Add(Op.ModularProduct, (a, b, c) => ops.ModularProduct(a, b, c));
@@ -81,7 +85,11 @@ namespace Decompose
                 ternaryOps.Add(Op.ModularPower, (a, b, c) =>
                     {
                         if (ops.Equals(b, ops.Negate(ops.One)))
+                        {
+                            if (!ops.GreatestCommonDivisor(a, c).Equals(ops.One))
+                                throw new InvalidOperationException("not relatively prime");
                             return ops.ModularInverse(a, c);
+                        }
                         return ops.ModularPower(a, b, c);
                     });
             }
@@ -263,8 +271,15 @@ namespace Decompose
 
         private void AddGlobalMethods()
         {
+            globalMethods.Add("quit", Quit);
             globalMethods.Add("print", Print);
             globalMethods.Add("factor", Factor);
+        }
+
+        public object Quit(params object[] args)
+        {
+            Environment.Exit(args.Length > 0 ? ToInt32(args[0]) : 0);
+            return null;
         }
 
         public object Print(params object[] args)

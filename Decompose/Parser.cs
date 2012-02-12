@@ -343,7 +343,7 @@ namespace Decompose
             { ">", Op.GreaterThan },
             { ">=", Op.GreaterThanOrEqual },
             { "??", Op.FirstNonNull },
-            { "**", Op.Pow },
+            { "**", Op.Power },
             { "`int", Op.Int32 },
             { "`uint", Op.UInt32 },
             { "`long", Op.Int64 },
@@ -353,7 +353,9 @@ namespace Decompose
         };
         private static Dictionary<string, Op> functionOperatorMap = new Dictionary<string, Op>
         {
-            { "`pow", Op.Pow },
+            { "`pow", Op.Power },
+            { "`gcd", Op.GreatestCommonDivisor },
+            { "`divides", Op.Divides },
         };
         private static Dictionary<Op, Op> modularOperatorMap = new Dictionary<Op, Op>
         {
@@ -361,7 +363,8 @@ namespace Decompose
             { Op.Minus, Op.ModularDifference },
             { Op.Times, Op.ModularProduct },
             { Op.Divide, Op.ModularQuotient },
-            { Op.Pow, Op.ModularPower },
+            { Op.Power, Op.ModularPower },
+            { Op.Negate, Op.ModularNegate },
         };
         private static Dictionary<string, AssignmentOp> assignmentOperatorMap = new Dictionary<string, AssignmentOp>
         {
@@ -825,25 +828,21 @@ namespace Decompose
                 if (modularOperatorMap.ContainsKey(opNode.Op))
                 {
                     var op = modularOperatorMap[opNode.Op];
-                    var operand1 = opNode.Operands[0];
-                    var operand2 = opNode.Operands[1];
                     if (op == Op.ModularPower)
                     {
                         return new OpNode { Op = Op.ModularPower, Operands =
                             {
-                                ConvertToModularOperations(operand1, modulus),
-                                operand2,
+                                ConvertToModularOperations(opNode.Operands[0], modulus),
+                                opNode.Operands[1],
                                 modulus,
                             }
                         };
                     }
-                    return new OpNode { Op = op, Operands =
-                        {
-                            ConvertToModularOperations(operand1, modulus),
-                            ConvertToModularOperations(operand2, modulus),
-                            modulus,
-                        }
-                    };
+                    var operands = opNode.Operands
+                        .Select(operand => ConvertToModularOperations(operand, modulus))
+                        .Concat(new[] { modulus })
+                        .ToArray();
+                    return new OpNode { Op = op, Operands = operands };
                 }
             }
             return new OpNode { Op = Op.Modulo, Operands = { node, modulus } };
