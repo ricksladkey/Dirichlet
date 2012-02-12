@@ -370,6 +370,7 @@ namespace Decompose.Scripting
             { "`long", Op.Int64 },
             { "`ulong", Op.UInt64 },
             { "`integer", Op.BigInteger },
+            { "`real", Op.Double },
             { "`rand", Op.Random },
             { "`mod", Op.Modulo },
         };

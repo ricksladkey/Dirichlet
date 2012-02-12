@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using Decompose.Numerics;
 
 namespace Decompose.Scripting
@@ -150,6 +151,7 @@ namespace Decompose.Scripting
 
         private Dictionary<Op, Func<object, object>> opMapCast = new Dictionary<Op, Func<object, object>>
         {
+            { Op.Double, a => ToDouble(a) },
             { Op.Int32, a => ToInt32(a) },
             { Op.UInt32, a => ToUInt32(a) },
             { Op.Int64, a => ToInt64(a) },
@@ -199,6 +201,8 @@ namespace Decompose.Scripting
                 return (BigInteger)(ulong)value;
             if (value is BigInteger)
                 return (BigInteger)(BigInteger)value;
+            if (value is double)
+                return (BigInteger)(double)value;
             throw new NotImplementedException();
         }
 
@@ -214,6 +218,8 @@ namespace Decompose.Scripting
                 return (int)(ulong)value;
             if (value is BigInteger)
                 return (int)(BigInteger)value;
+            if (value is double)
+                return (int)(double)value;
             throw new NotImplementedException();
         }
 
@@ -229,6 +235,8 @@ namespace Decompose.Scripting
                 return (uint)(ulong)value;
             if (value is BigInteger)
                 return (uint)(BigInteger)value;
+            if (value is double)
+                return (uint)(double)value;
             throw new NotImplementedException();
         }
 
@@ -244,6 +252,8 @@ namespace Decompose.Scripting
                 return (long)(ulong)value;
             if (value is BigInteger)
                 return (long)(BigInteger)value;
+            if (value is double)
+                return (long)(double)value;
             throw new NotImplementedException();
         }
 
@@ -259,6 +269,25 @@ namespace Decompose.Scripting
                 return (ulong)(ulong)value;
             if (value is BigInteger)
                 return (ulong)(BigInteger)value;
+            if (value is double)
+                return (ulong)(double)value;
+            throw new NotImplementedException();
+        }
+
+        public static double ToDouble(object value)
+        {
+            if (value is int)
+                return (double)(int)value;
+            if (value is uint)
+                return (double)(uint)value;
+            if (value is long)
+                return (double)(long)value;
+            if (value is ulong)
+                return (double)(ulong)value;
+            if (value is BigInteger)
+                return (double)(BigInteger)value;
+            if (value is double)
+                return (double)(double)value;
             throw new NotImplementedException();
         }
 
@@ -330,6 +359,42 @@ namespace Decompose.Scripting
             throw new InvalidOperationException("unknown function: " + name);
         }
 
+        private object Invoke(string name, params object[] args)
+        {
+            args = ConvertToCompatibleTypes(args);
+            var types = args.Select(arg => arg.GetType()).ToArray();
+            var method = GetType().GetMethod(name, types);
+            if (method == null)
+            {
+                method = GetType().GetMethods()
+                    .Where(item => item.Name == name && item.IsGenericMethod)
+                    .FirstOrDefault();
+                if (method != null)
+                    method = method.MakeGenericMethod(types[0]);
+            }
+            if (method != null)
+                return method.Invoke(this, args);
+            throw new NotImplementedException();
+        }
+
+        private object[] ConvertToCompatibleTypes(object[] args)
+        {
+            var types = args.Select(arg => arg.GetType()).ToArray();
+            if (types.Any(type => type == typeof(double)))
+                return args.Select(arg => ToDouble(arg)).Cast<object>().ToArray();
+            if (types.Any(type => type == typeof(BigInteger)))
+                return args.Select(arg => ToBigInteger(arg)).Cast<object>().ToArray();
+            if (types.Any(type => type == typeof(ulong)))
+                return args.Select(arg => ToUInt64(arg)).Cast<object>().ToArray();
+            if (types.Any(type => type == typeof(long)))
+                return args.Select(arg => ToInt64(arg)).Cast<object>().ToArray();
+            if (types.Any(type => type == typeof(uint)))
+                return args.Select(arg => ToUInt32(arg)).Cast<object>().ToArray();
+            if (types.Any(type => type == typeof(int)))
+                return args.Select(arg => ToInt32(arg)).Cast<object>().ToArray();
+            throw new NotImplementedException();
+        }
+
         private void AddGlobalMethods()
         {
             globalMethods.Add("exit", Exit);
@@ -338,6 +403,7 @@ namespace Decompose.Scripting
             globalMethods.Add("isprime", IsPrime);
             globalMethods.Add("nextprime", NextPrime);
             globalMethods.Add("factor", Factor);
+            globalMethods.Add("sqrt", args => Invoke("Sqrt", args));
         }
 
         public object Exit(params object[] args)
@@ -366,6 +432,16 @@ namespace Decompose.Scripting
         public object IsPrime(params object[] args)
         {
             return IntegerMath.IsPrime(ToBigInteger(args[0]));
+        }
+
+        public double Sqrt(double a)
+        {
+            return Math.Sqrt(a);
+        }
+
+        public T Sqrt<T>(T a)
+        {
+            return Integer<T>.SquareRoot(a);
         }
 
         public object NextPrime(params object[] args)

@@ -54,6 +54,7 @@ namespace Decompose.Scripting
         Int64,
         UInt64,
         BigInteger,
+        Double,
         Random,
 
         Modulo,

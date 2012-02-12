@@ -24,6 +24,7 @@ namespace Decompose.Scripting
                 case Op.Int64:
                 case Op.UInt64:
                 case Op.BigInteger:
+                case Op.Double:
                 case Op.Random:
                     return 1;
                 case Op.New:
