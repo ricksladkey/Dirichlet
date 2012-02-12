@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 
-namespace Decompose
+namespace Decompose.Scripting
 {
     /// <summary>
     /// The OperatorHelper class is used to perform operations

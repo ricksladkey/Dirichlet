@@ -5,7 +5,7 @@ using System.Linq;
 using System.Numerics;
 using Decompose.Numerics;
 
-namespace Decompose
+namespace Decompose.Scripting
 {
     public enum TraceFlags
     {

@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
 
-namespace Decompose
+namespace Decompose.Scripting
 {
     public enum CodeType
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Decompose
+namespace Decompose.Scripting
 {
     /// <summary>
     /// An Op represents the corresponding C# operator
