@@ -53,16 +53,21 @@ namespace Decompose.Scripting
         {
         }
 
-        public class Node
+        public abstract class Node
         {
-            public virtual object Get(Engine engine) { return null; }
+            public abstract object Get(Engine engine);
         }
-        public class StatementNode : Node { }
+        public class StatementNode : Node
+        {
+            public override object Get(Engine engine)
+            {
+                return null;
+            }
+        }
         public class ExpressionNode : StatementNode
         {
             public virtual object Set(Engine engine, object value) { throw new InvalidOperationException("not an lvalue"); }
         }
-
         public class PathNode : Node
         {
             public ExpressionNode Path { get; set; }
@@ -218,7 +223,7 @@ namespace Decompose.Scripting
             public ExpressionNode Value { get; set; }
             public override object Get(Engine engine)
             {
-                return engine.NewVariable(VariableName, Value != null ? Value.Get(engine) : null);
+                return engine.NewVariable(VariableName, Value.Get(engine));
             }
         }
         public class ItemNode : ExpressionNode
@@ -637,9 +642,7 @@ namespace Decompose.Scripting
             var name = ParseIdentifierOrVariable();
             if (name[0] == '`') name = name.Substring(1);
             if (PeekToken("("))
-            {
                 return ParseFunction(name);
-            }
             var expression = null as ExpressionNode;
             if (!PeekToken(";"))
             {
@@ -647,7 +650,7 @@ namespace Decompose.Scripting
                 expression = ParseExpression();
             }
             ParseSemicolon();
-            return new VarNode { VariableName = name, Value = expression };
+            return new VarNode { VariableName = name, Value = expression ?? new ValueNode { Value = null } };
         }
 
         private StatementNode ParseFunction(string name)

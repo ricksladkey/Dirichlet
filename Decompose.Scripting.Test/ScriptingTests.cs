@@ -2,7 +2,7 @@
 using Decompose.Scripting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Decompose.Tests
+namespace Decompose.Scripting.Tests
 {
     [TestClass]
     public class DecomposeTests
@@ -11,6 +11,7 @@ namespace Decompose.Tests
         public void ScriptingTests()
         {
             Assert.AreEqual((BigInteger)3, Evaluate("1+2"));
+            Assert.AreEqual(3, Evaluate("int 1 + int 2"));
         }
 
         private object Evaluate(string text)

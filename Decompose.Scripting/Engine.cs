@@ -334,6 +334,7 @@ namespace Decompose.Scripting
         {
             globalMethods.Add("exit", Exit);
             globalMethods.Add("print", Print);
+            globalMethods.Add("jacobi", Jacobi);
             globalMethods.Add("isprime", IsPrime);
             globalMethods.Add("nextprime", NextPrime);
             globalMethods.Add("factor", Factor);
@@ -355,6 +356,11 @@ namespace Decompose.Scripting
             else
                 Console.WriteLine(value);
             return value;
+        }
+
+        public object Jacobi(params object[] args)
+        {
+            return IntegerMath.JacobiSymbol(ToBigInteger(args[0]), ToBigInteger(args[1]));
         }
 
         public object IsPrime(params object[] args)
