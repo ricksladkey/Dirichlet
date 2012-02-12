@@ -249,6 +249,12 @@ namespace Decompose
             public StatementNode Initial { get; set; }
             public ExpressionNode Condition { get; set; }
             public ExpressionNode Next { get; set; }
+            public override object Get(Engine engine)
+            {
+                for (Initial.Get(engine); (bool)Condition.Get(engine); Next.Get(engine))
+                    Body.Get(engine);
+                return null;
+            }
         }
         public class BreakNode : StatementNode { }
         public class ContextNode : BlockNode

@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 using Decompose.Numerics;
 
 namespace Decompose
@@ -108,6 +108,7 @@ namespace Decompose
         public Engine()
         {
             SetVariable(ContextKey, globalContext);
+            AddGlobalMethods();
         }
 
         private Dictionary<Op, Func<object, object>> opMapCast = new Dictionary<Op, Func<object, object>>
@@ -245,10 +246,7 @@ namespace Decompose
             throw new NotImplementedException();
         }
 
-        private Dictionary<string, Func<Engine, object[], object>> globalMethods = new Dictionary<string, Func<Engine, object[], object>>
-        {
-            { "factor", Factor },
-        };
+        private Dictionary<string, Func<object[], object>> globalMethods = new Dictionary<string, Func<object[], object>>();
 
         public object CallMethod(object context, string name, params object[] args)
         {
@@ -257,13 +255,29 @@ namespace Decompose
                 if (globalMethods.ContainsKey(name))
                 {
                     var method = globalMethods[name];
-                    return method(this, args);
+                    return method(args);
                 }
             }
             return null;
         }
 
-        public static object Factor(Engine engine, params object[] args)
+        private void AddGlobalMethods()
+        {
+            globalMethods.Add("print", Print);
+            globalMethods.Add("factor", Factor);
+        }
+
+        public object Print(params object[] args)
+        {
+            var value = args[0];
+            if (value is IEnumerable)
+                Console.WriteLine(string.Join(", ", (value as IEnumerable).Cast<object>().Select(item => item.ToString())));
+            else
+                Console.WriteLine(value);
+            return value;
+        }
+
+        public object Factor(params object[] args)
         {
             var algorithm = new HybridPollardRhoQuadraticSieve(8, 10000, new QuadraticSieve.Config());
             return algorithm.Factor(ToBigInteger(args[0])).ToArray();

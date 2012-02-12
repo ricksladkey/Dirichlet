@@ -17,14 +17,11 @@ namespace Decompose
                     break;
                 try
                 {
-                    var value = new Parser().Compile(engine, CodeType.Statement, text).Root.Get(engine);
+                    var value = new Parser().Compile(engine, CodeType.Script, text).Root.Get(engine);
                     if (value != null)
                     {
                         engine.SetVariable("@", value);
-                        if (value is IEnumerable)
-                            Console.WriteLine(string.Join(", ", (value as IEnumerable).Cast<object>().Select(item => item.ToString())));
-                        else
-                            Console.WriteLine(value);
+                        engine.Print(value);
                     }
                 }
                 catch (Exception ex)
