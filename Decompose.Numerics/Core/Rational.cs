@@ -10,6 +10,9 @@ namespace Decompose.Numerics
     {
         private BigInteger n;
         private BigInteger d;
+        public bool IsInteger { get { return d.IsOne; } }
+        public BigInteger Numerator { get { return n; } }
+        public BigInteger Denominator { get { return d; } }
         public Rational(BigInteger n, BigInteger d)
         {
             if (d == 0)
@@ -20,16 +23,25 @@ namespace Decompose.Numerics
                 d = -d;
             }
             var gcd = BigInteger.GreatestCommonDivisor(n, d);
-            this.n = n / gcd;
-            this.d = d / gcd;
+            if (!n.IsOne)
+            {
+                n /= gcd;
+                d /= gcd;
+            }
+            this.n = n;
+            this.d = d;
         }
-        public BigInteger Numerator { get { return n; } }
-        public BigInteger Denominator { get { return d; } }
         public static Rational operator +(Rational a, Rational b) { return new Rational(a.n * b.d + b.n * a.d, a.d * b.d); }
         public static Rational operator -(Rational a, Rational b) { return new Rational(a.n * b.d - b.n * a.d, a.d * b.d); }
         public static Rational operator *(Rational a, Rational b) { return new Rational(a.n * b.n, a.d * b.d); }
         public static Rational operator /(Rational a, Rational b) { return new Rational(a.n * b.d, a.d * b.n); }
         public static Rational operator -(Rational a) { return new Rational(-a.n, a.d); }
+        public static bool operator ==(Rational a, Rational b) { return a.Equals(b); }
+        public static bool operator !=(Rational a, Rational b) { return !a.Equals(b); }
+        public static bool operator <(Rational a, Rational b) { return a.CompareTo(b) < 0; }
+        public static bool operator <=(Rational a, Rational b) { return a.CompareTo(b) <= 0; }
+        public static bool operator >(Rational a, Rational b) { return a.CompareTo(b) > 0; }
+        public static bool operator >=(Rational a, Rational b) { return a.CompareTo(b) >= 0; }
         public static implicit operator Rational(int a) { return new Rational(a, 1); }
         public static implicit operator Rational(uint a) { return new Rational(a, 1); }
         public static implicit operator Rational(long a) { return new Rational(a, 1); }
@@ -41,6 +53,8 @@ namespace Decompose.Numerics
         public static explicit operator double(Rational a) { return (double)a.n / (double)a.d; }
         public bool Equals(Rational a) { return n == a.n && d == a.d; }
         public int CompareTo(Rational a) { return (n * a.d).CompareTo(a.n * d); }
+        public override bool Equals(object obj) { return obj is Rational && Equals((Rational)obj); }
+        public override int GetHashCode() { return n.GetHashCode() ^ d.GetHashCode(); }
         public override string ToString() { return d.IsOne ? n.ToString() : string.Format("{0}/{1}", n, d); }
     }
 }

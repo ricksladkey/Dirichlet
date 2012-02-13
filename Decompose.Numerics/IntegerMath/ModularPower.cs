@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 using System.Diagnostics;
 
 namespace Decompose.Numerics
@@ -188,6 +189,17 @@ namespace Decompose.Numerics
         {
             var reducer = reductionUInt64.GetReducer(modulus);
             return reducer.ToResidue(value).Power(exponent).Multiply(reducer.ToResidue(start)).Value;
+        }
+
+        public static Rational ModularPower(Rational value, Rational exponent, Rational modulus)
+        {
+            if (!modulus.IsInteger)
+                throw new InvalidOperationException("modulus not intergral");
+            if (value.IsInteger && exponent.IsInteger)
+                return ModularPower((BigInteger)value, (BigInteger)exponent, (BigInteger)modulus);
+            if (value.IsInteger && exponent.Numerator == 1)
+                return ModularRoot((BigInteger)value, (BigInteger)exponent.Denominator, (BigInteger)modulus);
+            throw new NotImplementedException("rational power not implemented");
         }
     }
 }

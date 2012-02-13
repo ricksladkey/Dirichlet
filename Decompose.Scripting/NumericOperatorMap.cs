@@ -24,7 +24,7 @@ namespace Decompose.Scripting
             binaryOps.Add(Op.Times, (a, b) => ops.Multiply(a, b));
             binaryOps.Add(Op.Divide, (a, b) =>
                 {
-                    if (typeof(T) == typeof(double))
+                    if (typeof(T) == typeof(double) || typeof(T) == typeof(Rational))
                         return ops.Divide(a, b);
                     if (ops.IsZero(ops.Modulus(a, b)))
                         return ops.Divide(a, b);

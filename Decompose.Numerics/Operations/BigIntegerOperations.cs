@@ -36,12 +36,13 @@ namespace Decompose.Numerics
         public uint LeastSignificantWord(BigInteger a) { return (uint)(a & uint.MaxValue); }
 
         public BigInteger Power(BigInteger a, BigInteger b) { return IntegerMath.Power(a, b); }
-        public BigInteger SquareRoot(BigInteger a) { return IntegerMath.SquareRoot(a); }
+        public BigInteger Root(BigInteger a, BigInteger b) { return IntegerMath.Root(a, b); }
         public BigInteger GreatestCommonDivisor(BigInteger a, BigInteger b) { return IntegerMath.GreatestCommonDivisor(a, b); }
         public BigInteger ModularSum(BigInteger a, BigInteger b, BigInteger modulus) { return IntegerMath.ModularSum(a, b, modulus); }
         public BigInteger ModularDifference(BigInteger a, BigInteger b, BigInteger modulus) { return IntegerMath.ModularDifference(a, b, modulus); }
         public BigInteger ModularProduct(BigInteger a, BigInteger b, BigInteger modulus) { return IntegerMath.ModularProduct(a, b, modulus); }
         public BigInteger ModularPower(BigInteger value, BigInteger exponent, BigInteger modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
+        public BigInteger ModularRoot(BigInteger value, BigInteger exponent, BigInteger modulus) { return IntegerMath.ModularRoot(value, exponent, modulus); }
         public BigInteger ModularInverse(BigInteger value, BigInteger modulus) { return IntegerMath.ModularInverse(value, modulus); }
     }
 }

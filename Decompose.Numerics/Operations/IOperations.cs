@@ -26,6 +26,7 @@ namespace Decompose.Numerics
         T Divide(T a, T b);
         T Modulus(T a, T b);
         T Power(T a, T b);
+        T Root(T a, T b);
         T Negate(T a);
         T LeftShift(T a, int n);
         T RightShift(T a, int n);
@@ -38,12 +39,12 @@ namespace Decompose.Numerics
         bool IsEven(T a);
         uint LeastSignificantWord(T a);
 
-        T SquareRoot(T a);
         T GreatestCommonDivisor(T a, T b);
         T ModularSum(T a, T b, T modulus);
         T ModularDifference(T a, T b, T modulus);
         T ModularProduct(T a, T b, T modulus);
         T ModularPower(T value, T exponent, T modulus);
+        T ModularRoot(T value, T exponent, T modulus);
         T ModularInverse(T value, T modulus);
     }
 }

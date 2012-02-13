@@ -35,6 +35,7 @@ namespace Decompose.Scripting
             { Op.Int64, a => Cast.ToInt64(a) },
             { Op.UInt64, a => Cast.ToUInt64(a) },
             { Op.BigInteger, a => Cast.ToBigInteger(a) },
+            { Op.Rational, a => Cast.ToRational(a) },
         };
 
         private Dictionary<Type, IOperatorMap> opMaps = new Dictionary<Type, IOperatorMap>();
@@ -72,16 +73,6 @@ namespace Decompose.Scripting
         public void PopFrame()
         {
             stack.RemoveAt(stack.Count - 1);
-        }
-
-        public object Operator(Op op, params object[] args)
-        {
-            if (opMapCast.ContainsKey(op))
-                return opMapCast[op](args[0]);
-            args = Cast.ConvertToCompatibleTypes(args);
-            if (opMaps.ContainsKey(args[0].GetType()))
-                return opMaps[args[0].GetType()].Operator(op, args);
-            throw new NotImplementedException();
         }
 
         public object GetVariable(string name)
@@ -165,6 +156,23 @@ namespace Decompose.Scripting
             throw new NotImplementedException();
         }
 
+        public object Operator(Op op, params object[] args)
+        {
+            if (opMapCast.ContainsKey(op))
+                return opMapCast[op](args[0]);
+            args = Cast.ConvertToCompatibleTypes(args);
+            if (opMaps.ContainsKey(args[0].GetType()))
+                return Simplify(opMaps[args[0].GetType()].Operator(op, args));
+            throw new NotImplementedException();
+        }
+
+        public object Simplify(object value)
+        {
+            if (value is Rational && ((Rational)value).Denominator.IsOne)
+                return ((Rational)value).Numerator;
+            return value;
+        }
+
         private void AddGlobalMethods()
         {
             globalMethods.Add("exit", Exit);
@@ -211,7 +219,7 @@ namespace Decompose.Scripting
 
         public T Sqrt<T>(T a)
         {
-            return Integer<T>.SquareRoot(a);
+            return Integer<T>.Root(a, 2);
         }
 
         public BigInteger NextPrime(BigInteger a)

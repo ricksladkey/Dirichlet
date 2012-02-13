@@ -371,6 +371,7 @@ namespace Decompose.Scripting
             { "`ulong", Op.UInt64 },
             { "`integer", Op.BigInteger },
             { "`real", Op.Double },
+            { "`rational", Op.Rational },
             { "`rand", Op.Random },
             { "`mod", Op.Modulo },
         };

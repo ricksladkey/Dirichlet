@@ -35,13 +35,14 @@ namespace Decompose.Numerics
         public int Compare(Rational x, Rational y) { return x.CompareTo(y); }
         public uint LeastSignificantWord(Rational a) { return (uint)((BigInteger)a & uint.MaxValue); }
 
-        public Rational Power(Rational a, Rational b) { return IntegerMath.Power((BigInteger)a, (BigInteger)b); }
-        public Rational SquareRoot(Rational a) { return IntegerMath.SquareRoot((BigInteger)a); }
+        public Rational Power(Rational a, Rational b) { return IntegerMath.Power(a, b); }
+        public Rational Root(Rational a, Rational b) { return IntegerMath.Root((BigInteger)a, (BigInteger)b); }
         public Rational GreatestCommonDivisor(Rational a, Rational b) { return IntegerMath.GreatestCommonDivisor((BigInteger)a, (BigInteger)b); }
         public Rational ModularSum(Rational a, Rational b, Rational modulus) { return IntegerMath.ModularSum((BigInteger)a, (BigInteger)b, (BigInteger)modulus); }
         public Rational ModularDifference(Rational a, Rational b, Rational modulus) { return IntegerMath.ModularDifference((BigInteger)a, (BigInteger)b, (BigInteger)modulus); }
         public Rational ModularProduct(Rational a, Rational b, Rational modulus) { return IntegerMath.ModularProduct((BigInteger)a, (BigInteger)b, (BigInteger)modulus); }
-        public Rational ModularPower(Rational value, Rational exponent, Rational modulus) { return IntegerMath.ModularPower((BigInteger)value, (BigInteger)exponent, (BigInteger)modulus); }
+        public Rational ModularPower(Rational value, Rational exponent, Rational modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
+        public Rational ModularRoot(Rational value, Rational exponent, Rational modulus) { return IntegerMath.ModularRoot((BigInteger)value, (BigInteger)exponent, (BigInteger)modulus); }
         public Rational ModularInverse(Rational value, Rational modulus) { return IntegerMath.ModularInverse((BigInteger)value, (BigInteger)modulus); }
     }
 }

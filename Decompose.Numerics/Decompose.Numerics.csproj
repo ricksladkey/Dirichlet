@@ -49,6 +49,9 @@
     <Compile Include="Collections\SetBitMatrix.cs" />
     <Compile Include="Collections\IntegerSet.cs" />
     <Compile Include="Core\Rational.cs" />
+    <Compile Include="IntegerMath\ModularRoot.cs" />
+    <Compile Include="IntegerMath\Power.cs" />
+    <Compile Include="IntegerMath\Root.cs" />
     <Compile Include="Operations\BigIntegerOperations.cs" />
     <Compile Include="Core\Int65.cs" />
     <Compile Include="Core\IStore.cs" />

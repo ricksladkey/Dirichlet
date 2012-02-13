@@ -36,12 +36,13 @@ namespace Decompose.Numerics
         public uint LeastSignificantWord(ulong a) { return (uint)(a & uint.MaxValue); }
 
         public ulong Power(ulong a, ulong b) { return IntegerMath.Power(a, b); }
-        public ulong SquareRoot(ulong a) { return IntegerMath.SquareRoot(a); }
+        public ulong Root(ulong a, ulong b) { return IntegerMath.Root(a, b); }
         public ulong GreatestCommonDivisor(ulong a, ulong b) { return IntegerMath.GreatestCommonDivisor(a, b); }
         public ulong ModularSum(ulong a, ulong b, ulong modulus) { return IntegerMath.ModularSum(a, b, modulus); }
         public ulong ModularDifference(ulong a, ulong b, ulong modulus) { return IntegerMath.ModularDifference(a, b, modulus); }
         public ulong ModularProduct(ulong a, ulong b, ulong modulus) { return IntegerMath.ModularProduct(a, b, modulus); }
         public ulong ModularPower(ulong value, ulong exponent, ulong modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
+        public ulong ModularRoot(ulong value, ulong exponent, ulong modulus) { return IntegerMath.ModularRoot(value, exponent, modulus); }
         public ulong ModularInverse(ulong value, ulong modulus) { return IntegerMath.ModularInverse(value, modulus); }
     }
 }

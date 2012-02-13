@@ -82,7 +82,9 @@ namespace Decompose.Numerics
         public static bool operator >=(Integer<T> a, Integer<T> b) { return ops.Compare(a.value, b.value) >= 0; }
         public static bool operator >=(T a, Integer<T> b) { return ops.Compare(a, b.value) >= 0; }
         public static bool operator >=(Integer<T> a, T b) { return ops.Compare(a.value, b) >= 0; }
-        public static Integer<T> SquareRoot(Integer<T> a) { return new Integer<T>(ops.SquareRoot(a.value)); }
+        public static Integer<T> Power(Integer<T> a, Integer<T> b) { return new Integer<T>(ops.Power(a.value, b.value)); }
+        public static Integer<T> Root(Integer<T> a, Integer<T> b) { return new Integer<T>(ops.Root(a.value, b.value)); }
+        public static Integer<T> SquareRoot(Integer<T> a) { return new Integer<T>(ops.Root(a.value, ops.Convert(2))); }
         public static Integer<T> GreatestCommonDivisor(Integer<T> a, Integer<T> b) { return new Integer<T>(ops.GreatestCommonDivisor(a.value, b.value)); }
         public static Integer<T> ModularSum(Integer<T> a, Integer<T> b, Integer<T> modulus) { return new Integer<T>(ops.ModularSum(a.value, b.value, modulus.value)); }
         public static Integer<T> ModularDifference(Integer<T> a, Integer<T> b, Integer<T> modulus) { return new Integer<T>(ops.ModularDifference(a.value, b.value, modulus.value)); }

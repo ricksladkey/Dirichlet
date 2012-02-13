@@ -36,12 +36,13 @@ namespace Decompose.Numerics
         public uint LeastSignificantWord(double a) { return (uint)(ToBigInteger(a) & uint.MaxValue); }
 
         public double Power(double a, double b) { return Math.Pow(a, b); }
-        public double SquareRoot(double a) { return Math.Sqrt(a); }
+        public double Root(double a, double b) { return Math.Pow(a, 1 / b); }
         public double GreatestCommonDivisor(double a, double b) { return (double)IntegerMath.GreatestCommonDivisor(ToBigInteger(a), ToBigInteger(b)); }
         public double ModularSum(double a, double b, double modulus) { return (double)IntegerMath.ModularSum(ToBigInteger(a), ToBigInteger(b), ToBigInteger(modulus)); }
         public double ModularDifference(double a, double b, double modulus) { return (double)IntegerMath.ModularDifference(ToBigInteger(a), ToBigInteger(b), ToBigInteger(modulus)); }
         public double ModularProduct(double a, double b, double modulus) { return (double)IntegerMath.ModularProduct(ToBigInteger(a), ToBigInteger(b), ToBigInteger(modulus)); }
         public double ModularPower(double value, double exponent, double modulus) { return (double)IntegerMath.ModularPower(ToBigInteger(value), ToBigInteger(exponent), ToBigInteger(modulus)); }
+        public double ModularRoot(double value, double exponent, double modulus) { return (double)IntegerMath.ModularRoot(ToBigInteger(value), ToBigInteger(exponent), ToBigInteger(modulus)); }
         public double ModularInverse(double value, double modulus) { return (double)IntegerMath.ModularInverse(ToBigInteger(value), ToBigInteger(modulus)); }
     }
 }
