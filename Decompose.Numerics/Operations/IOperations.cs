@@ -19,6 +19,7 @@ namespace Decompose.Numerics
         T Convert(BigInteger a);
         int ToInt32(T a);
         BigInteger ToBigInteger(T a);
+        double ToDouble(T a);
         T Add(T a, T b);
         T Subtract(T a, T b);
         T Multiply(T a, T b);

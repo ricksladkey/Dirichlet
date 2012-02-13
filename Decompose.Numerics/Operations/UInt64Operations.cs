@@ -14,6 +14,7 @@ namespace Decompose.Numerics
         public ulong Convert(BigInteger a) { return (ulong)a; }
         public int ToInt32(ulong a) { return (int)a; }
         public BigInteger ToBigInteger(ulong a) { return a; }
+        public double ToDouble(ulong a) { return (double)a; }
         public ulong Add(ulong a, ulong b) { return a + b; }
         public ulong Subtract(ulong a, ulong b) { return a - b; }
         public ulong Multiply(ulong a, ulong b) { return a * b; }

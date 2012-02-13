@@ -14,6 +14,7 @@ namespace Decompose.Numerics
         public BigInteger Convert(BigInteger a) { return a; }
         public int ToInt32(BigInteger a) { return (int)a; }
         public BigInteger ToBigInteger(BigInteger a) { return a; }
+        public double ToDouble(BigInteger a) { return (double)a; }
         public BigInteger Add(BigInteger a, BigInteger b) { return a + b; }
         public BigInteger Subtract(BigInteger a, BigInteger b) { return a - b; }
         public BigInteger Multiply(BigInteger a, BigInteger b) { return a * b; }

@@ -10,6 +10,7 @@ namespace Decompose.Numerics
     {
         private static Dictionary<Type, IOperations> operations = new Dictionary<Type, IOperations>
         {
+            { typeof(double), new DoubleOperations() },
             { typeof(int), new Int32Operations() },
             { typeof(uint), new UInt32Operations() },
             { typeof(long), new Int64Operations() },

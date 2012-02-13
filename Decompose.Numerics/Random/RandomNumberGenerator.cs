@@ -114,6 +114,23 @@ namespace Decompose.Numerics
             }
         }
 
+        private class DoubleRandomNumberAlgorithm : RandomNumberAlgorithm<double>
+        {
+            public DoubleRandomNumberAlgorithm(IRandomNumberGenerator random)
+                : base(random)
+            {
+            }
+
+            public override double Next(double n)
+            {
+                lock (random.SyncRoot)
+                {
+                    var next = (double)((ulong)random.Next() << 32 | random.Next()) / ulong.MaxValue;
+                    return next * n;
+                }
+            }
+        }
+
         private object syncRoot = new object();
 
         public object SyncRoot { get { return syncRoot; } }
@@ -133,6 +150,8 @@ namespace Decompose.Numerics
                 return (IRandomNumberAlgorithm<T>)new UInt64RandomNumberAlgorithm(this);
             if (type == typeof(BigInteger))
                 return (IRandomNumberAlgorithm<T>)new BigIntegerRandomNumberAlgorithm(this);
+            if (type == typeof(double))
+                return (IRandomNumberAlgorithm<T>)new DoubleRandomNumberAlgorithm(this);
             throw new NotImplementedException("type not supported");
         }
     }
