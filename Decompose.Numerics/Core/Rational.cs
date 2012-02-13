@@ -51,6 +51,8 @@ namespace Decompose.Numerics
         public static explicit operator BigInteger(Rational a) { if (a.d != 1) throw new InvalidCastException(); return a.n; }
         public static explicit operator int(Rational a) { if (a.d != 1) throw new InvalidCastException(); return (int)a.n; }
         public static explicit operator double(Rational a) { return (double)a.n / (double)a.d; }
+        public static BigInteger Floor(Rational a) { return a.n >= 0 ? a.n / a.d : (a.n - a.d + 1) / a.d; }
+        public static BigInteger Ceiling(Rational a) { return a.n >= 0 ? (a.n + a.d - 1) / a.d : a.n / a.d; }
         public bool Equals(Rational a) { return n == a.n && d == a.d; }
         public int CompareTo(Rational a) { return (n * a.d).CompareTo(a.n * d); }
         public override bool Equals(object obj) { return obj is Rational && Equals((Rational)obj); }

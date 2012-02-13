@@ -206,6 +206,10 @@ namespace Decompose.Scripting
         public class CallNode : ExpressionNode
         {
             public IList<ExpressionNode> Arguments { get; set; }
+            public CallNode()
+            {
+                Arguments = new List<ExpressionNode>();
+            }
             public virtual object Call(Engine engine, params object[] args) { return null; }
             public override object Get(Engine engine)
             {
@@ -380,6 +384,14 @@ namespace Decompose.Scripting
             { "`pow", Op.Power },
             { "`gcd", Op.GreatestCommonDivisor },
             { "`divides", Op.Divides },
+        };
+        private static HashSet<string> methodOperatorMap = new HashSet<string>
+        {
+            "`floor",
+            "`ceiling",
+            "`log",
+            "`exp",
+            "`sqrt",
         };
         private static Dictionary<Op, Op> modularOperatorMap = new Dictionary<Op, Op>
         {
@@ -914,6 +926,12 @@ namespace Decompose.Scripting
             {
                 Tokens.Dequeue();
                 return new OpNode { Op = functionOperatorMap[token], Operands = ParseArguments() };
+            }
+            if (methodOperatorMap.Contains(token))
+            {
+                Tokens.Dequeue();
+                var context = new VariableNode { VariableName = Engine.ContextKey };
+                return new MethodNode { Callee = context, MethodName = token.Substring(1), Arguments = { ParseUnary(level) } };
             }
             if (token == "++" || token == "--")
             {

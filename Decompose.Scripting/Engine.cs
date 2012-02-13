@@ -140,19 +140,25 @@ namespace Decompose.Scripting
 
         private object Invoke(string name, params object[] args)
         {
+            var type = typeof(Engine);
             args = Cast.ConvertToCompatibleTypes(args);
             var types = args.Select(arg => arg.GetType()).ToArray();
-            var method = GetType().GetMethod(name, types);
-            if (method == null)
+            var method = type.GetMethod(name, types);
+            if (method == null && args.Length != 0)
             {
-                method = GetType().GetMethods()
+                method = type.GetMethods()
                     .Where(item => item.Name == name && item.IsGenericMethod)
                     .FirstOrDefault();
                 if (method != null)
                     method = method.MakeGenericMethod(types[0]);
             }
             if (method != null)
+            {
+                var parameters = method.GetParameters();
+                if (parameters.Length != 0 && parameters[0].ParameterType.IsArray)
+                    return method.Invoke(this, new object[] { Cast.ToTypedArray(args[0].GetType(), args) });
                 return method.Invoke(this, args);
+            }
             throw new NotImplementedException();
         }
 
@@ -168,7 +174,7 @@ namespace Decompose.Scripting
 
         public object Simplify(object value)
         {
-            if (value is Rational && ((Rational)value).Denominator.IsOne)
+            if (value is Rational && ((Rational)value).IsInteger)
                 return ((Rational)value).Numerator;
             return value;
         }
@@ -182,6 +188,12 @@ namespace Decompose.Scripting
             globalMethods.Add("nextprime", args => Invoke("NextPrime", args));
             globalMethods.Add("factor", args => Invoke("Factor", args));
             globalMethods.Add("sqrt", args => Invoke("Sqrt", args));
+            globalMethods.Add("log", args => Invoke("Log", args));
+            globalMethods.Add("exp", args => Invoke("Exp", args));
+            globalMethods.Add("floor", args => Invoke("Floor", args));
+            globalMethods.Add("ceiling", args => Invoke("Ceiling", args));
+            globalMethods.Add("min", args => Invoke("Min", args));
+            globalMethods.Add("max", args => Invoke("Max", args));
         } 
 
         public object Exit(params object[] args)
@@ -212,14 +224,55 @@ namespace Decompose.Scripting
             return IntegerMath.IsPrime(a);
         }
 
-        public double Sqrt(double a)
-        {
-            return Math.Sqrt(a);
-        }
-
         public T Sqrt<T>(T a)
         {
             return Integer<T>.Root(a, 2);
+        }
+
+        public double Log(object a)
+        {
+            if (a is double)
+                return Math.Log((double)a);
+            return BigInteger.Log(Cast.ToBigInteger(a));
+        }
+
+        public double Exp(object a)
+        {
+            return Math.Exp(Cast.ToDouble(a));
+        }
+
+        public T Max<T>(params T[] args)
+        {
+            var result = args[0];
+            foreach (var arg in args)
+                result = Integer<T>.Max(result, arg);
+            return result;
+        }
+
+        public T Min<T>(params T[] args)
+        {
+            var result = args[0];
+            foreach (var arg in args)
+                result = Integer<T>.Min(result, arg);
+            return result;
+        }
+
+        public object Floor(object a)
+        {
+            if (a is double)
+                return (BigInteger)Math.Floor((double)a);
+            if (a is Rational)
+                return Rational.Floor((Rational)a);
+            return a;
+        }
+
+        public object Ceiling(object a)
+        {
+            if (a is double)
+                return (BigInteger)Math.Ceiling((double)a);
+            if (a is Rational)
+                return Rational.Ceiling((Rational)a);
+            return a;
         }
 
         public BigInteger NextPrime(BigInteger a)

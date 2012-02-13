@@ -77,13 +77,18 @@ namespace Decompose.Numerics
             return result;
         }
 
+        public static BigInteger Power(BigInteger value, Rational exponent)
+        {
+            if (exponent.IsInteger)
+                return Power(value, (BigInteger)exponent);
+            return Power(Root(value, exponent.Denominator), exponent.Numerator);
+        }
+
         public static Rational Power(Rational value, Rational exponent)
         {
-            if (value.IsInteger && exponent.IsInteger)
-                return Power((BigInteger)value, (BigInteger)exponent);
-            if (value.IsInteger && exponent.Numerator == 1)
-                return Root((BigInteger)value, (BigInteger)exponent.Denominator);
-            throw new NotImplementedException("rational power not implemented");
+            if (value.IsInteger)
+                return Power((BigInteger)value, exponent);
+            return new Rational(Power(value.Numerator, exponent), Power(value.Denominator, exponent));
         }
     }
 }

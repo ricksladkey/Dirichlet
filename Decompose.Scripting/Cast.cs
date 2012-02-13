@@ -142,6 +142,8 @@ namespace Decompose.Scripting
 
         public static object[] ConvertToCompatibleTypes(object[] args)
         {
+            if (args.Length == 0)
+                return args;
             var types = args.Select(arg => arg.GetType()).ToArray();
             if (types.Any(type => type == typeof(double)))
                 return args.Select(arg => Cast.ToDouble(arg)).Cast<object>().ToArray();
@@ -160,11 +162,11 @@ namespace Decompose.Scripting
             throw new NotImplementedException();
         }
 
-        public static T[] ToArray<T>(object[] args)
+        public static object ToTypedArray(Type type, object[] args)
         {
-            var array = new T[args.Length];
+            var array = Array.CreateInstance(type, args.Length);
             for (int i = 0; i < args.Length; i++)
-                array[i] = (T)args[i];
+                array.SetValue(args[i], i);
             return array;
         }
     }

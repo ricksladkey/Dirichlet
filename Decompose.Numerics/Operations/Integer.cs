@@ -96,6 +96,8 @@ namespace Decompose.Numerics
         public int CompareTo(Integer<T> other) { return ops.Compare(value, other.value); }
         public bool Equals(T other) { return ops.Equals(value, other); }
         public bool Equals(Integer<T> other) { return ops.Equals(value, other.value); }
+        public static Integer<T> Min(Integer<T> a, Integer<T> b) { return ops.Compare(a.value, b.value) < 0 ? a : b; }
+        public static Integer<T> Max(Integer<T> a, Integer<T> b) { return ops.Compare(a.value, b.value) > 0 ? a : b; }
         public override bool Equals(object obj) { return obj is Integer<T> && ops.Equals(value, ((Integer<T>)obj).value); }
         public override int GetHashCode() { return value.GetHashCode(); }
         public override string ToString() { return value.ToString(); }
