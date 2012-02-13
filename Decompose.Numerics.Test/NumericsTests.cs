@@ -175,10 +175,10 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void TestWord32IntegerIntegerReduction()
+        public void TestMutableIntegerIntegerReduction()
         {
             var p = BigInteger.Parse("10023859281455311421");
-            TestReduction(p, new Word32IntegerReduction());
+            TestReduction(p, new MutableIntegerReduction());
         }
 
         [TestMethod]
@@ -244,10 +244,10 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void TestWord32Integer1()
+        public void TestMutableInteger1()
         {
             var n = BigInteger.Parse("10023859281455311421");
-            var store = new Word32IntegerStore(1);
+            var store = new MutableIntegerStore(1);
             var a = store.Allocate();
             var b = store.Allocate();
             var x = store.Allocate();
@@ -349,39 +349,39 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void TestWord32Integer2()
+        public void TestMutableInteger2()
         {
             for (int i = -10; i < 10; i++)
             {
                 for (int j = -10; j < 10; j++)
                 {
-                    Assert.AreEqual((BigInteger)i & j, (int)((Word32Integer)i & j));
-                    Assert.AreEqual((BigInteger)i | j, (int)((Word32Integer)i | j));
-                    Assert.AreEqual((BigInteger)i ^ j, (int)((Word32Integer)i ^ j));
-                    Assert.AreEqual(~(BigInteger)i, (int)(~(Word32Integer)i));
+                    Assert.AreEqual((BigInteger)i & j, (int)((MutableInteger)i & j));
+                    Assert.AreEqual((BigInteger)i | j, (int)((MutableInteger)i | j));
+                    Assert.AreEqual((BigInteger)i ^ j, (int)((MutableInteger)i ^ j));
+                    Assert.AreEqual(~(BigInteger)i, (int)(~(MutableInteger)i));
 
-                    Assert.AreEqual((BigInteger)i + j, (int)((Word32Integer)i + j));
-                    Assert.AreEqual((BigInteger)i - j, (int)((Word32Integer)i - j));
-                    Assert.AreEqual((BigInteger)i * j, (int)((Word32Integer)i * j));
+                    Assert.AreEqual((BigInteger)i + j, (int)((MutableInteger)i + j));
+                    Assert.AreEqual((BigInteger)i - j, (int)((MutableInteger)i - j));
+                    Assert.AreEqual((BigInteger)i * j, (int)((MutableInteger)i * j));
                     if (j != 0)
                     {
-                        Assert.AreEqual((BigInteger)i / j, (int)((Word32Integer)i / j));
-                        Assert.AreEqual((BigInteger)i % j, (int)((Word32Integer)i % j));
+                        Assert.AreEqual((BigInteger)i / j, (int)((MutableInteger)i / j));
+                        Assert.AreEqual((BigInteger)i % j, (int)((MutableInteger)i % j));
                     }
-                    Assert.AreEqual(-(BigInteger)i, (int)(-(Word32Integer)i));
+                    Assert.AreEqual(-(BigInteger)i, (int)(-(MutableInteger)i));
                 }
             }
         }
 
         [TestMethod]
-        public void TestWord32Integer3()
+        public void TestMutableInteger3()
         {
             var n = BigInteger.Parse("10023859281455311421");
             var generator = new MersenneTwister(0);
             var random = generator.Create<BigInteger>();
             var smallRandom = generator.Create<uint>();
             var length = (n.GetBitLength() * 2 + 31) / 32 + 3;
-            var store = new Word32IntegerStore(1);
+            var store = new MutableIntegerStore(1);
             var a = store.Allocate();
             var b = store.Allocate();
             var x = store.Allocate();
@@ -470,10 +470,10 @@ namespace Decompose.Numerics.Test
         {
             // Triggers "borrow != 0" special case.
             int length = 20;
-            var a = new Word32Integer(length);
-            var b = new Word32Integer(length);
-            var c = new Word32Integer(length);
-            var x = new Word32Integer(length);
+            var a = new MutableInteger(length);
+            var b = new MutableInteger(length);
+            var c = new MutableInteger(length);
+            var x = new MutableInteger(length);
             a.Set(BigInteger.Parse("851968723384911158384830467125731460171903460330379450819468842227482878637917031244505597763225"));
             b.Set(BigInteger.Parse("2200761205517100656206929789365760219952611739831"));
             x.SetRemainder(a, b);

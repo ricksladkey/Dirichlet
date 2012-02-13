@@ -11,7 +11,7 @@ namespace Decompose.Numerics
             private class Residue : IResidue<BigInteger>
             {
                 private Reducer reducer;
-                private Word32Integer r;
+                private MutableInteger r;
 
                 public IReducer<BigInteger> Reducer { get { return reducer; } }
                 public bool IsZero { get { return r.IsZero; } }
@@ -106,10 +106,10 @@ namespace Decompose.Numerics
             private int length;
             private int bToTheKMinusOneLength;
             private int bToTheKPlusOneLength;
-            private Word32IntegerStore store;
+            private MutableIntegerStore store;
 
-            private Word32Integer muRep;
-            private Word32Integer pRep;
+            private MutableInteger muRep;
+            private MutableInteger pRep;
 
             public IReductionAlgorithm<BigInteger> Reduction { get { return reduction; } }
             public BigInteger Modulus { get { return p; } }
@@ -126,7 +126,7 @@ namespace Decompose.Numerics
 
                 var muLength = mu.GetBitLength();
                 length = (pLength + 31) / 32 * 2 + (muLength + 31) / 32;
-                store = new Word32IntegerStore(length);
+                store = new MutableIntegerStore(length);
                 muRep = store.Allocate();
                 pRep = store.Allocate();
                 muRep.Set(mu);
@@ -145,12 +145,12 @@ namespace Decompose.Numerics
                 return new Residue(this, x);
             }
 
-            private Word32Integer CreateRep()
+            private MutableInteger CreateRep()
             {
-                return new Word32Integer(length);
+                return new MutableInteger(length);
             }
 
-            private void Reduce(Word32Integer z)
+            private void Reduce(MutableInteger z)
             {
                 // var qhat = (z >> (bLength * (k - 1))) * mu >> (bLength * (k + 1));
                 var reg1 = store.Allocate().Set(z);

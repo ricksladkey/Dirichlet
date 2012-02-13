@@ -8,7 +8,7 @@ namespace Decompose.Numerics
     {
         private class Reducer : Reducer<BigIntegerMontgomeryReduction, BigInteger>
         {
-            private class Residue : Residue<Reducer, BigInteger, Word32Integer>
+            private class Residue : Residue<Reducer, BigInteger, MutableInteger>
             {
                 public override bool IsZero { get { return r == 0; } }
                 public override bool IsOne { get { return r == reducer.oneRep; } }
@@ -111,11 +111,11 @@ namespace Decompose.Numerics
 
             private int length;
             private uint k0;
-            private Word32IntegerStore store;
+            private MutableIntegerStore store;
 
-            private Word32Integer nRep;
-            private Word32Integer rSquaredModNRep;
-            private Word32Integer oneRep;
+            private MutableInteger nRep;
+            private MutableInteger rSquaredModNRep;
+            private MutableInteger oneRep;
 
             public Reducer(BigIntegerMontgomeryReduction reduction, BigInteger modulus)
                 : base(reduction, modulus)
@@ -124,7 +124,7 @@ namespace Decompose.Numerics
                     throw new InvalidOperationException("not relatively prime");
                 var rLength = (modulus.GetBitLength() + 31) / 32 * 32;
                 length = 2 * rLength / 32 + 1;
-                store = new Word32IntegerStore(length);
+                store = new MutableIntegerStore(length);
                 nRep = store.Allocate().Set(modulus);
                 var rRep = store.Allocate().Set(1).LeftShift(rLength);
                 var nInv = store.Allocate().SetModularInversePowerOfTwoModulus(nRep, rLength, store);
@@ -143,12 +143,12 @@ namespace Decompose.Numerics
                 return new Residue(this, x);
             }
 
-            private Word32Integer CreateRep()
+            private MutableInteger CreateRep()
             {
-                return new Word32Integer(length);
+                return new MutableInteger(length);
             }
 
-            private void Reduce(Word32Integer t, Word32Integer u, Word32Integer v)
+            private void Reduce(MutableInteger t, MutableInteger u, MutableInteger v)
             {
                 t.MontgomeryCIOS(u, v, nRep, k0);
                 if (t >= nRep)
@@ -156,7 +156,7 @@ namespace Decompose.Numerics
                 Debug.Assert(t < nRep);
             }
 
-            private void Reduce(Word32Integer t)
+            private void Reduce(MutableInteger t)
             {
                 t.MontgomerySOS(nRep, k0);
                 if (t >= nRep)

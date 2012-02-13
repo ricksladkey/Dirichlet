@@ -55,8 +55,8 @@
     <Compile Include="Operations\BigIntegerOperations.cs" />
     <Compile Include="Core\Int65.cs" />
     <Compile Include="Core\IStore.cs" />
-    <Compile Include="Core\ShareableWord32IntegerStore.cs" />
-    <Compile Include="Core\Word32IntegerExtensions.cs" />
+    <Compile Include="Core\ShareableMutableIntegerStore.cs" />
+    <Compile Include="Core\MutableIntegerExtensions.cs" />
     <Compile Include="Division\IDivisionAlgorithm.cs" />
     <Compile Include="Division\UInt32Division.cs" />
     <Compile Include="Division\UInt64Division.cs" />
@@ -122,7 +122,7 @@
     <Compile Include="QuadraticSieve\QuadraticSieve.cs" />
     <Compile Include="Collections\ByRowSetBitMatrix.cs" />
     <Compile Include="NullSpace\StructuredGaussianElimination.cs" />
-    <Compile Include="Core\Word32Integer.cs" />
+    <Compile Include="Core\MutableInteger.cs" />
     <Compile Include="Reduction\IResidue.cs" />
     <Compile Include="Reduction\Reducer.cs" />
     <Compile Include="Reduction\ReductionHelper.cs" />
@@ -131,8 +131,8 @@
     <Compile Include="Reduction\Performance\UInt64MontgomeryReduction.cs" />
     <Compile Include="Reduction\Reference\UInt64Reduction.cs" />
     <Compile Include="Reduction\Performance\UInt32MontgomeryReduction.cs" />
-    <Compile Include="Reduction\Performance\Word32IntegerReduction.cs" />
-    <Compile Include="Core\Word32IntegerStore.cs" />
+    <Compile Include="Reduction\Performance\MutableIntegerReduction.cs" />
+    <Compile Include="Core\MutableIntegerStore.cs" />
     <Compile Include="Core\SieveOfErostothones.cs" />
     <Compile Include="Core\SqrtBinarySearch.cs" />
     <Compile Include="Core\SqrtNewtonsMethod.cs" />

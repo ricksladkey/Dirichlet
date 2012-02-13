@@ -5,9 +5,9 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class Word32Integer : IComparable<Word32Integer>, IEquatable<Word32Integer>
+    public class MutableInteger : IComparable<MutableInteger>, IEquatable<MutableInteger>
     {
-        private static IStore<Word32Integer> shareableStore = new ShareableWord32IntegerStore();
+        private static IStore<MutableInteger> shareableStore = new ShareableMutableIntegerStore();
 
         private const int wordLength = 32;
         private const int wordLengthShift = 5;
@@ -67,12 +67,12 @@ namespace Decompose.Numerics
             get { return wordLength; }
         }
 
-        public Word32Integer(int length)
+        public MutableInteger(int length)
             : this(new uint[length], 1)
         {
         }
 
-        private Word32Integer(uint[] bits, int sign)
+        private MutableInteger(uint[] bits, int sign)
         {
             Debug.Assert(bits != null && bits.Length > 0);
             Debug.Assert(sign == 1 || sign == -1);
@@ -94,7 +94,7 @@ namespace Decompose.Numerics
             bits = newBits;
         }
 
-        public Word32Integer Clear()
+        public MutableInteger Clear()
         {
             CheckValid();
             for (int i = 0; i <= last; i++)
@@ -112,7 +112,7 @@ namespace Decompose.Numerics
             last = 0;
         }
 
-        public Word32Integer Set(int a)
+        public MutableInteger Set(int a)
         {
             CheckValid();
             bits[0] = (uint)(a < 0 ? -a : a);
@@ -124,7 +124,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer Set(uint a)
+        public MutableInteger Set(uint a)
         {
             CheckValid();
             bits[0] = a;
@@ -136,7 +136,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer Set(long a)
+        public MutableInteger Set(long a)
         {
             CheckValid();
             var aAbs = a < 0 ? -a : a;
@@ -150,7 +150,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer Set(ulong a)
+        public MutableInteger Set(ulong a)
         {
             CheckValid();
             bits[0] = (uint)a;
@@ -163,7 +163,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer Set(BigInteger a)
+        public MutableInteger Set(BigInteger a)
         {
             CheckValid();
             var asign = a.Sign == -1 ? -1 : 1;
@@ -179,7 +179,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer Set(Word32Integer a)
+        public MutableInteger Set(MutableInteger a)
         {
             CheckValid();
             CheckLast(a.last);
@@ -197,7 +197,7 @@ namespace Decompose.Numerics
         }
 
 #if false
-        public Word32Integer SetMasked(Word32Integer a, int n)
+        public MutableInteger SetMasked(MutableInteger a, int n)
         {
             CheckValid();
             Debug.Assert(Length == a.Length);
@@ -212,61 +212,61 @@ namespace Decompose.Numerics
         }
 #endif
 
-        public Word32Integer Copy()
+        public MutableInteger Copy()
         {
             CheckValid();
             var newBits = new uint[bits.Length];
             Array.Copy(bits, 0, newBits, 0, last + 1);
-            return new Word32Integer(newBits, sign);
+            return new MutableInteger(newBits, sign);
         }
 
-        public static implicit operator Word32Integer(int a)
+        public static implicit operator MutableInteger(int a)
         {
-            return new Word32Integer(1).Set(a);
+            return new MutableInteger(1).Set(a);
         }
 
-        public static implicit operator Word32Integer(uint a)
+        public static implicit operator MutableInteger(uint a)
         {
-            return new Word32Integer(1).Set(a);
+            return new MutableInteger(1).Set(a);
         }
 
-        public static implicit operator Word32Integer(long a)
+        public static implicit operator MutableInteger(long a)
         {
-            return new Word32Integer(2).Set(a);
+            return new MutableInteger(2).Set(a);
         }
 
-        public static implicit operator Word32Integer(ulong a)
+        public static implicit operator MutableInteger(ulong a)
         {
-            return new Word32Integer(2).Set(a);
+            return new MutableInteger(2).Set(a);
         }
 
-        public static implicit operator Word32Integer(BigInteger a)
+        public static implicit operator MutableInteger(BigInteger a)
         {
-            return new Word32Integer(4).Set(a);
+            return new MutableInteger(4).Set(a);
         }
 
-        public static explicit operator int(Word32Integer a)
+        public static explicit operator int(MutableInteger a)
         {
             CheckValid(a);
             Debug.Assert(a.last == 0);
             return a.sign == -1 ? -(int)a.bits[0] : (int)a.bits[0];
         }
 
-        public static explicit operator uint(Word32Integer a)
+        public static explicit operator uint(MutableInteger a)
         {
             CheckValid(a);
             Debug.Assert(a.last == 0);
             return a.bits[0];
         }
 
-        public static explicit operator ulong(Word32Integer a)
+        public static explicit operator ulong(MutableInteger a)
         {
             CheckValid(a);
             Debug.Assert(a.last < 2);
             return a.last == 0 ? a.bits[0] : (ulong)a.bits[1] << 32 | a.bits[0];
         }
 
-        public static implicit operator BigInteger(Word32Integer a)
+        public static implicit operator BigInteger(MutableInteger a)
         {
             CheckValid(a);
             var bytes = new byte[(a.last + 1) * 4 + 1];
@@ -292,8 +292,8 @@ namespace Decompose.Numerics
 
         public override bool Equals(object obj)
         {
-            if (obj is Word32Integer)
-                return CompareTo((Word32Integer)obj) == 0;
+            if (obj is MutableInteger)
+                return CompareTo((MutableInteger)obj) == 0;
             if (obj is int)
                 return CompareTo((int)obj) == 0;
             if (obj is uint)
@@ -307,14 +307,14 @@ namespace Decompose.Numerics
             return false;
         }
 
-        public bool Equals(Word32Integer other)
+        public bool Equals(MutableInteger other)
         {
             if ((object)other == null)
                 return false;
             return CompareTo(other) == 0;
         }
 
-        public static bool operator ==(Word32Integer a, Word32Integer b)
+        public static bool operator ==(MutableInteger a, MutableInteger b)
         {
             if ((object)a == (object)b)
                 return true;
@@ -323,344 +323,344 @@ namespace Decompose.Numerics
             return a.CompareTo(b) == 0;
         }
 
-        public static bool operator ==(Word32Integer a, int b)
+        public static bool operator ==(MutableInteger a, int b)
         {
             if ((object)a == null)
                 return false;
             return a.CompareTo(b) == 0;
         }
 
-        public static bool operator ==(Word32Integer a, uint b)
+        public static bool operator ==(MutableInteger a, uint b)
         {
             if ((object)a == null)
                 return false;
             return a.CompareTo(b) == 0;
         }
 
-        public static bool operator ==(Word32Integer a, long b)
+        public static bool operator ==(MutableInteger a, long b)
         {
             if ((object)a == null)
                 return false;
             return a.CompareTo(b) == 0;
         }
 
-        public static bool operator ==(Word32Integer a, ulong b)
+        public static bool operator ==(MutableInteger a, ulong b)
         {
             if ((object)a == null)
                 return false;
             return a.CompareTo(b) == 0;
         }
 
-        public static bool operator ==(int a, Word32Integer b)
+        public static bool operator ==(int a, MutableInteger b)
         {
             if ((object)b == null)
                 return false;
             return b.CompareTo(a) == 0;
         }
 
-        public static bool operator ==(uint a, Word32Integer b)
+        public static bool operator ==(uint a, MutableInteger b)
         {
             if ((object)b == null)
                 return false;
             return b.CompareTo(a) == 0;
         }
 
-        public static bool operator ==(long a, Word32Integer b)
+        public static bool operator ==(long a, MutableInteger b)
         {
             if ((object)b == null)
                 return false;
             return b.CompareTo(a) == 0;
         }
 
-        public static bool operator ==(ulong a, Word32Integer b)
+        public static bool operator ==(ulong a, MutableInteger b)
         {
             if ((object)b == null)
                 return false;
             return b.CompareTo(a) == 0;
         }
 
-        public static bool operator !=(Word32Integer a, Word32Integer b)
+        public static bool operator !=(MutableInteger a, MutableInteger b)
         {
             return !(a == b);
         }
 
-        public static bool operator !=(Word32Integer a, int b)
+        public static bool operator !=(MutableInteger a, int b)
         {
             return !(a == b);
         }
 
-        public static bool operator !=(Word32Integer a, uint b)
+        public static bool operator !=(MutableInteger a, uint b)
         {
             return !(a == b);
         }
 
-        public static bool operator !=(Word32Integer a, ulong b)
+        public static bool operator !=(MutableInteger a, ulong b)
         {
             return !(a == b);
         }
 
-        public static bool operator !=(Word32Integer a, long b)
+        public static bool operator !=(MutableInteger a, long b)
         {
             return !(a == b);
         }
 
-        public static bool operator !=(int a, Word32Integer b)
+        public static bool operator !=(int a, MutableInteger b)
         {
             return !(a == b);
         }
 
-        public static bool operator !=(uint a, Word32Integer b)
+        public static bool operator !=(uint a, MutableInteger b)
         {
             return !(a == b);
         }
 
-        public static bool operator !=(long a, Word32Integer b)
+        public static bool operator !=(long a, MutableInteger b)
         {
             return !(a == b);
         }
 
-        public static bool operator !=(ulong a, Word32Integer b)
+        public static bool operator !=(ulong a, MutableInteger b)
         {
             return !(a == b);
         }
 
-        public static bool operator <(Word32Integer a, Word32Integer b)
+        public static bool operator <(MutableInteger a, MutableInteger b)
         {
             return a.CompareTo(b) < 0;
         }
 
-        public static bool operator <(Word32Integer a, int b)
+        public static bool operator <(MutableInteger a, int b)
         {
             return a.CompareTo(b) < 0;
         }
 
-        public static bool operator <(Word32Integer a, uint b)
+        public static bool operator <(MutableInteger a, uint b)
         {
             return a.CompareTo(b) < 0;
         }
 
-        public static bool operator <(Word32Integer a, long b)
+        public static bool operator <(MutableInteger a, long b)
         {
             return a.CompareTo(b) < 0;
         }
 
-        public static bool operator <(Word32Integer a, ulong b)
+        public static bool operator <(MutableInteger a, ulong b)
         {
             return a.CompareTo(b) < 0;
         }
 
-        public static bool operator <(int a, Word32Integer b)
+        public static bool operator <(int a, MutableInteger b)
         {
             return b.CompareTo(a) > 0;
         }
 
-        public static bool operator <(uint a, Word32Integer b)
+        public static bool operator <(uint a, MutableInteger b)
         {
             return b.CompareTo(a) > 0;
         }
 
-        public static bool operator <(long a, Word32Integer b)
+        public static bool operator <(long a, MutableInteger b)
         {
             return b.CompareTo(a) > 0;
         }
 
-        public static bool operator <(ulong a, Word32Integer b)
+        public static bool operator <(ulong a, MutableInteger b)
         {
             return b.CompareTo(a) > 0;
         }
 
-        public static bool operator <=(Word32Integer a, Word32Integer b)
+        public static bool operator <=(MutableInteger a, MutableInteger b)
         {
             return a.CompareTo(b) <= 0;
         }
 
-        public static bool operator <=(Word32Integer a, int b)
+        public static bool operator <=(MutableInteger a, int b)
         {
             return a.CompareTo(b) <= 0;
         }
 
-        public static bool operator <=(Word32Integer a, uint b)
+        public static bool operator <=(MutableInteger a, uint b)
         {
             return a.CompareTo(b) <= 0;
         }
 
-        public static bool operator <=(Word32Integer a, long b)
+        public static bool operator <=(MutableInteger a, long b)
         {
             return a.CompareTo(b) <= 0;
         }
 
-        public static bool operator <=(Word32Integer a, ulong b)
+        public static bool operator <=(MutableInteger a, ulong b)
         {
             return a.CompareTo(b) <= 0;
         }
 
-        public static bool operator <=(int a, Word32Integer b)
+        public static bool operator <=(int a, MutableInteger b)
         {
             return b.CompareTo(a) >= 0;
         }
 
-        public static bool operator <=(uint a, Word32Integer b)
+        public static bool operator <=(uint a, MutableInteger b)
         {
             return b.CompareTo(a) >= 0;
         }
 
-        public static bool operator <=(long a, Word32Integer b)
+        public static bool operator <=(long a, MutableInteger b)
         {
             return b.CompareTo(a) >= 0;
         }
 
-        public static bool operator <=(ulong a, Word32Integer b)
+        public static bool operator <=(ulong a, MutableInteger b)
         {
             return b.CompareTo(a) >= 0;
         }
 
-        public static bool operator >(Word32Integer a, Word32Integer b)
+        public static bool operator >(MutableInteger a, MutableInteger b)
         {
             return a.CompareTo(b) > 0;
         }
 
-        public static bool operator >(Word32Integer a, int b)
+        public static bool operator >(MutableInteger a, int b)
         {
             return a.CompareTo(b) > 0;
         }
 
-        public static bool operator >(Word32Integer a, uint b)
+        public static bool operator >(MutableInteger a, uint b)
         {
             return a.CompareTo(b) > 0;
         }
 
-        public static bool operator >(Word32Integer a, long b)
+        public static bool operator >(MutableInteger a, long b)
         {
             return a.CompareTo(b) > 0;
         }
 
-        public static bool operator >(Word32Integer a, ulong b)
+        public static bool operator >(MutableInteger a, ulong b)
         {
             return a.CompareTo(b) > 0;
         }
 
-        public static bool operator >(int a, Word32Integer b)
+        public static bool operator >(int a, MutableInteger b)
         {
             return b.CompareTo(a) < 0;
         }
 
-        public static bool operator >(uint a, Word32Integer b)
+        public static bool operator >(uint a, MutableInteger b)
         {
             return b.CompareTo(a) < 0;
         }
 
-        public static bool operator >(long a, Word32Integer b)
+        public static bool operator >(long a, MutableInteger b)
         {
             return b.CompareTo(a) < 0;
         }
 
-        public static bool operator >(ulong a, Word32Integer b)
+        public static bool operator >(ulong a, MutableInteger b)
         {
             return b.CompareTo(a) < 0;
         }
 
-        public static bool operator >=(Word32Integer a, Word32Integer b)
+        public static bool operator >=(MutableInteger a, MutableInteger b)
         {
             return a.CompareTo(b) >= 0;
         }
 
-        public static bool operator >=(Word32Integer a, int b)
+        public static bool operator >=(MutableInteger a, int b)
         {
             return a.CompareTo(b) >= 0;
         }
 
-        public static bool operator >=(Word32Integer a, uint b)
+        public static bool operator >=(MutableInteger a, uint b)
         {
             return a.CompareTo(b) >= 0;
         }
 
-        public static bool operator >=(Word32Integer a, long b)
+        public static bool operator >=(MutableInteger a, long b)
         {
             return a.CompareTo(b) >= 0;
         }
 
-        public static bool operator >=(Word32Integer a, ulong b)
+        public static bool operator >=(MutableInteger a, ulong b)
         {
             return a.CompareTo(b) >= 0;
         }
 
-        public static bool operator >=(int a, Word32Integer b)
+        public static bool operator >=(int a, MutableInteger b)
         {
             return b.CompareTo(a) <= 0;
         }
 
-        public static bool operator >=(uint a, Word32Integer b)
+        public static bool operator >=(uint a, MutableInteger b)
         {
             return b.CompareTo(a) <= 0;
         }
 
-        public static bool operator >=(long a, Word32Integer b)
+        public static bool operator >=(long a, MutableInteger b)
         {
             return b.CompareTo(a) <= 0;
         }
 
-        public static bool operator >=(ulong a, Word32Integer b)
+        public static bool operator >=(ulong a, MutableInteger b)
         {
             return b.CompareTo(a) <= 0;
         }
 
-        public static Word32Integer operator &(Word32Integer a, Word32Integer b)
+        public static MutableInteger operator &(MutableInteger a, MutableInteger b)
         {
             var length = Math.Max(a.last, b.last) + 2;
             if (a.Sign == 1 && b.Sign == 1)
-                return new Word32Integer(length).SetUnsignedAnd(a, b);
-            return new Word32Integer(length).SetAnd(a, b, shareableStore);
+                return new MutableInteger(length).SetUnsignedAnd(a, b);
+            return new MutableInteger(length).SetAnd(a, b, shareableStore);
         }
 
-        public static Word32Integer operator |(Word32Integer a, Word32Integer b)
+        public static MutableInteger operator |(MutableInteger a, MutableInteger b)
         {
             var length = Math.Max(a.last, b.last) + 2;
             if (a.Sign == 1 && b.Sign == 1)
-                return new Word32Integer(length).SetUnsignedOr(a, b);
-            return new Word32Integer(length).SetOr(a, b, shareableStore);
+                return new MutableInteger(length).SetUnsignedOr(a, b);
+            return new MutableInteger(length).SetOr(a, b, shareableStore);
         }
 
-        public static Word32Integer operator ^(Word32Integer a, Word32Integer b)
+        public static MutableInteger operator ^(MutableInteger a, MutableInteger b)
         {
             var length = Math.Max(a.last, b.last) + 2;
             if (a.Sign == 1 && b.Sign == 1)
-                return new Word32Integer(length).SetUnsignedExclusiveOr(a, b);
-            return new Word32Integer(length).SetExclusiveOr(a, b, shareableStore);
+                return new MutableInteger(length).SetUnsignedExclusiveOr(a, b);
+            return new MutableInteger(length).SetExclusiveOr(a, b, shareableStore);
         }
 
-        public static Word32Integer operator ~(Word32Integer a)
+        public static MutableInteger operator ~(MutableInteger a)
         {
-            return new Word32Integer(a.last + 1).SetNot(a);
+            return new MutableInteger(a.last + 1).SetNot(a);
         }
 
-        public static Word32Integer operator +(Word32Integer a, Word32Integer b)
+        public static MutableInteger operator +(MutableInteger a, MutableInteger b)
         {
-            return new Word32Integer(Math.Max(a.last, b.last) + 2).SetSum(a, b);
+            return new MutableInteger(Math.Max(a.last, b.last) + 2).SetSum(a, b);
         }
 
-        public static Word32Integer operator -(Word32Integer a, Word32Integer b)
+        public static MutableInteger operator -(MutableInteger a, MutableInteger b)
         {
-            return new Word32Integer(Math.Max(a.last, b.last) + 2).SetDifference(a, b);
+            return new MutableInteger(Math.Max(a.last, b.last) + 2).SetDifference(a, b);
         }
 
-        public static Word32Integer operator -(Word32Integer a)
+        public static MutableInteger operator -(MutableInteger a)
         {
             return a.Copy().Negate();
         }
 
-        public static Word32Integer operator *(Word32Integer a, Word32Integer b)
+        public static MutableInteger operator *(MutableInteger a, MutableInteger b)
         {
-            return new Word32Integer(a.last + b.last + 1).SetProduct(a, b);
+            return new MutableInteger(a.last + b.last + 1).SetProduct(a, b);
         }
 
-        public static Word32Integer operator /(Word32Integer a, Word32Integer b)
+        public static MutableInteger operator /(MutableInteger a, MutableInteger b)
         {
-            return new Word32Integer(a.last + 1).SetQuotient(a, b, shareableStore);
+            return new MutableInteger(a.last + 1).SetQuotient(a, b, shareableStore);
         }
 
-        public static Word32Integer operator %(Word32Integer a, Word32Integer b)
+        public static MutableInteger operator %(MutableInteger a, MutableInteger b)
         {
-            return new Word32Integer(a.last + b.last + 1).SetRemainder(a, b);
+            return new MutableInteger(a.last + b.last + 1).SetRemainder(a, b);
         }
 
         public override int GetHashCode()
@@ -673,7 +673,7 @@ namespace Decompose.Numerics
             return hash ^ sign;
         }
 
-        public int CompareTo(Word32Integer other)
+        public int CompareTo(MutableInteger other)
         {
             if (sign != other.sign)
                 return IsZero && other.IsZero ? 0 : sign;
@@ -681,7 +681,7 @@ namespace Decompose.Numerics
             return sign == -1 ? -result : result;
         }
 
-        public int UnsignedCompareTo(Word32Integer other)
+        public int UnsignedCompareTo(MutableInteger other)
         {
             CheckValid();
             var diff = last - other.last;
@@ -774,7 +774,7 @@ namespace Decompose.Numerics
             return ((ulong)bits[1] << 32 | bits[0]).CompareTo(other);
         }
 
-        public Word32Integer Mask(int n)
+        public MutableInteger Mask(int n)
         {
             CheckValid();
             int i = n >> wordLengthShift;
@@ -799,7 +799,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer LeftShift(int n)
+        public MutableInteger LeftShift(int n)
         {
             CheckValid();
             if (n == 0)
@@ -830,7 +830,7 @@ namespace Decompose.Numerics
             }
         }
 
-        public Word32Integer RightShift(int n)
+        public MutableInteger RightShift(int n)
         {
             if (sign == 1)
                 return UnsignedRightShift(n);
@@ -840,7 +840,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer UnsignedRightShift(int n)
+        public MutableInteger UnsignedRightShift(int n)
         {
             CheckValid();
             if (n == 0)
@@ -872,7 +872,7 @@ namespace Decompose.Numerics
             return SetLast(limit);
         }
 
-        public Word32Integer SetBit(int n, bool bit)
+        public MutableInteger SetBit(int n, bool bit)
         {
             CheckValid();
             int i = n >> wordLengthShift;
@@ -905,7 +905,7 @@ namespace Decompose.Numerics
             ExclusiveOr,
         }
 
-        private Word32Integer SetSignedLogical(LogicalOperation op, Word32Integer a, Word32Integer b, IStore<Word32Integer> store)
+        private MutableInteger SetSignedLogical(LogicalOperation op, MutableInteger a, MutableInteger b, IStore<MutableInteger> store)
         {
             int lastMax = Math.Max(a.last, b.last);
             var r = store.Allocate().Set(1).LeftShift((lastMax + 1) * wordLength);
@@ -946,28 +946,28 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer SetAnd(Word32Integer a, Word32Integer b, IStore<Word32Integer> store)
+        public MutableInteger SetAnd(MutableInteger a, MutableInteger b, IStore<MutableInteger> store)
         {
             if (a.Sign == 1 && b.Sign == 1)
                 return SetUnsignedAnd(a, b);
             return SetSignedLogical(LogicalOperation.And, a, b, store);
         }
 
-        public Word32Integer SetOr(Word32Integer a, Word32Integer b, IStore<Word32Integer> store)
+        public MutableInteger SetOr(MutableInteger a, MutableInteger b, IStore<MutableInteger> store)
         {
             if (a.Sign == 1 && b.Sign == 1)
                 return SetUnsignedOr(a, b);
             return SetSignedLogical(LogicalOperation.Or, a, b, store);
         }
 
-        public Word32Integer SetExclusiveOr(Word32Integer a, Word32Integer b, IStore<Word32Integer> store)
+        public MutableInteger SetExclusiveOr(MutableInteger a, MutableInteger b, IStore<MutableInteger> store)
         {
             if (a.Sign == 1 && b.Sign == 1)
                 return SetUnsignedExclusiveOr(a, b);
             return SetSignedLogical(LogicalOperation.ExclusiveOr, a, b, store);
         }
 
-        public Word32Integer SetUnsignedAnd(Word32Integer a, Word32Integer b)
+        public MutableInteger SetUnsignedAnd(MutableInteger a, MutableInteger b)
         {
             CheckValid();
             int lastMin = Math.Min(a.last, b.last);
@@ -980,7 +980,7 @@ namespace Decompose.Numerics
             return SetLast(lastMin);
         }
 
-        public Word32Integer SetUnsignedOr(Word32Integer a, Word32Integer b)
+        public MutableInteger SetUnsignedOr(MutableInteger a, MutableInteger b)
         {
             int lastMin = Math.Min(a.last, b.last);
             int lastMax = Math.Max(a.last, b.last);
@@ -1003,7 +1003,7 @@ namespace Decompose.Numerics
             return SetLast(lastMin);
         }
 
-        public Word32Integer SetUnsignedExclusiveOr(Word32Integer a, Word32Integer b)
+        public MutableInteger SetUnsignedExclusiveOr(MutableInteger a, MutableInteger b)
         {
             int lastMin = Math.Min(a.last, b.last);
             int lastMax = Math.Max(a.last, b.last);
@@ -1026,25 +1026,25 @@ namespace Decompose.Numerics
             return SetLast(lastMin);
         }
 
-        public Word32Integer SetNot(Word32Integer a)
+        public MutableInteger SetNot(MutableInteger a)
         {
             SetSum(a, 1);
             Sign = -Sign;
             return this;
         }
 
-        public Word32Integer Add(Word32Integer a)
+        public MutableInteger Add(MutableInteger a)
         {
             return SetSum(this, a);
         }
 
-        public Word32Integer SetSum(Word32Integer a, Word32Integer b)
+        public MutableInteger SetSum(MutableInteger a, MutableInteger b)
         {
             SetSignedSum(a, b, false);
             return this;
         }
 
-        private void SetUnsignedSum(Word32Integer a, Word32Integer b)
+        private void SetUnsignedSum(MutableInteger a, MutableInteger b)
         {
             CheckValid();
             int limit = Math.Max(a.last, b.last);
@@ -1072,28 +1072,28 @@ namespace Decompose.Numerics
             CheckValid();
         }
 
-        public Word32Integer Increment()
+        public MutableInteger Increment()
         {
             return SetSum(this, 1);
         }
 
-        public Word32Integer Add(int a)
+        public MutableInteger Add(int a)
         {
             return SetSum(this, a);
         }
 
-        public Word32Integer SetSum(Word32Integer a, int b)
+        public MutableInteger SetSum(MutableInteger a, int b)
         {
             SetSignedSum(a, b, false);
             return this;
         }
 
-        public Word32Integer Add(uint a)
+        public MutableInteger Add(uint a)
         {
             return SetSum(this, a);
         }
 
-        public Word32Integer SetSum(Word32Integer a, uint b)
+        public MutableInteger SetSum(MutableInteger a, uint b)
         {
             if (a.sign == -1)
                 return SetDifference(a, b);
@@ -1101,7 +1101,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        private void SetUnsignedSum(Word32Integer a, uint b)
+        private void SetUnsignedSum(MutableInteger a, uint b)
         {
             CheckValid();
             var abits = a.bits;
@@ -1151,7 +1151,7 @@ namespace Decompose.Numerics
             CheckValid();
         }
 
-        public Word32Integer AddModulo(Word32Integer a, Word32Integer n)
+        public MutableInteger AddModulo(MutableInteger a, MutableInteger n)
         {
             CheckValid();
             CheckLast(n.last);
@@ -1179,18 +1179,18 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer Subtract(Word32Integer a)
+        public MutableInteger Subtract(MutableInteger a)
         {
             return SetDifference(this, a);
         }
 
-        public Word32Integer SetDifference(Word32Integer a, Word32Integer b)
+        public MutableInteger SetDifference(MutableInteger a, MutableInteger b)
         {
             SetSignedSum(a, b, true);
             return this;
         }
 
-        private void SetUnsignedDifference(Word32Integer a, Word32Integer b)
+        private void SetUnsignedDifference(MutableInteger a, MutableInteger b)
         {
             CheckValid();
             var limit = a.last;
@@ -1213,28 +1213,28 @@ namespace Decompose.Numerics
             CheckValid();
         }
 
-        public Word32Integer Decrement()
+        public MutableInteger Decrement()
         {
             return SetDifference(this, 1);
         }
 
-        public Word32Integer Subtract(int a)
+        public MutableInteger Subtract(int a)
         {
             return SetDifference(this, a);
         }
 
-        public Word32Integer SetDifference(Word32Integer a, int b)
+        public MutableInteger SetDifference(MutableInteger a, int b)
         {
             SetSignedSum(a, b, true);
             return this;
         }
 
-        public Word32Integer Subtract(uint a)
+        public MutableInteger Subtract(uint a)
         {
             return SetDifference(this, a);
         }
 
-        public Word32Integer SetDifference(Word32Integer a, uint b)
+        public MutableInteger SetDifference(MutableInteger a, uint b)
         {
             if (a.sign == -1)
                 return SetSum(a, b);
@@ -1242,7 +1242,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        private void SetUnsignedDifference(Word32Integer a, uint b)
+        private void SetUnsignedDifference(MutableInteger a, uint b)
         {
             CheckValid();
             CheckLast(a.last);
@@ -1276,7 +1276,7 @@ namespace Decompose.Numerics
             CheckValid();
         }
 
-        public Word32Integer SubtractModulo(Word32Integer a, Word32Integer n)
+        public MutableInteger SubtractModulo(MutableInteger a, MutableInteger n)
         {
             CheckValid();
             CheckLast(n.last);
@@ -1302,7 +1302,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public void SetSignedSum(Word32Integer a, int b, bool subtraction)
+        public void SetSignedSum(MutableInteger a, int b, bool subtraction)
         {
             var asign = a.sign;
             var bsign = 1;
@@ -1334,7 +1334,7 @@ namespace Decompose.Numerics
             }
         }
 
-        public void SetSignedSum(Word32Integer a, Word32Integer b, bool subtraction)
+        public void SetSignedSum(MutableInteger a, MutableInteger b, bool subtraction)
         {
             var asign = a.sign;
             var bsign = subtraction ? -b.sign : b.sign;
@@ -1358,19 +1358,19 @@ namespace Decompose.Numerics
             }
         }
 
-        public Word32Integer Negate()
+        public MutableInteger Negate()
         {
             sign = sign == -1 ? 1 : -1;
             return this;
         }
 
-        public Word32Integer AbsoluteValue()
+        public MutableInteger AbsoluteValue()
         {
             sign = 1;
             return this;
         }
 
-        public Word32Integer Multiply(Word32Integer a, IStore<Word32Integer> store)
+        public MutableInteger Multiply(MutableInteger a, IStore<MutableInteger> store)
         {
             var reg1 = store.Allocate().Set(this);
             if (object.ReferenceEquals(this, a))
@@ -1381,13 +1381,13 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer SetSquare(Word32Integer a)
+        public MutableInteger SetSquare(MutableInteger a)
         {
             return SetProduct(a, a);
         }
 
 #if false
-        public Word32Integer SetSquareSlow(Word32Integer a)
+        public MutableInteger SetSquareSlow(MutableInteger a)
         {
             // Use operand scanning algorithm.
             CheckValid();
@@ -1427,7 +1427,7 @@ namespace Decompose.Numerics
         }
 #endif
 
-        public Word32Integer SetProduct(Word32Integer a, Word32Integer b)
+        public MutableInteger SetProduct(MutableInteger a, MutableInteger b)
         {
             // Use operand scanning algorithm.
             CheckValid();
@@ -1472,12 +1472,12 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer Multiply(uint a)
+        public MutableInteger Multiply(uint a)
         {
             return SetProduct(this, a);
         }
 
-        public Word32Integer SetProduct(Word32Integer a, int b)
+        public MutableInteger SetProduct(MutableInteger a, int b)
         {
             CheckValid();
             Debug.Assert(a.GetBitLength() + b.GetBitLength() <= 32 * Length);
@@ -1487,7 +1487,7 @@ namespace Decompose.Numerics
             return SetLast(a.last + 1);
         }
 
-        public Word32Integer SetProduct(Word32Integer a, uint b)
+        public MutableInteger SetProduct(MutableInteger a, uint b)
         {
             // Use operand scanning algorithm.
             CheckValid();
@@ -1506,7 +1506,7 @@ namespace Decompose.Numerics
             return SetLast(a.last + 1);
         }
 
-        public Word32Integer SetProductMasked(Word32Integer a, Word32Integer b, int n)
+        public MutableInteger SetProductMasked(MutableInteger a, MutableInteger b, int n)
         {
             CheckValid();
             Debug.Assert(n % 32 == 0);
@@ -1542,7 +1542,7 @@ namespace Decompose.Numerics
         /// Note: the result may be less than the result of separate multiplication
         /// and shifting operations by at most one.
         /// </remarks>
-        public Word32Integer SetProductShifted(Word32Integer a, Word32Integer b, int n)
+        public MutableInteger SetProductShifted(MutableInteger a, MutableInteger b, int n)
         {
             // Use product scanning algorithm.
             CheckValid();
@@ -1582,7 +1582,7 @@ namespace Decompose.Numerics
         }
 #endif
 
-        public Word32Integer Divide(Word32Integer a, IStore<Word32Integer> store)
+        public MutableInteger Divide(MutableInteger a, IStore<MutableInteger> store)
         {
             var reg1 = store.Allocate().Set(this);
             reg1.Set(this);
@@ -1591,13 +1591,13 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer Modulo(Word32Integer a)
+        public MutableInteger Modulo(MutableInteger a)
         {
             ModuloWithQuotient(a, null);
             return this;
         }
 
-        public Word32Integer SetQuotient(Word32Integer a, Word32Integer b, IStore<Word32Integer> store)
+        public MutableInteger SetQuotient(MutableInteger a, MutableInteger b, IStore<MutableInteger> store)
         {
             var reg1 = store.Allocate();
             reg1.Set(a).ModuloWithQuotient(b, this);
@@ -1605,13 +1605,13 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer SetQuotientWithRemainder(Word32Integer a, Word32Integer b, Word32Integer remainder)
+        public MutableInteger SetQuotientWithRemainder(MutableInteger a, MutableInteger b, MutableInteger remainder)
         {
             remainder.Set(a).ModuloWithQuotient(b, this);
             return this;
         }
 
-        public Word32Integer SetRemainder(Word32Integer a, Word32Integer b)
+        public MutableInteger SetRemainder(MutableInteger a, MutableInteger b)
         {
             if (!object.ReferenceEquals(this, a))
                 Set(a);
@@ -1619,7 +1619,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer ModuloWithQuotient(Word32Integer v, Word32Integer q)
+        public MutableInteger ModuloWithQuotient(MutableInteger v, MutableInteger q)
         {
             if (UnsignedCompareTo(v) < 0)
             {
@@ -1714,7 +1714,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer Divide(uint a, IStore<Word32Integer> store)
+        public MutableInteger Divide(uint a, IStore<MutableInteger> store)
         {
             var reg1 = store.Allocate();
             reg1.Set(this).ModuloWithQuotient(a, this);
@@ -1722,13 +1722,13 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer Modulo(uint a)
+        public MutableInteger Modulo(uint a)
         {
             ModuloWithQuotient(a, null);
             return this;
         }
 
-        public Word32Integer SetQuotient(Word32Integer a, int b, IStore<Word32Integer> store)
+        public MutableInteger SetQuotient(MutableInteger a, int b, IStore<MutableInteger> store)
         {
             var reg1 = store.Allocate();
             reg1.Set(a).ModuloWithQuotient((uint)Math.Abs(b), this);
@@ -1738,7 +1738,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer SetQuotient(Word32Integer a, uint b, IStore<Word32Integer> store)
+        public MutableInteger SetQuotient(MutableInteger a, uint b, IStore<MutableInteger> store)
         {
             var reg1 = store.Allocate();
             reg1.Set(a).ModuloWithQuotient(b, this);
@@ -1746,13 +1746,13 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer SetQuotientWithRemainder(Word32Integer a, uint b, Word32Integer remainder)
+        public MutableInteger SetQuotientWithRemainder(MutableInteger a, uint b, MutableInteger remainder)
         {
             remainder.Set(a).ModuloWithQuotient(b, this);
             return this;
         }
 
-        public Word32Integer SetRemainder(Word32Integer a, uint b)
+        public MutableInteger SetRemainder(MutableInteger a, uint b)
         {
             return Set(a.GetRemainder(b));
         }
@@ -1776,7 +1776,7 @@ namespace Decompose.Numerics
             return (uint)u0;
         }
 
-        public Word32Integer ModuloWithQuotient(uint v, Word32Integer q)
+        public MutableInteger ModuloWithQuotient(uint v, MutableInteger q)
         {
             if (q == null)
             {
@@ -1811,7 +1811,7 @@ namespace Decompose.Numerics
         }
 
 #if true
-        public Word32Integer BarrettReduction(Word32Integer z, Word32Integer mu, int k)
+        public MutableInteger BarrettReduction(MutableInteger z, MutableInteger mu, int k)
         {
             // Use product scanning algorithm.
             CheckValid();
@@ -1851,7 +1851,7 @@ namespace Decompose.Numerics
         }
 #endif
 
-        public Word32Integer MontgomerySOS(Word32Integer n, uint k0)
+        public MutableInteger MontgomerySOS(MutableInteger n, uint k0)
         {
             // SOS Method - Separated Operand Scanning
             CheckValid();
@@ -1885,7 +1885,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        public Word32Integer MontgomeryCIOS(Word32Integer u, Word32Integer v, Word32Integer n, uint k0)
+        public MutableInteger MontgomeryCIOS(MutableInteger u, MutableInteger v, MutableInteger n, uint k0)
         {
             // CIOS Method - Coarsely Integrated Operand Scanning
             CheckValid();
@@ -1927,7 +1927,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        private Word32Integer SetLast(int n)
+        private MutableInteger SetLast(int n)
         {
             if (n < 0)
                 last = 0;
@@ -1970,7 +1970,7 @@ namespace Decompose.Numerics
         }
 
         [Conditional("DEBUG")]
-        private static void CheckValid(Word32Integer x)
+        private static void CheckValid(MutableInteger x)
         {
             if (x.sign != -1 && x.sign != 1)
                 throw new InvalidOperationException("invalid sign");

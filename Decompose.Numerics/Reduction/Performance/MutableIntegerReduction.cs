@@ -3,14 +3,14 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class Word32IntegerReduction : IReductionAlgorithm<BigInteger>
+    public class MutableIntegerReduction : IReductionAlgorithm<BigInteger>
     {
         private class Reducer : IReducer<BigInteger>
         {
             private class Residue : IResidue<BigInteger>
             {
                 private Reducer reducer;
-                private Word32Integer r;
+                private MutableInteger r;
 
                 public IReducer<BigInteger> Reducer { get { return reducer; } }
                 public bool IsZero { get { return r.IsZero; } }
@@ -107,9 +107,9 @@ namespace Decompose.Numerics
             private IReductionAlgorithm<BigInteger> reduction;
             private BigInteger n;
             private int length;
-            private Word32IntegerStore store;
+            private MutableIntegerStore store;
 
-            private Word32Integer nRep;
+            private MutableInteger nRep;
 
             public IReductionAlgorithm<BigInteger> Reduction { get { return reduction; } }
             public BigInteger Modulus { get { return n; } }
@@ -119,7 +119,7 @@ namespace Decompose.Numerics
                 this.reduction = reduction;
                 this.n = n;
                 length = (n.GetBitLength() + 31) / 32 * 2 + 1;
-                store = new Word32IntegerStore(length);
+                store = new MutableIntegerStore(length);
                 nRep = store.Allocate();
                 nRep.Set(n);
             }
@@ -129,12 +129,12 @@ namespace Decompose.Numerics
                 return new Residue(this, x);
             }
 
-            private Word32Integer CreateRep()
+            private MutableInteger CreateRep()
             {
-                return new Word32Integer(length);
+                return new MutableInteger(length);
             }
 
-            private void Reduce(Word32Integer r)
+            private void Reduce(MutableInteger r)
             {
                 r.Modulo(nRep);
             }

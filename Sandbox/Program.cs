@@ -23,7 +23,7 @@ namespace Sandbox
                 //FindPrimeTest1();
                 //BarrettReductionTest1();
                 //BarrettReductionTest2();
-                //Word32IntegerTest1();
+                //MutableIntegerTest1();
                 //FactorTest1();
                 //FactorTest2();
                 //FactorTest3();
@@ -145,17 +145,17 @@ namespace Sandbox
             output.WriteLine("elapsed1 = {0}, elapsed2 = {1}", elapsed1, elapsed2);
         }
 
-        static void Word32IntegerTest1()
+        static void MutableIntegerTest1()
         {
             for (int i = 0; i < 2; i++)
             {
-                Word32IntegerTest1("sum:     ", (c, a, b) => c.SetSum(a, b), (a, b) => a + b);
-                Word32IntegerTest1("product: ", (c, a, b) => c.SetProduct(a, b), (a, b) => a * b);
+                MutableIntegerTest1("sum:     ", (c, a, b) => c.SetSum(a, b), (a, b) => a + b);
+                MutableIntegerTest1("product: ", (c, a, b) => c.SetProduct(a, b), (a, b) => a * b);
             }
         }
 
-        static void Word32IntegerTest1(string label,
-            Action<Word32Integer, Word32Integer, Word32Integer> operation1,
+        static void MutableIntegerTest1(string label,
+            Action<MutableInteger, MutableInteger, MutableInteger> operation1,
             Func<BigInteger, BigInteger, BigInteger> operation2)
         {
             var n = BigInteger.Parse("10023859281455311421");
@@ -170,9 +170,9 @@ namespace Sandbox
             timer1.Start();
             for (int i = 0; i < iterations1; i++)
             {
-                var a = new Word32Integer(length);
-                var b = new Word32Integer(length);
-                var c = new Word32Integer(length);
+                var a = new MutableInteger(length);
+                var b = new MutableInteger(length);
+                var c = new MutableInteger(length);
                 a.Set(random1.Next(n));
                 b.Set(random1.Next(n));
 
@@ -229,7 +229,7 @@ namespace Sandbox
             {
                 output.WriteLine();
                 //FactorTest(debug, 100, n, new PollardRhoBrent(threads, 0));
-                //FactorTest(debug, 100, n, new PollardRhoReduction(threads, 0, new Word32IntegerReduction()));
+                //FactorTest(debug, 100, n, new PollardRhoReduction(threads, 0, new MutableIntegerReduction()));
                 //FactorTest(debug, 100, n, new PollardRhoReduction(threads, 0, new BarrettReduction()));
                 //FactorTest(debug, 100, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
                 FactorTest(debug, 1, n, new QuadraticSieve(config));
@@ -247,7 +247,7 @@ namespace Sandbox
             int threads = 4;
             bool debug = false;
             FactorTest(debug, 25, n, new PollardRhoBrent(threads, 0));
-            FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new Word32IntegerReduction()));
+            FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new MutableIntegerReduction()));
             FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new BarrettReduction()));
             FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new BigIntegerMontgomeryReduction()));
         }
@@ -264,7 +264,7 @@ namespace Sandbox
                 int threads = 4;
                 var factors = null as BigInteger[];
                 //factors = FactorTest(true, 1, n, new PollardRho(threads, 0));
-                factors = FactorTest(true, 5, n, new PollardRhoReduction(threads, 0, new Word32IntegerReduction()));
+                factors = FactorTest(true, 5, n, new PollardRhoReduction(threads, 0, new MutableIntegerReduction()));
                 //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, 0, new BarrettReduction()));
                 //factors = FactorTest(true, 5, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
                 foreach (var factor in factors)
@@ -286,7 +286,7 @@ namespace Sandbox
                 int threads = 8;
                 var factors = null as BigInteger[];
                 //factors = FactorTest(true, 1, n, new PollardRho(threads, 0));
-                //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, 0, new Word32IntegerReduction()));
+                //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, 0, new MutableIntegerReduction()));
                 factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, 0, new BigIntegerMontgomeryReduction()));
                 //factors = FactorTest(true, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads }));
             }
@@ -573,7 +573,7 @@ namespace Sandbox
         private static void GraphTest(Tuple<long, long>[] pprs)
         {
             //var algorithm = new QuadraticSieve(new QuadraticSieve.Config());
-            //var algorithm = new PollardRhoReduction(1, int.MaxValue, new Word32IntegerReduction());
+            //var algorithm = new PollardRhoReduction(1, int.MaxValue, new MutableIntegerReduction());
             //var algorithm = new PollardRhoReduction(1, int.MaxValue, new MontgomeryReduction());
             //var algorithm = new OldPollardRhoLong();
             //var algorithm = new ShanksSquareForms();
@@ -1114,7 +1114,7 @@ namespace Sandbox
                 var random = new MersenneTwister(0).Create<BigInteger>();
                 //var algorithm = new OldMillerRabin(16);
                 //var algorithm = MillerRabin.Create(16, new BigIntegerReduction());
-                //var algorithm = MillerRabin.Create(16, new Word32IntegerReduction());
+                //var algorithm = MillerRabin.Create(16, new MutableIntegerReduction());
                 var algorithm = MillerRabin.Create(16, new BigIntegerMontgomeryReduction());
                 var max = BigInteger.One << 256;
                 var timer = new Stopwatch();

@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Decompose.Numerics
 {
-    public static class Word32IntegerExtensions
+    public static class MutableIntegerExtensions
     {
-        public static Word32Integer SetGreatestCommonDivisor(this Word32Integer c, Word32Integer a, Word32Integer b, Word32IntegerStore store)
+        public static MutableInteger SetGreatestCommonDivisor(this MutableInteger c, MutableInteger a, MutableInteger b, MutableIntegerStore store)
         {
             var reg1 = store.Allocate();
             if (a.IsZero)
@@ -35,7 +35,7 @@ namespace Decompose.Numerics
             return c;
         }
 
-        public static Word32Integer SetModularInverse(this Word32Integer c, Word32Integer a, Word32Integer b, Word32IntegerStore store)
+        public static MutableInteger SetModularInverse(this MutableInteger c, MutableInteger a, MutableInteger b, MutableIntegerStore store)
         {
             var p = store.Allocate().Set(a);
             var q = store.Allocate().Set(b);
@@ -68,7 +68,7 @@ namespace Decompose.Numerics
             return c;
         }
 
-        public static Word32Integer SetModularInversePowerOfTwoModulus(this Word32Integer c, Word32Integer d, int n, Word32IntegerStore store)
+        public static MutableInteger SetModularInversePowerOfTwoModulus(this MutableInteger c, MutableInteger d, int n, MutableIntegerStore store)
         {
             // See 9.2 in: http://gmplib.org/~tege/divcnst-pldi94.pdf
             c.Set(d);

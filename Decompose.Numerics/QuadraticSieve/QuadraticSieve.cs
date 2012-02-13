@@ -941,8 +941,8 @@ namespace Decompose.Numerics
             var polynomial = new Polynomial { A = a, B = b, N = n };
 
 #if true
-            var words = IntegerMath.MultipleOfCeiling(a.GetBitLength(), Word32Integer.WordLength) / Word32Integer.WordLength;
-            var capBRep = capB.Select(value => new Word32Integer(words).Set(value)).ToArray();
+            var words = IntegerMath.MultipleOfCeiling(a.GetBitLength(), MutableInteger.WordLength) / MutableInteger.WordLength;
+            var capBRep = capB.Select(value => new MutableInteger(words).Set(value)).ToArray();
 #endif
 
             var bainv2 = siqs.Bainv2;

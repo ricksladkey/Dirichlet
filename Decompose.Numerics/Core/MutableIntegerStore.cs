@@ -5,25 +5,25 @@ using System.Text;
 
 namespace Decompose.Numerics
 {
-    public class Word32IntegerStore : IStore<Word32Integer>
+    public class MutableIntegerStore : IStore<MutableInteger>
     {
         private int length;
-        private Stack<Word32Integer> freeList;
+        private Stack<MutableInteger> freeList;
 
-        public Word32IntegerStore(int length)
+        public MutableIntegerStore(int length)
         {
             this.length = length;
-            this.freeList = new Stack<Word32Integer>();
+            this.freeList = new Stack<MutableInteger>();
         }
 
-        public Word32Integer Allocate()
+        public MutableInteger Allocate()
         {
             if (freeList.Count != 0)
                 return freeList.Pop();
-            return new Word32Integer(length);
+            return new MutableInteger(length);
         }
 
-        public void Release(Word32Integer a)
+        public void Release(MutableInteger a)
         {
             freeList.Push(a);
         }
