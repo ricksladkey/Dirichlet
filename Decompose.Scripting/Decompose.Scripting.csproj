@@ -45,7 +45,7 @@
     <Compile Include="BooleanOperatorMap.cs" />
     <Compile Include="Cast.cs" />
     <Compile Include="Engine.cs" />
-    <Compile Include="IntegerOperatorMap.cs" />
+    <Compile Include="NumericOperatorMap.cs" />
     <Compile Include="IOperatorMap.cs" />
     <Compile Include="Op.cs" />
     <Compile Include="OperatorHelper.cs" />

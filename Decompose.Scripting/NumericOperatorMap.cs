@@ -6,13 +6,13 @@ using Decompose.Numerics;
 
 namespace Decompose.Scripting
 {
-    public class IntegerOperatorMap<T> : IOperatorMap
+    public class NumericOperatorMap<T> : IOperatorMap
     {
         private Dictionary<Op, Func<T, object>> unaryOps = new Dictionary<Op, Func<T, object>>();
         private Dictionary<Op, Func<T, T, object>> binaryOps = new Dictionary<Op, Func<T, T, object>>();
         private Dictionary<Op, Func<T, T, T, object>> ternaryOps = new Dictionary<Op, Func<T, T, T, object>>();
 
-        public IntegerOperatorMap(IRandomNumberGenerator generator)
+        public NumericOperatorMap(IRandomNumberGenerator generator)
         {
             var ops = Operations.Get<T>();
             var rand = generator.Create<T>();
@@ -22,7 +22,14 @@ namespace Decompose.Scripting
             binaryOps.Add(Op.Plus, (a, b) => ops.Add(a, b));
             binaryOps.Add(Op.Minus, (a, b) => ops.Subtract(a, b));
             binaryOps.Add(Op.Times, (a, b) => ops.Multiply(a, b));
-            binaryOps.Add(Op.Divide, (a, b) => ops.Divide(a, b));
+            binaryOps.Add(Op.Divide, (a, b) =>
+                {
+                    if (typeof(T) == typeof(double))
+                        return ops.Divide(a, b);
+                    if (ops.IsZero(ops.Modulus(a, b)))
+                        return ops.Divide(a, b);
+                    return new Rational(ops.ToBigInteger(a), ops.ToBigInteger(b));
+                });
             binaryOps.Add(Op.Mod, (a, b) => ops.Modulus(a, b));
             binaryOps.Add(Op.Power, (a, b) => ops.Power(a, b));
             binaryOps.Add(Op.And, (a, b) => ops.And(a, b));

@@ -49,12 +49,13 @@ namespace Decompose.Scripting
             globalContext = new object();
             generator = new MersenneTwister(0);
             opMaps.Add(typeof(bool), new BooleanOperatorMap());
-            opMaps.Add(typeof(int), new IntegerOperatorMap<int>(generator));
-            opMaps.Add(typeof(uint), new IntegerOperatorMap<uint>(generator));
-            opMaps.Add(typeof(long), new IntegerOperatorMap<long>(generator));
-            opMaps.Add(typeof(ulong), new IntegerOperatorMap<ulong>(generator));
-            opMaps.Add(typeof(BigInteger), new IntegerOperatorMap<BigInteger>(generator));
-            opMaps.Add(typeof(double), new IntegerOperatorMap<double>(generator));
+            opMaps.Add(typeof(int), new NumericOperatorMap<int>(generator));
+            opMaps.Add(typeof(uint), new NumericOperatorMap<uint>(generator));
+            opMaps.Add(typeof(long), new NumericOperatorMap<long>(generator));
+            opMaps.Add(typeof(ulong), new NumericOperatorMap<ulong>(generator));
+            opMaps.Add(typeof(BigInteger), new NumericOperatorMap<BigInteger>(generator));
+            opMaps.Add(typeof(Rational), new NumericOperatorMap<Rational>(generator));
+            opMaps.Add(typeof(double), new NumericOperatorMap<double>(generator));
             variables = new Dictionary<string, object>();
             globalMethods = new Dictionary<string, Func<object[], object>>();
             stack = new List<Frame>();
@@ -168,10 +169,10 @@ namespace Decompose.Scripting
         {
             globalMethods.Add("exit", Exit);
             globalMethods.Add("print", Print);
-            globalMethods.Add("jacobi", Jacobi);
-            globalMethods.Add("isprime", IsPrime);
-            globalMethods.Add("nextprime", NextPrime);
-            globalMethods.Add("factor", Factor);
+            globalMethods.Add("jacobi", args => Invoke("Jacobi", args));
+            globalMethods.Add("isprime", args => Invoke("IsPrime", args));
+            globalMethods.Add("nextprime", args => Invoke("NextPrime", args));
+            globalMethods.Add("factor", args => Invoke("Factor", args));
             globalMethods.Add("sqrt", args => Invoke("Sqrt", args));
         } 
 
@@ -184,7 +185,7 @@ namespace Decompose.Scripting
         public object Print(params object[] args)
         {
             var value = args[0];
-            if (value is IEnumerable)
+            if (value is IEnumerable && !(value is string))
                 Console.WriteLine(string.Join(", ", (value as IEnumerable).Cast<object>().Select(item => item.ToString())));
             else if (value is bool)
                 Console.WriteLine((bool)value ? "true" : "false");
@@ -193,14 +194,14 @@ namespace Decompose.Scripting
             return null;
         }
 
-        public object Jacobi(params object[] args)
+        public BigInteger Jacobi(BigInteger a, BigInteger b)
         {
-            return IntegerMath.JacobiSymbol(Cast.ToBigInteger(args[0]), Cast.ToBigInteger(args[1]));
+            return IntegerMath.JacobiSymbol(a, b);
         }
 
-        public object IsPrime(params object[] args)
+        public bool IsPrime(BigInteger a)
         {
-            return IntegerMath.IsPrime(Cast.ToBigInteger(args[0]));
+            return IntegerMath.IsPrime(a);
         }
 
         public double Sqrt(double a)
@@ -213,15 +214,15 @@ namespace Decompose.Scripting
             return Integer<T>.SquareRoot(a);
         }
 
-        public object NextPrime(params object[] args)
+        public BigInteger NextPrime(BigInteger a)
         {
-            return IntegerMath.NextPrime(Cast.ToBigInteger(args[0]));
+            return IntegerMath.NextPrime(a);
         }
 
-        public object Factor(params object[] args)
+        public IEnumerable<BigInteger> Factor(BigInteger a)
         {
             var algorithm = new HybridPollardRhoQuadraticSieve(8, 1000000, new QuadraticSieve.Config { Threads = 8 });
-            return algorithm.Factor(Cast.ToBigInteger(args[0])).ToArray();
+            return algorithm.Factor(a).ToArray();
         }
     }
 }

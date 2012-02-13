@@ -48,6 +48,7 @@
     <Compile Include="Collections\Graph.cs" />
     <Compile Include="Collections\SetBitMatrix.cs" />
     <Compile Include="Collections\IntegerSet.cs" />
+    <Compile Include="Core\Rational.cs" />
     <Compile Include="Operations\BigIntegerOperations.cs" />
     <Compile Include="Core\Int65.cs" />
     <Compile Include="Core\IStore.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="IntegerMath\Primality.cs" />
     <Compile Include="Core\UInt128.cs" />
     <Compile Include="Operations\RandomInteger.cs" />
+    <Compile Include="Operations\RationalOperations.cs" />
     <Compile Include="Operations\Uint32Operations.cs" />
     <Compile Include="Operations\UInt64Operations.cs" />
     <Compile Include="Factorization\OldPollardRhoLong.cs" />

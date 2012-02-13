@@ -1,28 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.Numerics;
+using Decompose.Numerics;
 
 namespace Decompose.Scripting
 {
     public static class Cast
     {
-        public static BigInteger ToBigInteger(object value)
-        {
-            if (value is int)
-                return (BigInteger)(int)value;
-            if (value is uint)
-                return (BigInteger)(uint)value;
-            if (value is long)
-                return (BigInteger)(long)value;
-            if (value is ulong)
-                return (BigInteger)(ulong)value;
-            if (value is BigInteger)
-                return (BigInteger)(BigInteger)value;
-            if (value is double)
-                return (BigInteger)(double)value;
-            throw new NotImplementedException();
-        }
-
         public static int ToInt32(object value)
         {
             if (value is int)
@@ -37,6 +21,8 @@ namespace Decompose.Scripting
                 return (int)(BigInteger)value;
             if (value is double)
                 return (int)(double)value;
+            if (value is Rational)
+                return (int)(Rational)value;
             throw new NotImplementedException();
         }
 
@@ -54,6 +40,8 @@ namespace Decompose.Scripting
                 return (uint)(BigInteger)value;
             if (value is double)
                 return (uint)(double)value;
+            if (value is Rational)
+                return (uint)(Rational)value;
             throw new NotImplementedException();
         }
 
@@ -71,6 +59,8 @@ namespace Decompose.Scripting
                 return (long)(BigInteger)value;
             if (value is double)
                 return (long)(double)value;
+            if (value is Rational)
+                return (long)(Rational)value;
             throw new NotImplementedException();
         }
 
@@ -88,6 +78,8 @@ namespace Decompose.Scripting
                 return (ulong)(BigInteger)value;
             if (value is double)
                 return (ulong)(double)value;
+            if (value is Rational)
+                return (ulong)(Rational)value;
             throw new NotImplementedException();
         }
 
@@ -105,6 +97,46 @@ namespace Decompose.Scripting
                 return (double)(BigInteger)value;
             if (value is double)
                 return (double)(double)value;
+            if (value is Rational)
+                return (double)(Rational)value;
+            throw new NotImplementedException();
+        }
+
+        public static BigInteger ToBigInteger(object value)
+        {
+            if (value is int)
+                return (BigInteger)(int)value;
+            if (value is uint)
+                return (BigInteger)(uint)value;
+            if (value is long)
+                return (BigInteger)(long)value;
+            if (value is ulong)
+                return (BigInteger)(ulong)value;
+            if (value is BigInteger)
+                return (BigInteger)(BigInteger)value;
+            if (value is double)
+                return (BigInteger)(double)value;
+            if (value is Rational)
+                return (BigInteger)(Rational)value;
+            throw new NotImplementedException();
+        }
+
+        public static Rational ToRational(object value)
+        {
+            if (value is int)
+                return (Rational)(int)value;
+            if (value is uint)
+                return (Rational)(uint)value;
+            if (value is long)
+                return (Rational)(long)value;
+            if (value is ulong)
+                return (Rational)(ulong)value;
+            if (value is BigInteger)
+                return (Rational)(BigInteger)value;
+            if (value is double)
+                return (Rational)(double)value;
+            if (value is Rational)
+                return (Rational)(Rational)value;
             throw new NotImplementedException();
         }
 
@@ -113,6 +145,8 @@ namespace Decompose.Scripting
             var types = args.Select(arg => arg.GetType()).ToArray();
             if (types.Any(type => type == typeof(double)))
                 return args.Select(arg => Cast.ToDouble(arg)).Cast<object>().ToArray();
+            if (types.Any(type => type == typeof(Rational)))
+                return args.Select(arg => Cast.ToRational(arg)).Cast<object>().ToArray();
             if (types.Any(type => type == typeof(BigInteger)))
                 return args.Select(arg => Cast.ToBigInteger(arg)).Cast<object>().ToArray();
             if (types.Any(type => type == typeof(ulong)))

@@ -131,6 +131,26 @@ namespace Decompose.Numerics
             }
         }
 
+        private class RationalRandomNumberAlgorithm : RandomNumberAlgorithm<Rational>
+        {
+            public RationalRandomNumberAlgorithm(IRandomNumberGenerator random)
+                : base(random)
+            {
+            }
+
+            public override Rational Next(Rational n)
+            {
+                lock (random.SyncRoot)
+                {
+                    var c = (n.Numerator.ToByteArray().Length + 3) / 4 * 4;
+                    var bytes = new byte[c + 1];
+                    for (int i = 0; i < c; i += 4)
+                        BitConverter.GetBytes(random.Next()).CopyTo(bytes, i);
+                    return new Rational(new BigInteger(bytes) % n.Numerator, n.Denominator);
+                }
+            }
+        }
+
         private object syncRoot = new object();
 
         public object SyncRoot { get { return syncRoot; } }
@@ -150,6 +170,8 @@ namespace Decompose.Numerics
                 return (IRandomNumberAlgorithm<T>)new UInt64RandomNumberAlgorithm(this);
             if (type == typeof(BigInteger))
                 return (IRandomNumberAlgorithm<T>)new BigIntegerRandomNumberAlgorithm(this);
+            if (type == typeof(Rational))
+                return (IRandomNumberAlgorithm<T>)new RationalRandomNumberAlgorithm(this);
             if (type == typeof(double))
                 return (IRandomNumberAlgorithm<T>)new DoubleRandomNumberAlgorithm(this);
             throw new NotImplementedException("type not supported");
