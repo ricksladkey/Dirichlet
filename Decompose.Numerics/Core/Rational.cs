@@ -31,6 +31,10 @@ namespace Decompose.Numerics
             this.n = n;
             this.d = d;
         }
+        public Rational(BigInteger value)
+            : this(value, BigInteger.One)
+        {
+        }
         public static Rational operator +(Rational a, Rational b) { return new Rational(a.n * b.d + b.n * a.d, a.d * b.d); }
         public static Rational operator -(Rational a, Rational b) { return new Rational(a.n * b.d - b.n * a.d, a.d * b.d); }
         public static Rational operator *(Rational a, Rational b) { return new Rational(a.n * b.n, a.d * b.d); }
@@ -58,5 +62,12 @@ namespace Decompose.Numerics
         public override bool Equals(object obj) { return obj is Rational && Equals((Rational)obj); }
         public override int GetHashCode() { return n.GetHashCode() ^ d.GetHashCode(); }
         public override string ToString() { return d.IsOne ? n.ToString() : string.Format("{0}/{1}", n, d); }
+        public static Rational Parse(string value)
+        {
+            if (!value.Contains('/'))
+                return new Rational(BigInteger.Parse(value), BigInteger.One);
+            var fields = value.Split('/');
+            return new Rational(BigInteger.Parse(fields[0]), BigInteger.Parse(fields[1]));
+        }
     }
 }

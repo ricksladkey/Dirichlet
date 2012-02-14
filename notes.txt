@@ -118,3 +118,9 @@ a < b < c
 floor division: //
 move exact division to operations?
 sqrt(2) should not equal 1
+
+x = 14 (mod 13)
+
+a = 2
+b = 3
+c = a b
