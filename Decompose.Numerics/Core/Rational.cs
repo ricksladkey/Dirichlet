@@ -13,6 +13,11 @@ namespace Decompose.Numerics
         public bool IsInteger { get { return d.IsOne; } }
         public BigInteger Numerator { get { return n; } }
         public BigInteger Denominator { get { return d; } }
+        public Rational(BigInteger value)
+        {
+            this.n = value;
+            this.d = BigInteger.One;
+        }
         public Rational(BigInteger n, BigInteger d)
         {
             if (d == 0)
@@ -30,10 +35,6 @@ namespace Decompose.Numerics
             }
             this.n = n;
             this.d = d;
-        }
-        public Rational(BigInteger value)
-            : this(value, BigInteger.One)
-        {
         }
         public static Rational operator +(Rational a, Rational b) { return new Rational(a.n * b.d + b.n * a.d, a.d * b.d); }
         public static Rational operator -(Rational a, Rational b) { return new Rational(a.n * b.d - b.n * a.d, a.d * b.d); }
@@ -65,7 +66,7 @@ namespace Decompose.Numerics
         public static Rational Parse(string value)
         {
             if (!value.Contains('/'))
-                return new Rational(BigInteger.Parse(value), BigInteger.One);
+                return new Rational(BigInteger.Parse(value));
             var fields = value.Split('/');
             return new Rational(BigInteger.Parse(fields[0]), BigInteger.Parse(fields[1]));
         }

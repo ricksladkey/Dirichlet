@@ -23,11 +23,15 @@ namespace Decompose.Scripting
     {
         public class TokenQueue : IEnumerable<string>
         {
+            private bool whitespace = false;
+            private List<bool> white = new List<bool>();
             private List<string> list = new List<string>();
             private int current = 0;
-            public void Enqueue(string item) { list.Add(item); }
+            public void Enqueue(string item) { list.Add(item); white.Add(whitespace); whitespace = false; }
+            public void EnqueueWhitespace() { whitespace = true; }
             public string Dequeue() { return list[current++]; }
             public void Undequeue(string item) { list[--current] = item; }
+            public bool PeekWhitespace() { return current < list.Count && white[current]; }
             public string Peek() { return current < list.Count ? list[current] : null; }
             public int Count { get { return list.Count - current; } }
             public int Current { get { return current; } }
@@ -486,7 +490,7 @@ namespace Decompose.Scripting
 
         private static string IdChars { get { return "_"; } }
         private bool IsCurrentEvent { get { return IsEvent && Tokens.Count == 0; } }
-        private bool IsCurrentCall { get { return IsCall && Tokens.Count == 0 || PeekToken("("); } }
+        private bool IsCurrentCall { get { return IsCall && Tokens.Count == 0 || !Tokens.PeekWhitespace() && PeekToken("("); } }
 
         public Node Root { get; private set; }
         public TokenQueue Tokens { get; private set; }
@@ -925,7 +929,9 @@ namespace Decompose.Scripting
             if (functionOperatorMap.ContainsKey(token))
             {
                 Tokens.Dequeue();
-                return new OpNode { Op = functionOperatorMap[token], Operands = ParseArguments() };
+                if (!Tokens.PeekWhitespace())
+                    return new OpNode { Op = functionOperatorMap[token], Operands = ParseArguments() };
+                Tokens.Undequeue(token);
             }
             if (methodOperatorMap.Contains(token))
             {
@@ -1278,11 +1284,21 @@ namespace Decompose.Scripting
                 char c = Code[i];
                 string c2 = Code.Substring(i, Math.Min(2, Code.Length - i));
                 string c3 = Code.Substring(i, Math.Min(3, Code.Length - i));
-                if (char.IsWhiteSpace(c)) ++i;
+                if (char.IsWhiteSpace(c))
+                {
+                    Tokens.EnqueueWhitespace();
+                    i = SkipWhiteSpace(i);
+                }
                 else if (c2 == "/*")
+                {
+                    Tokens.EnqueueWhitespace();
                     i = EatMultiLineComment(i);
+                }
                 else if (c2 == "//")
+                {
+                    Tokens.EnqueueWhitespace();
                     i = EatSingleLineComment(i);
+                }
                 else if (operatorMap.ContainsKey(c3) || assignmentOperatorMap.ContainsKey(c3))
                 {
                     Tokens.Enqueue(c3);
@@ -1334,7 +1350,12 @@ namespace Decompose.Scripting
                 else
                     engine.Throw("invalid token: " + Code.Substring(i));
             }
+        }
 
+        private int SkipWhiteSpace(int i)
+        {
+            for (i += 1; i < Code.Length && char.IsWhiteSpace(Code[i]); i++) continue;
+            return i;
         }
 
         private int EatMultiLineComment(int i)

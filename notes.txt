@@ -124,3 +124,5 @@ x = 14 (mod 13)
 a = 2
 b = 3
 c = a b
+
+floor(2/3).Type does the wrong thing, parsed as floor(divide(2,3).Type)
