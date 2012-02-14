@@ -116,7 +116,5 @@ gcd(a, b)
 
 a < b < c
 floor division: //
-
 move exact division to operations?
-
-support pow(n, 1/2) with rational
+sqrt(2) should not equal 1

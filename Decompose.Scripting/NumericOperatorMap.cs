@@ -44,12 +44,12 @@ namespace Decompose.Scripting
             binaryOps.Add(Op.GreaterThan, (a, b) => ops.Compare(a, b) > 0);
             binaryOps.Add(Op.GreaterThanOrEqual, (a, b) => ops.Compare(a, b) >= 0);
             binaryOps.Add(Op.Modulo, (a, b) =>
-            {
-                var result = ops.Modulus(a, b);
-                if (ops.Compare(result, ops.Zero) < 0)
-                    result = ops.Add(result, b);
-                return result;
-            });
+                {
+                    var result = ops.Modulus(a, b);
+                    if (ops.Compare(result, ops.Zero) < 0)
+                        result = ops.Add(result, b);
+                    return result;
+                });
             binaryOps.Add(Op.GreatestCommonDivisor, (a, b) => ops.GreatestCommonDivisor(a, b));
             binaryOps.Add(Op.Divides, (a, b) => ops.IsZero(ops.Modulus(b, a)));
             binaryOps.Add(Op.NotDivides, (a, b) => !ops.IsZero(ops.Modulus(b, a)));
@@ -59,15 +59,15 @@ namespace Decompose.Scripting
             ternaryOps.Add(Op.ModularProduct, (a, b, c) => ops.ModularProduct(a, b, c));
             ternaryOps.Add(Op.ModularQuotient, (a, b, c) => ops.ModularProduct(a, ops.ModularInverse(b, c), c));
             ternaryOps.Add(Op.ModularPower, (a, b, c) =>
-            {
-                if (!ops.IsUnsigned && ops.Equals(b, ops.Negate(ops.One)))
                 {
-                    if (!ops.GreatestCommonDivisor(a, c).Equals(ops.One))
-                        throw new InvalidOperationException("not relatively prime");
-                    return ops.ModularInverse(a, c);
-                }
-                return ops.ModularPower(a, b, c);
-            });
+                    if (!ops.IsUnsigned && ops.Equals(b, ops.Negate(ops.One)))
+                    {
+                        if (!ops.GreatestCommonDivisor(a, c).Equals(ops.One))
+                            throw new InvalidOperationException("not relatively prime");
+                        return ops.ModularInverse(a, c);
+                    }
+                    return ops.ModularPower(a, b, c);
+                });
         }
 
         public object Operator(Op op, params object[] args)

@@ -87,12 +87,7 @@ namespace Decompose.Scripting
             throw new InvalidOperationException("unknown variable: " + name);
         }
 
-        public object SetGlobalVariable(string name, object value)
-        {
-            return variables[name] = value;
-        }
-
-        public object NewVariable(string name, object value)
+        public object DeclareVariable(string name, object value)
         {
             if (!stack[stack.Count - 1].Variables.ContainsKey(name))
                 return stack[stack.Count - 1].Variables[name] = value;
@@ -241,19 +236,19 @@ namespace Decompose.Scripting
             return Math.Exp(Cast.ToDouble(a));
         }
 
-        public T Max<T>(params T[] args)
-        {
-            var result = args[0];
-            foreach (var arg in args)
-                result = Integer<T>.Max(result, arg);
-            return result;
-        }
-
         public T Min<T>(params T[] args)
         {
             var result = args[0];
             foreach (var arg in args)
                 result = Integer<T>.Min(result, arg);
+            return result;
+        }
+
+        public T Max<T>(params T[] args)
+        {
+            var result = args[0];
+            foreach (var arg in args)
+                result = Integer<T>.Max(result, arg);
             return result;
         }
 
@@ -277,6 +272,7 @@ namespace Decompose.Scripting
 
         public BigInteger NextPrime(BigInteger a)
         {
+            var b = 2.0 % 3.0;
             return IntegerMath.NextPrime(a);
         }
 

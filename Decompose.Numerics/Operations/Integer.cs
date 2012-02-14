@@ -33,6 +33,7 @@ namespace Decompose.Numerics
         public static implicit operator T(Integer<T> integer) { return integer.value; }
         public static explicit operator int(Integer<T> integer) { return ops.ToInt32(integer.value); }
         public static implicit operator BigInteger(Integer<T> integer) { return ops.ToBigInteger(integer.value); }
+        public static explicit operator double(Integer<T> integer) { return ops.ToDouble(integer.value); }
         public static Integer<T> operator +(Integer<T> a, Integer<T> b) { return new Integer<T>(ops.Add(a.value, b.value)); }
         public static Integer<T> operator +(T a, Integer<T> b) { return new Integer<T>(ops.Add(a, b.value)); }
         public static Integer<T> operator +(Integer<T> a, T b) { return new Integer<T>(ops.Add(a.value, b)); }

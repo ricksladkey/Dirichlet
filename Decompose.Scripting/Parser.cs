@@ -112,7 +112,7 @@ namespace Decompose.Scripting
             public override object Get(Engine engine)
             {
                 engine.PushFrame();
-                var result = Nodes.Select(node => node.Get(engine)).Last();
+                var result = Nodes.Select(node => node.Get(engine)).LastOrDefault();
                 engine.PopFrame();
                 return result;
             }
@@ -227,7 +227,7 @@ namespace Decompose.Scripting
             public ExpressionNode Value { get; set; }
             public override object Get(Engine engine)
             {
-                return engine.NewVariable(VariableName, Value.Get(engine));
+                return engine.DeclareVariable(VariableName, Value.Get(engine));
             }
         }
         public class ItemNode : ExpressionNode
