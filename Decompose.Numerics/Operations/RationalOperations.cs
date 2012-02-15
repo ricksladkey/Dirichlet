@@ -19,7 +19,8 @@ namespace Decompose.Numerics
         public Rational Subtract(Rational a, Rational b) { return a - b; }
         public Rational Multiply(Rational a, Rational b) { return a * b; }
         public Rational Divide(Rational a, Rational b) { return a / b; }
-        public Rational Modulus(Rational a, Rational b) { return (BigInteger)a % (BigInteger)b; }
+        public Rational Remainder(Rational a, Rational b) { return a - Rational.Truncate(a / b) * b; }
+        public Rational Modulo(Rational a, Rational b) { return a - Rational.Floor(a / b) * b; }
         public Rational Negate(Rational a) { return -a; }
         public Rational LeftShift(Rational a, int n) { return (BigInteger)a << n; }
         public Rational RightShift(Rational a, int n) { return (BigInteger)a >> n; }
@@ -41,6 +42,7 @@ namespace Decompose.Numerics
         public Rational ModularSum(Rational a, Rational b, Rational modulus) { return IntegerMath.ModularSum((BigInteger)a, (BigInteger)b, (BigInteger)modulus); }
         public Rational ModularDifference(Rational a, Rational b, Rational modulus) { return IntegerMath.ModularDifference((BigInteger)a, (BigInteger)b, (BigInteger)modulus); }
         public Rational ModularProduct(Rational a, Rational b, Rational modulus) { return IntegerMath.ModularProduct((BigInteger)a, (BigInteger)b, (BigInteger)modulus); }
+        public Rational ModularQuotient(Rational a, Rational b, Rational modulus) { return IntegerMath.ModularQuotient((BigInteger)a, (BigInteger)b, (BigInteger)modulus); }
         public Rational ModularPower(Rational value, Rational exponent, Rational modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
         public Rational ModularRoot(Rational value, Rational exponent, Rational modulus) { return IntegerMath.ModularRoot((BigInteger)value, (BigInteger)exponent, (BigInteger)modulus); }
         public Rational ModularInverse(Rational value, Rational modulus) { return IntegerMath.ModularInverse((BigInteger)value, (BigInteger)modulus); }

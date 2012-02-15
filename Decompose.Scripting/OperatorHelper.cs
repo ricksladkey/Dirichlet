@@ -52,10 +52,10 @@ namespace Decompose.Scripting
         {
             switch (op)
             {
-                case Op.Plus:
-                case Op.Minus:
-                case Op.Times:
-                case Op.Mod:
+                case Op.Add:
+                case Op.Subtract:
+                case Op.Multiply:
+                case Op.Remainder:
                 case Op.Divide:
                 case Op.AndAnd:
                 case Op.OrOr:

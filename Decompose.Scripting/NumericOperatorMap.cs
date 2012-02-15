@@ -19,18 +19,12 @@ namespace Decompose.Scripting
             unaryOps.Add(Op.Negate, a => ops.Negate(a));
             unaryOps.Add(Op.OnesComplement, a => ops.OnesComplement(a));
             unaryOps.Add(Op.Random, a => rand.Next(a));
-            binaryOps.Add(Op.Plus, (a, b) => ops.Add(a, b));
-            binaryOps.Add(Op.Minus, (a, b) => ops.Subtract(a, b));
-            binaryOps.Add(Op.Times, (a, b) => ops.Multiply(a, b));
-            binaryOps.Add(Op.Divide, (a, b) =>
-                {
-                    if (typeof(T) == typeof(double) || typeof(T) == typeof(Rational))
-                        return ops.Divide(a, b);
-                    if (ops.IsZero(ops.Modulus(a, b)))
-                        return ops.Divide(a, b);
-                    return new Rational(ops.ToBigInteger(a), ops.ToBigInteger(b));
-                });
-            binaryOps.Add(Op.Mod, (a, b) => ops.Modulus(a, b));
+            binaryOps.Add(Op.Add, (a, b) => ops.Add(a, b));
+            binaryOps.Add(Op.Subtract, (a, b) => ops.Subtract(a, b));
+            binaryOps.Add(Op.Multiply, (a, b) => ops.Multiply(a, b));
+            binaryOps.Add(Op.Divide, (a, b) => ops.Divide(a, b));
+            binaryOps.Add(Op.Remainder, (a, b) => ops.Remainder(a, b));
+            binaryOps.Add(Op.Modulo, (a, b) => ops.Modulo(a, b));
             binaryOps.Add(Op.Power, (a, b) => ops.Power(a, b));
             binaryOps.Add(Op.And, (a, b) => ops.And(a, b));
             binaryOps.Add(Op.Or, (a, b) => ops.Or(a, b));
@@ -43,31 +37,15 @@ namespace Decompose.Scripting
             binaryOps.Add(Op.LessThanOrEqual, (a, b) => ops.Compare(a, b) <= 0);
             binaryOps.Add(Op.GreaterThan, (a, b) => ops.Compare(a, b) > 0);
             binaryOps.Add(Op.GreaterThanOrEqual, (a, b) => ops.Compare(a, b) >= 0);
-            binaryOps.Add(Op.Modulo, (a, b) =>
-                {
-                    var result = ops.Modulus(a, b);
-                    if (ops.Compare(result, ops.Zero) < 0)
-                        result = ops.Add(result, b);
-                    return result;
-                });
             binaryOps.Add(Op.GreatestCommonDivisor, (a, b) => ops.GreatestCommonDivisor(a, b));
-            binaryOps.Add(Op.Divides, (a, b) => ops.IsZero(ops.Modulus(b, a)));
-            binaryOps.Add(Op.NotDivides, (a, b) => !ops.IsZero(ops.Modulus(b, a)));
+            binaryOps.Add(Op.Divides, (a, b) => ops.IsZero(ops.Remainder(b, a)));
+            binaryOps.Add(Op.NotDivides, (a, b) => !ops.IsZero(ops.Remainder(b, a)));
             binaryOps.Add(Op.ModularNegate, (a, b) => ops.ModularDifference(ops.Zero, a, b));
             ternaryOps.Add(Op.ModularSum, (a, b, c) => ops.ModularSum(a, b, c));
             ternaryOps.Add(Op.ModularDifference, (a, b, c) => ops.ModularDifference(a, b, c));
             ternaryOps.Add(Op.ModularProduct, (a, b, c) => ops.ModularProduct(a, b, c));
             ternaryOps.Add(Op.ModularQuotient, (a, b, c) => ops.ModularProduct(a, ops.ModularInverse(b, c), c));
-            ternaryOps.Add(Op.ModularPower, (a, b, c) =>
-                {
-                    if (!ops.IsUnsigned && ops.Equals(b, ops.Negate(ops.One)))
-                    {
-                        if (!ops.GreatestCommonDivisor(a, c).Equals(ops.One))
-                            throw new InvalidOperationException("not relatively prime");
-                        return ops.ModularInverse(a, c);
-                    }
-                    return ops.ModularPower(a, b, c);
-                });
+            ternaryOps.Add(Op.ModularPower, (a, b, c) => ops.ModularPower(a, b, c));
         }
 
         public object Operator(Op op, params object[] args)

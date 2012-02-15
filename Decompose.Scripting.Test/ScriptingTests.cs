@@ -11,14 +11,14 @@ namespace Decompose.Scripting.Tests
         [TestMethod]
         public void ScriptingTests()
         {
-            Assert.AreEqual((BigInteger)3, Evaluate("1+2"));
+            Assert.AreEqual((Rational)3, Evaluate("1+2"));
             Assert.AreEqual(3, Evaluate("int 1 + int 2"));
-            Assert.AreEqual((BigInteger)5, Evaluate("a=2; b=3; n=17; a+b mod n"));
-            Assert.AreEqual((BigInteger)16, Evaluate("a=2; b=3; n=17; a-b mod n"));
-            Assert.AreEqual((BigInteger)6, Evaluate("a=2; b=3; n=17; a*b mod n"));
-            Assert.AreEqual((BigInteger)12, Evaluate("a=2; b=3; n=17; a/b mod n"));
-            Assert.AreEqual((BigInteger)8, Evaluate("a=2; b=3; n=17; a**b mod n"));
-            Assert.AreEqual((BigInteger)6, Evaluate("a=2; b=3; n=17; a**(1/2) mod n"));
+            Assert.AreEqual((Rational)5, Evaluate("a=2; b=3; n=17; a+b mod n"));
+            Assert.AreEqual((Rational)16, Evaluate("a=2; b=3; n=17; a-b mod n"));
+            Assert.AreEqual((Rational)6, Evaluate("a=2; b=3; n=17; a*b mod n"));
+            Assert.AreEqual((Rational)12, Evaluate("a=2; b=3; n=17; a/b mod n"));
+            Assert.AreEqual((Rational)8, Evaluate("a=2; b=3; n=17; a^b mod n"));
+            Assert.AreEqual((Rational)6, Evaluate("a=2; b=3; n=17; a^(1/2) mod n"));
             Assert.AreEqual(Rational.Parse("1606938044258990275541962092341162602522202993782792835301375/8796093022207"),
                 Evaluate("((1<<200)-1)/((1<<43)-1)"));
         }

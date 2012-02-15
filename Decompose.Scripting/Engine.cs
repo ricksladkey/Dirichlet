@@ -163,15 +163,8 @@ namespace Decompose.Scripting
                 return opMapCast[op](args[0]);
             args = Cast.ConvertToCompatibleTypes(args);
             if (opMaps.ContainsKey(args[0].GetType()))
-                return Simplify(opMaps[args[0].GetType()].Operator(op, args));
+                return opMaps[args[0].GetType()].Operator(op, args);
             throw new NotImplementedException();
-        }
-
-        public object Simplify(object value)
-        {
-            if (value is Rational && ((Rational)value).IsInteger)
-                return ((Rational)value).Numerator;
-            return value;
         }
 
         private void AddGlobalMethods()
@@ -272,7 +265,6 @@ namespace Decompose.Scripting
 
         public BigInteger NextPrime(BigInteger a)
         {
-            var b = 2.0 % 3.0;
             return IntegerMath.NextPrime(a);
         }
 

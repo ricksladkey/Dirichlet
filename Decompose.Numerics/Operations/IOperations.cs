@@ -24,7 +24,8 @@ namespace Decompose.Numerics
         T Subtract(T a, T b);
         T Multiply(T a, T b);
         T Divide(T a, T b);
-        T Modulus(T a, T b);
+        T Modulo(T a, T b);
+        T Remainder(T a, T b);
         T Power(T a, T b);
         T Root(T a, T b);
         T Negate(T a);
@@ -43,6 +44,7 @@ namespace Decompose.Numerics
         T ModularSum(T a, T b, T modulus);
         T ModularDifference(T a, T b, T modulus);
         T ModularProduct(T a, T b, T modulus);
+        T ModularQuotient(T a, T b, T modulus);
         T ModularPower(T value, T exponent, T modulus);
         T ModularRoot(T value, T exponent, T modulus);
         T ModularInverse(T value, T modulus);

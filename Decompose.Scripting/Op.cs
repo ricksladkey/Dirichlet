@@ -11,10 +11,10 @@ namespace Decompose.Scripting
     /// </summary>
     public enum Op
     {
-        Plus = 1,
-        Minus,
-        Times,
-        Mod,
+        Add = 1,
+        Subtract,
+        Multiply,
+        Remainder,
         Divide,
         Negate,
         Power,

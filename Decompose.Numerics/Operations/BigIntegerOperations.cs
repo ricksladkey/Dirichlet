@@ -19,7 +19,8 @@ namespace Decompose.Numerics
         public BigInteger Subtract(BigInteger a, BigInteger b) { return a - b; }
         public BigInteger Multiply(BigInteger a, BigInteger b) { return a * b; }
         public BigInteger Divide(BigInteger a, BigInteger b) { return a / b; }
-        public BigInteger Modulus(BigInteger a, BigInteger b) { return a % b; }
+        public BigInteger Modulo(BigInteger a, BigInteger b) { var result = a % b; if (result.Sign == -1) result += b; return result; }
+        public BigInteger Remainder(BigInteger a, BigInteger b) { return a % b; }
         public BigInteger Negate(BigInteger a) { return -a; }
         public BigInteger LeftShift(BigInteger a, int n) { return a << n; }
         public BigInteger RightShift(BigInteger a, int n) { return a >> n; }
@@ -41,6 +42,7 @@ namespace Decompose.Numerics
         public BigInteger ModularSum(BigInteger a, BigInteger b, BigInteger modulus) { return IntegerMath.ModularSum(a, b, modulus); }
         public BigInteger ModularDifference(BigInteger a, BigInteger b, BigInteger modulus) { return IntegerMath.ModularDifference(a, b, modulus); }
         public BigInteger ModularProduct(BigInteger a, BigInteger b, BigInteger modulus) { return IntegerMath.ModularProduct(a, b, modulus); }
+        public BigInteger ModularQuotient(BigInteger a, BigInteger b, BigInteger modulus) { return IntegerMath.ModularQuotient(a, b, modulus); }
         public BigInteger ModularPower(BigInteger value, BigInteger exponent, BigInteger modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
         public BigInteger ModularRoot(BigInteger value, BigInteger exponent, BigInteger modulus) { return IntegerMath.ModularRoot(value, exponent, modulus); }
         public BigInteger ModularInverse(BigInteger value, BigInteger modulus) { return IntegerMath.ModularInverse(value, modulus); }

@@ -19,7 +19,8 @@ namespace Decompose.Numerics
         public double Subtract(double a, double b) { return a - b; }
         public double Multiply(double a, double b) { return a * b; }
         public double Divide(double a, double b) { return a / b; }
-        public double Modulus(double a, double b) { return a % b; }
+        public double Remainder(double a, double b) { return a % b; }
+        public double Modulo(double a, double b) { var result = a % b; if (result < 0) result += b; return result; }
         public double Negate(double a) { return 0 - a; }
         public double LeftShift(double a, int n) { return a * Math.Pow(2, n); }
         public double RightShift(double a, int n) { return a / Math.Pow(2, n); }
@@ -41,6 +42,7 @@ namespace Decompose.Numerics
         public double ModularSum(double a, double b, double modulus) { return (double)IntegerMath.ModularSum(ToBigInteger(a), ToBigInteger(b), ToBigInteger(modulus)); }
         public double ModularDifference(double a, double b, double modulus) { return (double)IntegerMath.ModularDifference(ToBigInteger(a), ToBigInteger(b), ToBigInteger(modulus)); }
         public double ModularProduct(double a, double b, double modulus) { return (double)IntegerMath.ModularProduct(ToBigInteger(a), ToBigInteger(b), ToBigInteger(modulus)); }
+        public double ModularQuotient(double a, double b, double modulus) { return (double)IntegerMath.ModularQuotient(ToBigInteger(a), ToBigInteger(b), ToBigInteger(modulus)); }
         public double ModularPower(double value, double exponent, double modulus) { return (double)IntegerMath.ModularPower(ToBigInteger(value), ToBigInteger(exponent), ToBigInteger(modulus)); }
         public double ModularRoot(double value, double exponent, double modulus) { return (double)IntegerMath.ModularRoot(ToBigInteger(value), ToBigInteger(exponent), ToBigInteger(modulus)); }
         public double ModularInverse(double value, double modulus) { return (double)IntegerMath.ModularInverse(ToBigInteger(value), ToBigInteger(modulus)); }

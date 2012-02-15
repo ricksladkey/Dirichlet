@@ -8,6 +8,8 @@ namespace Decompose.Numerics
     {
         public static int ModularPower(int value, int exponent, int modulus)
         {
+            if (exponent == -1)
+                return ModularPower(ModularInverse(value, modulus), -exponent, modulus);
             return (int)ModularPower((uint)value, (uint)exponent, (uint)modulus);
         }
 
@@ -41,6 +43,8 @@ namespace Decompose.Numerics
 
         public static long ModularPower(long value, long exponent, long modulus)
         {
+            if (exponent == -1)
+                return ModularPower(ModularInverse(value, modulus), -exponent, modulus);
             return (long)ModularPower((ulong)value, (ulong)exponent, (ulong)modulus);
         }
 
@@ -64,6 +68,8 @@ namespace Decompose.Numerics
 
         public static BigInteger ModularPower(BigInteger value, BigInteger exponent, BigInteger modulus)
         {
+            if (exponent == BigInteger.MinusOne)
+                return ModularPower(ModularInverse(value, modulus), -exponent, modulus);
             return BigInteger.ModPow(value, exponent, modulus);
         }
 
@@ -195,11 +201,11 @@ namespace Decompose.Numerics
         {
             if (!modulus.IsInteger)
                 throw new InvalidOperationException("modulus not intergral");
-            if (value.IsInteger && exponent.IsInteger)
+            if (!value.IsInteger)
+                throw new InvalidOperationException("value not integral");
+            if (exponent.IsInteger)
                 return ModularPower((BigInteger)value, (BigInteger)exponent, (BigInteger)modulus);
-            if (value.IsInteger && exponent.Numerator == 1)
-                return ModularRoot((BigInteger)value, (BigInteger)exponent.Denominator, (BigInteger)modulus);
-            throw new NotImplementedException("rational power not implemented");
+            return ModularPower(ModularRoot((BigInteger)value, exponent.Denominator, (BigInteger)modulus), exponent.Numerator, (BigInteger)modulus);
         }
     }
 }

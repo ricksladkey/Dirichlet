@@ -19,7 +19,8 @@ namespace Decompose.Numerics
         public int Subtract(int a, int b) { return a - b; }
         public int Multiply(int a, int b) { return a * b; }
         public int Divide(int a, int b) { return a / b; }
-        public int Modulus(int a, int b) { return a % b; }
+        public int Remainder(int a, int b) { return a % b; }
+        public int Modulo(int a, int b) { var result = a % b; if (result < 0) result += b; return result; }
         public int Negate(int a) { return 0 - a; }
         public int LeftShift(int a, int n) { return n < 32 ? a << n : 0; }
         public int RightShift(int a, int n) { return n < 32 ? a >> n : 0; }
@@ -41,6 +42,7 @@ namespace Decompose.Numerics
         public int ModularSum(int a, int b, int modulus) { return IntegerMath.ModularSum(a, b, modulus); }
         public int ModularDifference(int a, int b, int modulus) { return IntegerMath.ModularDifference(a, b, modulus); }
         public int ModularProduct(int a, int b, int modulus) { return IntegerMath.ModularProduct(a, b, modulus); }
+        public int ModularQuotient(int a, int b, int modulus) { return IntegerMath.ModularQuotient(a, b, modulus); }
         public int ModularPower(int value, int exponent, int modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
         public int ModularRoot(int value, int exponent, int modulus) { return IntegerMath.ModularRoot(value, exponent, modulus); }
         public int ModularInverse(int value, int modulus) { return IntegerMath.ModularInverse(value, modulus); }

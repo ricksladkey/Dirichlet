@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.Numerics;
+using System.Linq;
+using Decompose.Numerics;
 
 namespace Decompose.Scripting
 {
@@ -351,17 +350,17 @@ namespace Decompose.Scripting
         };
         private static Dictionary<string, Op> operatorMap = new Dictionary<string, Op>
         {
-            { "+", Op.Plus },
-            { "-", Op.Minus },
-            { "*", Op.Times },
+            { "+", Op.Add },
+            { "-", Op.Subtract },
+            { "*", Op.Multiply },
             { "/", Op.Divide },
-            { "%", Op.Mod },
+            { "%", Op.Remainder },
             { "&&", Op.AndAnd },
             { "||", Op.OrOr },
             { "!", Op.Not },
-            { "&", Op.And },
-            { "|", Op.Or },
-            { "^", Op.ExclusiveOr },
+            { "#&", Op.And },
+            { "#|", Op.Or },
+            { "#^", Op.ExclusiveOr },
             { "~", Op.OnesComplement },
             { "<<", Op.LeftShift },
             { ">>", Op.RightShift },
@@ -372,7 +371,7 @@ namespace Decompose.Scripting
             { ">", Op.GreaterThan },
             { ">=", Op.GreaterThanOrEqual },
             { "??", Op.NullCoalescing },
-            { "**", Op.Power },
+            { "^", Op.Power },
             { "`int", Op.Int32 },
             { "`uint", Op.UInt32 },
             { "`long", Op.Int64 },
@@ -399,9 +398,9 @@ namespace Decompose.Scripting
         };
         private static Dictionary<Op, Op> modularOperatorMap = new Dictionary<Op, Op>
         {
-            { Op.Plus, Op.ModularSum },
-            { Op.Minus, Op.ModularDifference },
-            { Op.Times, Op.ModularProduct },
+            { Op.Add, Op.ModularSum },
+            { Op.Subtract, Op.ModularDifference },
+            { Op.Multiply, Op.ModularProduct },
             { Op.Divide, Op.ModularQuotient },
             { Op.Power, Op.ModularPower },
             { Op.Negate, Op.ModularNegate },
@@ -414,10 +413,10 @@ namespace Decompose.Scripting
             { "*=", AssignmentOp.TimesEquals },
             { "/=", AssignmentOp.DivideEquals },
             { "%=", AssignmentOp.ModEquals },
-            { "**=", AssignmentOp.PowerEquals },
-            { "&=", AssignmentOp.BitwiseAndEquals },
-            { "|=", AssignmentOp.BitwiseOrEquals },
-            { "^=", AssignmentOp.BitwiseXorEquals },
+            { "^=", AssignmentOp.PowerEquals },
+            { "#&=", AssignmentOp.BitwiseAndEquals },
+            { "#|=", AssignmentOp.BitwiseOrEquals },
+            { "#^=", AssignmentOp.BitwiseXorEquals },
             { "<<=", AssignmentOp.LeftShiftEquals },
             { ">>=", AssignmentOp.RightShiftEquals },
             { "++", AssignmentOp.Increment },
@@ -426,7 +425,7 @@ namespace Decompose.Scripting
 
         private static Dictionary<string, int> precedenceMap = new Dictionary<string, int>()
         {
-            { "**", 21 },
+            { "^", 21 },
 
             { "*", 20 },
             { "%", 20},
@@ -446,9 +445,9 @@ namespace Decompose.Scripting
             { "==", 16 },
             { "!=", 16 },
 
-            { "&", 15 },
-            { "^", 14 },
-            { "|", 13 },
+            { "#&", 15 },
+            { "#^", 14 },
+            { "#|", 13 },
 
             { "&&", 12 },
             { "||", 11 },
@@ -464,9 +463,11 @@ namespace Decompose.Scripting
             { "*=", 2 },
             { "%=", 2 },
             { "/=", 2 },
-            { "&=", 2 },
-            { "|=", 2 },
             { "^=", 2 },
+            { "#&=", 2 },
+            { "#^=", 2 },
+            { "#|=", 2 },
+
 
             { "`mod", 1 },
 
@@ -481,9 +482,9 @@ namespace Decompose.Scripting
             { "@lteq", "<=" },
             { "@eq", "==" },
             { "@neq", "!=" },
-            { "@and", "&" },
-            { "@or", "|" },
-            { "@xor", "^" },
+            { "@and", "#&" },
+            { "@or", "#|" },
+            { "@xor", "#^" },
             { "@andand", "&&" },
             { "@oror", "||" },
         };
@@ -803,13 +804,13 @@ namespace Decompose.Scripting
             while (true)
             {
                 var token = Tokens.Peek();
-                if (token == null) break;
+                if (token == null || token == ";" || token == ")" || token == "," && noComma) break;
                 if (assignmentOperatorMap.ContainsKey(token) || operatorMap.ContainsKey(token))
                     Tokens.Dequeue();
                 else if ((token == "," && !noComma) || token == "?" || token == ":")
                     Tokens.Dequeue();
                 else
-                    break;
+                    token = "*";
                 while (operators.Count > 0 && ShouldPerformOperation(token, operators.Peek()))
                     PerformOperation(operators, operands);
                 operators.Push(token);
@@ -822,7 +823,7 @@ namespace Decompose.Scripting
         private bool ShouldPerformOperation(string o1, string o2)
         {
             var delta = precedenceMap[o1] - precedenceMap[o2];
-            bool rightAssociative = assignmentOperatorMap.ContainsKey(o1) || o1 == ":" || o1 == "**";
+            bool rightAssociative = assignmentOperatorMap.ContainsKey(o1) || o1 == ":" || o1 == "^";
             return rightAssociative ? delta < 0 : delta <= 0;
         }
 
@@ -943,7 +944,7 @@ namespace Decompose.Scripting
             {
                 Tokens.Dequeue();
                 var node = ParseUnary(level);
-                var op = token == "++" ? Op.Plus : Op.Minus;
+                var op = token == "++" ? Op.Add : Op.Subtract;
                 var opNode = new OpNode { Op = op, Operands = { node, new ValueNode { Value = 1 } } };
                 return new SetNode { LValue = node, RValue = opNode };
             }
@@ -969,7 +970,7 @@ namespace Decompose.Scripting
                 else if (token == "++" || token == "--")
                 {
                     Tokens.Dequeue();
-                    var op = token == "++" ? Op.Plus : Op.Minus;
+                    var op = token == "++" ? Op.Add : Op.Subtract;
                     var opNode = new OpNode { Op = op, Operands = { node, new ValueNode { Value = 1 } } };
                     return new FirstNode { Operand1 = node, Operand2 = new SetNode { LValue = node, RValue = opNode } };
                 }
@@ -1197,8 +1198,8 @@ namespace Decompose.Scripting
 
         private object ParseInt(string token)
         {
-            BigInteger i;
-            if (!BigInteger.TryParse(token, out i)) engine.Throw("bad int: " + token);
+            Rational i;
+            if (!Rational.TryParse(token, out i)) engine.Throw("bad int: " + token);
             return i;
         }
 

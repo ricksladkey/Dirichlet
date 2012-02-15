@@ -12,11 +12,11 @@ namespace Decompose.Scripting
     {
         Assign = 0,
 
-        PlusEquals = Op.Plus,
-        MinusEquals = Op.Minus,
-        TimesEquals = Op.Times,
+        PlusEquals = Op.Add,
+        MinusEquals = Op.Subtract,
+        TimesEquals = Op.Multiply,
         DivideEquals = Op.Divide,
-        ModEquals = Op.Mod,
+        ModEquals = Op.Remainder,
         PowerEquals = Op.Power,
         BitwiseAndEquals = Op.And,
         BitwiseOrEquals = Op.Or,

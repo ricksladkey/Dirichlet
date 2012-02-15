@@ -46,9 +46,9 @@ namespace Decompose.Numerics
         public static Integer<T> operator /(Integer<T> a, Integer<T> b) { return new Integer<T>(ops.Divide(a.value, b.value)); }
         public static Integer<T> operator /(T a, Integer<T> b) { return new Integer<T>(ops.Divide(a, b.value)); }
         public static Integer<T> operator /(Integer<T> a, T b) { return new Integer<T>(ops.Divide(a.value, b)); }
-        public static Integer<T> operator %(Integer<T> a, Integer<T> b) { return new Integer<T>(ops.Modulus(a.value, b.value)); }
-        public static Integer<T> operator %(T a, Integer<T> b) { return new Integer<T>(ops.Modulus(a, b.value)); }
-        public static Integer<T> operator %(Integer<T> a, T b) { return new Integer<T>(ops.Modulus(a.value, b)); }
+        public static Integer<T> operator %(Integer<T> a, Integer<T> b) { return new Integer<T>(ops.Remainder(a.value, b.value)); }
+        public static Integer<T> operator %(T a, Integer<T> b) { return new Integer<T>(ops.Remainder(a, b.value)); }
+        public static Integer<T> operator %(Integer<T> a, T b) { return new Integer<T>(ops.Remainder(a.value, b)); }
         public static Integer<T> operator +(Integer<T> a) { return a; }
         public static Integer<T> operator -(Integer<T> a) { return new Integer<T>(ops.Negate(a.value)); }
         public static Integer<T> operator ++(Integer<T> a) { return new Integer<T>(ops.Add(a.value, one.value)); }
