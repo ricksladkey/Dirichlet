@@ -12,6 +12,7 @@ namespace Decompose.Numerics
         public bool IsUnsigned { get { return false; } }
         public Rational Convert(int a) { return a; }
         public Rational Convert(BigInteger a) { return a; }
+        public Rational Convert(double a) { return (Rational)a; }
         public int ToInt32(Rational a) { return (int)a; }
         public BigInteger ToBigInteger(Rational a) { return (BigInteger)a; }
         public double ToDouble(Rational a) { return (double)a; }

@@ -12,6 +12,7 @@ namespace Decompose.Numerics
         public bool IsUnsigned { get { return true; } }
         public long Convert(int a) { return (long)a; }
         public long Convert(BigInteger a) { return (long)a; }
+        public long Convert(double a) { return (long)a; }
         public int ToInt32(long a) { return (int)a; }
         public BigInteger ToBigInteger(long a) { return a; }
         public double ToDouble(long a) { return (double)a; }

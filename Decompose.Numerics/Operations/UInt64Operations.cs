@@ -12,6 +12,7 @@ namespace Decompose.Numerics
         public bool IsUnsigned { get { return true; } }
         public ulong Convert(int a) { return (ulong)a; }
         public ulong Convert(BigInteger a) { return (ulong)a; }
+        public ulong Convert(double a) { return (ulong)a; }
         public int ToInt32(ulong a) { return (int)a; }
         public BigInteger ToBigInteger(ulong a) { return a; }
         public double ToDouble(ulong a) { return (double)a; }

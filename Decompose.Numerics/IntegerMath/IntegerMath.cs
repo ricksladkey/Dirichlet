@@ -90,7 +90,10 @@ namespace Decompose.Numerics
 
         public static long Modulus(long n, long p)
         {
-            return (n % p + p) % p;
+            var result = n % p;
+            if (result < 0)
+                result += p;
+            return result;
         }
 
         public static ulong Modulus(ulong n, ulong p)
@@ -100,30 +103,47 @@ namespace Decompose.Numerics
 
         public static int Modulus(BigInteger n, int p)
         {
-            return ((int)(n % p) + p) % p;
+            var result = (int)(n % p);
+            if (result < 0)
+                result += p;
+            return result;
         }
 
         public static uint Modulus(BigInteger n, uint p)
         {
-            return ((uint)(n % p) + p) % p;
+            var result = (long)(n % p);
+            if (result < 0)
+                result += p;
+            return (uint)result;
         }
 
         public static long Modulus(BigInteger n, long p)
         {
-            return ((long)(n % p) + p) % p;
+            var result = (long)(n % p);
+            if (result < 0)
+                result += p;
+            return result;
         }
 
         public static ulong Modulus(BigInteger n, ulong p)
         {
-            return ((ulong)(n % p) + p) % p;
+            if (n.Sign != -1)
+                return (ulong)(n % p);
+            var result = p - (ulong)(-n % p);
+            if (result == p)
+                result = 0;
+            return result;
         }
 
         public static BigInteger Modulus(BigInteger n, BigInteger p)
         {
-            return (n % p + p) % p;
+            var result = n % p;
+            if (result.Sign == -1)
+                result += p;
+            return result;
         }
 
-        public static bool IsSquareFree(IEnumerable<int> factors)
+        public static bool IsSquareFree<T>(IEnumerable<T> factors)
         {
             return factors
                 .OrderBy(factor => factor)
@@ -131,37 +151,29 @@ namespace Decompose.Numerics
                 .All(grouping => grouping.Count() < 2);
         }
 
-        public static bool IsSquareFree(IEnumerable<BigInteger> factors)
-        {
-            return factors
-                .OrderBy(factor => factor)
-                .GroupBy(factor => factor)
-                .All(grouping => grouping.Count() < 2);
-        }
-
-        public static int SquareRoot(int n)
+        public static int FloorSquareRoot(int n)
         {
             return (int)Math.Floor(Math.Sqrt(n));
         }
 
-        public static uint SquareRoot(uint n)
+        public static uint FloorSquareRoot(uint n)
         {
             return (uint)Math.Floor(Math.Sqrt(n));
         }
 
-        public static long SquareRoot(long n)
+        public static long FloorSquareRoot(long n)
         {
             return (long)Math.Floor(Math.Sqrt(n));
         }
 
-        public static ulong SquareRoot(ulong n)
+        public static ulong FloorSquareRoot(ulong n)
         {
             return (ulong)Math.Floor(Math.Sqrt(n));
         }
 
         private static ISqrtAlgorithm<BigInteger> sqrt = new SqrtNewtonsMethod();
 
-        public static BigInteger SquareRoot(BigInteger n)
+        public static BigInteger FloorSquareRoot(BigInteger n)
         {
             return sqrt.Sqrt(n);
         }

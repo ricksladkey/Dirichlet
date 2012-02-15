@@ -182,6 +182,8 @@ namespace Decompose.Scripting
             globalMethods.Add("ceiling", args => Invoke("Ceiling", args));
             globalMethods.Add("min", args => Invoke("Min", args));
             globalMethods.Add("max", args => Invoke("Max", args));
+            globalMethods.Add("numerator", args => Invoke("Numerator", args));
+            globalMethods.Add("denominator", args => Invoke("Denominator", args));
         } 
 
         public object Exit(params object[] args)
@@ -202,14 +204,14 @@ namespace Decompose.Scripting
             return null;
         }
 
-        public BigInteger Jacobi(BigInteger a, BigInteger b)
+        public Rational Jacobi(Rational a, Rational b)
         {
-            return IntegerMath.JacobiSymbol(a, b);
+            return IntegerMath.JacobiSymbol((BigInteger)a, (BigInteger)b);
         }
 
-        public bool IsPrime(BigInteger a)
+        public bool IsPrime(Rational a)
         {
-            return IntegerMath.IsPrime(a);
+            return IntegerMath.IsPrime((BigInteger)a);
         }
 
         public T Sqrt<T>(T a)
@@ -221,6 +223,8 @@ namespace Decompose.Scripting
         {
             if (a is double)
                 return Math.Log((double)a);
+            if (a is Rational)
+                return Rational.Log((Rational)a);
             return BigInteger.Log(Cast.ToBigInteger(a));
         }
 
@@ -263,15 +267,25 @@ namespace Decompose.Scripting
             return a;
         }
 
-        public BigInteger NextPrime(BigInteger a)
+        public BigInteger Numerator(Rational a)
         {
-            return IntegerMath.NextPrime(a);
+            return a.Numerator;
         }
 
-        public IEnumerable<BigInteger> Factor(BigInteger a)
+        public BigInteger Denominator(Rational a)
+        {
+            return a.Denominator;
+        }
+
+        public Rational NextPrime(Rational a)
+        {
+            return IntegerMath.NextPrime((BigInteger)a);
+        }
+
+        public IEnumerable<Rational> Factor(Rational a)
         {
             var algorithm = new HybridPollardRhoQuadraticSieve(8, 1000000, new QuadraticSieve.Config { Threads = 8 });
-            return algorithm.Factor(a).ToArray();
+            return algorithm.Factor((BigInteger)a).Select(factor => (Rational)factor).ToArray();
         }
     }
 }

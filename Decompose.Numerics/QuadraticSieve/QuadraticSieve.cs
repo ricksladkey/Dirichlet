@@ -738,7 +738,7 @@ namespace Decompose.Numerics
             savePartialPartialRelationFactorizations = digits < 100;
             useSingleThreshold = thresholdExponent >= 2;
 
-            sqrtN = IntegerMath.SquareRoot(n);
+            sqrtN = IntegerMath.FloorSquareRoot(n);
             powerOfTwo = IntegerMath.Modulus(n, 8) == 1 ? 3 : IntegerMath.Modulus(n, 8) == 5 ? 2 : 1;
             factorBaseSize = CalculateFactorBaseSize();
             factorBase = allPrimes

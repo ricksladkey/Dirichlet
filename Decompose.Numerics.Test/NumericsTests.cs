@@ -16,22 +16,22 @@ namespace Decompose.Numerics.Test
         {
             var p = BigInteger.Parse("12345678901234567890");
             var n = p * p;
-            var p2 = IntegerMath.SquareRoot(n);
+            var p2 = IntegerMath.FloorSquareRoot(n);
             Assert.AreEqual(p, p2);
         }
 
         [TestMethod]
         public void TestSqrt2()
         {
-            Assert.AreEqual(0, (int)IntegerMath.SquareRoot(0));
-            Assert.AreEqual(1, (int)IntegerMath.SquareRoot(1));
-            Assert.AreEqual(1, (int)IntegerMath.SquareRoot(2));
-            Assert.AreEqual(1, (int)IntegerMath.SquareRoot(3));
-            Assert.AreEqual(2, (int)IntegerMath.SquareRoot(4));
-            Assert.AreEqual(2, (int)IntegerMath.SquareRoot(5));
-            Assert.AreEqual(2, (int)IntegerMath.SquareRoot(8));
-            Assert.AreEqual(3, (int)IntegerMath.SquareRoot(9));
-            Assert.AreEqual(3, (int)IntegerMath.SquareRoot(10));        
+            Assert.AreEqual(0, (int)IntegerMath.FloorSquareRoot(0));
+            Assert.AreEqual(1, (int)IntegerMath.FloorSquareRoot(1));
+            Assert.AreEqual(1, (int)IntegerMath.FloorSquareRoot(2));
+            Assert.AreEqual(1, (int)IntegerMath.FloorSquareRoot(3));
+            Assert.AreEqual(2, (int)IntegerMath.FloorSquareRoot(4));
+            Assert.AreEqual(2, (int)IntegerMath.FloorSquareRoot(5));
+            Assert.AreEqual(2, (int)IntegerMath.FloorSquareRoot(8));
+            Assert.AreEqual(3, (int)IntegerMath.FloorSquareRoot(9));
+            Assert.AreEqual(3, (int)IntegerMath.FloorSquareRoot(10));        
         }
 
         [TestMethod]
@@ -674,7 +674,7 @@ namespace Decompose.Numerics.Test
                     q = random.Next(max);
                     p = random.Next(q);
                 }
-                var r = Integer<T>.SquareRoot(random.Next(q));
+                var r = Integer<T>.FloorRoot(random.Next(q), 2);
                 r -= r % p;
                 var pInv = Integer<T>.ModularInverse(p, q);
                 var result = Integer<T>.ModularProduct(p, pInv, q);

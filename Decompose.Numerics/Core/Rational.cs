@@ -59,6 +59,8 @@ namespace Decompose.Numerics
         public static BigInteger Truncate(Rational a) { return a.n / a.d; }
         public static BigInteger Floor(Rational a) { return a.n >= 0 ? a.n / a.d : (a.n - a.d + 1) / a.d; }
         public static BigInteger Ceiling(Rational a) { return a.n >= 0 ? (a.n + a.d - 1) / a.d : a.n / a.d; }
+        public static double Log(Rational a) { return BigInteger.Log(a.n) - BigInteger.Log(a.d); }
+        public static double Log(Rational a, double b) { return BigInteger.Log(a.n, b) - BigInteger.Log(a.d, b); }
         public bool Equals(Rational a) { return n == a.n && d == a.d; }
         public int CompareTo(Rational a) { return (n * a.d).CompareTo(a.n * d); }
         public override bool Equals(object obj) { return obj is Rational && Equals((Rational)obj); }

@@ -17,6 +17,7 @@ namespace Decompose.Numerics
         T Two { get; }
         T Convert(int a);
         T Convert(BigInteger a);
+        T Convert(double a);
         int ToInt32(T a);
         BigInteger ToBigInteger(T a);
         double ToDouble(T a);
