@@ -62,6 +62,7 @@
     <Compile Include="Division\UInt32Division.cs" />
     <Compile Include="Division\UInt64Division.cs" />
     <Compile Include="IntegerMath\GreatestCommonDivisor.cs" />
+    <Compile Include="Operations\ComplexOperations.cs" />
     <Compile Include="Operations\DoubleOperations.cs" />
     <Compile Include="Operations\Int32Operations.cs" />
     <Compile Include="Operations\Int64Operations.cs" />

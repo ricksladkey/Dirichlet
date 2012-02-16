@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using Decompose.Numerics;
 
 namespace Decompose.Scripting
@@ -378,6 +379,7 @@ namespace Decompose.Scripting
             { "`ulong", Op.UInt64 },
             { "`integer", Op.BigInteger },
             { "`real", Op.Double },
+            { "`complex", Op.Complex },
             { "`rational", Op.Rational },
             { "`rand", Op.Random },
             { "`mod", Op.Modulo },

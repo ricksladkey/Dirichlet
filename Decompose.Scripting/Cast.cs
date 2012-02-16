@@ -83,6 +83,27 @@ namespace Decompose.Scripting
             throw new NotImplementedException();
         }
 
+        public static Complex ToComplex(object value)
+        {
+            if (value is int)
+                return (Complex)(int)value;
+            if (value is uint)
+                return (Complex)(uint)value;
+            if (value is long)
+                return (Complex)(long)value;
+            if (value is ulong)
+                return (Complex)(ulong)value;
+            if (value is BigInteger)
+                return (Complex)(BigInteger)value;
+            if (value is double)
+                return (Complex)(double)value;
+            if (value is Rational)
+                return (Complex)(Rational)value;
+            if (value is Complex)
+                return (Complex)(Complex)value;
+            throw new NotImplementedException();
+        }
+
         public static double ToDouble(object value)
         {
             if (value is int)
@@ -145,6 +166,8 @@ namespace Decompose.Scripting
             if (args.Length == 0)
                 return args;
             var types = args.Select(arg => arg.GetType()).ToArray();
+            if (types.Any(type => type == typeof(Complex)))
+                return args.Select(arg => Cast.ToComplex(arg)).Cast<object>().ToArray();
             if (types.Any(type => type == typeof(double)))
                 return args.Select(arg => Cast.ToDouble(arg)).Cast<object>().ToArray();
             if (types.Any(type => type == typeof(Rational)))

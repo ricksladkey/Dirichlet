@@ -29,6 +29,7 @@ namespace Decompose.Scripting
 
         private Dictionary<Op, Func<object, object>> opMapCast = new Dictionary<Op, Func<object, object>>
         {
+            { Op.Complex, a => Cast.ToComplex(a) },
             { Op.Double, a => Cast.ToDouble(a) },
             { Op.Int32, a => Cast.ToInt32(a) },
             { Op.UInt32, a => Cast.ToUInt32(a) },
@@ -56,6 +57,7 @@ namespace Decompose.Scripting
             opMaps.Add(typeof(ulong), new NumericOperatorMap<ulong>(generator));
             opMaps.Add(typeof(BigInteger), new NumericOperatorMap<BigInteger>(generator));
             opMaps.Add(typeof(Rational), new NumericOperatorMap<Rational>(generator));
+            opMaps.Add(typeof(Complex), new NumericOperatorMap<Complex>(generator));
             opMaps.Add(typeof(double), new NumericOperatorMap<double>(generator));
             variables = new Dictionary<string, object>();
             globalMethods = new Dictionary<string, Func<object[], object>>();

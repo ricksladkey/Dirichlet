@@ -25,6 +25,7 @@ namespace Decompose.Scripting
                 case Op.UInt64:
                 case Op.BigInteger:
                 case Op.Double:
+                case Op.Complex:
                 case Op.Rational:
                 case Op.Random:
                     return 1;

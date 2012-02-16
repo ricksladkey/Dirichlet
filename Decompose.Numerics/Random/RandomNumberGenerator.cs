@@ -131,6 +131,24 @@ namespace Decompose.Numerics
             }
         }
 
+        private class ComplexRandomNumberAlgorithm : RandomNumberAlgorithm<Complex>
+        {
+            public ComplexRandomNumberAlgorithm(IRandomNumberGenerator random)
+                : base(random)
+            {
+            }
+
+            public override Complex Next(Complex n)
+            {
+                lock (random.SyncRoot)
+                {
+                    var real = (double)((ulong)random.Next() << 32 | random.Next()) / ulong.MaxValue;
+                    var imag = (double)((ulong)random.Next() << 32 | random.Next()) / ulong.MaxValue;
+                    return new Complex(real * n.Real, imag * n.Imaginary);
+                }
+            }
+        }
+
         private class RationalRandomNumberAlgorithm : RandomNumberAlgorithm<Rational>
         {
             public RationalRandomNumberAlgorithm(IRandomNumberGenerator random)
@@ -174,6 +192,8 @@ namespace Decompose.Numerics
                 return (IRandomNumberAlgorithm<T>)new RationalRandomNumberAlgorithm(this);
             if (type == typeof(double))
                 return (IRandomNumberAlgorithm<T>)new DoubleRandomNumberAlgorithm(this);
+            if (type == typeof(Complex))
+                return (IRandomNumberAlgorithm<T>)new ComplexRandomNumberAlgorithm(this);
             throw new NotImplementedException("type not supported");
         }
     }

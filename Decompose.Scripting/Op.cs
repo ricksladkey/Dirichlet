@@ -55,6 +55,7 @@ namespace Decompose.Scripting
         UInt64,
         BigInteger,
         Double,
+        Complex,
         Rational,
         Random,
 
