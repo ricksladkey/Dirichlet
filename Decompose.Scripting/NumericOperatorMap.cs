@@ -46,6 +46,8 @@ namespace Decompose.Scripting
             ternaryOps.Add(Op.ModularProduct, (a, b, c) => ops.ModularProduct(a, b, c));
             ternaryOps.Add(Op.ModularQuotient, (a, b, c) => ops.ModularProduct(a, ops.ModularInverse(b, c), c));
             ternaryOps.Add(Op.ModularPower, (a, b, c) => ops.ModularPower(a, b, c));
+            ternaryOps.Add(Op.ModularEquals, (a, b, c) => ops.Equals(ops.Modulo(a, c), ops.Modulo(b, c)));
+            ternaryOps.Add(Op.ModularNotEquals, (a, b, c) => !ops.Equals(ops.Modulo(a, c), ops.Modulo(b, c)));
         }
 
         public object Operator(Op op, params object[] args)

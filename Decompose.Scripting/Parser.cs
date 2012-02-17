@@ -406,6 +406,8 @@ namespace Decompose.Scripting
             { Op.Divide, Op.ModularQuotient },
             { Op.Power, Op.ModularPower },
             { Op.Negate, Op.ModularNegate },
+            { Op.Equals, Op.ModularEquals },
+            { Op.NotEquals, Op.ModularNotEquals },
         };
         private static Dictionary<string, AssignmentOp> assignmentOperatorMap = new Dictionary<string, AssignmentOp>
         {
@@ -430,8 +432,9 @@ namespace Decompose.Scripting
             { "^", 21 },
 
             { "*", 20 },
-            { "%", 20},
             { "/", 20 },
+            { "%", 20},
+            { "`mod", 20},
 
             { "+", 19 },
             { "-", 19 },
@@ -471,7 +474,7 @@ namespace Decompose.Scripting
             { "#|=", 2 },
 
 
-            { "`mod", 1 },
+            { "(mod)", 1 },
 
             { ",", 0 },
 
@@ -807,16 +810,30 @@ namespace Decompose.Scripting
             {
                 var token = Tokens.Peek();
                 if (token == null || token == ";" || token == ")" || token == "," && noComma) break;
+                if (token == "(")
+                {
+                    Tokens.Dequeue();
+                    var nextToken = Tokens.Peek();
+                    if (nextToken == "`mod")
+                    {
+                        Tokens.Dequeue();
+                        token = "(mod)";
+                    }
+                    else
+                        Tokens.Undequeue(token);
+                }
                 if (assignmentOperatorMap.ContainsKey(token) || operatorMap.ContainsKey(token))
                     Tokens.Dequeue();
                 else if ((token == "," && !noComma) || token == "?" || token == ":")
                     Tokens.Dequeue();
-                else
+                else if (token != "(mod)")
                     token = "*";
                 while (operators.Count > 0 && ShouldPerformOperation(token, operators.Peek()))
                     PerformOperation(operators, operands);
                 operators.Push(token);
                 operands.Push(ParseUnary(level + 1));
+                if (token == "(mod)")
+                    ParseToken(")");
             }
             while (operators.Count > 0) PerformOperation(operators, operands);
             return operands.Pop();
@@ -834,12 +851,12 @@ namespace Decompose.Scripting
             var token = operators.Pop();
             var operand2 = operands.Pop();
             var operand1 = operands.Pop();
-            if (operatorMap.ContainsKey(token))
+            if (token == "(mod)")
+                operands.Push(ConvertToModularOperations(operand1, operand2));
+            else if (operatorMap.ContainsKey(token))
             {
                 var op = operatorMap[token];
-                if (op == Op.Modulo)
-                    operands.Push(ConvertToModularOperations(operand1, operand2));
-                else if (op == Op.AndAnd)
+                if (op == Op.AndAnd)
                     operands.Push(new ConditionalNode { Conditional = operand1, IfTrue = operand2, IfFalse = new ValueNode { Value = false } });
                 else if (op == Op.OrOr)
                     operands.Push(new ConditionalNode { Conditional = operand1, IfTrue = new ValueNode { Value = true }, IfFalse = operand2 });

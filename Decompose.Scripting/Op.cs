@@ -26,6 +26,8 @@ namespace Decompose.Scripting
         ModularQuotient,
         ModularPower,
         ModularNegate,
+        ModularEquals,
+        ModularNotEquals,
 
         Divides,
         NotDivides,
