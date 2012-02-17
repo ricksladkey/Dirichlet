@@ -7,6 +7,13 @@ namespace Decompose.Scripting
 {
     public static class Cast
     {
+        public static bool ToBoolean(object value)
+        {
+            if (value is bool)
+                return (bool)value;
+            throw new NotImplementedException();
+        }
+
         public static int ToInt32(object value)
         {
             if (value is int)
@@ -163,7 +170,7 @@ namespace Decompose.Scripting
 
         public static object[] ConvertToCompatibleTypes(object[] args)
         {
-            if (args.Length == 0)
+            if (args.Length < 2)
                 return args;
             var types = args.Select(arg => arg.GetType()).ToArray();
             if (types.Any(type => type == typeof(Complex)))
@@ -182,6 +189,8 @@ namespace Decompose.Scripting
                 return args.Select(arg => Cast.ToUInt32(arg)).Cast<object>().ToArray();
             if (types.Any(type => type == typeof(int)))
                 return args.Select(arg => Cast.ToInt32(arg)).Cast<object>().ToArray();
+            if (types.Any(type => type == typeof(bool)))
+                return args.Select(arg => Cast.ToBoolean(arg)).Cast<object>().ToArray();
             throw new NotImplementedException();
         }
 

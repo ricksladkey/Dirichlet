@@ -61,11 +61,11 @@ namespace Decompose.Scripting
         {
             public abstract object Get(Engine engine);
         }
-        public class StatementNode : Node
+        public abstract class StatementNode : Node
         {
             public override object Get(Engine engine)
             {
-                return null;
+                throw new NotImplementedException("statement not implemented");
             }
         }
         public class ExpressionNode : StatementNode
@@ -115,10 +115,15 @@ namespace Decompose.Scripting
             public IList<StatementNode> Nodes { get; set; }
             public override object Get(Engine engine)
             {
-                engine.PushFrame();
-                var result = Nodes.Select(node => node.Get(engine)).LastOrDefault();
-                engine.PopFrame();
-                return result;
+                try
+                {
+                    engine.PushFrame();
+                    return Nodes.Select(node => node.Get(engine)).LastOrDefault();
+                }
+                finally
+                {
+                    engine.PopFrame();
+                }
             }
         }
         public class VariableNode : ExpressionNode
@@ -193,6 +198,15 @@ namespace Decompose.Scripting
             };
             public IList<Pair> Pairs { get; set; }
             public StatementNode Else { get; set; }
+            public override object Get(Engine engine)
+            {
+                foreach (var pair in Pairs)
+                {
+                    if ((bool)pair.Expression.Get(engine))
+                        return pair.Statement.Get(engine);
+                }
+                return Else != null ? Else.Get(engine) : null;
+            }
         }
         public class TypeNode : ExpressionNode
         {
@@ -645,7 +659,7 @@ namespace Decompose.Scripting
 
         private void ParseSemicolon()
         {
-            if (Tokens.Count > 0) ParseToken(";");
+            if (Tokens.Count > 0 && Tokens.Peek() != "}") ParseToken(";");
         }
 
         private StatementNode ParseStatements()
@@ -809,7 +823,7 @@ namespace Decompose.Scripting
             while (true)
             {
                 var token = Tokens.Peek();
-                if (token == null || token == ";" || token == ")" || token == "," && noComma) break;
+                if (token == null || token == ";" || token == ")" || token == "]" || token == "}" || token == "," && noComma) break;
                 if (token == "(")
                 {
                     Tokens.Dequeue();
@@ -992,6 +1006,11 @@ namespace Decompose.Scripting
                     var op = token == "++" ? Op.Add : Op.Subtract;
                     var opNode = new OpNode { Op = op, Operands = { node, new ValueNode { Value = 1 } } };
                     return new FirstNode { Operand1 = node, Operand2 = new SetNode { LValue = node, RValue = opNode } };
+                }
+                else if (token == "!")
+                {
+                    ParseToken("!");
+                    return new OpNode { Op = Op.Factorial, Operands = { node } };
                 }
                 else
                     break;

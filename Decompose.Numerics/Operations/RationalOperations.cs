@@ -21,7 +21,7 @@ namespace Decompose.Numerics
         public Rational Multiply(Rational a, Rational b) { return a * b; }
         public Rational Divide(Rational a, Rational b) { return a / b; }
         public Rational Remainder(Rational a, Rational b) { return a - Rational.Truncate(a / b) * b; }
-        public Rational Modulo(Rational a, Rational b) { return a - Rational.Floor(a / b) * b; }
+        public Rational Modulo(Rational a, Rational b) { return IntegerMath.Modulus(a, (BigInteger)b); }
         public Rational Negate(Rational a) { return -a; }
         public Rational LeftShift(Rational a, int n) { return (BigInteger)a << n; }
         public Rational RightShift(Rational a, int n) { return (BigInteger)a >> n; }

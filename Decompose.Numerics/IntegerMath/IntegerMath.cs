@@ -143,6 +143,13 @@ namespace Decompose.Numerics
             return result;
         }
 
+        public static BigInteger Modulus(Rational n, BigInteger p)
+        {
+            if (n.IsInteger)
+                return IntegerMath.Modulus((BigInteger)n, p);
+            return IntegerMath.ModularQuotient(n.Numerator, n.Denominator, p);
+        }
+
         public static bool IsSquareFree<T>(IEnumerable<T> factors)
         {
             return factors

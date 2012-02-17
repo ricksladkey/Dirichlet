@@ -166,7 +166,7 @@ namespace Decompose.Scripting
             args = Cast.ConvertToCompatibleTypes(args);
             if (opMaps.ContainsKey(args[0].GetType()))
                 return opMaps[args[0].GetType()].Operator(op, args);
-            throw new NotImplementedException();
+            return Invoke(op.ToString(), args);
         }
 
         private void AddGlobalMethods()

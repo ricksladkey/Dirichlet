@@ -18,6 +18,7 @@ namespace Decompose.Scripting
         Divide,
         Negate,
         Power,
+        Factorial,
 
         GreatestCommonDivisor,
         ModularSum,
