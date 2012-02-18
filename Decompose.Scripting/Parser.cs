@@ -411,6 +411,8 @@ namespace Decompose.Scripting
             "`log",
             "`exp",
             "`sqrt",
+            "`numerator",
+            "`denominator",
         };
         private static Dictionary<Op, Op> modularOperatorMap = new Dictionary<Op, Op>
         {

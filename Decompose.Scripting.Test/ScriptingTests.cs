@@ -22,6 +22,7 @@ namespace Decompose.Scripting.Tests
             Assert.AreEqual((Rational)6, Evaluate("a=2; b=3; n=17; a^(1/2) (mod n)"));
             Assert.AreEqual(Rational.Parse("1606938044258990275541962092341162602522202993782792835301375/8796093022207"),
                 Evaluate("((1<<200)-1)/((1<<43)-1)"));
+            Assert.AreEqual(Rational.Parse("47021221151697033430710241825459573109"), Evaluate("(47021221151697033430710241825459573109^3)^(1/3)"));
         }
 
         private object Evaluate(string text)

@@ -49,5 +49,7 @@ namespace Decompose.Numerics
         T ModularPower(T value, T exponent, T modulus);
         T ModularRoot(T value, T exponent, T modulus);
         T ModularInverse(T value, T modulus);
+
+        Complex Log(T value);
     }
 }

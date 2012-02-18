@@ -748,5 +748,19 @@ namespace Decompose.Numerics.Test
                 Assert.AreEqual(BigInteger.ModPow(2, exponent, modulus), IntegerMath.ModularPowerOfTwo(exponent, modulus));
             }
         }
+
+        [TestMethod]
+        public void FloorRootTest1()
+        {
+            var max = IntegerMath.Power(BigIntegers.Two, 3 * 64);
+            var random = new MersenneTwister(0).Create<BigInteger>();
+            for (var i = 0; i < 100000; i++)
+            {
+                var x = random.Next(max);
+                var n = (int)random.Next(20 - 2) + 2;
+                var root = IntegerMath.FloorRoot(x, n);
+                Assert.IsTrue(IntegerMath.Power(root, n) <= x && IntegerMath.Power(root + 1, n) > x);
+            }
+        }
     }
 }

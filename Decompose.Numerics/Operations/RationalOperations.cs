@@ -47,5 +47,7 @@ namespace Decompose.Numerics
         public Rational ModularPower(Rational value, Rational exponent, Rational modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
         public Rational ModularRoot(Rational value, Rational exponent, Rational modulus) { return IntegerMath.ModularRoot((BigInteger)value, (BigInteger)exponent, (BigInteger)modulus); }
         public Rational ModularInverse(Rational value, Rational modulus) { return IntegerMath.ModularInverse((BigInteger)value, (BigInteger)modulus); }
+
+        public Complex Log(Rational a) { return Rational.Log(a); }
     }
 }

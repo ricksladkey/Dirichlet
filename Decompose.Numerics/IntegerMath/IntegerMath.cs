@@ -189,10 +189,5 @@ namespace Decompose.Numerics
         {
             return (int)Math.Ceiling(BigInteger.Log(n, b));
         }
-
-        public static bool IsQuadraticResidue(BigInteger n, BigInteger p)
-        {
-            return ModularPower(n, (p - 1) / 2, p).IsOne;
-        }
     }
 }

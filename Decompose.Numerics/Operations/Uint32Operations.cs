@@ -47,5 +47,7 @@ namespace Decompose.Numerics
         public uint ModularPower(uint value, uint exponent, uint modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
         public uint ModularRoot(uint value, uint exponent, uint modulus) { return IntegerMath.ModularRoot(value, exponent, modulus); }
         public uint ModularInverse(uint value, uint modulus) { return IntegerMath.ModularInverse(value, modulus); }
+
+        public Complex Log(uint a) { return Math.Log(a); }
     }
 }

@@ -55,6 +55,9 @@ namespace Decompose.Numerics
         public static implicit operator Rational(BigInteger a) { return new Rational(a, 1); }
         public static explicit operator BigInteger(Rational a) { if (a.d != 1) throw new InvalidCastException(); return a.n; }
         public static explicit operator int(Rational a) { if (a.d != 1) throw new InvalidCastException(); return (int)a.n; }
+        public static explicit operator uint(Rational a) { if (a.d != 1) throw new InvalidCastException(); return (uint)a.n; }
+        public static explicit operator long(Rational a) { if (a.d != 1) throw new InvalidCastException(); return (long)a.n; }
+        public static explicit operator ulong(Rational a) { if (a.d != 1) throw new InvalidCastException(); return (ulong)a.n; }
         public static explicit operator double(Rational a) { return (double)a.n / (double)a.d; }
         public static explicit operator Complex(Rational a) { return (Complex)((double)a.n / (double)a.d); }
         public static BigInteger Truncate(Rational a) { return a.n / a.d; }

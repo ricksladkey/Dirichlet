@@ -29,6 +29,7 @@ namespace Decompose.Numerics
         public bool IsEven { get { return ops.IsEven(value); } }
         public static implicit operator Integer<T>(int value) { return new Integer<T>(ops.Convert(value)); }
         public static explicit operator Integer<T>(BigInteger value) { return new Integer<T>(ops.Convert(value)); }
+        public static implicit operator Integer<T>(double value) { return new Integer<T>(ops.Convert(value)); }
         public static implicit operator Integer<T>(T value) { return new Integer<T>(value); }
         public static implicit operator T(Integer<T> integer) { return integer.value; }
         public static explicit operator int(Integer<T> integer) { return ops.ToInt32(integer.value); }
@@ -100,6 +101,8 @@ namespace Decompose.Numerics
         public bool Equals(Integer<T> other) { return ops.Equals(value, other.value); }
         public static Integer<T> Min(Integer<T> a, Integer<T> b) { return ops.Compare(a.value, b.value) < 0 ? a : b; }
         public static Integer<T> Max(Integer<T> a, Integer<T> b) { return ops.Compare(a.value, b.value) > 0 ? a : b; }
+        public static Integer<T> Abs(Integer<T> a) { return ops.Compare(a.value, Zero) < 0 ? new Integer<T>(ops.Negate(a.value)): a; }
+        public static Complex Log(Integer<T> a) { return ops.Log(a.value); }
         public override bool Equals(object obj) { return obj is Integer<T> && ops.Equals(value, ((Integer<T>)obj).value); }
         public override int GetHashCode() { return value.GetHashCode(); }
         public override string ToString() { return value.ToString(); }

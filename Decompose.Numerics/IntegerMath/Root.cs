@@ -1,64 +1,41 @@
 ﻿using System;
 using System.Numerics;
+using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
     public static partial class IntegerMath
     {
-        public static int Root(int a, int b)
+        public static T Root<T>(T a, T b)
         {
-            if ((b & 1) == 0 && a < 0)
-                throw new ArgumentException("negative radicand");
-            var result = (int)Math.Round(Math.Exp(Math.Log(Math.Abs(a)) / b));
-            if (a < 0)
-                result = -result;
-            if (Power(result, b) != a)
-                throw new InvalidOperationException("not a even power");
+            var result = FloorRoot(a, b);
+            if (Integer<T>.Power(result, b) != a)
+                throw new InvalidOperationException("not a perfect power");
             return result;
         }
 
-        public static uint Root(uint a, uint b)
+        public static T FloorRoot<T>(T a, T b)
         {
-            if ((b & 1) == 0 && a < 0)
-                throw new ArgumentException("negative radicand");
-            var result = (uint)Math.Round(Math.Exp(Math.Log(a) / b));
-            if (Power(result, b) != a)
-                throw new InvalidOperationException("not a even power");
-            return result;
-        }
-
-        public static long Root(long a, long b)
-        {
-            if ((b & 1) == 0 && a < 0)
-                throw new ArgumentException("negative radicand");
-            var result = (int)Math.Round(Math.Exp(Math.Log(Math.Abs(a)) / b));
-            if (a < 0)
-                result = -result;
-            if (Power(result, b) != a)
-                throw new InvalidOperationException("not a even power");
-            return result;
-        }
-
-        public static ulong Root(ulong a, ulong b)
-        {
-            if ((b & 1) == 0 && a < 0)
-                throw new ArgumentException("negative radicand");
-            var result = (ulong)Math.Round(Math.Exp(Math.Log(a) / b));
-            if (Power(result, b) != a)
-                throw new InvalidOperationException("not a even power");
-            return result;
-        }
-
-        public static BigInteger Root(BigInteger a, BigInteger b)
-        {
-            if (b.IsEven && a < 0)
-                throw new ArgumentException("negative radicand");
-            var result = (BigInteger)Math.Round(Math.Exp(BigInteger.Log(BigInteger.Abs(a)) / (double)b));
-            if (a < 0)
-                result = -result;
-            if (Power(result, b) != a)
-                throw new InvalidOperationException("not a even power");
-            return result;
+            var aAbs = Integer<T>.Abs(a);
+            var bInt = (int)(Integer<T>)b;
+            if ((bInt & 1) == 0 && a != aAbs)
+                throw new InvalidOperationException("negative radicand");
+            var cPrev = Integer<T>.Zero;
+            var c0 = (Integer<T>)Math.Round(Math.Exp(Integer<T>.Log(aAbs).Real / bInt));
+            var bMinusOne = (Integer<T>)(bInt - 1);
+            while (true)
+            {
+                var c1 = (aAbs / Integer<T>.Power(c0, bMinusOne) + bMinusOne * c0) / b;
+                if (c1 == cPrev)
+                {
+                    c0 = Integer<T>.Min(c0, c1);
+                    break;
+                }
+                cPrev = c0;
+                c0 = c1;
+            }
+            Debug.Assert(Integer<T>.Power(c0, b) <= aAbs && Integer<T>.Power(c0 + 1, b) > aAbs);
+            return a == aAbs ? c0 : -c0;
         }
     }
 }

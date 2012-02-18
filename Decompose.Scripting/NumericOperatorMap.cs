@@ -51,7 +51,7 @@ namespace Decompose.Scripting
             ternaryOps.Add(Op.ModularNotEquals, (a, b, c) => !ops.Equals(ops.Modulo(a, c), ops.Modulo(b, c)));
         }
 
-        public T Factorial<T>(T n)
+        public T Factorial(T n)
         {
             var result = Integer<T>.One;
             for (var i = Integer<T>.Two; i <= n; i++)

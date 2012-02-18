@@ -254,7 +254,7 @@ namespace Decompose.Scripting
         public object Floor(object a)
         {
             if (a is double)
-                return (BigInteger)Math.Floor((double)a);
+                return (Rational)Math.Floor((double)a);
             if (a is Rational)
                 return Rational.Floor((Rational)a);
             return a;
