@@ -8,7 +8,7 @@ namespace Decompose.Numerics
         private class PrimalityAlgorithm<T> : IPrimalityAlgorithm<T>
         {
             private IReductionAlgorithm<T> reduction;
-            private IRandomNumberAlgorithm<Integer<T>> random = new RandomInteger<T>(0);
+            private IRandomNumberAlgorithm<Number<T>> random = new RandomInteger<T>(0);
             private int k;
 
             public PrimalityAlgorithm(int k, IReductionAlgorithm<T> reduction)
@@ -19,7 +19,7 @@ namespace Decompose.Numerics
 
             public bool IsPrime(T nValue)
             {
-                var n = (Integer<T>)nValue;
+                var n = (Number<T>)nValue;
                 if (n < 2)
                     return false;
                 if (n == 2 || n == 3)

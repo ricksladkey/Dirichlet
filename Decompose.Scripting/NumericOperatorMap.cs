@@ -53,8 +53,8 @@ namespace Decompose.Scripting
 
         public T Factorial(T n)
         {
-            var result = Integer<T>.One;
-            for (var i = Integer<T>.Two; i <= n; i++)
+            var result = Number<T>.One;
+            for (var i = Number<T>.Two; i <= n; i++)
                 result *= i;
             return result;
         }

@@ -1295,8 +1295,8 @@ namespace Sandbox
                 GC.Collect();
                 var timer = new Stopwatch();
                 var random = new MersenneTwister(0).Create<T>();
-                Integer<T> c;
-                Integer<T> d;
+                Number<T> c;
+                Number<T> d;
                 timer.Restart();
                 for (int i = 0; i < pairs.Length; i++)
                 {
@@ -1551,12 +1551,12 @@ namespace Sandbox
             d = lasty;
         }
 
-        public static void ExtendedGreatestCommonDivisor<T>(Integer<T> a, Integer<T> b, out Integer<T> c, out Integer<T> d)
+        public static void ExtendedGreatestCommonDivisor<T>(Number<T> a, Number<T> b, out Number<T> c, out Number<T> d)
         {
-            var x = Integer<T>.Zero;
-            var lastx = Integer<T>.One;
-            var y = Integer<T>.One;
-            var lasty = Integer<T>.Zero;
+            var x = Number<T>.Zero;
+            var lastx = Number<T>.One;
+            var y = Number<T>.One;
+            var lasty = Number<T>.Zero;
 
             var p = a;
             var q = b;

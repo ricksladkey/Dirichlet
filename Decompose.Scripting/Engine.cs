@@ -218,7 +218,7 @@ namespace Decompose.Scripting
 
         public T Sqrt<T>(T a)
         {
-            return Integer<T>.Root(a, 2);
+            return Number<T>.Root(a, 2);
         }
 
         public double Log(object a)
@@ -239,7 +239,7 @@ namespace Decompose.Scripting
         {
             var result = args[0];
             foreach (var arg in args)
-                result = Integer<T>.Min(result, arg);
+                result = Number<T>.Min(result, arg);
             return result;
         }
 
@@ -247,7 +247,7 @@ namespace Decompose.Scripting
         {
             var result = args[0];
             foreach (var arg in args)
-                result = Integer<T>.Max(result, arg);
+                result = Number<T>.Max(result, arg);
             return result;
         }
 

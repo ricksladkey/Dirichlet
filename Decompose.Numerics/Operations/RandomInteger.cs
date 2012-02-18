@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Decompose.Numerics
 {
-    public class RandomInteger<T> : IRandomNumberAlgorithm<Integer<T>>
+    public class RandomInteger<T> : IRandomNumberAlgorithm<Number<T>>
     {
         IRandomNumberAlgorithm<T> random;
 
@@ -14,12 +14,12 @@ namespace Decompose.Numerics
             random = new MersenneTwister(seed).Create<T>();
         }
 
-        public Integer<T> Next(Integer<T> n)
+        public Number<T> Next(Number<T> n)
         {
             return random.Next(n);
         }
 
-        public IEnumerable<Integer<T>> Sequence(Integer<T> n)
+        public IEnumerable<Number<T>> Sequence(Number<T> n)
         {
             while (true)
                 yield return Next(n);

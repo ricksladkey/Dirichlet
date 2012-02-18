@@ -80,10 +80,10 @@ namespace Decompose.Numerics.Test
 
         private void TestPrimality3<T>(T startValue, T countValue, IPrimalityAlgorithm<T> primalityOld, IReductionAlgorithm<T> reduction)
         {
-            var start = (Integer<T>)startValue;
-            var count = (Integer<T>)countValue;
+            var start = (Number<T>)startValue;
+            var count = (Number<T>)countValue;
             var primalityNew = MillerRabin.Create(16, reduction);
-            for (var i = (Integer<T>)0; i < count; i++)
+            for (var i = (Number<T>)0; i < count; i++)
             {
                 var n = start + i;
                 var isPrimeOld = primalityOld.IsPrime(n);
@@ -216,7 +216,7 @@ namespace Decompose.Numerics.Test
             TestReduction(ulong.Parse("259027704197601377"), new UInt64MontgomeryReduction());
         }
 
-        private void TestReduction<T>(Integer<T> max, IReductionAlgorithm<T> reduction)
+        private void TestReduction<T>(Number<T> max, IReductionAlgorithm<T> reduction)
         {
             var random = new RandomInteger<T>(0);
             for (int j = 0; j < 100; j++)
@@ -234,11 +234,11 @@ namespace Decompose.Numerics.Test
                     xBar.Set(x);
                     yBar.Set(y);
                     zBar.Set(xBar).Multiply(yBar);
-                    Assert.AreEqual((BigInteger)x * y % p, (Integer<T>)zBar.Value);
+                    Assert.AreEqual((BigInteger)x * y % p, (Number<T>)zBar.Value);
 
                     xBar.Set(x);
                     zBar.Set(xBar).Power(y);
-                    Assert.AreEqual(BigInteger.ModPow(x, y, p), (Integer<T>)zBar.Value);
+                    Assert.AreEqual(BigInteger.ModPow(x, y, p), (Number<T>)zBar.Value);
                 }
             }
         }
@@ -669,17 +669,17 @@ namespace Decompose.Numerics.Test
             {
                 var q = random.Next(max);
                 var p = random.Next(q);
-                while (!Integer<T>.GreatestCommonDivisor(p, q).IsOne)
+                while (!Number<T>.GreatestCommonDivisor(p, q).IsOne)
                 {
                     q = random.Next(max);
                     p = random.Next(q);
                 }
-                var r = Integer<T>.FloorRoot(random.Next(q), 2);
+                var r = Number<T>.FloorRoot(random.Next(q), 2);
                 r -= r % p;
-                var pInv = Integer<T>.ModularInverse(p, q);
-                var result = Integer<T>.ModularProduct(p, pInv, q);
-                Assert.AreEqual(Integer<T>.One, result);
-                Assert.AreEqual(r / p % q, Integer<T>.ModularProduct(r, pInv, q));
+                var pInv = Number<T>.ModularInverse(p, q);
+                var result = Number<T>.ModularProduct(p, pInv, q);
+                Assert.AreEqual(Number<T>.One, result);
+                Assert.AreEqual(r / p % q, Number<T>.ModularProduct(r, pInv, q));
             }
         }
 
