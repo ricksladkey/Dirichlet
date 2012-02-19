@@ -19,7 +19,7 @@
                 return false;
             int p = 5;
             int i = 2;
-            while (p * p <= n)
+            while (p <= ushort.MaxValue && p * p <= n)
             {
                 if (n % p == 0)
                     return false;

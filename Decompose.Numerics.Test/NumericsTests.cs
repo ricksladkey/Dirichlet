@@ -768,10 +768,10 @@ namespace Decompose.Numerics.Test
         {
             var max = IntegerMath.Power(BigIntegers.Two, 3 * 64);
             var random = new MersenneTwister(0).Create<BigInteger>();
-            for (var i = 0; i < 100; i++)
+            for (var i = 0; i < 1000; i++)
             {
-                var x = IntegerMath.NextPrime(random.Next(max));
                 var n = (int)random.Next(20 - 1) + 1;
+                var x = IntegerMath.NextPrime(IntegerMath.FloorRoot(random.Next(max), n));
                 var y = IntegerMath.Power(x, n);
                 var power = IntegerMath.PerfectPower(y);
                 Assert.AreEqual(n, power);
