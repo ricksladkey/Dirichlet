@@ -9,18 +9,21 @@ namespace Decompose.Numerics
         {
             var aAbs = Number<T>.Abs(a);
             var degree = (Number<T>)b;
-            var degreeInt = (int)degree;
-            if ((degreeInt & 1) == 0 && a != aAbs)
+            if (degree.IsEven && a != aAbs)
                 throw new InvalidOperationException("negative radicand");
+            var c0 = (Number<T>)Math.Floor(Math.Exp(Number<T>.Log(aAbs).Real / (double)degree));
+            if (Number<T>.Power(c0, b) <= aAbs && Number<T>.Power(c0 + 1, b) > aAbs)
+                return a == aAbs ? c0 : -c0;
+
             var cPrev = Number<T>.Zero;
-            var c0 = (Number<T>)Math.Round(Math.Exp(Number<T>.Log(aAbs).Real / degreeInt));
-            var degreeMinusOne = (T)(Number<T>)(degreeInt - 1);
+            var degreeMinusOne = degree - 1;
             while (true)
             {
-                var c1 = (aAbs / Number<T>.Power(c0, degreeMinusOne) + degreeMinusOne * c0) / b;
+                var c1 = (aAbs / Number<T>.Power(c0, degreeMinusOne) + degreeMinusOne * c0) / degree;
                 if (c1 == cPrev)
                 {
-                    c0 = Number<T>.Min(c0, c1);
+                    if (c1 < c0)
+                        c0 = c1;
                     break;
                 }
                 cPrev = c0;

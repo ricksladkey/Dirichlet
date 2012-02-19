@@ -48,6 +48,7 @@ namespace Decompose.Numerics
         public ulong ModularRoot(ulong value, ulong exponent, ulong modulus) { return IntegerMath.ModularRoot(value, exponent, modulus); }
         public ulong ModularInverse(ulong value, ulong modulus) { return IntegerMath.ModularInverse(value, modulus); }
 
+        public ulong AbsoluteValue(ulong a) { return a; }
         public Complex Log(ulong a) { return Math.Log(a); }
     }
 }

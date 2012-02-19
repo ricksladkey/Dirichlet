@@ -20,7 +20,8 @@ namespace Sandbox
             output = new ConsoleLogger("Decompose.log");
             try
             {
-                FloorRootTest();
+                PerfectPowerTest();
+                //FloorRootTest();
                 //FindPrimeTest1();
                 //BarrettReductionTest1();
                 //BarrettReductionTest2();
@@ -70,12 +71,29 @@ namespace Sandbox
         {
             var max = IntegerMath.Power(BigInteger.Parse("47021221151697033430710241825459573109"), 3);
             var random = new MersenneTwister(0).Create<BigInteger>();
-            for (var i = 0; i < 100000; i++)
+            for (var i = 0; i < 1000000; i++)
             {
                 var x = random.Next(max);
                 var n = (int)random.Next(20 - 2) + 2;
                 var root = IntegerMath.FloorRoot(x, n);
                 if (IntegerMath.Power(root, n) <= x && IntegerMath.Power(root + 1, n) > x)
+                    continue;
+                Debugger.Break();
+                Console.WriteLine("miscalculation");
+            }
+        }
+
+        static void PerfectPowerTest()
+        {
+            var max = IntegerMath.Power(BigIntegers.Two, 3 * 64);
+            var random = new MersenneTwister(0).Create<BigInteger>();
+            for (var i = 0; i < 100; i++)
+            {
+                var x = IntegerMath.NextPrime(random.Next(max));
+                var n = (int)random.Next(20 - 1) + 1;
+                var y = IntegerMath.Power(x, n);
+                var power = IntegerMath.PerfectPower(y);
+                if (power == n)
                     continue;
                 Debugger.Break();
                 Console.WriteLine("miscalculation");

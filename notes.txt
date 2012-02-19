@@ -130,3 +130,5 @@ floor(2/3).Type does the wrong thing, parsed as floor(divide(2,3).Type)
 floor should return a rational
 
 could add a modular factorial operator
+
+(a + 1)^2 = a^2 + 2*a + 1

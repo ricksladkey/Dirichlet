@@ -50,6 +50,7 @@ namespace Decompose.Numerics
         T ModularRoot(T value, T exponent, T modulus);
         T ModularInverse(T value, T modulus);
 
+        T AbsoluteValue(T a);
         Complex Log(T value);
     }
 }

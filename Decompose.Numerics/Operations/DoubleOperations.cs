@@ -48,6 +48,7 @@ namespace Decompose.Numerics
         public double ModularRoot(double value, double exponent, double modulus) { return (double)IntegerMath.ModularRoot(ToBigInteger(value), ToBigInteger(exponent), ToBigInteger(modulus)); }
         public double ModularInverse(double value, double modulus) { return (double)IntegerMath.ModularInverse(ToBigInteger(value), ToBigInteger(modulus)); }
 
+        public double AbsoluteValue(double a) { return Math.Abs(a); }
         public Complex Log(double a) { return Math.Log(a); }
     }
 }

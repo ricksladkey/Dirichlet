@@ -48,6 +48,7 @@ namespace Decompose.Numerics
         public BigInteger ModularRoot(BigInteger value, BigInteger exponent, BigInteger modulus) { return IntegerMath.ModularRoot(value, exponent, modulus); }
         public BigInteger ModularInverse(BigInteger value, BigInteger modulus) { return IntegerMath.ModularInverse(value, modulus); }
 
+        public BigInteger AbsoluteValue(BigInteger a) { return BigInteger.Abs(a); }
         public Complex Log(BigInteger a) { return BigInteger.Log(a); }
     }
 }

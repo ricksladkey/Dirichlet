@@ -101,7 +101,7 @@ namespace Decompose.Numerics
         public bool Equals(Number<T> other) { return ops.Equals(value, other.value); }
         public static Number<T> Min(Number<T> a, Number<T> b) { return ops.Compare(a.value, b.value) < 0 ? a : b; }
         public static Number<T> Max(Number<T> a, Number<T> b) { return ops.Compare(a.value, b.value) > 0 ? a : b; }
-        public static Number<T> Abs(Number<T> a) { return ops.Compare(a.value, Zero) < 0 ? new Number<T>(ops.Negate(a.value)): a; }
+        public static Number<T> Abs(Number<T> a) { return ops.AbsoluteValue(a); }
         public static Complex Log(Number<T> a) { return ops.Log(a.value); }
         public static Complex Log(Number<T> a, double b) { return ops.Log(a.value) / Math.Log(b); }
         public override bool Equals(object obj) { return obj is Number<T> && ops.Equals(value, ((Number<T>)obj).value); }
