@@ -85,20 +85,24 @@ namespace Sandbox
 
         static void PerfectPowerTest()
         {
-            var timer = new Stopwatch();
-            timer.Restart();
             var max = IntegerMath.Power(BigIntegers.Two, 3 * 64);
             var random = new MersenneTwister(0).Create<BigInteger>();
-            for (var i = 0; i < 100; i++)
+            var samples = random.Sequence(max).Select(sample => IntegerMath.NextPrime(sample)).Take(500).ToArray();
+            var timer = new Stopwatch();
+            timer.Restart();
+            for (var j = 0; j < 100; j++)
             {
-                var x = IntegerMath.NextPrime(random.Next(max));
-                var n = (int)random.Next(20 - 1) + 1;
-                var y = IntegerMath.Power(x, n);
-                var power = IntegerMath.PerfectPower(y);
-                if (power == n)
-                    continue;
-                Debugger.Break();
-                Console.WriteLine("miscalculation");
+                for (var i = 0; i < samples.Length; i++)
+                {
+                    var x = samples[i];
+                    var n = (int)random.Next(20 - 1) + 1;
+                    var y = IntegerMath.Power(x, n);
+                    var power = IntegerMath.PerfectPower(y);
+                    if (power == n)
+                        continue;
+                    Debugger.Break();
+                    Console.WriteLine("miscalculation");
+                }
             }
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
         }

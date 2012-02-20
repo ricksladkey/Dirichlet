@@ -6,61 +6,78 @@ namespace Decompose.Numerics
 {
     public static partial class IntegerMath
     {
+        private static double log2 = Math.Log(2);
+
         public static T FloorRoot<T>(T a, T b)
         {
-            var aAbs = Number<T>.Abs(a);
             var degree = (Number<T>)b;
-            if (degree.IsEven && a != aAbs)
+            var absA = Number<T>.Abs(a);
+            if (degree.IsEven && a != absA)
                 throw new InvalidOperationException("negative radicand");
-            var log = Number<T>.Log(aAbs).Real / (double)degree;
-            var log2 = Math.Log(2);
-            var shift = (int)Math.Floor(log / log2);
-            log -= shift * log2;
-            var shift1 = Math.Min(shift, 64);
-            var shift2 = shift - shift1;
-            var c0 = (Number<T>)Math.Floor(Math.Exp(log + shift1 * log2)) << shift2;
-            if (Number<T>.Power(c0, b) <= aAbs && Number<T>.Power(c0 + 1, b) > aAbs)
-                return a == aAbs ? c0 : -c0;
+            Number<T> power;
+            var c = FloorRootCore(absA, Number<T>.Log(absA).Real, degree, out power);
+            return a == absA ? c : -c;
+        }
 
+        private static Number<T> FloorRootCore<T>(Number<T> a, double logA, Number<T> degree, out Number<T> power)
+        {
+            var log = logA / (double)degree;
+            var shift = Math.Max((int)Math.Floor(log / log2) - 64, 0);
+            log -= shift * log2;
+            var c = (Number<T>)Math.Floor(Math.Exp(log)) << shift;
+            power = Number<T>.Power(c, degree);
+            if (power <= a && Number<T>.Power(c + 1, degree) > a)
+                return c;
             var cPrev = Number<T>.Zero;
             var degreeMinusOne = degree - 1;
             while (true)
             {
-                var c1 = (aAbs / Number<T>.Power(c0, degreeMinusOne) + degreeMinusOne * c0) / degree;
-                if (c1 == cPrev)
+                var cNext = (a / Number<T>.Power(c, degreeMinusOne) + degreeMinusOne * c) / degree;
+                if (cNext == cPrev)
                 {
-                    if (c1 < c0)
-                        c0 = c1;
+                    if (cNext < c)
+                        c = cNext;
                     break;
                 }
-                cPrev = c0;
-                c0 = c1;
+                cPrev = c;
+                c = cNext;
             }
-            Debug.Assert(Number<T>.Power(c0, b) <= aAbs && Number<T>.Power(c0 + 1, b) > aAbs);
-            return a == aAbs ? c0 : -c0;
+            power = Number<T>.Power(c, degree);
+            Debug.Assert(power <= a && Number<T>.Power(c + 1, degree) > a);
+            return c;
         }
 
         public static T Root<T>(T a, T b)
         {
-            var result = FloorRoot(a, b);
-            if (Number<T>.Power(result, b) != a)
+            var degree = (Number<T>)b;
+            var absA = Number<T>.Abs(a);
+            if (degree.IsEven && a != absA)
+                throw new InvalidOperationException("negative radicand");
+            Number<T> power;
+            var c = FloorRootCore(absA, Number<T>.Log(absA).Real, degree, out power);
+            if (power != absA)
                 throw new InvalidOperationException("not a perfect power");
-            return result;
+            return a == absA ? c : -c;
         }
 
         private static IEnumerable<int> primes = new SieveOfErostothones();
 
         public static T PerfectPower<T>(T a)
         {
-            var bits = (Number<T>)Math.Floor(Number<T>.Log(a, 2).Real);
+            var absA = Number<T>.Abs(a);
+            var bits = (Number<T>)Math.Floor(Number<T>.Log(absA, 2).Real);
+            var logA = Number<T>.Log(absA).Real;
             foreach (var p in primes)
             {
+                if (absA != a && p == 2)
+                    continue;
                 var b = (Number<T>)p;
                 if (b > bits)
                     break;
-                var c = FloorRoot<T>(a, b);
-                if (Number<T>.Power(c, b) == a)
-                    return b * PerfectPower(c);
+                Number<T> power;
+                var c = FloorRootCore<T>(absA, logA, b, out power);
+                if (power == absA)
+                    return b * PerfectPower<T>(absA == a ? c : -c);
             }
             return Number<T>.One;
         }
