@@ -85,6 +85,8 @@ namespace Sandbox
 
         static void PerfectPowerTest()
         {
+            var timer = new Stopwatch();
+            timer.Restart();
             var max = IntegerMath.Power(BigIntegers.Two, 3 * 64);
             var random = new MersenneTwister(0).Create<BigInteger>();
             for (var i = 0; i < 100; i++)
@@ -98,6 +100,7 @@ namespace Sandbox
                 Debugger.Break();
                 Console.WriteLine("miscalculation");
             }
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
         }
 
         static void FindPrimeTest1()

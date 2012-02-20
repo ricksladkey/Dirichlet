@@ -11,7 +11,13 @@ namespace Decompose.Numerics
             var degree = (Number<T>)b;
             if (degree.IsEven && a != aAbs)
                 throw new InvalidOperationException("negative radicand");
-            var c0 = (Number<T>)Math.Floor(Math.Exp(Number<T>.Log(aAbs).Real / (double)degree));
+            var log = Number<T>.Log(aAbs).Real / (double)degree;
+            var log2 = Math.Log(2);
+            var shift = (int)Math.Floor(log / log2);
+            log -= shift * log2;
+            var shift1 = Math.Min(shift, 64);
+            var shift2 = shift - shift1;
+            var c0 = (Number<T>)Math.Floor(Math.Exp(log + shift1 * log2)) << shift2;
             if (Number<T>.Power(c0, b) <= aAbs && Number<T>.Power(c0 + 1, b) > aAbs)
                 return a == aAbs ? c0 : -c0;
 
@@ -44,11 +50,11 @@ namespace Decompose.Numerics
         public static T PerfectPower<T>(T a)
         {
             var bits = (Number<T>)Math.Floor(Number<T>.Log(a, 2).Real);
-            for (var b = bits; b > 1; b--)
+            for (var b = (Number<T>)2; b <= bits; b++)
             {
                 var c = FloorRoot<T>(a, b);
                 if (Number<T>.Power(c, b) == a)
-                    return b;
+                    return b * PerfectPower(c);
             }
             return Number<T>.One;
         }
