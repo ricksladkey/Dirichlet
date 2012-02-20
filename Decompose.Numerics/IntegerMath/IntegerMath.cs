@@ -158,6 +158,7 @@ namespace Decompose.Numerics
                 .All(grouping => grouping.Count() < 2);
         }
 
+#if false
         public static int FloorSquareRoot(int n)
         {
             return (int)Math.Floor(Math.Sqrt(n));
@@ -184,6 +185,12 @@ namespace Decompose.Numerics
         {
             return sqrt.Sqrt(n);
         }
+#else
+        public static T FloorSquareRoot<T>(T n)
+        {
+            return FloorRoot<T>(n, (Number<T>)2);
+        }
+#endif
 
         public static int GetDigitLength(BigInteger n, int b)
         {
