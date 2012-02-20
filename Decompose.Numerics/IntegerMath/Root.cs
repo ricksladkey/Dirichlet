@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace Decompose.Numerics
 {
@@ -47,11 +48,16 @@ namespace Decompose.Numerics
             return result;
         }
 
+        private static IEnumerable<int> primes = new SieveOfErostothones();
+
         public static T PerfectPower<T>(T a)
         {
             var bits = (Number<T>)Math.Floor(Number<T>.Log(a, 2).Real);
-            for (var b = (Number<T>)2; b <= bits; b++)
+            foreach (var p in primes)
             {
+                var b = (Number<T>)p;
+                if (b > bits)
+                    break;
                 var c = FloorRoot<T>(a, b);
                 if (Number<T>.Power(c, b) == a)
                     return b * PerfectPower(c);
