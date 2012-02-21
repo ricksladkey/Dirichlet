@@ -8,6 +8,19 @@ namespace Decompose.Numerics
 {
     public static partial class IntegerMath
     {
+        static IntegerMath()
+        {
+            CachePrimes();
+            CreateModuliMap();
+        }
+
+        private static int[] primes;
+
+        private static void CachePrimes()
+        {
+            primes = new SieveOfErostothones().TakeWhile(p => p < 1000000).ToArray();
+        }
+
         public static uint TwosComplement(uint a)
         {
             return 0 - a;

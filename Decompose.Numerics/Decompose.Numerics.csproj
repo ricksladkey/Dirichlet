@@ -110,7 +110,7 @@
     <Compile Include="Reduction\IReducer.cs" />
     <Compile Include="Reduction\IReductionAlgorithm.cs" />
     <Compile Include="IntegerMath\IntegerMath.cs" />
-    <Compile Include="Core\ISqrtAlgorithm.cs" />
+    <Compile Include="SquareRoot\ISqrtAlgorithm.cs" />
     <Compile Include="Random\MersenneTwister.cs" />
     <Compile Include="Primality\MillerRabin.cs" />
     <Compile Include="Reduction\Reference\BigIntegerReduction.cs" />
@@ -136,8 +136,9 @@
     <Compile Include="Reduction\Performance\MutableIntegerReduction.cs" />
     <Compile Include="Core\MutableIntegerStore.cs" />
     <Compile Include="Core\SieveOfErostothones.cs" />
-    <Compile Include="Core\SqrtBinarySearch.cs" />
-    <Compile Include="Core\SqrtNewtonsMethod.cs" />
+    <Compile Include="SquareRoot\SqrtBinarySearch.cs" />
+    <Compile Include="SquareRoot\SqrtByBits.cs" />
+    <Compile Include="SquareRoot\SqrtNewtonsMethod.cs" />
     <Compile Include="Primality\TrialDivisionPrimality.cs" />
     <Compile Include="Unused.cs" />
     <Compile Include="Collections\Word64BitMatrix.cs" />

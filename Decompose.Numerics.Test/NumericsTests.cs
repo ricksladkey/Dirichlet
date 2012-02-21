@@ -35,6 +35,16 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
+        public void TestSqrtByBits1()
+        {
+            var algorithm = new SqrtByBits();
+            var p = BigInteger.Parse("12345678901234567890");
+            var n = p * p;
+            var p2 = algorithm.Sqrt(n);
+            Assert.AreEqual(p, p2);
+        }
+
+        [TestMethod]
         public void TestPrimality1()
         {
             var algorithm = MillerRabin.Create(16, new Int32Reduction());

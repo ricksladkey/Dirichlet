@@ -132,3 +132,14 @@ floor should return a rational
 could add a modular factorial operator
 
 (a + 1)^2 = a^2 + 2*a + 1
+
+(m + 2^i)^2 <= n
+
+m^2 + 2 m 2^i + 2^(2i) <= n
+m^2 + 2m 2^i
+
+Sum(1, i = 1 ... log n) = log n
+Sum(1/i, i = 1 ... log n) = O(log log n)
+Sum(1/i, i = 1 ... log n; isprime i) = O(log log log n)
+
+[1 ... floor log n].Where(i => isprime i).Sum(i => 1/i)

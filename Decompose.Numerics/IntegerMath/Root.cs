@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Decompose.Numerics
 {
@@ -33,8 +34,6 @@ namespace Decompose.Numerics
             return a == absA ? c : -c;
         }
 
-        private static IEnumerable<int> primes = new SieveOfErostothones();
-
         public static T PerfectPower<T>(T a)
         {
             var absA = Number<T>.Abs(a);
@@ -47,6 +46,8 @@ namespace Decompose.Numerics
                 var b = (Number<T>)p;
                 if (b > bits)
                     break;
+                if (!IsPossiblePerfectPower(a, p))
+                    continue;
                 Number<T> power;
                 var c = FloorRootCore<T>(absA, logA, b, out power);
                 if (power == absA)
@@ -55,15 +56,47 @@ namespace Decompose.Numerics
             return Number<T>.One;
         }
 
+        private static Dictionary<int, int[]> moduliMap;
+
+        private static void CreateModuliMap()
+        {
+            moduliMap = new Dictionary<int, int[]>();
+            foreach (var p in primes.Take(1000))
+            {
+                var n = 6;
+                var moduli = primes.Where(q => q % p == 1).Take(n);
+                moduliMap[p] = moduli.ToArray();
+            }
+        }
+
+        private static bool IsPossiblePerfectPower<T>(T a, int p)
+        {
+            if (!moduliMap.ContainsKey(p))
+                return true;
+            var moduli = moduliMap[p];
+            for (int i = 0; i < moduli.Length; i++)
+            {
+                var modulus = moduli[i];
+                var exponent = (modulus - 1) / p;
+                var value = (int)((Number<T>)a % modulus);
+                if (IntegerMath.ModularPower(value, exponent, modulus) != 1)
+                    return false;
+            }
+            return true;
+        }
+
         private static Number<T> FloorRootCore<T>(Number<T> a, double logA, Number<T> degree, out Number<T> power)
         {
             var log = logA / (double)degree;
             var shift = Math.Max((int)Math.Floor(log / log2) - maxShift, 0);
             log -= shift * log2;
             var c = (Number<T>)Math.Floor(Math.Exp(log)) << shift;
-            power = Number<T>.Power(c, degree);
-            if (power <= a && Number<T>.Power(c + 1, degree) > a)
-                return c;
+            if (shift == 0)
+            {
+                power = Number<T>.Power(c, degree);
+                if (power <= a && Number<T>.Power(c + 1, degree) > a)
+                    return c;
+            }
             var cPrev = Number<T>.Zero;
             var degreeMinusOne = degree - 1;
             while (true)

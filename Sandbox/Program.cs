@@ -90,12 +90,16 @@ namespace Sandbox
             var samples = random.Sequence(max).Select(sample => IntegerMath.NextPrime(sample)).Take(500).ToArray();
             var timer = new Stopwatch();
             timer.Restart();
-            for (var j = 0; j < 100; j++)
+            for (var j = 0; j < 1000; j++)
             {
                 for (var i = 0; i < samples.Length; i++)
                 {
                     var x = samples[i];
+#if false
                     var n = (int)random.Next(20 - 1) + 1;
+#else
+                    var n = 1;
+#endif
                     var y = IntegerMath.Power(x, n);
                     var power = IntegerMath.PerfectPower(y);
                     if (power == n)

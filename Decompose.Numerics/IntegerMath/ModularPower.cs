@@ -16,13 +16,29 @@ namespace Decompose.Numerics
         public static uint ModularPower(uint value, uint exponent, uint modulus)
         {
             var result = (uint)1;
-            while (exponent != 0)
+            if (value <= ushort.MaxValue && modulus <= ushort.MaxValue)
             {
-                if ((exponent & 1) != 0)
-                    result = (uint)((ulong)result * value % modulus);
-                if (exponent != 1)
-                    value = (uint)((ulong)value * value % modulus);
-                exponent >>= 1;
+                // Won't overflow an unsigned integer.
+                while (exponent != 0)
+                {
+                    if ((exponent & 1) != 0)
+                        result = result * value % modulus;
+                    if (exponent != 1)
+                        value = value * value % modulus;
+                    exponent >>= 1;
+                }
+            }
+            else
+            {
+                // Use unsigned longs for intermediate results.
+                while (exponent != 0)
+                {
+                    if ((exponent & 1) != 0)
+                        result = (uint)((ulong)result * value % modulus);
+                    if (exponent != 1)
+                        value = (uint)((ulong)value * value % modulus);
+                    exponent >>= 1;
+                }
             }
             return result;
         }
