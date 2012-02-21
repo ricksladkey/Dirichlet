@@ -85,16 +85,20 @@ namespace Sandbox
 
         static void PerfectPowerTest()
         {
-            var max = IntegerMath.Power(BigIntegers.Two, 3 * 64);
-            var random = new MersenneTwister(0).Create<BigInteger>();
-            var samples = random.Sequence(max).Select(sample => IntegerMath.NextPrime(sample)).Take(500).ToArray();
             var timer = new Stopwatch();
             timer.Restart();
-            for (var j = 0; j < 1000; j++)
+            var max = IntegerMath.Power(BigIntegers.Two, 3 * 64);
+            var random = new MersenneTwister(0).Create<BigInteger>();
+            var samples = random.Sequence(max).Take(500).ToArray();
+            var primes = samples.Select(sample => IntegerMath.NextPrime(sample)).ToArray();
+            var average = samples.Zip(primes, (sample, prime) => (double)(prime - sample)).Average();
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            timer.Restart();
+            for (var j = 0; j < 100; j++)
             {
-                for (var i = 0; i < samples.Length; i++)
+                for (var i = 0; i < primes.Length; i++)
                 {
-                    var x = samples[i];
+                    var x = primes[i];
 #if false
                     var n = (int)random.Next(20 - 1) + 1;
 #else

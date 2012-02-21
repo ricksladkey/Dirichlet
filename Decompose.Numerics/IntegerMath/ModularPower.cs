@@ -89,6 +89,21 @@ namespace Decompose.Numerics
             return BigInteger.ModPow(value, exponent, modulus);
         }
 
+        public static BigInteger ModularPowerOfTwo(BigInteger exponent, BigInteger modulus)
+        {
+            if (exponent < 64)
+                return ((ulong)1 << (int)exponent) % modulus;
+
+            // Handle the first six bits.
+            var value = BigInteger.One << 64;
+            var result = BigInteger.One << (int)(exponent & 63);
+            exponent >>= 6;
+
+            if (modulus.IsEven)
+                return ModularProduct(result, BigInteger.ModPow(value, exponent, modulus), modulus);
+            return ModularPowerReductionOdd(result, value, exponent, modulus);
+        }
+
         public static ulong ModularPowerOfTwo(ulong exponent, ulong modulus)
         {
             if (exponent < 64)
@@ -210,6 +225,14 @@ namespace Decompose.Numerics
         private static ulong ModularPowerReductionOdd(ulong start, ulong value, ulong exponent, ulong modulus)
         {
             var reducer = reductionUInt64.GetReducer(modulus);
+            return reducer.ToResidue(value).Power(exponent).Multiply(reducer.ToResidue(start)).Value;
+        }
+
+        private static IReductionAlgorithm<BigInteger> reductionBigInteger = new BigIntegerMontgomeryReduction();
+
+        private static BigInteger ModularPowerReductionOdd(BigInteger start, BigInteger value, BigInteger exponent, BigInteger modulus)
+        {
+            var reducer = reductionBigInteger.GetReducer(modulus);
             return reducer.ToResidue(value).Power(exponent).Multiply(reducer.ToResidue(start)).Value;
         }
 

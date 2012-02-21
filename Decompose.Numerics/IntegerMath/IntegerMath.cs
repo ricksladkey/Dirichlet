@@ -11,6 +11,7 @@ namespace Decompose.Numerics
         static IntegerMath()
         {
             CachePrimes();
+            CreateSmallDivisorBatches();
             CreateModuliMap();
         }
 
@@ -18,7 +19,9 @@ namespace Decompose.Numerics
 
         private static void CachePrimes()
         {
-            primes = new SieveOfErostothones().TakeWhile(p => p < 1000000).ToArray();
+            primes = new SieveOfErostothones()
+                .TakeWhile(p => p < 1000000)
+                .ToArray();
         }
 
         public static uint TwosComplement(uint a)

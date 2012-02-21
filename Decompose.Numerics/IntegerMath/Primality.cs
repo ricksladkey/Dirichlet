@@ -1,10 +1,54 @@
-﻿using System.Diagnostics;
+﻿using System.Linq;
 using System.Numerics;
+using System.Collections.Generic;
 
 namespace Decompose.Numerics
 {
     public static partial class IntegerMath
     {
+        private struct SmallDivisorBatch
+        {
+            public int Begin { get; set; }
+            public int End { get; set; }
+            public uint Modulus { get; set; }
+        }
+        private static SmallDivisorBatch[] smallDivisorBatches;
+
+        private static void CreateSmallDivisorBatches()
+        {
+            int n = 1;
+            var batches = new List<SmallDivisorBatch>();
+            while (n < 100)
+            {
+                var begin = n;
+                var modulus = (uint)1;
+                while (uint.MaxValue / modulus >= (uint)primes[n])
+                    modulus *= (uint)primes[n++];
+                var end = n;
+                batches.Add(new SmallDivisorBatch { Begin = begin, End = end, Modulus = modulus });
+            }
+            smallDivisorBatches = batches.ToArray();
+        }
+
+        public static int GetSmallDivisor(BigInteger n)
+        {
+            if (n.IsEven)
+                return 2;
+            for (int j = 0; j < smallDivisorBatches.Length; j++)
+            {
+                var begin = smallDivisorBatches[j].Begin;
+                var end = smallDivisorBatches[j].End;
+                var modulus = smallDivisorBatches[j].Modulus;
+                var value = (uint)(n % modulus);
+                for (int i = begin; i < end; i++)
+                {
+                    if (value % (uint)primes[i] == 0)
+                        return primes[i];
+                }
+            }
+            return 1;
+        }
+
         private static IPrimalityAlgorithm<uint> primalityInt = new TrialDivisionPrimality();
 
         public static bool IsPrime(int n)
@@ -66,14 +110,19 @@ namespace Decompose.Numerics
 
         public static bool IsProbablePrime(BigInteger n)
         {
-            return ModularPower(BigIntegers.Two, n - BigInteger.One, n).IsOne;
+            return ModularPowerOfTwo(n - BigInteger.One, n).IsOne;
         }
 
         public static BigInteger NextPrime(BigInteger n)
         {
-            while (!IsPrime(n))
+            if (n.IsEven)
                 ++n;
-            return n;
+            while (true)
+            {
+                if (GetSmallDivisor(n) == 1 && IsPrime(n))
+                    return n;
+                n += 2;
+            }
         }
     }
 }
