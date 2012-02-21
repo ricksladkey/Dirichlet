@@ -87,6 +87,11 @@ namespace Decompose.Numerics
 
         private static Number<T> FloorRootCore<T>(Number<T> a, double logA, Number<T> degree, out Number<T> power)
         {
+            if (a.IsZero)
+            {
+                power = Number<T>.Zero;
+                return a;
+            }
             var log = logA / (double)degree;
             var shift = Math.Max((int)Math.Floor(log / log2) - maxShift, 0);
             log -= shift * log2;
