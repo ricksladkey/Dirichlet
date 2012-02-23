@@ -50,5 +50,6 @@ namespace Decompose.Numerics
 
         public ulong AbsoluteValue(ulong a) { return a; }
         public Complex Log(ulong a) { return Math.Log(a); }
+        public ulong Factorial(ulong a) { return IntegerMath.Factorial(a); }
     }
 }

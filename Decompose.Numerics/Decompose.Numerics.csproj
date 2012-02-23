@@ -49,6 +49,7 @@
     <Compile Include="Collections\SetBitMatrix.cs" />
     <Compile Include="Collections\IntegerSet.cs" />
     <Compile Include="Core\Rational.cs" />
+    <Compile Include="IntegerMath\Factorial.cs" />
     <Compile Include="IntegerMath\ModularQuotient.cs" />
     <Compile Include="IntegerMath\ModularRoot.cs" />
     <Compile Include="IntegerMath\Power.cs" />

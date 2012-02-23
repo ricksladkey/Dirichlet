@@ -52,5 +52,6 @@ namespace Decompose.Numerics
 
         T AbsoluteValue(T a);
         Complex Log(T value);
+        T Factorial(T a);
     }
 }

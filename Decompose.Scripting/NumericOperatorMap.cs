@@ -19,7 +19,7 @@ namespace Decompose.Scripting
             unaryOps.Add(Op.Negate, a => ops.Negate(a));
             unaryOps.Add(Op.OnesComplement, a => ops.OnesComplement(a));
             unaryOps.Add(Op.Random, a => rand.Next(a));
-            unaryOps.Add(Op.Factorial, a => Factorial(a));
+            unaryOps.Add(Op.Factorial, a => ops.Factorial(a));
             binaryOps.Add(Op.Add, (a, b) => ops.Add(a, b));
             binaryOps.Add(Op.Subtract, (a, b) => ops.Subtract(a, b));
             binaryOps.Add(Op.Multiply, (a, b) => ops.Multiply(a, b));
@@ -49,14 +49,6 @@ namespace Decompose.Scripting
             ternaryOps.Add(Op.ModularPower, (a, b, c) => ops.ModularPower(a, b, c));
             ternaryOps.Add(Op.ModularEquals, (a, b, c) => ops.Equals(ops.Modulo(a, c), ops.Modulo(b, c)));
             ternaryOps.Add(Op.ModularNotEquals, (a, b, c) => !ops.Equals(ops.Modulo(a, c), ops.Modulo(b, c)));
-        }
-
-        public T Factorial(T n)
-        {
-            var result = Number<T>.One;
-            for (var i = Number<T>.Two; i <= n; i++)
-                result *= i;
-            return result;
         }
 
         public object Operator(Op op, params object[] args)

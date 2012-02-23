@@ -620,27 +620,14 @@ namespace Decompose.Numerics
         private int duplicatePartialRelationsFound;
         private int duplicatePartialPartialRelationsFound;
 
-        private void FactorCore(BigInteger n, List<BigInteger> factors)
-        {
-            if (n == 1)
-                return;
-            if (IntegerMath.IsPrime(n))
-            {
-                factors.Add(n);
-                return;
-            }
-            var divisor = GetDivisor(n);
-            if (!divisor.IsZero)
-            {
-                FactorCore(divisor, factors);
-                FactorCore(n / divisor, factors);
-            }
-        }
-
         public BigInteger GetDivisor(BigInteger nOrig)
         {
             if (nOrig.IsEven)
                 return BigIntegers.Two;
+
+            var power = IntegerMath.PerfectPower(nOrig);
+            if (power != 1)
+                return IntegerMath.Root(nOrig, power);
 
             if ((diag & Diag.Timing) != 0)
             {

@@ -50,5 +50,6 @@ namespace Decompose.Numerics
 
         public BigInteger AbsoluteValue(BigInteger a) { return BigInteger.Abs(a); }
         public Complex Log(BigInteger a) { return BigInteger.Log(a); }
+        public BigInteger Factorial(BigInteger a) { return IntegerMath.Factorial(a); }
     }
 }

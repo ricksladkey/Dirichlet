@@ -50,5 +50,6 @@ namespace Decompose.Numerics
 
         public double AbsoluteValue(double a) { return Math.Abs(a); }
         public Complex Log(double a) { return Math.Log(a); }
+        public double Factorial(double a) { return IntegerMath.Factorial((int)a); }
     }
 }

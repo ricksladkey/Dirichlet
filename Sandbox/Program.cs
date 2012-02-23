@@ -20,7 +20,7 @@ namespace Sandbox
             output = new ConsoleLogger("Decompose.log");
             try
             {
-                PerfectPowerTest();
+                //PerfectPowerTest();
                 //FloorRootTest();
                 //FindPrimeTest1();
                 //BarrettReductionTest1();
@@ -33,7 +33,7 @@ namespace Sandbox
                 //MsieveTest();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                //QuadraticSieveStandardTest();
+                QuadraticSieveStandardTest();
                 //QuadraticSieveDebugTest();
                 //QuadraticSieveFactorTest();
                 //CunninghamTest();
@@ -503,9 +503,9 @@ namespace Sandbox
                 Diagnostics = QuadraticSieve.Diag.Verbose,
                 DiagnosticsOutput = output,
                 ReportingInterval = 60,
-                MergeLimit = 10,
+                //MergeLimit = 10,
                 //ProcessPartialPartialRelations = true,
-                ThresholdExponent = 2.6,
+                //ThresholdExponent = 2.6,
 
                 //FactorBaseSize = 14000,
                 //BlockSize = 64 * 1024,
@@ -515,9 +515,9 @@ namespace Sandbox
                 //NumberOfFactors = 12,
                 //UseCountTable = true,
                 //CofactorCutoff = 1024,
-                SieveTimeLimit = 120,
+                //SieveTimeLimit = 120,
             };
-            var i = 50;
+            var i = 35;
             var sample = samples[i];
             var p = sample.P;
             var q = sample.Q;

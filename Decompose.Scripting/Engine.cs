@@ -186,7 +186,7 @@ namespace Decompose.Scripting
             globalMethods.Add("max", args => Invoke("Max", args));
             globalMethods.Add("numerator", args => Invoke("Numerator", args));
             globalMethods.Add("denominator", args => Invoke("Denominator", args));
-        } 
+        }
 
         public object Exit(params object[] args)
         {

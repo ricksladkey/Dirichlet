@@ -56,7 +56,7 @@ namespace Decompose.Numerics
 
         private void Sieve(int p)
         {
-            int q = Math.Max(IntegerMath.Modulus(-m, p), 2 * p - m);
+            int q = Math.Max(IntegerMath.Modulus(-m, p), p * p - m);
             for (int i = q; i < n; i += p)
                 bits[i] = true;
         }

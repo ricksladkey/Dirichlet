@@ -143,3 +143,8 @@ Sum(1/i, i = 1 ... log n) = O(log log n)
 Sum(1/i, i = 1 ... log n; isprime i) = O(log log log n)
 
 [1 ... floor log n].Where(i => isprime i).Sum(i => 1/i)
+
+move factorial to IntegerMath
+add primorial to IntegerMath
+
+need constants like pi

@@ -50,5 +50,6 @@ namespace Decompose.Numerics
 
         public Rational AbsoluteValue(Rational a) { return Rational.Abs(a); }
         public Complex Log(Rational a) { return Rational.Log(a); }
+        public Rational Factorial(Rational a) { return IntegerMath.Factorial((BigInteger)a); }
     }
 }

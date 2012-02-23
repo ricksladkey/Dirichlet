@@ -168,5 +168,19 @@ namespace Decompose.Numerics
             0, 1, 1, 2, 1, 2, 2, 3,
             1, 2, 2, 3, 2, 3, 3, 4,
         };
+
+#if false
+        // http://www.luschny.de/math/factorial/scala/FactorialScalaCsharp.htm
+        public static uint BitCount(uint w)
+        {
+            w = w - ((0xaaaaaaaa & w) >> 1);
+            w = (w & 0x33333333) + ((w >> 2) & 0x33333333);
+            w = w + (w >> 4) & 0x0f0f0f0f;
+            w += w >> 8;
+            w += w >> 16;
+ 
+            return w & 0xff;
+        }
+#endif
     }
 }
