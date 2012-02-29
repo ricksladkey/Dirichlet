@@ -53,6 +53,7 @@
     <Compile Include="IntegerMath\ModularQuotient.cs" />
     <Compile Include="IntegerMath\ModularRoot.cs" />
     <Compile Include="IntegerMath\Power.cs" />
+    <Compile Include="IntegerMath\Primorial.cs" />
     <Compile Include="IntegerMath\Root.cs" />
     <Compile Include="Operations\BigIntegerOperations.cs" />
     <Compile Include="Core\Int65.cs" />

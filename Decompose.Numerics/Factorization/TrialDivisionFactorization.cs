@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Decompose.Numerics
@@ -7,11 +8,8 @@ namespace Decompose.Numerics
     {
         public IEnumerable<int> Factor(int n)
         {
-            if (n < 2)
-            {
-                yield return n;
-                yield break;
-            }
+            if (n == 0)
+                throw new ArgumentException("n");
             while ((n & 1) == 0)
             {
                 yield return 2;

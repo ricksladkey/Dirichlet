@@ -144,7 +144,86 @@ Sum(1/i, i = 1 ... log n; isprime i) = O(log log log n)
 
 [1 ... floor log n].Where(i => isprime i).Sum(i => 1/i)
 
-move factorial to IntegerMath
-add primorial to IntegerMath
+add primorial to IntegerMath, add # primorial operator
 
 need constants like pi
+
+add trig functions, sin, cos, tan, etc.
+
+add binomial coefficients
+
+add gamma function
+
+- Euler zeta function
+- Euler product formula
+- analytic continuation from Re(s) > 1 to Re(s) > 0
+  - http://www.proofwiki.org/wiki/Analytic_Continuation_of_the_Riemann_Zeta_Function
+  - Abel's lemma
+  - reverse integration
+  - collection of adjacent integrals
+  - rewrite floor as variable less fractional part
+  - solve former definite exactly assuming subset Re(s) > 1 for uniqueness
+  - latter integral converges for all Re(s) > 0
+- functional equation using gamma function extending to Re(s) < 0
+  - http://www.proofwiki.org/wiki/Equivalence_of_Riemann_Zeta_Function_Definitions
+- convert to entire function to eliminate pole
+- expand to expression using zeros with the Weierstrass factorization theorem
+  - http://en.wikipedia.org/wiki/Weierstrass_factorization_theorem
+- Take the logrithmic derivative
+  - http://en.wikipedia.org/wiki/Logarithmic_derivative
+
+Assume there are a finite number of twin primes.
+Then there is a largest pair of primes, p[max] and p[max] + 2.
+For every prime p[i] larger than this pair, p[i] + 2 is composite.
+Consider p[max] < p[i] < p[max]^2.
+p[i] + 2 is divisible by a prime less than p[max].
+
+4....
+3x...
+2x...
+1xxx.
+ 1234
+
+Sum(tau(n), n = [1,4)) = 3 + 1 + 1 = 5 = 2*Sum(floor(3.5/a), a = [1,2)) - isqrt(3.5)^2 = 2(3) - 1 = 5
+
+9.........
+8x........
+7x........
+6x........
+5x........
+4xx.......
+3xx.......
+2xxxx.....
+1xxxxxxxx.
+ 123456789
+
+Sum(tau(n), n = [1,9)) = 8 + 4 + 2*2 + 4 = 5 = 2*Sum(floor(8.5/a), a = [1,floor(sqrt(9))) - floor(sqrt(8.5))^2 = 2(8+4) - 4 = 20
+
+2(floor(8.5/1) - 1 + floor(8.5/2) - 2) + sqrt(8.5)
+2(8 - 1 + 4 - 2) + 2 = 2(7 + 2) + 2 = 2*9 + 2 = 20
+
+sum(floor(y/a) - a, a = [2,floor(n^(1/2)))
+sum(floor(y/2a) - a, a = [3,floor((n/2)^(1/2)))
+sum(floor(y/3a) - a, a = [4,floor((n/3)^(1/2)))
+...
+sum(floor(y/floor(n^(1/3)) - a, a = [floor(n^(1/3)),floor((n/n^(1/3))^(1/2))))
+
+sqrt(n) - 1 + sqrt(n)/sqrt(2) - 2 + sqrt(n)/sqrt(3) - 3 + ... + sqrt(n)/sqrt(i) - i
+sqrtn(n) * (1 + 1/sqrt(2) + 1/sqrt(3) + ... + 1/sqrt(i)) - (1 + 2 + 3 + ... + i)
+sqrt(n) * O(i^(1/2))
+i = [1, floor(n^(1/3))]
+sqrt(n) * sqrt(n^(1/3))
+O(sqrt(n) * n^(1/6)) = O(n^(1/2+1/6)) = O(n^(2/3))
+
+integral(1/sqrt(x), x=[1,i]) = integral(x^(-1/2)) = 2i^(1/2)
+
+9/1 = 8, 9/2 = 4, 9/3 = 2, 9/4 = 1
+
+Sum(Tau(n), n : n < x, 2^2 | n)
+Sum(Tau(n), n = { 4, 8, 12, ... })
+
+Tau(4) + Tau(8) + Tau(12) + ...
+
+Tau(1)*Tau(4) + Tau(2)*Tau(4) + Tau(3)*Tau(4) + ...
+
+Tau(4)(Tau(1) + Tau(2) + Tau(3) + ...)

@@ -25,16 +25,6 @@ namespace Decompose.Numerics
             Sieve(2);
         }
 
-        private IEnumerable<int> Enumerate()
-        {
-            for (int n = 0; true; n++)
-            {
-                if (n == primes.Count)
-                    NextPrime();
-                yield return primes[n];
-            }
-        }
-
         private void NextPrime()
         {
             int p = primes[primes.Count - 1] + 1;
@@ -63,7 +53,12 @@ namespace Decompose.Numerics
 
         public IEnumerator<int> GetEnumerator()
         {
-            return Enumerate().GetEnumerator();
+            for (int n = 0; true; n++)
+            {
+                if (n == primes.Count)
+                    NextPrime();
+                yield return primes[n];
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()

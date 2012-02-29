@@ -20,6 +20,7 @@ namespace Sandbox
             output = new ConsoleLogger("Decompose.log");
             try
             {
+                ParityTest();
                 //PerfectPowerTest();
                 //FloorRootTest();
                 //FindPrimeTest1();
@@ -33,7 +34,7 @@ namespace Sandbox
                 //MsieveTest();
                 //FactorTest6();
                 //QuadraticSieveParametersTest();
-                QuadraticSieveStandardTest();
+                //QuadraticSieveStandardTest();
                 //QuadraticSieveDebugTest();
                 //QuadraticSieveFactorTest();
                 //CunninghamTest();
@@ -65,6 +66,172 @@ namespace Sandbox
             output.WriteLine("Stack trace:");
             output.WriteLine(ex.StackTrace);
             return true;
+        }
+
+        static void ParityTest()
+        {
+#if true
+            for (int i = 0; i < 1; i++)
+            {
+                var n = (i + 1) * 10;
+                Console.WriteLine("n = {0}", n);
+                var bruteForcePi = BruteForcePi(n);
+                Console.WriteLine("BruteForcePi(n) = {0}", bruteForcePi);
+                var bruteForce1 = BruteForce1(n);
+                Console.WriteLine("BruteForce1(n) = {0}, % 4 / 2 = {1}", bruteForce1, (bruteForce1 % 4) / 2);
+                var bruteForce2 = BruteForce2(n);
+                Console.WriteLine("BruteForce2(n) = {0}, % 4 / 2 = {1}", bruteForce2, (bruteForce2 % 4) / 2);
+                var pi = Pi(n);
+                Console.WriteLine("Pi(n) = {0}", pi);
+                var tauSlow = SlowTauSum(n);
+                var mu = MuSum(n);
+                Console.WriteLine("MusSum(n) = {0}", mu);
+            }
+#endif
+#if false
+                var tau = TauSum(n);
+                Console.WriteLine("TauSumSlow(n) = {0}, TauSum(n) = {1}", tauSlow, tau);
+#endif
+#if false
+            for (var power = 1; power <= 15; power++)
+            {
+                var n = IntegerMath.Power((BigInteger)10, power);
+                Console.WriteLine("TauSum({0}) = {1}", n, TauSum(n));
+            }
+#endif
+        }
+
+        private static int BruteForce1(int x)
+        {
+            var sum = 0;
+            for (int n = 1; n < x; n++)
+                sum += Tau(n) * Math.Abs(Mu(n));
+            return sum;
+        }
+
+        private static int BruteForce2(int x)
+        {
+            var limit = (int)Math.Ceiling(Math.Sqrt(x));
+            var sum = 0;
+            for (int d = 1; d < limit; d++)
+            {
+                var dSquared = d * d;
+                var tau = 0;
+                for (int n = dSquared; n < x; n += dSquared)
+                    tau += Tau(n);
+                sum += Mu(d) * tau;
+            }
+            return sum;
+        }
+
+        private static int BruteForcePi(int x)
+        {
+            var sum = 0;
+            for (int n = 1; n < x; n++)
+                sum += Tau(n) * Math.Abs(Mu(n)) % 4;
+            return (sum - 1) / 2;
+        }
+
+        private static int MuSum(int y)
+        {
+            int limit = (int)Math.Ceiling(Math.Sqrt(y));
+            int sum = 0;
+            for (int d = 1; d < limit; d++)
+            {
+                var mu = Mu(d);
+                var tau = TauSum(y / (d * d) - 1);
+                Console.WriteLine("d = {0}, mu = {1}, tau = {2}", d, mu, tau);
+                sum += mu * tau;
+            }
+            return sum;
+        }
+
+        private static int Pi(int y)
+        {
+            return new SieveOfErostothones().TakeWhile(p => p < y).Count();
+        }
+
+        private static int Mu(int y)
+        {
+            var factors = new TrialDivisionFactorization().Factor(y).ToArray();
+            if (!IntegerMath.IsSquareFree(factors))
+                return 0;
+            return factors.Length % 2 == 0 ? 1 : -1;
+        }
+
+        private static int SlowTauSum(int y)
+        {
+            var sum = 0;
+            for (int i = 1; i <= y; i++)
+                sum += Tau(i);
+            return sum;
+        }
+
+        private static int Tau(int y)
+        {
+            var tau = 0;
+            for (int i = 1; i <= y; i++)
+            {
+                if (y % i == 0)
+                    ++tau;
+            }
+            return tau;
+        }
+
+        private static int TauSum(int y)
+        {
+            var sum = 0;
+            int n = 1;
+            while (true)
+            {
+                var term = y / n - n;
+                if (term < 0)
+                    break;
+                sum += term;
+                ++n;
+            }
+            sum = 2 * sum + n - 1;
+            return sum;
+        }
+
+        private static BigInteger TauSum(BigInteger y)
+        {
+            var sum = (BigInteger)0;
+            var n = (BigInteger)1;
+            while (true)
+            {
+                var term = y / n - n;
+                if (term < 0)
+                    break;
+                sum += term;
+                ++n;
+            }
+            sum = 2 * sum + n - 1;
+            return sum;
+        }
+
+        private static int TauSum2(int y)
+        {
+            // http://michaelnielsen.org/polymath1/index.php?title=Prime_counting_function
+            var limit = (int)Math.Floor(Math.Sqrt(y));
+            var sum = 0;
+            for (int n = 1; n < limit; n++)
+            {
+                sum += y / n;
+            }
+            sum = 2 * sum - limit * limit;
+            return sum;
+        }
+
+        private static int TauSum3(int y)
+        {
+            // Brute force search.
+            var sum = 0;
+            for (int a = 1; a < y; a++)
+                for (int b = 1; b < y; b++)
+                    if (a * b < y)
+                        ++sum;
+            return sum;
         }
 
         static void FloorRootTest()
