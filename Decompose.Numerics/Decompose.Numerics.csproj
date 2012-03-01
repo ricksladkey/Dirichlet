@@ -89,6 +89,7 @@
     <Compile Include="Factorization\ShanksSquareForms.cs" />
     <Compile Include="Factorization\TrialDivisionFactorization.cs" />
     <Compile Include="Primality\OldMillerRabin.cs" />
+    <Compile Include="PrimeCounting\PrimeCounting.cs" />
     <Compile Include="QuadraticSieve\PartialRelationGraph.cs" />
     <Compile Include="Random\IRandomNumberGenerator.cs" />
     <Compile Include="Random\RandomNumberGenerator.cs" />
