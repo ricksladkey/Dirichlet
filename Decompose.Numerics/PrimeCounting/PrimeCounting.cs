@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Numerics;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Diagnostics;
 
 namespace Decompose.Numerics
@@ -127,17 +129,63 @@ namespace Decompose.Numerics
 
         private int TauSum(long y)
         {
+            //Console.WriteLine("TauSum({0})", y);
             var sum = 0;
+#if false
+            if (y < 1024)
+                return TauSumSmall(y);
+            var limit = (int)IntegerMath.FloorSquareRoot(y);
+            var threads = 8;
+            var incr = (limit + threads - 1) / threads;
+            Parallel.For(0, 8,
+                () => 0,
+                (thread, loop, subtotal) =>
+                {
+                    var min = incr * thread;
+                    var max = Math.Min(min + incr, limit);
+                    for (var n = min + 1; n <= max; n++)
+                        subtotal ^= (int)((y / n) & 1);
+                    return subtotal;
+                },
+                subtotal => Interlocked.Add(ref sum, subtotal));
+            sum = 2 * sum - limit * limit;
+#endif
+#if false
+            var limit = (int)IntegerMath.FloorSquareRoot(y);
+            for (var n = 1; n <= limit; n++)
+                sum ^= (int)((y / n) & 1);
+            sum = 2 * sum - limit * limit;
+#endif
+#if true
             var n = 1;
+            var squared = y - 1;
             while (true)
             {
-                var term = y / n - n;
-                if (term < 0)
+                sum ^= (int)((y / n) & 1);
+                squared -= 2 * n + 1;
+                if (squared < 0)
                     break;
-                sum ^= (int)(term & 1);
                 ++n;
             }
-            sum = 2 * sum + n - 1;
+            sum = 2 * sum - n * n;
+#endif
+            return sum & 3;
+        }
+
+        private int TauSumSmall(long y)
+        {
+            var sum = 0;
+            var n = 1;
+            var squared = y - 1;
+            while (true)
+            {
+                sum ^= (int)((y / n) & 1);
+                squared -= 2 * n + 1;
+                if (squared < 0)
+                    break;
+                ++n;
+            }
+            sum = 2 * sum - n * n;
             return sum & 3;
         }
 
@@ -163,13 +211,22 @@ namespace Decompose.Numerics
             if (limit <= int.MaxValue)
                 return SumTwoToTheOmega(x, (int)limit);
             var sum = 0;
+            var nLast = (BigInteger)0;
+            var tauLast = 0;
             for (var d = (BigInteger)1; d <= limit; d++)
             {
                 var mu = IntegerMath.Mobius(d);
-                if (mu == 1)
-                    sum += TauSum(x / (d * d));
-                else if (mu == -1)
-                    sum += 4 - TauSum(x / (d * d));
+                if (mu != 0)
+                {
+                    var n = x / (d * d);
+                    var tau = n == nLast ? tauLast : TauSum(n);
+                    if (mu == 1)
+                        sum += tau;
+                    else
+                        sum += 4 - tau;
+                    tauLast = tau;
+                    nLast = n;
+                }
             }
             return sum;
         }
@@ -178,20 +235,28 @@ namespace Decompose.Numerics
         {
             var sum = 0;
             var mobius = new MobiusRange(limit + 1);
+            var nLast = (BigInteger)0;
+            var tauLast = 0;
             for (var d = 1; d <= limit; d++)
             {
                 var mu = mobius[d];
-                if (mu == 1)
-                    sum += TauSum(x / ((long)d * d));
-                else if (mu == -1)
-                    sum += 4 - TauSum(x / ((long)d * d));
+                if (mu != 0)
+                {
+                    var n = x / ((long)d * d);
+                    var tau = n == nLast ? tauLast : TauSum(n);
+                    if (mu == 1)
+                        sum += tau;
+                    else
+                        sum += 4 - tau;
+                    tauLast = tau;
+                    nLast = n;
+                }
             }
             return sum;
         }
 
         private int TauSum(BigInteger y)
         {
-            //Console.WriteLine("TauSum({0})", y);
             if (y <= long.MaxValue)
                 return TauSum((long)y);
             var sum = 0;

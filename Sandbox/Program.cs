@@ -72,13 +72,16 @@ namespace Sandbox
         {
 #if true
             var algorithm = new PrimeCounting();
-            for (int j = 0; j < 5; j++)
+            for (int j = 0; j < 1; j++)
             {
-                for (int i = 40; i <= 40; i++)
+                var timer = new Stopwatch();
+                timer.Start();
+                for (int i = 50; i <= 50; i++)
                 {
                     var n = (BigInteger)1 << i;
                     Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, algorithm.ParityOfPi(n));
                 }
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
 #if false
