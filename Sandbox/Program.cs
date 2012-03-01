@@ -71,6 +71,18 @@ namespace Sandbox
         static void ParityTest()
         {
 #if true
+            for (int n = 1; n <= 10; n++)
+            {
+                //Console.WriteLine("n = {0}, 2^w(n)0 = {1}, 2^w(n)1 = {2}", n, TwoToTheOmega0(n), TwoToTheOmega1(n));
+                Console.WriteLine("n = {0}, Sum(2^w(n))0 = {1}, Sum(2^w(n))1 = {2}, Sum(2^w(n)) = {3}", n, SumTwoToTheOmega0(n), SumTwoToTheOmega1(n), SumTwoToTheOmega(n));
+                Console.WriteLine("pi'(n + 1) = {0}, Sum(2^w(n)) / 2 % 2 = {1}", PiWithPowers(n + 1), SumTwoToTheOmega(n) / 2 % 2);
+                Console.WriteLine("pi(n + 1) = {0}, pi(n) % 2 = {1}", Pi(n + 1), ParityOfPi(n));
+                Console.WriteLine();
+            }
+#endif
+#if false
+            for (int i = 1; i <= 10; i++)
+                Console.WriteLine("tau({0}) = {1}, sum = {2}", i, Tau(i), TauSum(i));
             for (int i = 0; i < 1; i++)
             {
                 var n = (i + 1) * 10;
@@ -78,14 +90,14 @@ namespace Sandbox
                 var bruteForcePi = BruteForcePi(n);
                 Console.WriteLine("BruteForcePi(n) = {0}", bruteForcePi);
                 var bruteForce1 = BruteForce1(n);
-                Console.WriteLine("BruteForce1(n) = {0}, % 4 / 2 = {1}", bruteForce1, (bruteForce1 % 4) / 2);
+                Console.WriteLine("BruteForce1(n) = {0}, % 4 / 2 = {1}", bruteForce1, bruteForce1 % 4 / 2);
                 var bruteForce2 = BruteForce2(n);
-                Console.WriteLine("BruteForce2(n) = {0}, % 4 / 2 = {1}", bruteForce2, (bruteForce2 % 4) / 2);
+                Console.WriteLine("BruteForce2(n) = {0}, % 4 / 2 = {1}", bruteForce2, bruteForce2 % 4 / 2);
                 var pi = Pi(n);
                 Console.WriteLine("Pi(n) = {0}", pi);
                 var tauSlow = SlowTauSum(n);
                 var mu = MuSum(n);
-                Console.WriteLine("MusSum(n) = {0}", mu);
+                Console.WriteLine("MuSum(n) = {0}, % 4 / 2 = {1}", mu, mu % 4 / 2);
             }
 #endif
 #if false
@@ -99,6 +111,74 @@ namespace Sandbox
                 Console.WriteLine("TauSum({0}) = {1}", n, TauSum(n));
             }
 #endif
+        }
+
+        private static int TwoToTheOmega0(int n)
+        {
+            var omega = new TrialDivisionFactorization().Factor(n).OrderBy(factor => factor).Distinct().Count();
+            return 1 << omega;
+        }
+
+        private static int TwoToTheOmega1(int n)
+        {
+            var sum = 0;
+            for (int d = 1; true; d++)
+            {
+                var dSquared = d * d;
+                if (dSquared > n)
+                    break;
+                if (n % dSquared == 0)
+                    sum += Mu(d) * Tau(n / dSquared);
+            }
+            return sum;
+        }
+
+        private static int SumTwoToTheOmega0(int x)
+        {
+            var sum = 0;
+            for (int n = 1; n <= x; n++)
+                sum += TwoToTheOmega0(n);
+            return sum;
+        }
+
+        private static int SumTwoToTheOmega1(int x)
+        {
+            var sum = 0;
+            for (int n = 1; n <= x; n++)
+                sum += TwoToTheOmega1(n);
+            return sum;
+        }
+
+        private static int SumTwoToTheOmega(int x)
+        {
+            int limit = (int)Math.Floor(Math.Sqrt(x));
+            int sum = 0;
+            for (int d = 1; d <= limit; d++)
+            {
+                var mu = Mu(d);
+                var tau = TauSum(x / (d * d));
+                sum += mu * tau;
+            }
+            return sum;
+        }
+
+        private static int ParityOfPi(int x)
+        {
+            if (x < 2)
+                return 0;
+            var parity = SumTwoToTheOmega(x) / 2 % 2;
+            Debug.Assert(parity == PiWithPowers(x + 1) % 2);
+            for (int j = 2; true; j++)
+            {
+                var root = IntegerMath.FloorRoot(x, j);
+                if (root == 1)
+                    break;
+                if (j > x)
+                    break;
+                parity ^= ParityOfPi(root);
+            }
+            Debug.Assert(parity == Pi(x + 1) % 2);
+            return parity;
         }
 
         private static int BruteForce1(int x)
@@ -146,9 +226,26 @@ namespace Sandbox
             return sum;
         }
 
-        private static int Pi(int y)
+        private static int Pi(int x)
         {
-            return new SieveOfErostothones().TakeWhile(p => p < y).Count();
+            return new SieveOfErostothones().TakeWhile(p => p < x).Count();
+        }
+
+        private static int PiWithPowers(int x)
+        {
+            var sum = Pi(x);
+            for (int j = 2; true; j++)
+            {
+                var root = IntegerMath.FloorRoot(x, j);
+                if (IntegerMath.Power(root, j) == x)
+                    --root;
+                if (root == 1)
+                    break;
+                if (j > x)
+                    break;
+                sum += Pi(root + 1);
+            }
+            return sum;
         }
 
         private static int Mu(int y)

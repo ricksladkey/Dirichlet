@@ -21,6 +21,14 @@ namespace Decompose.Numerics
             return a == absA ? c : -c;
         }
 
+        public static T CeilingRoot<T>(T a, T b)
+        {
+            var c = (Number<T>)FloorRoot(a, b);
+            if (Number<T>.Power(a, c) != c)
+                ++c;
+            return c;
+        }
+
         public static T Root<T>(T a, T b)
         {
             var degree = (Number<T>)b;
@@ -36,6 +44,9 @@ namespace Decompose.Numerics
 
         public static T PerfectPower<T>(T a)
         {
+            // See: Sieve Algorithms for Perfect Power Testing,
+            // E. Bach and J. Sorenson, Algorithmica 9 (1993) 313-328.
+            // Algorithm B (modified).
             var absA = Number<T>.Abs(a);
             var bits = (Number<T>)Math.Floor(Number<T>.Log(absA, 2).Real);
             var logA = Number<T>.Log(absA).Real;
