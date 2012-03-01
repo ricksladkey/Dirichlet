@@ -24,12 +24,12 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        public int ParityOfPi(int x)
+        public int ParityOfPi(long x)
         {
             if (x < 2)
                 return 0;
             var parity = SumTwoToTheOmega(x) / 2 % 2;
-            for (int j = 2; true; j++)
+            for (var j = 2; true; j++)
             {
                 var root = IntegerMath.FloorRoot(x, j);
                 if (root == 1)
@@ -39,33 +39,35 @@ namespace Decompose.Numerics
             return parity;
         }
 
-        private int SumTwoToTheOmega(int x)
+        private int SumTwoToTheOmega(long x)
         {
             var limit = IntegerMath.FloorSquareRoot(x);
             var sum = 0;
-            for (int d = 1; d <= limit; d++)
+            for (var d = (long)1; d <= limit; d++)
             {
                 var mu = IntegerMath.Mobius(d);
-                var tau = TauSum(x / (d * d));
-                sum += mu * tau;
+                if (mu == 1)
+                    sum += TauSum(x / (d * d));
+                else if (mu == -1)
+                    sum += 4 - TauSum(x / (d * d));
             }
             return sum;
         }
 
-        private int TauSum(int y)
+        private int TauSum(long y)
         {
             var sum = 0;
-            int n = 1;
+            var n = 1;
             while (true)
             {
                 var term = y / n - n;
                 if (term < 0)
                     break;
-                sum += term;
+                sum += (int)term;
                 ++n;
             }
             sum = 2 * sum + n - 1;
-            return sum;
+            return sum & 3;
         }
 
         public BigInteger ParityOfPi(BigInteger x)
@@ -98,6 +100,8 @@ namespace Decompose.Numerics
 
         private BigInteger TauSum(BigInteger y)
         {
+            if (y <= long.MaxValue)
+                return TauSum((long)y);
             var sum = (BigInteger)0;
             var  n = (BigInteger)1;
             while (true)
