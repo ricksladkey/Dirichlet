@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace Decompose.Numerics
 {
@@ -128,7 +129,7 @@ namespace Decompose.Numerics
                 c = cNext;
             }
             power = Number<T>.Power(c, degree);
-            Debug.Assert(power <= a && Number<T>.Power(c + 1, degree) > a);
+            Debug.Assert(power <= a && Power((BigInteger)c + 1, degree) > a);
             return c;
         }
     }

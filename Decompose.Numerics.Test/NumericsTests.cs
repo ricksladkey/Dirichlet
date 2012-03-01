@@ -494,7 +494,7 @@ namespace Decompose.Numerics.Test
         public void SieveOfErostothonesTest1()
         {
             var primes = new SieveOfErostothones();
-            int iterations = 1000;
+            int iterations = 1 << 18;
             for (int repetition = 1; repetition <= 2; repetition++)
             {
                 int n = 0;
