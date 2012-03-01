@@ -1,13 +1,34 @@
 ﻿using System;
 using System.Linq;
 using System.Numerics;
+using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
     public class PrimeCounting
     {
+        private int[] piSmall;
+
+        public PrimeCounting()
+        {
+            var i = 0;
+            var count = 0;
+            piSmall = new int[1024];
+            foreach (var p in new SieveOfErostothones())
+            {
+                while (i < p && i < piSmall.Length)
+                    piSmall[i++] = count;
+                if (i < piSmall.Length)
+                    piSmall[i++] = ++count;
+                if (i == piSmall.Length)
+                    break;
+            }
+        }
+
         public int Pi(int x)
         {
+            if (x < piSmall.Length)
+                return piSmall[x];
             return new SieveOfErostothones().TakeWhile(p => p <= x).Count();
         }
 
@@ -26,8 +47,8 @@ namespace Decompose.Numerics
 
         public int ParityOfPi(long x)
         {
-            if (x < 2)
-                return 0;
+            if (x < piSmall.Length)
+                return piSmall[x] % 2;
             var parity = SumTwoToTheOmega(x) / 2 % 2;
             for (var j = 2; true; j++)
             {
@@ -72,8 +93,8 @@ namespace Decompose.Numerics
 
         public int ParityOfPi(BigInteger x)
         {
-            if (x < 2)
-                return 0;
+            if (x < piSmall.Length)
+                return piSmall[(int)x] % 2;
             var parity = SumTwoToTheOmega(x) / 2 % 2;
             for (int j = 2; true; j++)
             {
@@ -87,6 +108,7 @@ namespace Decompose.Numerics
 
         private int SumTwoToTheOmega(BigInteger x)
         {
+            Console.WriteLine("SumTwoToTheOmega({0})", x);
             var limit = IntegerMath.FloorSquareRoot(x);
             var sum = 0;
             for (var d = (BigInteger)1; d <= limit; d++)
@@ -102,6 +124,7 @@ namespace Decompose.Numerics
 
         private int TauSum(BigInteger y)
         {
+            //Console.WriteLine("TauSum({0})", y);
             if (y <= long.MaxValue)
                 return TauSum((long)y);
             var sum = 0;
