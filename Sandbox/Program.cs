@@ -71,12 +71,19 @@ namespace Sandbox
         static void ParityTest()
         {
 #if true
-            for (int n = 1; n <= 10; n++)
+            for (int i = 1; i <= 24; i++)
+            {
+                var n = 1 << i;
+                Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, ParityOfPi(n));
+            }
+#endif
+#if false
+            for (int n = 1; n <= 100; n++)
             {
                 //Console.WriteLine("n = {0}, 2^w(n)0 = {1}, 2^w(n)1 = {2}", n, TwoToTheOmega0(n), TwoToTheOmega1(n));
-                Console.WriteLine("n = {0}, Sum(2^w(n))0 = {1}, Sum(2^w(n))1 = {2}, Sum(2^w(n)) = {3}", n, SumTwoToTheOmega0(n), SumTwoToTheOmega1(n), SumTwoToTheOmega(n));
-                Console.WriteLine("pi'(n + 1) = {0}, Sum(2^w(n)) / 2 % 2 = {1}", PiWithPowers(n + 1), SumTwoToTheOmega(n) / 2 % 2);
-                Console.WriteLine("pi(n + 1) = {0}, pi(n) % 2 = {1}", Pi(n + 1), ParityOfPi(n));
+                //Console.WriteLine("n = {0}, Sum(2^w(n))0 = {1}, Sum(2^w(n))1 = {2}, Sum(2^w(n)) = {3}", n, SumTwoToTheOmega0(n), SumTwoToTheOmega1(n), SumTwoToTheOmega(n));
+                //Console.WriteLine("pi'(n + 1) = {0}, Sum(2^w(n)) / 2 % 2 = {1}", PiWithPowers(n + 1), SumTwoToTheOmega(n) / 2 % 2);
+                Console.WriteLine("pi(n) % 2 = {0}, parity pi(n) = {1}", Pi(n) % 2, ParityOfPi(n));
                 Console.WriteLine();
             }
 #endif
@@ -164,20 +171,18 @@ namespace Sandbox
 
         private static int ParityOfPi(int x)
         {
-            if (x < 2)
+            if (x <= 2)
                 return 0;
-            var parity = SumTwoToTheOmega(x) / 2 % 2;
-            Debug.Assert(parity == PiWithPowers(x + 1) % 2);
+            var parity = SumTwoToTheOmega(x - 1) / 2 % 2;
+            Debug.Assert(parity == PiWithPowers(x) % 2);
             for (int j = 2; true; j++)
             {
-                var root = IntegerMath.FloorRoot(x, j);
+                var root = IntegerMath.FloorRoot(x - 1, j);
                 if (root == 1)
                     break;
-                if (j > x)
-                    break;
-                parity ^= ParityOfPi(root);
+                parity ^= ParityOfPi(root + 1);
             }
-            Debug.Assert(parity == Pi(x + 1) % 2);
+            Debug.Assert(parity == Pi(x) % 2);
             return parity;
         }
 
@@ -240,8 +245,6 @@ namespace Sandbox
                 if (IntegerMath.Power(root, j) == x)
                     --root;
                 if (root == 1)
-                    break;
-                if (j > x)
                     break;
                 sum += Pi(root + 1);
             }
