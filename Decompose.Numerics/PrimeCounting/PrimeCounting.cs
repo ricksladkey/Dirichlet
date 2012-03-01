@@ -7,6 +7,55 @@ namespace Decompose.Numerics
 {
     public class PrimeCounting
     {
+        private class MobiusRange
+        {
+            private const int squareSentinel = 255;
+            private byte[] primeDivisors;
+
+            public MobiusRange(int n)
+            {
+                int size = n + 1;
+                primeDivisors = new byte[size];
+                for (int i = 2; i < n; i++)
+                {
+                    if (primeDivisors[i] == 0)
+                    {
+                        for (int j = i; j < size; j += i)
+                            ++primeDivisors[j];
+                    }
+                }
+                for (int i = 2; true; i++)
+                {
+                    if (primeDivisors[i] == 1)
+                    {
+                        var iSquared = i * i;
+                        if (iSquared > size)
+                            break;
+                        for (int j = iSquared; j < size; j += iSquared)
+                            primeDivisors[j] = squareSentinel;
+                    }
+                }
+#if false
+                for (int i = 1; i <= n; i++)
+                {
+                    if (this[i] != IntegerMath.Mobius(i))
+                        Debugger.Break();
+                }
+#endif
+            }
+
+            public int this[int index]
+            {
+                get
+                {
+                    var d = primeDivisors[index];
+                    if (d == squareSentinel)
+                        return 0;
+                    return d % 2 == 0 ? 1 : -1;
+                }
+            }
+        }
+
         private int[] piSmall;
 
         public PrimeCounting()
@@ -62,15 +111,16 @@ namespace Decompose.Numerics
 
         private int SumTwoToTheOmega(long x)
         {
-            var limit = IntegerMath.FloorSquareRoot(x);
+            var limit = (int)IntegerMath.FloorSquareRoot(x);
             var sum = 0;
-            for (var d = (long)1; d <= limit; d++)
+            var mobius = new MobiusRange(limit + 1);
+            for (var d = 1; d <= limit; d++)
             {
                 var mu = IntegerMath.Mobius(d);
                 if (mu == 1)
-                    sum += TauSum(x / (d * d));
+                    sum += TauSum(x / ((long)d * d));
                 else if (mu == -1)
-                    sum += 4 - TauSum(x / (d * d));
+                    sum += 4 - TauSum(x / ((long)d * d));
             }
             return sum;
         }
@@ -108,8 +158,10 @@ namespace Decompose.Numerics
 
         private int SumTwoToTheOmega(BigInteger x)
         {
-            Console.WriteLine("SumTwoToTheOmega({0})", x);
+            //Console.WriteLine("SumTwoToTheOmega({0})", x);
             var limit = IntegerMath.FloorSquareRoot(x);
+            if (limit <= int.MaxValue)
+                return SumTwoToTheOmega(x, (int)limit);
             var sum = 0;
             for (var d = (BigInteger)1; d <= limit; d++)
             {
@@ -118,6 +170,21 @@ namespace Decompose.Numerics
                     sum += TauSum(x / (d * d));
                 else if (mu == -1)
                     sum += 4 - TauSum(x / (d * d));
+            }
+            return sum;
+        }
+
+        private int SumTwoToTheOmega(BigInteger x, int limit)
+        {
+            var sum = 0;
+            var mobius = new MobiusRange(limit + 1);
+            for (var d = 1; d <= limit; d++)
+            {
+                var mu = mobius[d];
+                if (mu == 1)
+                    sum += TauSum(x / ((long)d * d));
+                else if (mu == -1)
+                    sum += 4 - TauSum(x / ((long)d * d));
             }
             return sum;
         }
