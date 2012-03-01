@@ -174,6 +174,23 @@ namespace Decompose.Numerics
                 .All(grouping => grouping.Count() < 2);
         }
 
+        private static IFactorizationAlgorithm<int> factorerInt = new TrialDivisionFactorization();
+
+        public static int Mobius(int y)
+        {
+            var factors = factorerInt.Factor(y).ToArray();
+            if (!IsSquareFree(factors))
+                return 0;
+            return factors.Length % 2 == 0 ? 1 : -1;
+        }
+
+        public static int Mobius(BigInteger y)
+        {
+            if (y < int.MaxValue)
+                return Mobius((int)y);
+            throw new NotImplementedException();
+        }
+
 #if false
         public static int FloorSquareRoot(int n)
         {

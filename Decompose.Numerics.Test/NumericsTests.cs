@@ -889,5 +889,16 @@ namespace Decompose.Numerics.Test
                 Assert.AreEqual(piData[j] % 2, (BigInteger)algorithm.ParityOfPi(n));
             }
         }
+
+        [TestMethod]
+        public void PrimeCountingTest3()
+        {
+            var algorithm = new PrimeCounting();
+            for (var j = 0; j <= 33; j++)
+            {
+                var n = (BigInteger)1 << j;
+                Assert.AreEqual(piData[j] % 2, algorithm.ParityOfPi(n));
+            }
+        }
     }
 }

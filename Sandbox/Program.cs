@@ -71,10 +71,11 @@ namespace Sandbox
         static void ParityTest()
         {
 #if true
+            var algorithm = new PrimeCounting();
             for (int i = 1; i <= 24; i++)
             {
                 var n = 1 << i;
-                Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, ParityOfPi(n));
+                Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, algorithm.ParityOfPi(n));
             }
 #endif
 #if false
@@ -120,60 +121,6 @@ namespace Sandbox
 #endif
         }
 
-        private static int ParityOfPi(int x)
-        {
-            if (x <= 2)
-                return 0;
-            var parity = SumTwoToTheOmega(x - 1) / 2 % 2;
-            Debug.Assert(parity == PiWithPowers(x) % 2);
-            for (int j = 2; true; j++)
-            {
-                var root = IntegerMath.FloorRoot(x - 1, j);
-                if (root == 1)
-                    break;
-                parity ^= ParityOfPi(root + 1);
-            }
-            Debug.Assert(parity == Pi(x) % 2);
-            return parity;
-        }
-
-        private static int SumTwoToTheOmega(int x)
-        {
-            int limit = (int)Math.Floor(Math.Sqrt(x));
-            int sum = 0;
-            for (int d = 1; d <= limit; d++)
-            {
-                var mu = Mu(d);
-                var tau = TauSum(x / (d * d));
-                sum += mu * tau;
-            }
-            return sum;
-        }
-
-        private static int Mu(int y)
-        {
-            var factors = new TrialDivisionFactorization().Factor(y).ToArray();
-            if (!IntegerMath.IsSquareFree(factors))
-                return 0;
-            return factors.Length % 2 == 0 ? 1 : -1;
-        }
-
-        private static int TauSum(int y)
-        {
-            var sum = 0;
-            int n = 1;
-            while (true)
-            {
-                var term = y / n - n;
-                if (term < 0)
-                    break;
-                sum += term;
-                ++n;
-            }
-            sum = 2 * sum + n - 1;
-            return sum;
-        }
-
         private static int TwoToTheOmega0(int n)
         {
             var omega = new TrialDivisionFactorization().Factor(n).OrderBy(factor => factor).Distinct().Count();
@@ -189,7 +136,7 @@ namespace Sandbox
                 if (dSquared > n)
                     break;
                 if (n % dSquared == 0)
-                    sum += Mu(d) * Tau(n / dSquared);
+                    sum += IntegerMath.Mobius(d) * Tau(n / dSquared);
             }
             return sum;
         }
@@ -214,7 +161,7 @@ namespace Sandbox
         {
             var sum = 0;
             for (int n = 1; n < x; n++)
-                sum += Tau(n) * Math.Abs(Mu(n));
+                sum += Tau(n) * Math.Abs(IntegerMath.Mobius(n));
             return sum;
         }
 
@@ -228,7 +175,7 @@ namespace Sandbox
                 var tau = 0;
                 for (int n = dSquared; n < x; n += dSquared)
                     tau += Tau(n);
-                sum += Mu(d) * tau;
+                sum += IntegerMath.Mobius(d) * tau;
             }
             return sum;
         }
@@ -237,42 +184,8 @@ namespace Sandbox
         {
             var sum = 0;
             for (int n = 1; n < x; n++)
-                sum += Tau(n) * Math.Abs(Mu(n)) % 4;
+                sum += Tau(n) * Math.Abs(IntegerMath.Mobius(n)) % 4;
             return (sum - 1) / 2;
-        }
-
-        private static int MuSum(int y)
-        {
-            int limit = (int)Math.Ceiling(Math.Sqrt(y));
-            int sum = 0;
-            for (int d = 1; d < limit; d++)
-            {
-                var mu = Mu(d);
-                var tau = TauSum(y / (d * d) - 1);
-                Console.WriteLine("d = {0}, mu = {1}, tau = {2}", d, mu, tau);
-                sum += mu * tau;
-            }
-            return sum;
-        }
-
-        private static int Pi(int x)
-        {
-            return new SieveOfErostothones().TakeWhile(p => p < x).Count();
-        }
-
-        private static int PiWithPowers(int x)
-        {
-            var sum = Pi(x);
-            for (int j = 2; true; j++)
-            {
-                var root = IntegerMath.FloorRoot(x, j);
-                if (IntegerMath.Power(root, j) == x)
-                    --root;
-                if (root == 1)
-                    break;
-                sum += Pi(root + 1);
-            }
-            return sum;
         }
 
         private static int SlowTauSum(int y)
