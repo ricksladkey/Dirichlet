@@ -191,6 +191,14 @@ namespace Decompose.Numerics
             throw new NotImplementedException();
         }
 
+        public static int NumberOfDivisors(int y)
+        {
+            return factorerInt.Factor(y)
+                .GroupBy(p => p)
+                .Select(grouping => grouping.Count() + 1)
+                .Product();
+        }
+
 #if false
         public static int FloorSquareRoot(int n)
         {

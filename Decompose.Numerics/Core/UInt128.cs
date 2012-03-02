@@ -11,6 +11,25 @@ namespace Decompose.Numerics
         private uint r2;
         private uint r3;
 
+        private static UInt128 maxValue = ~(UInt128)0;
+        private static UInt128 zero = (UInt128)0;
+        private static UInt128 one = (UInt128)1;
+
+        public static UInt128 MaxValue
+        {
+            get { return maxValue; }
+        }
+
+        public static UInt128 Zero
+        {
+            get { return zero; }
+        }
+
+        public static UInt128 One
+        {
+            get { return one; }
+        }
+
         public static UInt128 Parse(string value)
         {
             return (UInt128)BigInteger.Parse(value);
@@ -143,6 +162,13 @@ namespace Decompose.Numerics
             return c;
         }
 
+        public static UInt128 operator ++(UInt128 a)
+        {
+            UInt128 c;
+            Add(out c, ref a, ref one);
+            return c;
+        }
+
         public static UInt128 operator -(UInt128 a, UInt128 b)
         {
             UInt128 c;
@@ -200,9 +226,29 @@ namespace Decompose.Numerics
             return a.CompareTo(b) < 0;
         }
 
+        public static bool operator <(UInt128 a, ulong b)
+        {
+            return a.CompareTo(b) < 0;
+        }
+
+        public static bool operator <(ulong a, UInt128 b)
+        {
+            return b.CompareTo(a) > 0;
+        }
+
         public static bool operator <=(UInt128 a, UInt128 b)
         {
             return a.CompareTo(b) <= 0;
+        }
+
+        public static bool operator <=(UInt128 a, ulong b)
+        {
+            return a.CompareTo(b) <= 0;
+        }
+
+        public static bool operator <=(ulong a, UInt128 b)
+        {
+            return b.CompareTo(a) >= 0;
         }
 
         public static bool operator >(UInt128 a, UInt128 b)
@@ -210,9 +256,29 @@ namespace Decompose.Numerics
             return a.CompareTo(b) > 0;
         }
 
+        public static bool operator >(UInt128 a, ulong b)
+        {
+            return a.CompareTo(b) > 0;
+        }
+
+        public static bool operator >(ulong a, UInt128 b)
+        {
+            return b.CompareTo(a) < 0;
+        }
+
         public static bool operator >=(UInt128 a, UInt128 b)
         {
             return a.CompareTo(b) >= 0;
+        }
+
+        public static bool operator >=(UInt128 a, ulong b)
+        {
+            return a.CompareTo(b) >= 0;
+        }
+
+        public static bool operator >=(ulong a, UInt128 b)
+        {
+            return b.CompareTo(a) <= 0;
         }
 
         public static bool operator ==(UInt128 a, UInt128 b)
@@ -220,9 +286,29 @@ namespace Decompose.Numerics
             return a.Equals(b);
         }
 
+        public static bool operator ==(UInt128 a, ulong b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator ==(ulong a, UInt128 b)
+        {
+            return b.Equals(a);
+        }
+
         public static bool operator !=(UInt128 a, UInt128 b)
         {
             return !a.Equals(b);
+        }
+
+        public static bool operator !=(UInt128 a, ulong b)
+        {
+            return !a.Equals(b);
+        }
+
+        public static bool operator !=(ulong a, UInt128 b)
+        {
+            return !b.Equals(a);
         }
 
         public int CompareTo(UInt128 other)
@@ -236,9 +322,21 @@ namespace Decompose.Numerics
             return r0.CompareTo(other.r0);
         }
 
+        public int CompareTo(ulong other)
+        {
+            if (r3 != 0 || r2 != 0)
+                return -1;
+            return ((ulong)this).CompareTo(other);
+        }
+
         public bool Equals(UInt128 other)
         {
             return r0 == other.r0 && r1 == other.r1 && r2 == other.r2 && r3 == other.r3;
+        }
+
+        public bool Equals(ulong other)
+        {
+            return r0 == (uint)other && r1 == (uint)(other >> 32) && r2 == 0 && r3 == 0;
         }
 
         public override bool Equals(object obj)

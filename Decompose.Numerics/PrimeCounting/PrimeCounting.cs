@@ -9,6 +9,34 @@ namespace Decompose.Numerics
 {
     public class PrimeCounting
     {
+        private class DivisorsRange
+        {
+            private byte[] divisors;
+
+            public DivisorsRange(int n)
+            {
+                int size = n + 1;
+                divisors = new byte[size];
+                for (int i = 1; i < size; i++)
+                {
+                    for (int j = i; j < size; j += i)
+                        ++divisors[j];
+                }
+#if false
+                for (int i = 1; i <= n; i++)
+                {
+                    if (divisors[i] != IntegerMath.NumberOfDivisors(i))
+                        Debugger.Break();
+                }
+#endif
+            }
+
+            public int this[int index]
+            {
+                get { return divisors[index]; }
+            }
+        }
+
         private class MobiusRange
         {
             private const int squareSentinel = 255;
@@ -18,7 +46,7 @@ namespace Decompose.Numerics
             {
                 int size = n + 1;
                 primeDivisors = new byte[size];
-                for (int i = 2; i < n; i++)
+                for (int i = 2; i < size; i++)
                 {
                     if (primeDivisors[i] == 0)
                     {
@@ -58,22 +86,37 @@ namespace Decompose.Numerics
             }
         }
 
+        private const int sizeSmall = 1024;
         private int[] piSmall;
+        private int[] tauSumSmall;
 
         public PrimeCounting()
         {
+            var n = sizeSmall;
             var i = 0;
             var count = 0;
-            piSmall = new int[1024];
+            piSmall = new int[n];
             foreach (var p in new SieveOfErostothones())
             {
-                while (i < p && i < piSmall.Length)
+                while (i < p && i < n)
                     piSmall[i++] = count;
-                if (i < piSmall.Length)
+                if (i < n)
                     piSmall[i++] = ++count;
-                if (i == piSmall.Length)
+                if (i == n)
                     break;
             }
+            var divisors = new DivisorsRange(n);
+            tauSumSmall = new int[n];
+            tauSumSmall[0] = divisors[0];
+            for (var j = 1; j < n; j++)
+                tauSumSmall[j] = (tauSumSmall[j - 1] + divisors[j]) & 3;
+#if false
+            for (int j = 0; j < n; j++)
+            {
+                if (tauSumSmall[j] != TauSumSmall(j))
+                    Debugger.Break();
+            }
+#endif
         }
 
         public int Pi(int x)
@@ -129,6 +172,9 @@ namespace Decompose.Numerics
 
         private int TauSum(long y)
         {
+            if (y < tauSumSmall.Length)
+                return tauSumSmall[y];
+
             //Console.WriteLine("TauSum({0})", y);
             var sum = 0;
 #if false
@@ -174,6 +220,8 @@ namespace Decompose.Numerics
 
         private int TauSumSmall(long y)
         {
+            if (y == 0)
+                return 0;
             var sum = 0;
             var n = 1;
             var squared = y - 1;
@@ -233,6 +281,8 @@ namespace Decompose.Numerics
 
         private int SumTwoToTheOmega(BigInteger x, int limit)
         {
+            if (x < UInt128.MaxValue)
+                return SumTwoToTheOmega((UInt128)x, limit);
             var sum = 0;
             var mobius = new MobiusRange(limit + 1);
 #if false
@@ -254,7 +304,7 @@ namespace Decompose.Numerics
                 }
             }
 #endif
-#if true
+#if false
             Parallel.For(1, limit + 1,
                 () => 0,
                 (d, loop, subtotal) =>
@@ -273,6 +323,63 @@ namespace Decompose.Numerics
                 },
                 subtotal => Interlocked.Add(ref sum, subtotal));
 #endif
+#if true
+            var chunkSize = 32;
+            var chunks = (limit + chunkSize - 1) / chunkSize;
+            Parallel.For(0, chunks,
+                () => 0,
+                (chunk, loop, subtotal) =>
+                {
+                    var min = chunk * chunkSize;
+                    var max = Math.Min(min + chunkSize, limit);
+                    for (var d = min + 1; d <= max; d++)
+                    {
+                        var mu = mobius[d];
+                        if (mu != 0)
+                        {
+                            var n = x / ((long)d * d);
+                            var tau = TauSum(n);
+                            if (mu == 1)
+                                subtotal += tau;
+                            else
+                                subtotal += 4 - tau;
+                        }
+                    }
+                    return subtotal;
+                },
+                subtotal => Interlocked.Add(ref sum, subtotal));
+#endif
+            return sum;
+        }
+
+        private int SumTwoToTheOmega(UInt128 x, int limit)
+        {
+            var sum = 0;
+            var mobius = new MobiusRange(limit + 1);
+            var chunkSize = 10;
+            var chunks = (limit + chunkSize - 1) / chunkSize;
+            Parallel.For(0, chunks,
+                () => 0,
+                (chunk, loop, subtotal) =>
+                {
+                    var min = chunk * chunkSize;
+                    var max = Math.Min(min + chunkSize, limit);
+                    for (var d = min + 1; d <= max; d++)
+                    {
+                        var mu = mobius[d];
+                        if (mu != 0)
+                        {
+                            var n = x / ((ulong)d * (ulong)d);
+                            var tau = TauSum(n);
+                            if (mu == 1)
+                                subtotal += tau;
+                            else
+                                subtotal += 4 - tau;
+                        }
+                    }
+                    return subtotal;
+                },
+                subtotal => Interlocked.Add(ref sum, subtotal));
             return sum;
         }
 
@@ -282,6 +389,24 @@ namespace Decompose.Numerics
                 return TauSum((long)y);
             var sum = 0;
             var  n = (BigInteger)1;
+            while (true)
+            {
+                var term = y / n - n;
+                if (term < 0)
+                    break;
+                sum ^= (int)(term & 1);
+                ++n;
+            }
+            sum = 2 * sum + (int)((n - 1) & 3);
+            return (int)(sum & 3);
+        }
+
+        private int TauSum(UInt128 y)
+        {
+            if (y <= long.MaxValue)
+                return TauSum((long)y);
+            var sum = 0;
+            var n = (UInt128)1;
             while (true)
             {
                 var term = y / n - n;
