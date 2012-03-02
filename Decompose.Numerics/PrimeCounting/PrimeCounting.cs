@@ -203,7 +203,7 @@ namespace Decompose.Numerics
             sum = 2 * sum - limit * limit;
 #endif
 #if true
-            var n = 1;
+            var n = (long)1;
             var squared = y - 1;
             while (true)
             {
@@ -213,7 +213,7 @@ namespace Decompose.Numerics
                     break;
                 ++n;
             }
-            sum = 2 * sum - n * n;
+            sum = 2 * sum - (int)((n * n) & 3);
 #endif
             return sum & 3;
         }
@@ -223,7 +223,7 @@ namespace Decompose.Numerics
             if (y == 0)
                 return 0;
             var sum = 0;
-            var n = 1;
+            var n = (long)1;
             var squared = y - 1;
             while (true)
             {
@@ -233,7 +233,7 @@ namespace Decompose.Numerics
                     break;
                 ++n;
             }
-            sum = 2 * sum - n * n;
+            sum = 2 * sum - (int)((n * n) & 3);
             return sum & 3;
         }
 
@@ -383,7 +383,7 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private int TauSum(BigInteger y)
+        public int TauSum(BigInteger y)
         {
             if (y <= long.MaxValue)
                 return TauSum((long)y);
