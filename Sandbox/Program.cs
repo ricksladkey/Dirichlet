@@ -76,7 +76,7 @@ namespace Sandbox
             {
                 var timer = new Stopwatch();
                 timer.Start();
-                for (int i = 50; i <= 50; i++)
+                for (int i = 1; i <= 60; i++)
                 {
                     var n = (BigInteger)1 << i;
                     Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, algorithm.ParityOfPi(n));

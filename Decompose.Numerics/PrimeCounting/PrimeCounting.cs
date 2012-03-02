@@ -235,6 +235,7 @@ namespace Decompose.Numerics
         {
             var sum = 0;
             var mobius = new MobiusRange(limit + 1);
+#if false
             var nLast = (BigInteger)0;
             var tauLast = 0;
             for (var d = 1; d <= limit; d++)
@@ -252,6 +253,26 @@ namespace Decompose.Numerics
                     nLast = n;
                 }
             }
+#endif
+#if true
+            Parallel.For(1, limit + 1,
+                () => 0,
+                (d, loop, subtotal) =>
+                {
+                    var mu = mobius[d];
+                    if (mu != 0)
+                    {
+                        var n = x / ((long)d * d);
+                        var tau = TauSum(n);
+                        if (mu == 1)
+                            subtotal += tau;
+                        else
+                            subtotal += 4 - tau;
+                    }
+                    return subtotal;
+                },
+                subtotal => Interlocked.Add(ref sum, subtotal));
+#endif
             return sum;
         }
 
