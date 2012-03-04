@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace Decompose.Numerics
@@ -11,6 +12,8 @@ namespace Decompose.Numerics
             int x;
             int y;
             ExtendedGreatestCommonDivisor(a, b, out x, out y);
+            if (x == 0)
+                throw new InvalidOperationException("not relatively prime");
             if (x < 0)
                 x += b;
             Debug.Assert((BigInteger)a * x % b == 1);
@@ -36,6 +39,8 @@ namespace Decompose.Numerics
                 x1 = x0 - quotient * x1;
                 x0 = tmpx;
             }
+            if (x0 == 0)
+                throw new InvalidOperationException("not relatively prime");
             if (x0 < 0)
                 x0 += b;
             var result = (uint)x0;
@@ -49,6 +54,8 @@ namespace Decompose.Numerics
             long x;
             long y;
             ExtendedGreatestCommonDivisor(a, b, out x, out y);
+            if (x == 0)
+                throw new InvalidOperationException("not relatively prime");
             if (x < 0)
                 x += b;
             Debug.Assert((BigInteger)a * x % b == 1);
@@ -75,6 +82,8 @@ namespace Decompose.Numerics
                 x1.SetDifference(ref x0, ref x1);
                 x0 = tmpx;
             }
+            if (x0.IsZero)
+                throw new InvalidOperationException("not relatively prime");
             if (x0.Sign != 1)
                 x0 += b;
             var result = (ulong)x0;
@@ -91,6 +100,8 @@ namespace Decompose.Numerics
             int x;
             int y;
             ExtendedGreatestCommonDivisor(r, b, out x, out y);
+            if (x == 0)
+                throw new InvalidOperationException("not relatively prime");
             if (x < 0)
                 x += b;
             Debug.Assert((BigInteger)a * x % b == 1);
@@ -106,6 +117,8 @@ namespace Decompose.Numerics
             var q = a < b ? a : a % b;
             ModularInverseCore(ref p, ref q, ref x0, ref x1);
             ModularInverseCore((ulong)p, (ulong)q, ref x0, ref x1);
+            if (x0 == 0)
+                throw new InvalidOperationException("not relatively prime");
             if (x0 < 0)
                 x0 += b;
             Debug.Assert(a * x0 % b == 1);
@@ -150,6 +163,8 @@ namespace Decompose.Numerics
         public static uint ModularInversePowerOfTwoModulus(uint d, int n)
         {
             // See 9.2 in: http://gmplib.org/~tege/divcnst-pldi94.pdf
+            if ((d & 1) == 0)
+                throw new InvalidOperationException("not relatively prime");
             Debug.Assert(d > 0 && n > 0 && n <= 32);
             var dInv = d;
             for (int m = 3; m < n; m *= 2)
@@ -167,6 +182,8 @@ namespace Decompose.Numerics
         public static ulong ModularInversePowerOfTwoModulus(ulong d, int n)
         {
             // See 9.2 in: http://gmplib.org/~tege/divcnst-pldi94.pdf
+            if ((d & 1) == 0)
+                throw new InvalidOperationException("not relatively prime");
             Debug.Assert(d > 0 && n > 0 && n <= 64);
             var dInv = d;
             for (int m = 3; m < n; m *= 2)
@@ -180,6 +197,8 @@ namespace Decompose.Numerics
         {
             // See 9.2 in: http://gmplib.org/~tege/divcnst-pldi94.pdf
             Debug.Assert(d > 0 && n > 0);
+            if ((d & 1) == 0)
+                throw new InvalidOperationException("not relatively prime");
             var dInv = d;
             var mask = ((BigInteger)1 << n) - 1;
             for (int m = 3; m < n; m *= 2)

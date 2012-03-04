@@ -70,19 +70,92 @@ namespace Sandbox
 
         static void ParityTest()
         {
+#if false
+            var algorithm = new PrimeCounting();
+            for (int j = 0; j < 1; j++)
+            {
+                for (int i = 1; i <= 55; i++)
+                {
+                    var timer = new Stopwatch();
+                    var n = (long)1 << i;
+                    timer.Restart();
+                    var sqrt = 0;
+                    var tau1 = algorithm.TauSumInner(n, out sqrt);
+                    Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, tau1);
+                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                    timer.Restart();
+                    var tau2 = TauSumInner(n);
+                    Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, tau2);
+                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#if true
+                    if (tau1 != tau2)
+                    {
+                        Debugger.Break();
+                        Console.WriteLine();
+                    }
+#endif
+                }
+            }
+#endif
+#if false
+            for (var n = 0; n <= 30; n++)
+            {
+#if false
+                if (n != 1 && !IntegerMath.IsPrime(n))
+                    continue;
+#endif
+                Console.Write("{0,3}: ", n);
+                //Console.WriteLine(string.Join(" ", Enumerable.Range(1, 100).Where(i => IntegerMath.IsPrime(i)).Select(i => string.Format("{0,2}", n % (2 * i)))));
+                //Console.WriteLine(string.Join(" ", Enumerable.Range(1, 30).Select(i => string.Format("{0,2}", n % (2 * i)))));
+                //Console.WriteLine(string.Join(" ", Enumerable.Range(1, Math.Min(30, (int)Math.Floor(Math.Sqrt(n)))).Select(i => string.Format("{0,2}", n % (2 * i) >= i ? 1 : 0))));
+                //Console.WriteLine(string.Join(" ", Enumerable.Range(1, Math.Min(30, (int)Math.Floor(Math.Sqrt(n)))).Select(i => string.Format("{0,3}", n % (2 * i) - i))));
+                Console.WriteLine(string.Join(" ", Enumerable.Range(1, 22).Select(i => string.Format("{0,3}", n % (2 * i) - i))));
+            }
+#endif
+#if false
+            TauSumInner(20);
+#endif
+#if false
+            var reps = 100000;
+            var timer = new Stopwatch();
+            for (int i = 2; i <= 20; i += 2)
+            {
+                var algorithm = new PrimeCounting();
+#if false
+                timer.Restart();
+                for (int rep = 0; rep < reps; rep++)
+                    algorithm.TauSumInner(1 << i);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
+                timer.Restart();
+                for (int rep = 0; rep < reps; rep++)
+                    TauSumInner(i);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                output.WriteLine();
+            }
+#endif
+#if false
+            var algorithm = new PrimeCounting();
+            for (int n = 1; n < 25; n++)
+                Console.WriteLine("n = {0}, TauSumInner(n) = {1}", n, algorithm.TauSumInner(n));
+#endif
 #if true
             var algorithm = new PrimeCounting();
             for (int j = 0; j < 1; j++)
             {
-                var timer = new Stopwatch();
-                timer.Start();
                 for (int i = 55; i <= 55; i++)
                 {
+                    var timer = new Stopwatch();
+                    timer.Start();
                     var n = (BigInteger)1 << i;
                     Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, algorithm.ParityOfPi(n));
+                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
                 }
-                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
+#if false
+            foreach (var pair in algorithm.TauSumMap.OrderBy(pair => pair.Key))
+                Console.WriteLine("key = {0}, value = {1}", pair.Key, pair.Value);
+#endif
 #endif
 #if false
             var algorithm = new PrimeCounting();
@@ -133,6 +206,156 @@ namespace Sandbox
                 Console.WriteLine("TauSum({0}) = {1}", n, TauSum(n));
             }
 #endif
+        }
+
+        private static BigInteger TauSumInner(long n)
+        {
+            var limit = (int)Math.Floor(Math.Sqrt(n));
+            var sum1 = 0;
+            var current = limit - 1;
+            var delta = 1;
+            var i = limit;
+            while (i > 0)
+            {
+                var product = (long)(current + delta) * i;
+                if (product > n)
+                    --delta;
+                else if (product + i <= n)
+                {
+                    ++delta;
+                    if (product + 2 * i <= n)
+                        break;
+                }
+                current += delta;
+                sum1 ^= current;
+                --i;
+            }
+            sum1 &= 1;
+            var sum2 = 0;
+            var count2 = 0;
+            while (i > 0)
+            {
+                sum2 ^= (int)(n % (i << 1)) - i;
+                --i;
+                ++count2;
+            }
+            sum2 = (sum2 >> 31) & 1;
+            if ((count2 & 1) != 0)
+                sum2 ^= 1;
+            return sum1 ^ sum2;
+        }
+
+        private static BigInteger TauSumInner3(long n)
+        {
+            var limit = (int)Math.Floor(Math.Sqrt(n));
+            var sum = 0;
+            for (int i = 1; i <= limit; i++)
+                sum ^= (int)(n % (i << 1)) - i;
+            sum = (sum >> 31) & 1;
+            return (limit & 1) == 0 ? sum : sum ^ 1;
+        }
+
+        private static int[] div = new int[1024 + 1];
+        private static int[] mod = new int[1024 + 1];
+
+        private static int TauSumInner2(int k)
+        {
+            var limit = 1 << (k / 2);
+
+            for (var i = 1; i <= limit; i++)
+                mod[i] = 1;
+#if false
+            Console.Write("j = {0,2}", 0);
+            Console.Write(", div = {0}", string.Join(", ", div.Skip(1).Take(10)));
+            Console.WriteLine(", mod = {0}", string.Join(", ", mod.Skip(1).Take(10)));
+#endif
+            for (var j = 1; j <= k; j++)
+            {
+                for (var i = 1; i <= limit; i++)
+                {
+                    mod[i] <<= 1;
+                    if (mod[i] >= i << 1)
+                        mod[i] -= i << 1;
+                }
+#if true
+                var n = 1 << j;
+                for (var i = 1; i <= limit; i++)
+                {
+                    var d = n / i % 2;
+                    var m = n % i;
+                    if (d != mod[i] / i || m != mod[i] % i)
+                    {
+                        Debugger.Break();
+                        Console.WriteLine();
+                    }
+                }
+#endif
+#if false
+                Console.Write("j = {0,2}", j);
+                Console.Write(", div = {0}", string.Join(", ", div.Skip(1).Take(10)));
+                Console.WriteLine(", mod = {0}", string.Join(", ", mod.Skip(1).Take(10)));
+#endif
+            }
+            var sum = 0;
+            for (var i = 1; i <= limit; i++)
+                sum ^= div[i];
+            Console.WriteLine("div = {0}", string.Concat(mod.Select((m, i) => m >= i ? 1 : 0).Skip(1)));
+            return sum;
+        }
+
+        private static int TauSumInner1(int k)
+        {
+            var limit = 1 << (k / 2);
+
+            div[1] = 1;
+            for (var i = 2; i <= limit; i++)
+                mod[i] = 1;
+#if false
+            Console.Write("j = {0,2}", 0);
+            Console.Write(", div = {0}", string.Join(", ", div.Skip(1).Take(10)));
+            Console.WriteLine(", mod = {0}", string.Join(", ", mod.Skip(1).Take(10)));
+#endif
+            for (var j = 1; j <= k; j++)
+            {
+                for (var i = limit >> 1; i >= 0; i--)
+                {
+                    div[i << 1] = div[i];
+                    mod[i << 1] = mod[i] << 1;
+                }
+                for (var i = 1; i < limit; i += 2)
+                {
+                    div[i] = 0;
+                    mod[i] <<= 1;
+                    if (mod[i] >= i)
+                    {
+                        mod[i] -= i;
+                        div[i] = 1;
+                    }
+                }
+#if false
+                var n = 1 << j;
+                for (var i = 1; i <= limit; i++)
+                {
+                    var d = n / i % 2;
+                    var m = n % i;
+                    if (d != div[i] || m != mod[i])
+                    {
+                        Debugger.Break();
+                        Console.WriteLine();
+                    }
+                }
+#endif
+#if false
+                Console.Write("j = {0,2}", j);
+                Console.Write(", div = {0}", string.Join(", ", div.Skip(1).Take(10)));
+                Console.WriteLine(", mod = {0}", string.Join(", ", mod.Skip(1).Take(10)));
+#endif
+            }
+            var sum = 0;
+            for (var i = 1; i <= limit; i++)
+                sum ^= div[i];
+            Console.WriteLine("div = {0}", string.Concat(div.Skip(1)));
+            return sum;
         }
 
         private static int TwoToTheOmega0(int n)

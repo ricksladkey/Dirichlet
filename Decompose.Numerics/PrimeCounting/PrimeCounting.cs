@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
@@ -176,8 +176,8 @@ namespace Decompose.Numerics
                 return tauSumSmall[y];
 
             //Console.WriteLine("TauSum({0})", y);
-            var sum = 0;
 #if false
+            var sum = 0;
             if (y < 1024)
                 return TauSumSmall(y);
             var limit = (int)IntegerMath.FloorSquareRoot(y);
@@ -197,12 +197,14 @@ namespace Decompose.Numerics
             sum = 2 * sum - limit * limit;
 #endif
 #if false
+            var sum = 0;
             var limit = (int)IntegerMath.FloorSquareRoot(y);
             for (var n = 1; n <= limit; n++)
                 sum ^= (int)((y / n) & 1);
             sum = 2 * sum - limit * limit;
 #endif
-#if true
+#if false
+            var sum = 0;
             var n = (long)1;
             var squared = y - 1;
             while (true)
@@ -215,7 +217,79 @@ namespace Decompose.Numerics
             }
             sum = 2 * sum - (int)((n * n) & 3);
 #endif
+#if true
+            var sqrt = 0;
+            var sum = TauSumInner(y, out sqrt);
+            sum = 2 * sum - (int)((sqrt * sqrt) & 3);
+#endif
             return sum & 3;
+        }
+
+        public int TauSumInner(long y, out int sqrt)
+        {
+            if (y <= int.MaxValue)
+                return TauSumInnerSmall((int)y, out sqrt);
+            return TauSumInnerLarge(y, out sqrt);
+        }
+
+        public int TauSumInnerSmall(int y, out int sqrt)
+        {
+            if (y == 0)
+            {
+                sqrt = 0;
+                return 0;
+            }
+            var sum = 0;
+            var n = 1;
+            var squared = y - 1;
+            while (true)
+            {
+                sum ^= (int)(y / n);
+                squared -= 2 * n + 1;
+                if (squared < 0)
+                    break;
+                ++n;
+            }
+            sqrt = (int)n;
+            return sum & 1;
+        }
+
+        public int TauSumInnerLarge(long y, out int sqrt)
+        {
+            var limit = (int)Math.Floor(Math.Sqrt(y));
+            var sum1 = 0;
+            var current = limit - 1;
+            var delta = 1;
+            var i = limit;
+            while (i > 0)
+            {
+                var product = (long)(current + delta) * i;
+                if (product > y)
+                    --delta;
+                else if (product + i <= y)
+                {
+                    ++delta;
+                    if (product + 2 * i <= y)
+                        break;
+                }
+                current += delta;
+                sum1 ^= current;
+                --i;
+            }
+            sum1 &= 1;
+            var sum2 = 0;
+            var count2 = 0;
+            while (i > 0)
+            {
+                sum2 ^= (int)(y % (i << 1)) - i;
+                --i;
+                ++count2;
+            }
+            sum2 = (sum2 >> 31) & 1;
+            if ((count2 & 1) != 0)
+                sum2 ^= 1;
+            sqrt = limit;
+            return sum1 ^ sum2;
         }
 
         private int TauSumSmall(long y)
@@ -401,8 +475,22 @@ namespace Decompose.Numerics
             return (int)(sum & 3);
         }
 
+#if false
+        private Dictionary<BigInteger, int> tauSumMap = new Dictionary<BigInteger, int>();
+        public Dictionary<BigInteger, int> TauSumMap { get { return tauSumMap; } }
+#endif
+
         private int TauSum(UInt128 y)
         {
+#if false
+            lock (tauSumMap)
+            {
+                var yy = (BigInteger)y;
+                if (!tauSumMap.ContainsKey(yy))
+                    tauSumMap[yy] = 0;
+                ++tauSumMap[yy];
+            }
+#endif
             if (y <= long.MaxValue)
                 return TauSum((long)y);
             var sum = 0;
