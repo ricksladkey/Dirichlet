@@ -355,7 +355,7 @@ namespace Decompose.Numerics
             return sum & 1;
         }
 
-        private int TauSumSmall(long y)
+        private int TauSumSimple(long y)
         {
             if (y == 0)
                 return 0;
@@ -419,6 +419,112 @@ namespace Decompose.Numerics
         }
 
         private int SumTwoToTheOmega(long x, int limit)
+        {
+            var sum = 0;
+            var mobius = new MobiusRange(limit + 1);
+#if false
+            var nLast = (long)0;
+            var tauLast = 0;
+            for (var d = limit; d >= 1; d--)
+            {
+                var mu = mobius[d];
+                if (mu != 0)
+                {
+                    var n = x / ((long)d * d);
+                    if (n != nLast) Console.WriteLine("x = {0}: n ({1}) != nLast ({2})", x, n, nLast);
+                    var tau = n == nLast ? tauLast : TauSum(n);
+                    if (mu == 1)
+                        sum += tau;
+                    else
+                        sum += 4 - tau;
+                    Console.WriteLine("mu = {0}, tau = {1}", mu, tau);
+                    tauLast = tau;
+                    nLast = n;
+                }
+            }
+            Console.WriteLine("sum & 3 = {0}", sum & 3);
+#endif
+#if true
+            var last = (long)0;
+            var current = (long)1;
+            var delta = 0;
+            var d = limit;
+            var count = 0;
+            while (d > 0)
+            {
+                var mu = mobius[d];
+                if (mu != 0)
+                {
+                    var dSquared = (long)d * d;
+                    var product = (current + delta) * dSquared;
+                    if (product > x)
+                    {
+                        do
+                        {
+                            --delta;
+                            product -= dSquared;
+                        }
+                        while (product > x);
+                    }
+                    else if (product + dSquared <= x)
+                    {
+                        ++delta;
+                        if (product + 2 * dSquared <= x)
+                            break;
+                    }
+                    current += delta;
+                    Debug.Assert(x / dSquared == current);
+                    if (current != last)
+                    {
+                        sum += ProcessBatch(count, last);
+                        count = 0;
+                        last = current;
+                    }
+                    count += mu;
+                }
+                --d;
+            }
+            while (d > 0)
+            {
+                var mu = mobius[d];
+                if (mu != 0)
+                {
+                    current = x / ((long)d * d);
+                    if (current != last)
+                    {
+                        sum += ProcessBatch(count, last);
+                        count = 0;
+                        last = current;
+                    }
+                    count += mu;
+                }
+                --d;
+            }
+            sum += ProcessBatch(count, last);
+            //Console.WriteLine("sum & 3 = {0}", sum & 3);
+#endif
+            return sum;
+        }
+
+        private int ProcessBatch(int count, long last)
+        {
+            if ((count & 3) != 0)
+            {
+                var tau = TauSum(last);
+                //Console.WriteLine("count = {0}, last = {1}, tau = {2}", count, last, tau);
+                if (count == 1)
+                    return tau;
+                else if (count == -1)
+                    return 4 - tau;
+                else if (count > 0)
+                    return (count * tau) & 3;
+                else
+                    return (-count * (4 - tau)) & 3;
+            }
+            return 0;
+        }
+
+        private int SumTwoToTheOmegaOld(long x, int limit)
         {
             var sum = 0;
             var mobius = new MobiusRange(limit + 1);
