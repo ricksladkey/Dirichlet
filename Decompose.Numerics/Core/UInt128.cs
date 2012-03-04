@@ -378,6 +378,13 @@ namespace Decompose.Numerics
             return (((uint)carry + (ulong)u1 * v0) >> 32) + (carry >> 32) + (ulong)u1 * v1;
         }
 
+        public static UInt128 Multiply(ulong a, ulong b)
+        {
+            UInt128 c;
+            Multiply(out c, (uint)a, (uint)(a >> 32), (uint)b, (uint)(b >> 32));
+            return c;
+        }
+
         public static ulong ModularSum(ulong a, ulong b, ulong modulus)
         {
             var a0 = (uint)a;
