@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
@@ -418,33 +419,39 @@ namespace Decompose.Numerics
             return sum;
         }
 
+        private struct WorkItem
+        {
+            public int Count { get; set; }
+            public long Value { get; set; }
+        }
+
         private int SumTwoToTheOmega(long x, int limit)
         {
+            var queue = new BlockingCollection<WorkItem>();
+            Task.Factory.StartNew(() => Producer(queue, x, limit));
             var sum = 0;
-            var mobius = new MobiusRange(limit + 1);
-#if false
-            var nLast = (long)0;
-            var tauLast = 0;
-            for (var d = limit; d >= 1; d--)
+            if (threads == 0)
+                Consumer(queue, ref sum);
+            else
             {
-                var mu = mobius[d];
-                if (mu != 0)
-                {
-                    var n = x / ((long)d * d);
-                    if (n != nLast) Console.WriteLine("x = {0}: n ({1}) != nLast ({2})", x, n, nLast);
-                    var tau = n == nLast ? tauLast : TauSum(n);
-                    if (mu == 1)
-                        sum += tau;
-                    else
-                        sum += 4 - tau;
-                    Console.WriteLine("mu = {0}, tau = {1}", mu, tau);
-                    tauLast = tau;
-                    nLast = n;
-                }
+                var tasks = new Task[threads];
+                for (int thread = 0; thread < threads; thread++)
+                    tasks[thread] = Task.Factory.StartNew(() => Consumer(queue, ref sum));
+                Task.WaitAll(tasks);
             }
-            Console.WriteLine("sum & 3 = {0}", sum & 3);
-#endif
-#if true
+            return sum;
+        }
+
+        private void Consumer(BlockingCollection<WorkItem> queue, ref int sum)
+        {
+            var item = default(WorkItem);
+            while (queue.TryTake(out item, Timeout.Infinite))
+                Interlocked.Add(ref sum, ProcessBatch(item.Count, item.Value));
+        }
+
+        private void Producer(BlockingCollection<WorkItem> queue, long x, int limit)
+        {
+            var mobius = new MobiusRange(limit + 1);
             var last = (long)0;
             var current = (long)1;
             var delta = 0;
@@ -476,7 +483,7 @@ namespace Decompose.Numerics
                     Debug.Assert(x / dSquared == current);
                     if (current != last)
                     {
-                        sum += ProcessBatch(count, last);
+                        queue.Add(new WorkItem { Count = count, Value = last });
                         count = 0;
                         last = current;
                     }
@@ -484,7 +491,8 @@ namespace Decompose.Numerics
                 }
                 --d;
             }
-            while (d > 0)
+            var dmax = d;
+            for (d = 1; d <= dmax; d++)
             {
                 var mu = mobius[d];
                 if (mu != 0)
@@ -492,18 +500,15 @@ namespace Decompose.Numerics
                     current = x / ((long)d * d);
                     if (current != last)
                     {
-                        sum += ProcessBatch(count, last);
+                        queue.Add(new WorkItem { Count = count, Value = last });
                         count = 0;
                         last = current;
                     }
                     count += mu;
                 }
-                --d;
             }
-            sum += ProcessBatch(count, last);
-            //Console.WriteLine("sum & 3 = {0}", sum & 3);
-#endif
-            return sum;
+            queue.Add(new WorkItem { Count = count, Value = last });
+            queue.CompleteAdding();
         }
 
         private int ProcessBatch(int count, long last)
