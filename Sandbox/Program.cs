@@ -70,6 +70,24 @@ namespace Sandbox
 
         static void ParityTest()
         {
+#if true
+            var algorithm = new PrimeCounting(0);
+            for (int j = 0; j < 1; j++)
+            {
+                for (int i = 55; i <= 55; i++)
+                {
+                    var timer = new Stopwatch();
+                    timer.Start();
+                    var n = (BigInteger)1 << i;
+                    Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, algorithm.ParityOfPi(n));
+                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                }
+            }
+#if false
+            foreach (var pair in algorithm.TauSumMap.OrderBy(pair => pair.Key))
+                Console.WriteLine("key = {0}, value = {1}", pair.Key, pair.Value);
+#endif
+#endif
 #if false
             var algorithm = new PrimeCounting();
             for (int j = 0; j < 1; j++)
@@ -138,24 +156,6 @@ namespace Sandbox
             var algorithm = new PrimeCounting();
             for (int n = 1; n < 25; n++)
                 Console.WriteLine("n = {0}, TauSumInner(n) = {1}", n, algorithm.TauSumInner(n));
-#endif
-#if true
-            var algorithm = new PrimeCounting();
-            for (int j = 0; j < 1; j++)
-            {
-                for (int i = 55; i <= 55; i++)
-                {
-                    var timer = new Stopwatch();
-                    timer.Start();
-                    var n = (BigInteger)1 << i;
-                    Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, algorithm.ParityOfPi(n));
-                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-                }
-            }
-#if false
-            foreach (var pair in algorithm.TauSumMap.OrderBy(pair => pair.Key))
-                Console.WriteLine("key = {0}, value = {1}", pair.Key, pair.Value);
-#endif
 #endif
 #if false
             var algorithm = new PrimeCounting();

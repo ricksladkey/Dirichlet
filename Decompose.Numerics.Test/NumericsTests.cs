@@ -871,7 +871,7 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void PrimeCountingTest1()
         {
-            var algorithm = new PrimeCounting();
+            var algorithm = new PrimeCounting(0);
             for (var j = 0; j <= 24; j++)
             {
                 var n = 1 << j;
@@ -882,7 +882,7 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void PrimeCountingTest2()
         {
-            var algorithm = new PrimeCounting();
+            var algorithm = new PrimeCounting(0);
             for (var j = 0; j <= 24; j++)
             {
                 var n = 1 << j;
@@ -893,7 +893,7 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void PrimeCountingTest3()
         {
-            var algorithm = new PrimeCounting();
+            var algorithm = new PrimeCounting(0);
             for (var j = 0; j <= 40; j++)
             {
                 var n = (BigInteger)1 << j;

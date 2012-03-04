@@ -87,11 +87,14 @@ namespace Decompose.Numerics
         }
 
         private const int sizeSmall = 1024;
+        private const int chunkSize = 32;
+        private int threads;
         private int[] piSmall;
         private int[] tauSumSmall;
 
-        public PrimeCounting()
+        public PrimeCounting(int threads)
         {
+            this.threads = threads;
             var n = sizeSmall;
             var i = 0;
             var count = 0;
@@ -227,31 +230,52 @@ namespace Decompose.Numerics
 
         public int TauSumInner(long y, out int sqrt)
         {
+#if false
+            return TauSumInnerSimple(y, out sqrt);
+#endif
+#if true
             if (y <= int.MaxValue)
                 return TauSumInnerSmall((int)y, out sqrt);
             return TauSumInnerLarge(y, out sqrt);
+#endif
         }
 
         public int TauSumInnerSmall(int y, out int sqrt)
         {
-            if (y == 0)
+            var limit = (int)Math.Floor(Math.Sqrt(y));
+            var sum1 = 0;
+            var current = limit - 1;
+            var delta = 1;
+            var i = limit;
+            while (i > 0)
             {
-                sqrt = 0;
-                return 0;
+                var product = (current + delta) * i;
+                if (product > y)
+                    --delta;
+                else if (product + i <= y)
+                {
+                    ++delta;
+                    if (product + 2 * i <= y)
+                        break;
+                }
+                current += delta;
+                sum1 ^= current;
+                --i;
             }
-            var sum = 0;
-            var n = 1;
-            var squared = y - 1;
-            while (true)
+            sum1 &= 1;
+            var sum2 = 0;
+            var count2 = 0;
+            while (i > 0)
             {
-                sum ^= (int)(y / n);
-                squared -= 2 * n + 1;
-                if (squared < 0)
-                    break;
-                ++n;
+                sum2 ^= (int)(y % (i << 1)) - i;
+                --i;
+                ++count2;
             }
-            sqrt = (int)n;
-            return sum & 1;
+            sum2 = (sum2 >> 31) & 1;
+            if ((count2 & 1) != 0)
+                sum2 ^= 1;
+            sqrt = limit;
+            return sum1 ^ sum2;
         }
 
         public int TauSumInnerLarge(long y, out int sqrt)
@@ -290,6 +314,28 @@ namespace Decompose.Numerics
                 sum2 ^= 1;
             sqrt = limit;
             return sum1 ^ sum2;
+        }
+
+        public int TauSumInnerSimple(long y, out int sqrt)
+        {
+            if (y == 0)
+            {
+                sqrt = 0;
+                return 0;
+            }
+            var sum = 0;
+            var n = (long)1;
+            var squared = y - 1;
+            while (true)
+            {
+                sum ^= (int)(y / n);
+                squared -= 2 * n + 1;
+                if (squared < 0)
+                    break;
+                ++n;
+            }
+            sqrt = (int)n;
+            return sum & 1;
         }
 
         private int TauSumSmall(long y)
@@ -359,54 +405,32 @@ namespace Decompose.Numerics
                 return SumTwoToTheOmega((UInt128)x, limit);
             var sum = 0;
             var mobius = new MobiusRange(limit + 1);
-#if false
-            var nLast = (BigInteger)0;
-            var tauLast = 0;
-            for (var d = 1; d <= limit; d++)
+            if (threads == 0)
             {
-                var mu = mobius[d];
-                if (mu != 0)
-                {
-                    var n = x / ((long)d * d);
-                    var tau = n == nLast ? tauLast : TauSum(n);
-                    if (mu == 1)
-                        sum += tau;
-                    else
-                        sum += 4 - tau;
-                    tauLast = tau;
-                    nLast = n;
-                }
-            }
-#endif
-#if false
-            Parallel.For(1, limit + 1,
-                () => 0,
-                (d, loop, subtotal) =>
+                var nLast = (BigInteger)0;
+                var tauLast = 0;
+                for (var d = 1; d <= limit; d++)
                 {
                     var mu = mobius[d];
                     if (mu != 0)
                     {
                         var n = x / ((long)d * d);
-                        var tau = TauSum(n);
+                        var tau = n == nLast ? tauLast : TauSum(n);
                         if (mu == 1)
-                            subtotal += tau;
+                            sum += tau;
                         else
-                            subtotal += 4 - tau;
+                            sum += 4 - tau;
+                        tauLast = tau;
+                        nLast = n;
                     }
-                    return subtotal;
-                },
-                subtotal => Interlocked.Add(ref sum, subtotal));
-#endif
-#if true
-            var chunkSize = 32;
-            var chunks = (limit + chunkSize - 1) / chunkSize;
-            Parallel.For(0, chunks,
-                () => 0,
-                (chunk, loop, subtotal) =>
-                {
-                    var min = chunk * chunkSize;
-                    var max = Math.Min(min + chunkSize, limit);
-                    for (var d = min + 1; d <= max; d++)
+                }
+            }
+            else
+            {
+#if false
+                Parallel.For(1, limit + 1,
+                    () => 0,
+                    (d, loop, subtotal) =>
                     {
                         var mu = mobius[d];
                         if (mu != 0)
@@ -418,11 +442,36 @@ namespace Decompose.Numerics
                             else
                                 subtotal += 4 - tau;
                         }
-                    }
-                    return subtotal;
-                },
-                subtotal => Interlocked.Add(ref sum, subtotal));
+                        return subtotal;
+                    },
+                    subtotal => Interlocked.Add(ref sum, subtotal));
 #endif
+#if true
+                var chunks = (limit + chunkSize - 1) / chunkSize;
+                Parallel.For(0, chunks,
+                    () => 0,
+                    (chunk, loop, subtotal) =>
+                    {
+                        var min = chunk * chunkSize;
+                        var max = Math.Min(min + chunkSize, limit);
+                        for (var d = min + 1; d <= max; d++)
+                        {
+                            var mu = mobius[d];
+                            if (mu != 0)
+                            {
+                                var n = x / ((long)d * d);
+                                var tau = TauSum(n);
+                                if (mu == 1)
+                                    subtotal += tau;
+                                else
+                                    subtotal += 4 - tau;
+                            }
+                        }
+                        return subtotal;
+                    },
+                    subtotal => Interlocked.Add(ref sum, subtotal));
+#endif
+            }
             return sum;
         }
 
@@ -430,30 +479,52 @@ namespace Decompose.Numerics
         {
             var sum = 0;
             var mobius = new MobiusRange(limit + 1);
-            var chunkSize = 10;
-            var chunks = (limit + chunkSize - 1) / chunkSize;
-            Parallel.For(0, chunks,
-                () => 0,
-                (chunk, loop, subtotal) =>
+            if (threads == 0)
+            {
+                var nLast = UInt128.Zero;
+                var tauLast = 0;
+                for (var d = 1; d <= limit; d++)
                 {
-                    var min = chunk * chunkSize;
-                    var max = Math.Min(min + chunkSize, limit);
-                    for (var d = min + 1; d <= max; d++)
+                    var mu = mobius[d];
+                    if (mu != 0)
                     {
-                        var mu = mobius[d];
-                        if (mu != 0)
-                        {
-                            var n = x / ((ulong)d * (ulong)d);
-                            var tau = TauSum(n);
-                            if (mu == 1)
-                                subtotal += tau;
-                            else
-                                subtotal += 4 - tau;
-                        }
+                        var n = x / ((ulong)d * (ulong)d);
+                        var tau = n == nLast ? tauLast : TauSum(n);
+                        if (mu == 1)
+                            sum += tau;
+                        else
+                            sum += 4 - tau;
+                        tauLast = tau;
+                        nLast = n;
                     }
-                    return subtotal;
-                },
-                subtotal => Interlocked.Add(ref sum, subtotal));
+                }
+            }
+            else
+            {
+                var chunks = (limit + chunkSize - 1) / chunkSize;
+                Parallel.For(0, chunks,
+                    () => 0,
+                    (chunk, loop, subtotal) =>
+                    {
+                        var min = chunk * chunkSize;
+                        var max = Math.Min(min + chunkSize, limit);
+                        for (var d = min + 1; d <= max; d++)
+                        {
+                            var mu = mobius[d];
+                            if (mu != 0)
+                            {
+                                var n = x / ((ulong)d * (ulong)d);
+                                var tau = TauSum(n);
+                                if (mu == 1)
+                                    subtotal += tau;
+                                else
+                                    subtotal += 4 - tau;
+                            }
+                        }
+                        return subtotal;
+                    },
+                    subtotal => Interlocked.Add(ref sum, subtotal));
+            }
             return sum;
         }
 
