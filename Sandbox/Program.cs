@@ -71,7 +71,7 @@ namespace Sandbox
         static void ParityTest()
         {
 #if true
-            var algorithm = new PrimeCounting(8);
+            var algorithm = new PrimeCounting(4);
             for (int j = 0; j < 1; j++)
             {
                 for (int i = 55; i <= 55; i++)

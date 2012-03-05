@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArithmeticFunctions\MobiusRange.cs" />
     <Compile Include="Collections\BitMatrixHelper.cs" />
     <Compile Include="Collections\ByColSetBitMatrix.cs" />
     <Compile Include="Collections\Graph.cs" />
@@ -89,7 +90,7 @@
     <Compile Include="Factorization\ShanksSquareForms.cs" />
     <Compile Include="Factorization\TrialDivisionFactorization.cs" />
     <Compile Include="Primality\OldMillerRabin.cs" />
-    <Compile Include="PrimeCounting\PrimeCounting.cs" />
+    <Compile Include="ArithmeticFunctions\PrimeCounting.cs" />
     <Compile Include="QuadraticSieve\PartialRelationGraph.cs" />
     <Compile Include="Random\IRandomNumberGenerator.cs" />
     <Compile Include="Random\RandomNumberGenerator.cs" />

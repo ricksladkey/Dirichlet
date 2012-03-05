@@ -39,67 +39,49 @@ namespace Decompose.Numerics
             }
         }
 
-        private class MobiusRange
+        private struct MobiusItem
         {
-            private const int squareSentinel = 255;
+            public int Value { get; set; }
+            public int Mobius { get; set; }
+        }
+
+        private class MobiusCollection : BlockingCollection<MobiusItem>
+        {
+            private const int squareSentinel = 128;
+
+            private int size;
             private byte[] primeDivisors;
 
-            public MobiusRange(int n)
+            public MobiusCollection(int n)
             {
-                int size = n + 1;
+                size = n + 1;
+            }
+
+            public void ProduceValues()
+            {
+                var limit = (int)Math.Ceiling(Math.Sqrt(size));
                 primeDivisors = new byte[size];
-                for (int i = 2; i < size; i++)
+                Add(new MobiusItem { Value = 1, Mobius = 1 });
+                for (int i = 2; i < limit; i++)
+                {
+                    if (primeDivisors[i] == 0)
+                    {
+                        for (int j = i; j < size; j += i)
+                            ++primeDivisors[j];
+                        var iSquared = i * i;
+                        for (int j = iSquared; j < size; j += iSquared)
+                            primeDivisors[j] = squareSentinel;
+                    }
+                    var d = primeDivisors[i];
+                    Add(new MobiusItem { Value = i, Mobius = d >= squareSentinel ? 0 : ((d & 1) << 1) - 1 });
+                }
+                for (int i = limit; i < size; i++)
                 {
                     if (primeDivisors[i] == 0)
                     {
                         for (int j = i; j < size; j += i)
                             ++primeDivisors[j];
                     }
-                }
-                for (int i = 2; true; i++)
-                {
-                    if (primeDivisors[i] == 1)
-                    {
-                        var iSquared = i * i;
-                        if (iSquared > size)
-                            break;
-                        for (int j = iSquared; j < size; j += iSquared)
-                            primeDivisors[j] = squareSentinel;
-                    }
-                }
-#if false
-                for (int i = 1; i <= n; i++)
-                {
-                    if (this[i] != IntegerMath.Mobius(i))
-                        Debugger.Break();
-                }
-#endif
-            }
-
-            public int this[int index]
-            {
-                get
-                {
-                    var d = primeDivisors[index];
-                    if (d == squareSentinel)
-                        return 0;
-                    return d % 2 == 0 ? 1 : -1;
-                }
-            }
-
-            public MobiusRange(long n)
-            {
-                throw new NotImplementedException();
-            }
-
-            public int this[long index]
-            {
-                get
-                {
-                    var d = primeDivisors[index];
-                    if (d == squareSentinel)
-                        return 0;
-                    return d % 2 == 0 ? 1 : -1;
                 }
             }
         }
@@ -182,7 +164,7 @@ namespace Decompose.Numerics
             var mobius = new MobiusRange(limit + 1);
             for (var d = 1; d <= limit; d++)
             {
-                var mu = IntegerMath.Mobius(d);
+                var mu = mobius[d];
                 if (mu == 1)
                     sum += TauSum(x / ((long)d * d));
                 else if (mu == -1)
@@ -419,45 +401,79 @@ namespace Decompose.Numerics
             return sum;
         }
 
+#if false
         private struct WorkItem
         {
             public int Count { get; set; }
             public long Value { get; set; }
         }
 
+        private const int numberOfInitialValues = 1000000;
+
         private int SumTwoToTheOmega(long x, int limit)
         {
             var queue = new BlockingCollection<WorkItem>();
-            Task.Factory.StartNew(() => Producer(queue, x, limit));
+            Task.Factory.StartNew(() => ProduceItems(queue, x, limit));
             var sum = 0;
             if (threads == 0)
-                Consumer(queue, ref sum);
+            {
+                ProcessFirstFewValues(x, limit, ref sum);
+                ConsumeItems(queue, ref sum);
+            }
             else
             {
+                var initialTask = Task.Factory.StartNew(() => ProcessFirstFewValues(x, limit, ref sum));
                 var tasks = new Task[threads];
                 for (int thread = 0; thread < threads; thread++)
-                    tasks[thread] = Task.Factory.StartNew(() => Consumer(queue, ref sum));
+                    tasks[thread] = Task.Factory.StartNew(() => ConsumeItems(queue, ref sum));
                 Task.WaitAll(tasks);
+                initialTask.Wait();
             }
             return sum;
         }
 
-        private void Consumer(BlockingCollection<WorkItem> queue, ref int sum)
+        private void ProcessFirstFewValues(long x, int limit, ref int sum)
+        {
+            var max = Math.Min(limit, numberOfInitialValues);
+            var subtotal = 0;
+            Parallel.For(1, max + 1,
+                d =>
+                {
+                    //Console.WriteLine("x = {0}, d = {1}", x, d);
+                    var mu = IntegerMath.Mobius(d);
+                    if (mu == 1)
+                        Interlocked.Add(ref subtotal, TauSum(x / ((long)d * d)));
+                    else if (mu == -1)
+                        Interlocked.Add(ref subtotal, 4 - TauSum(x / ((long)d * d)));
+                });
+            Interlocked.Add(ref sum, subtotal);
+            Console.WriteLine("done with {0} values", numberOfInitialValues);
+        }
+
+        private void ConsumeItems(BlockingCollection<WorkItem> queue, ref int sum)
         {
             var item = default(WorkItem);
             while (queue.TryTake(out item, Timeout.Infinite))
                 Interlocked.Add(ref sum, ProcessBatch(item.Count, item.Value));
         }
 
-        private void Producer(BlockingCollection<WorkItem> queue, long x, int limit)
+        private void ProduceItems(BlockingCollection<WorkItem> queue, long x, int limit)
         {
+#if true
+            var timer = new Stopwatch();
+            timer.Restart();
             var mobius = new MobiusRange(limit + 1);
+            Console.WriteLine("mobius elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
+#if false
+            var mobius = new MobiusRange(limit + 1);
+#endif
             var last = (long)0;
             var current = (long)1;
             var delta = 0;
             var d = limit;
             var count = 0;
-            while (d > 0)
+            while (d > numberOfInitialValues)
             {
                 var mu = mobius[d];
                 if (mu != 0)
@@ -492,7 +508,7 @@ namespace Decompose.Numerics
                 --d;
             }
             var dmax = d;
-            for (d = 1; d <= dmax; d++)
+            for (d = numberOfInitialValues + 1; d <= dmax; d++)
             {
                 var mu = mobius[d];
                 if (mu != 0)
@@ -528,8 +544,10 @@ namespace Decompose.Numerics
             }
             return 0;
         }
+#endif
 
-        private int SumTwoToTheOmegaOld(long x, int limit)
+#if true
+        private int SumTwoToTheOmega(long x, int limit)
         {
             var sum = 0;
             var mobius = new MobiusRange(limit + 1);
@@ -640,9 +658,14 @@ namespace Decompose.Numerics
             }
             return sum;
         }
+#endif
 
         private int SumTwoToTheOmega(UInt128 x, long limit)
         {
+#if true
+            throw new NotImplementedException();
+#endif
+#if false
             var sum = 0;
             var mobius = new MobiusRange(limit + 1);
             if (threads == 0)
@@ -696,6 +719,7 @@ namespace Decompose.Numerics
                     subtotal => Interlocked.Add(ref sum, subtotal));
             }
             return sum;
+#endif
         }
 
         public int TauSum(BigInteger y)
