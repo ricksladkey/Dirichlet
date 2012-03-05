@@ -42,7 +42,10 @@ namespace Decompose.Numerics
             for (var i = 0; i < numberOfDivisors; i++)
             {
                 var d = divisors[i];
-                offsets[i] = (int)((-k0 % d + d) % d);
+                var offset = (uint)(-k0 % d + d) % d;
+                if ((offset & 1) == 0)
+                    offset += d;
+                offsets[i] = (int)offset;
             }
             for (var k = (long)k0; k < size; k += blockSize)
                 GetPrimes((uint)k, (int)Math.Min(blockSize, size - k), offsets);
@@ -81,7 +84,7 @@ namespace Decompose.Numerics
             Array.Clear(block, 0, length);
             for (var d = 1; d < numberOfDivisors; d++)
             {
-                var i = (int)divisors[d];
+                var i = (int)divisors[d] << 1;
                 var j = offsets[d];
                 while (j < length)
                 {
@@ -90,7 +93,7 @@ namespace Decompose.Numerics
                 }
                 offsets[d] = j - length;
             }
-            for (int i = 1; i < length; i += 2)
+            for (var i = 1; i < length; i += 2)
             {
                 if (!block[i])
                     AddPrime((uint)i + k0);
