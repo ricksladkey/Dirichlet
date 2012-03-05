@@ -74,8 +74,12 @@ namespace Sandbox
             var timer = new Stopwatch();
             timer.Start();
             var n = 1 << 30;
-            var primes = new PrimeCollection(n);
+            var primes = new PrimeCollection(n + 1);
             Console.WriteLine("|primes| = {0}", primes.Count);
+#if false
+            for (int i = 0; i < primes.Count; i++)
+                Console.WriteLine("prime[{0}] = {1}", i, primes[i]);
+#endif
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
 #if false

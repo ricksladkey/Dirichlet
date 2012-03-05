@@ -869,6 +869,17 @@ namespace Decompose.Numerics.Test
         };
 
         [TestMethod]
+        public void PrimeCollectionTest1()
+        {
+            for (var j = 0; j <= 24; j++)
+            {
+                var n = 1 << j;
+                var primes = new PrimeCollection(n + 1);
+                Assert.AreEqual(piData[j], primes.Count);
+            }
+        }
+
+        [TestMethod]
         public void PrimeCountingTest1()
         {
             var algorithm = new PrimeCounting(0);
