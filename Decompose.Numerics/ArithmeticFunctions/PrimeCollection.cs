@@ -30,7 +30,7 @@ namespace Decompose.Numerics
             limit = (int)Math.Ceiling(Math.Sqrt(size));
             currentBucket = 0;
             currentIndex = 0;
-            block = new bool[Math.Max(blockSize, limit)];
+            block = new bool[Math.Max(blockSize >> 1, limit)];
             primes = new uint[maxBuckets][];
             primes[0] = new uint[bucketSize];
             divisors = primes[0];
@@ -81,22 +81,23 @@ namespace Decompose.Numerics
 
         private void GetPrimes(uint k0, int length, int[] offsets)
         {
-            Array.Clear(block, 0, length);
+            var length2 = length >> 1;
+            Array.Clear(block, 0, length2);
             for (var d = 1; d < numberOfDivisors; d++)
             {
-                var i = (int)divisors[d] << 1;
-                var j = offsets[d];
-                while (j < length)
+                var i = (int)divisors[d];
+                var j = offsets[d] >> 1;
+                while (j < length2)
                 {
                     block[j] = true;
                     j += i;
                 }
-                offsets[d] = j - length;
+                offsets[d] = (j << 1) + 1 - length;
             }
-            for (var i = 1; i < length; i += 2)
+            for (var i = 0; i < length2; i++)
             {
                 if (!block[i])
-                    AddPrime((uint)i + k0);
+                    AddPrime((uint)((i << 1) + 1) + k0);
             }
         }
 
