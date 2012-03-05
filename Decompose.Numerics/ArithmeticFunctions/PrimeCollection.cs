@@ -11,44 +11,44 @@ namespace Decompose.Numerics
         private const int bucketSize = 1 << 20;
         private const int maxBuckets = 1 << 10;
 
-        private int size;
+        private long size;
         private int limit;
         private bool[] block;
-        private int[][] primes;
-        private int[] divisors;
+        private uint[][] primes;
+        private uint[] divisors;
         private int[] offsets;
         private int currentBucket;
         private int currentIndex;
         private int numberOfDivisors;
 
-        public int Size { get { return size; } }
+        public long Size { get { return size; } }
         public int Count { get { return currentBucket * bucketSize + currentIndex; } }
 
-        public PrimeCollection(int size)
+        public PrimeCollection(long size)
         {
             this.size = size;
             limit = (int)Math.Ceiling(Math.Sqrt(size));
             currentBucket = 0;
             currentIndex = 0;
             block = new bool[Math.Max(blockSize, limit)];
-            primes = new int[maxBuckets][];
-            primes[0] = new int[bucketSize];
+            primes = new uint[maxBuckets][];
+            primes[0] = new uint[bucketSize];
             divisors = primes[0];
             GetDivisors();
             if (limit == 2 && limit < size)
                 AddPrime(2);
-            var k0 = limit & ~1;
+            var k0 = (uint)(limit & ~1);
             offsets = new int[numberOfDivisors];
             for (var i = 0; i < numberOfDivisors; i++)
             {
                 var d = divisors[i];
-                offsets[i] = (-k0 % d + d) % d;
+                offsets[i] = (int)((-k0 % d + d) % d);
             }
-            for (var k = k0; k < size; k += blockSize)
-                GetPrimes(k, Math.Min(blockSize, size - k), offsets);
+            for (var k = (long)k0; k < size; k += blockSize)
+                GetPrimes((uint)k, (int)Math.Min(blockSize, size - k), offsets);
         }
 
-        public int this[int index]
+        public uint this[int index]
         {
             get { return primes[index / bucketSize][index % bucketSize]; }
         }
@@ -65,23 +65,23 @@ namespace Decompose.Numerics
                 {
                     for (var j = i * i; j < limit; j += i)
                         block[j] = true;
-                    AddPrime(i);
+                    AddPrime((uint)i);
                 }
             }
             for (var i = sublimit | 1; i < limit; i += 2)
             {
                 if (!block[i])
-                    AddPrime(i);
+                    AddPrime((uint)i);
             }
             numberOfDivisors = currentIndex;
         }
 
-        private void GetPrimes(int k0, int length, int[] offsets)
+        private void GetPrimes(uint k0, int length, int[] offsets)
         {
             Array.Clear(block, 0, length);
             for (var d = 1; d < numberOfDivisors; d++)
             {
-                var i = divisors[d];
+                var i = (int)divisors[d];
                 var j = offsets[d];
                 while (j < length)
                 {
@@ -93,16 +93,16 @@ namespace Decompose.Numerics
             for (int i = 1; i < length; i += 2)
             {
                 if (!block[i])
-                    AddPrime(i + k0);
+                    AddPrime((uint)i + k0);
             }
         }
 
-        private void AddPrime(int p)
+        private void AddPrime(uint p)
         {
             primes[currentBucket][currentIndex++] = p;
             if (currentIndex == bucketSize)
             {
-                primes[++currentBucket] = new int[bucketSize];
+                primes[++currentBucket] = new uint[bucketSize];
                 currentIndex = 0;
             }
         }

@@ -73,7 +73,7 @@ namespace Sandbox
 #if true
             var timer = new Stopwatch();
             timer.Start();
-            var n = 1 << 30;
+            var n = (long)1 << 32;
             var primes = new PrimeCollection(n + 1);
             Console.WriteLine("|primes| = {0}", primes.Count);
 #if false
