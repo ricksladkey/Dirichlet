@@ -22,7 +22,7 @@ namespace Decompose.Numerics
         public Word64BitArray(int length)
         {
             this.length = length;
-            words = (length + wordLength - 1) / wordLength;
+            words = (int)(((long)length + wordLength - 1) / wordLength);
             bits = new Word[words];
         }
 

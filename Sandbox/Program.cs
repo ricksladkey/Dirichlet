@@ -71,6 +71,14 @@ namespace Sandbox
         static void ParityTest()
         {
 #if true
+            var timer = new Stopwatch();
+            timer.Start();
+            var n = 1 << 30;
+            var primes = new PrimeCollection(n);
+            Console.WriteLine("|primes| = {0}", primes.Count);
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
+#if false
             var algorithm = new PrimeCounting(4);
             for (int j = 0; j < 1; j++)
             {
