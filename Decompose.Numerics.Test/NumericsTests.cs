@@ -880,6 +880,18 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
+        public void PrimeCollectionTest2()
+        {
+            var algorithm = new PrimeCounting(0);
+            for (var n = 1 << 10; n <= (1 << 11); n++)
+            {
+                var parity = algorithm.ParityOfPi(n);
+                var primes = new PrimeCollection(n + 1);
+                Assert.AreEqual(parity, primes.Count % 2);
+            }
+        }
+
+        [TestMethod]
         public void PrimeCountingTest1()
         {
             var algorithm = new PrimeCounting(0);

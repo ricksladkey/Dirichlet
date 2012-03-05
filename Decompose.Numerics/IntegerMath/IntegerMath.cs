@@ -237,5 +237,30 @@ namespace Decompose.Numerics
         {
             return (int)Math.Ceiling(BigInteger.Log(n, b));
         }
+
+        public static bool IsPowerOfTwo(int a)
+        {
+            return (a & (a - 1)) == 0;
+        }
+
+        public static bool IsPowerOfTwo(uint a)
+        {
+            return (a & (a - 1)) == 0;
+        }
+
+        public static bool IsPowerOfTwo(long a)
+        {
+            return (a & (a - 1)) == 0;
+        }
+
+        public static bool IsPowerOfTwo(ulong a)
+        {
+            return (a & (a - 1)) == 0;
+        }
+
+        public static bool IsPowerOfTwo(BigInteger a)
+        {
+            return a.IsPowerOfTwo;
+        }
     }
 }
