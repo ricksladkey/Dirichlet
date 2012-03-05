@@ -900,5 +900,23 @@ namespace Decompose.Numerics.Test
                 Assert.AreEqual(piData[j] % 2, algorithm.ParityOfPi(n));
             }
         }
+
+        [TestMethod]
+        public void MobiusTest1()
+        {
+            var n = 1 << 10;
+            var mobius = new MobiusCollection(n);
+            for (int i = 1; i < n; i++)
+                Assert.AreEqual(IntegerMath.Mobius(i), mobius[i]);
+        }
+
+        [TestMethod]
+        public void DivisorsTest()
+        {
+            var n = 1 << 10;
+            var divisors = new DivisorsCollection(n);
+            for (int i = 1; i < n; i++)
+                Assert.AreEqual(IntegerMath.NumberOfDivisors(i), divisors[i]);
+        }
     }
 }

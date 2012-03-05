@@ -6,41 +6,38 @@ using System.Text;
 
 namespace Decompose.Numerics
 {
-    public class MobiusRange
+    public class MobiusCollection
     {
-        private const int squareSentinel = 255;
+        private const int squareSentinel = 128;
+        private int size;
         private byte[] primeDivisors;
 
-        public MobiusRange(int n)
+        public int Size { get { return size; } }
+
+        public MobiusCollection(int size)
         {
-            var size = n + 1;
+            this.size = size;
+            var limit = (int)Math.Ceiling(Math.Sqrt(size));
             primeDivisors = new byte[size];
-            for (int i = 2; i < size; i++)
+            for (int i = 2; i < limit; i++)
             {
                 if (primeDivisors[i] == 0)
                 {
-                    for (int j = 2 * i; j < size; j += i)
+                    for (int j = i; j < size; j += i)
                         ++primeDivisors[j];
-                }
-            }
-            for (int i = 2; true; i++)
-            {
-                if (primeDivisors[i] == 0)
-                {
                     var iSquared = i * i;
-                    if (iSquared > size)
-                        break;
                     for (int j = iSquared; j < size; j += iSquared)
                         primeDivisors[j] = squareSentinel;
                 }
             }
-#if false
-            for (int i = 1; i <= n; i++)
+            for (int i = limit; i < size; i++)
             {
-                if (this[i] != IntegerMath.Mobius(i))
-                    Debugger.Break();
+                if (primeDivisors[i] == 0)
+                {
+                    for (int j = i; j < size; j += i)
+                        ++primeDivisors[j];
+                }
             }
-#endif
         }
 
         public int this[int index]
@@ -48,10 +45,8 @@ namespace Decompose.Numerics
             get
             {
                 var d = primeDivisors[index];
-                if (d == squareSentinel)
+                if (d >= squareSentinel)
                     return 0;
-                if (d == 0)
-                    return index == 1 ? 1 : -1;
                 return ((~d & 1) << 1) - 1;
             }
         }

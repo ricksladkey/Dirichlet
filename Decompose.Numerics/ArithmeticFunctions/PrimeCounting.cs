@@ -11,81 +11,6 @@ namespace Decompose.Numerics
 {
     public class PrimeCounting
     {
-        private class DivisorsRange
-        {
-            private byte[] divisors;
-
-            public DivisorsRange(int n)
-            {
-                int size = n + 1;
-                divisors = new byte[size];
-                for (int i = 1; i < size; i++)
-                {
-                    for (int j = i; j < size; j += i)
-                        ++divisors[j];
-                }
-#if false
-                for (int i = 1; i <= n; i++)
-                {
-                    if (divisors[i] != IntegerMath.NumberOfDivisors(i))
-                        Debugger.Break();
-                }
-#endif
-            }
-
-            public int this[int index]
-            {
-                get { return divisors[index]; }
-            }
-        }
-
-        private struct MobiusItem
-        {
-            public int Value { get; set; }
-            public int Mobius { get; set; }
-        }
-
-        private class MobiusCollection : BlockingCollection<MobiusItem>
-        {
-            private const int squareSentinel = 128;
-
-            private int size;
-            private byte[] primeDivisors;
-
-            public MobiusCollection(int n)
-            {
-                size = n + 1;
-            }
-
-            public void ProduceValues()
-            {
-                var limit = (int)Math.Ceiling(Math.Sqrt(size));
-                primeDivisors = new byte[size];
-                Add(new MobiusItem { Value = 1, Mobius = 1 });
-                for (int i = 2; i < limit; i++)
-                {
-                    if (primeDivisors[i] == 0)
-                    {
-                        for (int j = i; j < size; j += i)
-                            ++primeDivisors[j];
-                        var iSquared = i * i;
-                        for (int j = iSquared; j < size; j += iSquared)
-                            primeDivisors[j] = squareSentinel;
-                    }
-                    var d = primeDivisors[i];
-                    Add(new MobiusItem { Value = i, Mobius = d >= squareSentinel ? 0 : ((d & 1) << 1) - 1 });
-                }
-                for (int i = limit; i < size; i++)
-                {
-                    if (primeDivisors[i] == 0)
-                    {
-                        for (int j = i; j < size; j += i)
-                            ++primeDivisors[j];
-                    }
-                }
-            }
-        }
-
         private const int sizeSmall = 1024;
         private const int chunkSize = 32;
         private int threads;
@@ -108,18 +33,11 @@ namespace Decompose.Numerics
                 if (i == n)
                     break;
             }
-            var divisors = new DivisorsRange(n);
+            var divisors = new DivisorsCollection(n);
             tauSumSmall = new int[n];
             tauSumSmall[0] = divisors[0];
             for (var j = 1; j < n; j++)
                 tauSumSmall[j] = (tauSumSmall[j - 1] + divisors[j]) & 3;
-#if false
-            for (int j = 0; j < n; j++)
-            {
-                if (tauSumSmall[j] != TauSumSmall(j))
-                    Debugger.Break();
-            }
-#endif
         }
 
         public int Pi(int x)
@@ -161,7 +79,7 @@ namespace Decompose.Numerics
         {
             var limit = (int)IntegerMath.FloorSquareRoot(x);
             var sum = 0;
-            var mobius = new MobiusRange(limit + 1);
+            var mobius = new MobiusCollection(limit + 1);
             for (var d = 1; d <= limit; d++)
             {
                 var mu = mobius[d];
@@ -550,7 +468,7 @@ namespace Decompose.Numerics
         private int SumTwoToTheOmega(long x, int limit)
         {
             var sum = 0;
-            var mobius = new MobiusRange(limit + 1);
+            var mobius = new MobiusCollection(limit + 1);
             if (threads == 0)
             {
 #if false
