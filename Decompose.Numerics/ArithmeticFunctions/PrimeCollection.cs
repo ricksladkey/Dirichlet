@@ -7,7 +7,7 @@ namespace Decompose.Numerics
 {
     public class PrimeCollection
     {
-        private const int blockSize = 1 << 20;
+        private const int blockSize = 1 << 16;
         private const int bucketSize = 1 << 20;
         private const int maxBuckets = 1 << 10;
 
@@ -16,6 +16,7 @@ namespace Decompose.Numerics
         private bool[] block;
         private int[][] primes;
         private int[] divisors;
+        private int[] offsets;
         private int currentBucket;
         private int currentIndex;
         private int numberOfDivisors;
@@ -29,15 +30,22 @@ namespace Decompose.Numerics
             limit = (int)Math.Ceiling(Math.Sqrt(size));
             currentBucket = 0;
             currentIndex = 0;
-            block = new bool[blockSize];
+            block = new bool[Math.Max(blockSize, limit)];
             primes = new int[maxBuckets][];
             primes[0] = new int[bucketSize];
             divisors = primes[0];
             GetDivisors();
             if (limit == 2 && limit < size)
                 AddPrime(2);
-            for (var k = limit & ~1; k < size; k += blockSize)
-                GetPrimes(k, Math.Min(blockSize, size - k));
+            var k0 = limit & ~1;
+            offsets = new int[numberOfDivisors];
+            for (var i = 0; i < numberOfDivisors; i++)
+            {
+                var d = divisors[i];
+                offsets[i] = (-k0 % d + d) % d;
+            }
+            for (var k = k0; k < size; k += blockSize)
+                GetPrimes(k, Math.Min(blockSize, size - k), offsets);
         }
 
         public int this[int index]
@@ -68,15 +76,19 @@ namespace Decompose.Numerics
             numberOfDivisors = currentIndex;
         }
 
-        private void GetPrimes(int k0, int length)
+        private void GetPrimes(int k0, int length, int[] offsets)
         {
             Array.Clear(block, 0, length);
             for (var d = 1; d < numberOfDivisors; d++)
             {
                 var i = divisors[d];
-                var j0 = (-k0 % i + i) % i;
-                for (var j = j0; j < length; j += i)
+                var j = offsets[d];
+                while (j < length)
+                {
                     block[j] = true;
+                    j += i;
+                }
+                offsets[d] = j - length;
             }
             for (int i = 1; i < length; i += 2)
             {
