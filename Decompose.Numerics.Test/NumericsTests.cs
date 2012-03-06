@@ -874,7 +874,7 @@ namespace Decompose.Numerics.Test
             for (var j = 0; j <= 24; j++)
             {
                 var n = 1 << j;
-                var primes = new PrimeCollection(n + 1);
+                var primes = new PrimeCollection(n + 1, 0);
                 Assert.AreEqual(piData[j], primes.Count);
             }
         }
@@ -886,7 +886,7 @@ namespace Decompose.Numerics.Test
             for (var n = 1 << 10; n <= (1 << 11); n++)
             {
                 var parity = algorithm.ParityOfPi(n);
-                var primes = new PrimeCollection(n + 1);
+                var primes = new PrimeCollection(n + 1, 0);
                 Assert.AreEqual(parity, primes.Count % 2);
             }
         }
