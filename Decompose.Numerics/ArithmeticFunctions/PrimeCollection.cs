@@ -20,6 +20,9 @@ namespace Decompose.Numerics
         private bool[] block;
         private uint[][] primes;
         private uint[] divisors;
+        private bool[] cycle;
+        private int dlimit;
+        private int cycleSize;
         private int currentBucket;
         private int currentIndex;
         private int numberOfDivisors;
@@ -57,6 +60,7 @@ namespace Decompose.Numerics
                 return;
             }
             GetDivisors(block);
+            CreateCycle();
             if (threads == 0)
                 GetPrimes();
             else
@@ -85,7 +89,7 @@ namespace Decompose.Numerics
                 var offset = (uint)(d - k0 % d) % d;
                 if ((offset & 1) == 0)
                     offset += d;
-                offsets[i] = (int)offset;
+                offsets[i] = (int)offset >> 1;
             }
             for (var k = k0; k < size; k += blockSizeSingleThreaded)
             {
@@ -152,37 +156,41 @@ namespace Decompose.Numerics
             numberOfDivisors = currentIndex;
         }
 
+        private void CreateCycle()
+        {
+            dlimit = Math.Min(numberOfDivisors, 6);
+            cycleSize = 1;
+            for (var d = 2; d < dlimit; d++)
+                cycleSize *= (int)divisors[d];
+            cycle = new bool[cycleSize];
+            for (var d = 2; d < dlimit; d++)
+            {
+                var i = (int)divisors[d];
+                for (var j = 0; j < cycleSize; j += i)
+                    cycle[j] = true;
+            }
+        }
+
         private void SieveBlock(uint k0, int length, bool []block, int[] offsets)
         {
             var length2 = length >> 1;
-            var dlimit = Math.Min(numberOfDivisors, 6);
-            var cycleSize = 1;
-            for (var d = 2; d < dlimit; d++)
-                cycleSize *= (int)divisors[d];
-            Array.Clear(block, 0, cycleSize);
-            for (var d = 2; d < dlimit; d++)
-            {
-                var i = (int)divisors[d];
-                var j = i - k0 % i;
-                j = (j + (((j & 1) - 1) & i)) >> 1;
-                while (j < cycleSize)
-                {
-                    block[j] = true;
-                    j += i;
-                }
-            }
-            for (var i = cycleSize; i < length2; i += cycleSize)
-                Array.Copy(block, 0, block, i, Math.Min(cycleSize, length2 - i));
+
+            var cycleStart = cycleSize - k0 % cycleSize;
+            cycleStart = (cycleStart + (((cycleStart & 1) - 1) & cycleSize)) >> 1;
+            Array.Copy(cycle, cycleSize - cycleStart, block, 0, cycleStart);
+            for (var i = cycleStart; i < length2; i += cycleSize)
+                Array.Copy(cycle, 0, block, i, Math.Min(cycleSize, length2 - i));
+
             for (var d = dlimit; d < numberOfDivisors; d++)
             {
                 var i = (int)divisors[d];
-                var j = offsets[d] >> 1;
+                var j = offsets[d];
                 while (j < length2)
                 {
                     block[j] = true;
                     j += i;
                 }
-                offsets[d] = ((j << 1) | 1) - length;
+                offsets[d] = j - length2;
             }
         }
 
@@ -226,8 +234,6 @@ namespace Decompose.Numerics
             }
             if (i < length2 && !block[i])
                 AddPrime((uint)(i << 1) + k1);
-            if (i + 1 < length2 && !block[i + 1])
-                AddPrime((uint)((i + 1) << 1) + k1);
         }
 
         private void AddPrime(uint p)
