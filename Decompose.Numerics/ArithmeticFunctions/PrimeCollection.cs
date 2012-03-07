@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Collections;
 
 namespace Decompose.Numerics
 {
-    public class PrimeCollection
+    public class PrimeCollection : IEnumerable<uint>
     {
         private const int blockSizeSingleThreaded = 1 << 16;
         private const int blockSizeMultiThreaded = 1 << 18;
@@ -25,6 +26,11 @@ namespace Decompose.Numerics
 
         public long Size { get { return size; } }
         public int Count { get { return currentBucket * bucketSize + currentIndex; } }
+
+        public uint this[int index]
+        {
+            get { return primes[index / bucketSize][index % bucketSize]; }
+        }
 
         public PrimeCollection(long size, int threads)
         {
@@ -57,12 +63,19 @@ namespace Decompose.Numerics
                 GetPrimes(threads);
         }
 
-        public uint this[int index]
+        public IEnumerator<uint> GetEnumerator()
         {
-            get { return primes[index / bucketSize][index % bucketSize]; }
+            var count = Count;
+            for (int i = 0; i < count; i++)
+                yield return this[i];
         }
 
-        public void GetPrimes()
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private void GetPrimes()
         {
             var k0 = (long)limit & ~1;
             var offsets = new int[numberOfDivisors];
@@ -190,45 +203,32 @@ namespace Decompose.Numerics
             }
         }
 
-#if false
         private void AddPrimes(uint k0, int length, bool[] block)
         {
-            var length2 = length >> 1;
-            for (var i = 0; i < length2; i++)
-            {
-                if (!block[i])
-                    AddPrime((uint)((i << 1) | 1) + k0);
-            }
-        }
-#endif
-
-#if true
-        private void AddPrimes(uint k0, int length, bool[] block)
-        {
+            var k1 = k0 + 1;
             var length2 = length >> 1;
             var imin = 3 - k0 % 3;
             imin = (imin + (((imin & 1) - 1) & 3)) >> 1;
-            var i = 0;
-            while (i < imin)
+            var imax = length2 - (length2 - imin) % 3;
+            Debug.Assert((imax - imin) % 3 == 0 && imax >= imin && imax <= length2);
+            if (0 < imin && !block[0])
+                AddPrime((uint)(0 << 1) + k1);
+            if (1 < imin && !block[1])
+                AddPrime((uint)(1 << 1) + k1);
+            var i = imin + 1;
+            while (i < imax)
             {
                 if (!block[i])
-                    AddPrime((uint)((i << 1) | 1) + k0);
-                ++i;
+                    AddPrime((uint)(i << 1) + k1);
+                if (!block[i + 1])
+                    AddPrime((uint)((i + 1) << 1) + k1);
+                i += 3;
             }
-            while (true)
-            {
-                if (++i >= length2)
-                    break;
-                if (!block[i])
-                    AddPrime((uint)((i << 1) | 1) + k0);
-                if (++i >= length2)
-                    break;
-                if (!block[i])
-                    AddPrime((uint)((i << 1) | 1) + k0);
-                ++i;
-            }
+            if (i < length2 && !block[i])
+                AddPrime((uint)(i << 1) + k1);
+            if (i + 1 < length2 && !block[i + 1])
+                AddPrime((uint)((i + 1) << 1) + k1);
         }
-#endif
 
         private void AddPrime(uint p)
         {

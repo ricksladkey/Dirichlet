@@ -83,6 +83,47 @@ namespace Sandbox
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
 #if false
+            {
+                var n = 1023;
+                var a = 93;
+                var b = 777;
+                var sum = 0;
+                var timer = new Stopwatch();
+                timer.Restart();
+                for (var i = 0; i < int.MaxValue; i++)
+                {
+                    if (++a >= n)
+                        a -= n;
+                    if (++b >= n)
+                        b -= n;
+                    var c = a + b;
+                    if (c >= n)
+                        c -= n;
+                    sum += c;
+                }
+                output.WriteLine("elapsed = {0:F3} msec, sum = {1}", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000, sum);
+            }
+            {
+                var n = 1023;
+                var a = 93;
+                var b = 777;
+                var sum = 0;
+                var timer = new Stopwatch();
+                timer.Restart();
+                for (var i = 0; i < int.MaxValue; i++)
+                {
+                    if (++a >= n)
+                        a -= n;
+                    if (++b >= n)
+                        b -= n;
+                    var c = a + b;
+                    c -= ((n - c - 1) >> 31) & n;
+                    sum += c;
+                }
+                output.WriteLine("elapsed = {0:F3} msec, sum = {1}", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000, sum);
+            }
+#endif
+#if false
             var algorithm = new PrimeCounting(4);
             for (int j = 0; j < 1; j++)
             {
