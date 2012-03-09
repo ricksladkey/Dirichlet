@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Diagnostics;
-using System.Collections;
 
 namespace Decompose.Numerics
 {
@@ -83,7 +84,10 @@ namespace Decompose.Numerics
         {
             var k0 = (long)limit & ~1;
             var offsets = new int[numberOfDivisors];
-            for (var i = 0; i < numberOfDivisors; i++)
+            var cycleOffset = cycleSize - (int)(k0 % cycleSize);
+            cycleOffset = (cycleOffset + (((cycleOffset & 1) - 1) & cycleSize)) >> 1;
+            offsets[0] = cycleOffset;
+            for (var i = 1; i < numberOfDivisors; i++)
             {
                 var d = divisors[i];
                 var offset = (uint)(d - k0 % d) % d;
@@ -175,11 +179,14 @@ namespace Decompose.Numerics
         {
             var length2 = length >> 1;
 
-            var cycleStart = cycleSize - k0 % cycleSize;
-            cycleStart = (cycleStart + (((cycleStart & 1) - 1) & cycleSize)) >> 1;
-            Array.Copy(cycle, cycleSize - cycleStart, block, 0, cycleStart);
-            for (var i = cycleStart; i < length2; i += cycleSize)
-                Array.Copy(cycle, 0, block, i, Math.Min(cycleSize, length2 - i));
+            var cycleOffset = offsets[0];
+            Array.Copy(cycle, cycleSize - cycleOffset, block, 0, cycleOffset);
+            while (cycleOffset < length2)
+            {
+                Array.Copy(cycle, 0, block, cycleOffset, Math.Min(cycleSize, length2 - cycleOffset));
+                cycleOffset += cycleSize;
+            }
+            offsets[0] = cycleOffset - length2;
 
             for (var d = dlimit; d < numberOfDivisors; d++)
             {
@@ -218,7 +225,6 @@ namespace Decompose.Numerics
             var imin = 3 - k0 % 3;
             imin = (imin + (((imin & 1) - 1) & 3)) >> 1;
             var imax = length2 - (length2 - imin) % 3;
-            Debug.Assert((imax - imin) % 3 == 0 && imax >= imin && imax <= length2);
             if (0 < imin && !block[0])
                 AddPrime((uint)(0 << 1) + k1);
             if (1 < imin && !block[1])
@@ -247,3 +253,4 @@ namespace Decompose.Numerics
         }
     }
 }
+
