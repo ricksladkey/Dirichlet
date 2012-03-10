@@ -84,17 +84,19 @@ namespace Decompose.Numerics
         {
             var k0 = (long)limit & ~1;
             var offsets = new int[numberOfDivisors];
+
             var cycleOffset = cycleSize - (int)(k0 % cycleSize);
             cycleOffset = (cycleOffset + (((cycleOffset & 1) - 1) & cycleSize)) >> 1;
             offsets[0] = cycleOffset;
+
             for (var i = 1; i < numberOfDivisors; i++)
             {
                 var d = divisors[i];
-                var offset = (uint)(d - k0 % d) % d;
-                if ((offset & 1) == 0)
-                    offset += d;
-                offsets[i] = (int)offset >> 1;
+                var offset = d - (uint)(k0 % d);
+                offset = (offset + (((offset & 1) - 1) & d)) >> 1;
+                offsets[i] = (int)offset;
             }
+
             for (var k = k0; k < size; k += blockSizeSingleThreaded)
             {
                 var kstart = (uint)k;
@@ -253,4 +255,3 @@ namespace Decompose.Numerics
         }
     }
 }
-
