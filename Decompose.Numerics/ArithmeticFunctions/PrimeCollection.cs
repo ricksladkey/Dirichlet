@@ -88,7 +88,7 @@ namespace Decompose.Numerics
         private long size;
         private int limit;
         private bool[] block;
-        private Primes primes;
+        private List<Primes> allPrimes;
         private uint[] divisors;
         private bool[] cycle;
         private int dlimit;
@@ -96,7 +96,7 @@ namespace Decompose.Numerics
         private int numberOfDivisors;
 
         public long Size { get { return size; } }
-        public int Count { get { return primes.Count; } }
+        public int Count { get { return allPrimes.Sum(item => item.Count); } }
 
 #if false
         public uint this[int index]
@@ -110,7 +110,9 @@ namespace Decompose.Numerics
             this.size = Math.Min((long)uint.MaxValue + 1, size);
             limit = (int)Math.Ceiling(Math.Sqrt(size));
             block = new bool[Math.Max(blockSizeSingleThreaded >> 1, limit)];
-            primes = new Primes();
+            allPrimes = new List<Primes>();
+            var primes = new Primes();
+            allPrimes.Add(primes);
             divisors = primes.FirstBucket;
             if (size <= 13)
             {
@@ -131,7 +133,11 @@ namespace Decompose.Numerics
 
         public IEnumerator<uint> GetEnumerator()
         {
-            return primes.GetEnumerator();
+            foreach (var primes in allPrimes)
+            {
+                foreach (var p in primes)
+                    yield return p;
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -142,65 +148,56 @@ namespace Decompose.Numerics
         private void GetPrimes()
         {
             var k0 = (long)limit & ~1;
+            ProcessBatch(allPrimes[0], block, k0, size, blockSizeSingleThreaded);
+        }
+
+        private void ProcessBatch(Primes primes, bool[] block, long kstart, long kend, int blockSize)
+        {
             var offsets = new int[numberOfDivisors];
 
-            var cycleOffset = cycleSize - (int)(k0 % cycleSize);
+            var cycleOffset = cycleSize - (int)(kstart % cycleSize);
             cycleOffset = (cycleOffset + (((cycleOffset & 1) - 1) & cycleSize)) >> 1;
             offsets[0] = cycleOffset;
 
             for (var i = 1; i < numberOfDivisors; i++)
             {
                 var d = divisors[i];
-                var offset = d - (uint)(k0 % d);
+                var offset = d - (uint)(kstart % d);
                 offset = (offset + (((offset & 1) - 1) & d)) >> 1;
                 offsets[i] = (int)offset;
             }
 
-            for (var k = k0; k < size; k += blockSizeSingleThreaded)
+            for (var k = kstart; k < kend; k += blockSize)
             {
-                var kstart = (uint)k;
-                var length = (int)Math.Min(blockSizeSingleThreaded, size - k);
-                SieveBlock(kstart, length, block, offsets);
-                primes.AddPrimes(kstart, length, block);
+                var length = (int)Math.Min(blockSize, kend - k);
+                SieveBlock((uint)k, length, block, offsets);
+                primes.AddPrimes((uint)k, length, block);
             }
         }
 
         private void GetPrimes(int threads)
         {
             var k0 = (long)limit & ~1;
-            var batchSize = threads * blockSizeMultiThreaded;
             var tasks = new Task[threads];
-            var blocks = new bool[threads][];
+            var batchSize = ((size - k0 + threads - 1) / threads + 1) & ~1;
             for (var thread = 0; thread < threads; thread++)
-                blocks[thread] = new bool[blockSizeMultiThreaded >> 1];
-            for (var l = k0; l < size; l += batchSize)
             {
-                var kmax = l + Math.Min(batchSize, size - l);
-                var thread = 0;
-                for (var k = l; k < kmax; k += blockSizeMultiThreaded)
-                {
-                    var kstart = (uint)k;
-                    var length = (int)Math.Min(blockSizeMultiThreaded, kmax - k);
-                    var block = blocks[thread];
-                    tasks[thread] = Task.Factory.StartNew(() => SieveBlock(kstart, length, block));
-                    ++thread;
-                }
-                thread = 0;
-                for (var k = l; k < kmax; k += blockSizeMultiThreaded)
-                {
-                    var kstart = (uint)k;
-                    var length = (int)Math.Min(blockSizeMultiThreaded, kmax - k);
-                    tasks[thread].Wait();
-                    var block = blocks[thread];
-                    primes.AddPrimes(kstart, length, block);
-                    ++thread;
-                }
+                var primes = thread == 0 ? allPrimes[0] : new Primes();
+                if (thread != 0)
+                    allPrimes.Add(primes);
+                var block = new bool[blockSizeMultiThreaded >> 1];
+                var kstart = k0 + thread * batchSize;
+                var kend = Math.Min(kstart + batchSize, size);
+                tasks[thread] = Task.Factory.StartNew(() =>
+                    ProcessBatch(primes, block, kstart, kend, blockSizeMultiThreaded));
             }
+            Task.WaitAll(tasks);
         }
 
         private void GetDivisors(bool[] block)
         {
             // Sieve for all primes < sqrt(size).
+            var primes = allPrimes[0];
             var sublimit = (int)Math.Ceiling(Math.Sqrt(limit));
             if (2 < limit)
                 primes.AddPrime(2);
