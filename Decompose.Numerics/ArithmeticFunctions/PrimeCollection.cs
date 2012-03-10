@@ -83,7 +83,7 @@ namespace Decompose.Numerics
         }
 
         private const int blockSizeSingleThreaded = 1 << 16;
-        private const int blockSizeMultiThreaded = 1 << 18;
+        private const int blockSizeMultiThreaded = 1 << 16;
 
         private long size;
         private int limit;
