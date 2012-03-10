@@ -20,18 +20,35 @@ namespace Decompose.Numerics
             private List<uint[]> primes;
             private uint[] currentBucket;
             private int fullBuckets;
-            private int currentIndex;
+            private int currentOffset;
 
-            public int Count { get { return fullBuckets * bucketSize + currentIndex; } }
+            public int Count
+            {
+                get { return fullBuckets * bucketSize + currentOffset; }
+                set { IncreaseCount(value - Count); }
+            }
+
             public uint[] FirstBucket { get { return primes[0]; } }
+
+            public uint this[int index]
+            {
+                get { return primes[index / bucketSize][index % bucketSize]; }
+            }
 
             public Primes()
             {
                 fullBuckets = 0;
-                currentIndex = 0;
+                currentOffset = 0;
                 primes = new List<uint[]>();
                 currentBucket = new uint[bucketSize];
                 primes.Add(currentBucket);
+            }
+
+            public void AddPrime(uint p)
+            {
+                currentBucket[currentOffset++] = p;
+                if (currentOffset == bucketSize)
+                    AddBucket();
             }
 
             public void AddPrimes(uint k0, int length, bool[] block)
@@ -58,16 +75,51 @@ namespace Decompose.Numerics
                     AddPrime((uint)(i << 1) + k1);
             }
 
-            public void AddPrime(uint p)
+            public void AddPrimes(Primes other, int start)
             {
-                currentBucket[currentIndex++] = p;
-                if (currentIndex == bucketSize)
+                var bucketIndex = start / bucketSize;
+                var bucketOffset = start % bucketSize;
+                for (int otherBucketIndex = 0; otherBucketIndex <= other.fullBuckets; otherBucketIndex++)
                 {
-                    ++fullBuckets;
-                    currentBucket = new uint[bucketSize];
-                    primes.Add(currentBucket);
-                    currentIndex = 0;
+                    var bucket = other.primes[otherBucketIndex];
+                    var size = otherBucketIndex != other.fullBuckets ? bucketSize : other.currentOffset;
+                    var size1 = Math.Min(size, bucketSize - bucketOffset);
+                    var size2 = size - size1;
+                    Array.Copy(bucket, 0, primes[bucketIndex], bucketOffset, size1);
+                    bucketOffset += size1;
+                    if (bucketOffset == bucketSize)
+                    {
+                        ++bucketIndex;
+                        bucketOffset = 0;
+                        Array.Copy(bucket, size1, primes[bucketIndex], 0, size2);
+                        bucketOffset += size2;
+                    }
                 }
+            }
+
+            private void IncreaseCount(int increment)
+            {
+                if (increment < bucketSize - currentOffset)
+                {
+                    currentOffset += increment;
+                    return;
+                }
+                increment -= bucketSize - currentOffset;
+                AddBucket();
+                while (increment >= bucketSize)
+                {
+                    AddBucket();
+                    increment -= bucketSize;
+                }
+                currentOffset = increment;
+            }
+
+            private void AddBucket()
+            {
+                ++fullBuckets;
+                currentBucket = new uint[bucketSize];
+                primes.Add(currentBucket);
+                currentOffset = 0;
             }
 
             public IEnumerator<uint> GetEnumerator()
@@ -80,7 +132,7 @@ namespace Decompose.Numerics
                 }
                 {
                     var bucket = primes[fullBuckets];
-                    for (int i = 0; i < currentIndex; i++)
+                    for (int i = 0; i < currentOffset; i++)
                         yield return bucket[i];
                 }
             }
@@ -97,34 +149,31 @@ namespace Decompose.Numerics
         private long size;
         private int limit;
         private bool[] block;
-        private List<Primes> allPrimes;
+        private Primes primes;
         private uint[] divisors;
         private bool[] cycle;
         private int dlimit;
         private int cycleSize;
         private int numberOfDivisors;
-        private int count;
 
         public long Size { get { return size; } }
-        public int Count { get { return count; } }
+        public int Count { get { return primes.Count; } }
 
-#if false
         public uint this[int index]
         {
-            get { return primes[index / bucketSize][index % bucketSize]; }
+            get { return primes[index]; }
         }
-#endif
 
         public PrimeCollection(long size, int threads)
         {
             this.size = Math.Min((long)uint.MaxValue + 1, size);
             limit = (int)Math.Ceiling(Math.Sqrt(size));
             block = new bool[Math.Max(blockSizeSingleThreaded >> 1, limit)];
-            allPrimes = new List<Primes>();
-            var primes = new Primes();
-            allPrimes.Add(primes);
+            primes = new Primes();
             if (size <= 13)
             {
+                // Special case for small collections because we handle
+                // 2 and 3 differently.
                 foreach (var prime in new uint[] { 2, 3, 5, 7, 11 })
                 {
                     if (size > prime)
@@ -137,16 +186,11 @@ namespace Decompose.Numerics
                 CreateCycle();
                 GetPrimes(threads);
             }
-            count = allPrimes.Sum(item => item.Count);
         }
 
         public IEnumerator<uint> GetEnumerator()
         {
-            foreach (var primes in allPrimes)
-            {
-                foreach (var p in primes)
-                    yield return p;
-            }
+            return primes.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -157,7 +201,6 @@ namespace Decompose.Numerics
         private void GetDivisors(bool[] block)
         {
             // Sieve for all primes < sqrt(size).
-            var primes = allPrimes[0];
             var sublimit = (int)Math.Ceiling(Math.Sqrt(limit));
             if (2 < limit)
                 primes.AddPrime(2);
@@ -201,21 +244,42 @@ namespace Decompose.Numerics
             var k0 = (long)limit & ~1;
             if (threads == 0)
             {
-                ProcessRange(allPrimes[0], block, k0, size, blockSizeSingleThreaded);
+                ProcessRange(primes, block, k0, size, blockSizeSingleThreaded);
                 return;
             }
             var tasks = new Task[threads];
             var batchSize = ((size - k0 + threads - 1) / threads + 1) & ~1;
+            var morePrimes = new List<Primes>();
             for (var thread = 0; thread < threads; thread++)
             {
-                var primes = thread == 0 ? allPrimes[0] : new Primes();
+                var taskPrimes = thread == 0 ? primes : new Primes();
                 if (thread != 0)
-                    allPrimes.Add(primes);
-                var block = new bool[blockSizeMultiThreaded >> 1];
+                    morePrimes.Add(taskPrimes);
+                var taskBlock = thread == 0 ? block : new bool[blockSizeMultiThreaded >> 1];
                 var kstart = k0 + thread * batchSize;
                 var kend = Math.Min(kstart + batchSize, size);
                 tasks[thread] = Task.Factory.StartNew(() =>
-                    ProcessRange(primes, block, kstart, kend, blockSizeMultiThreaded));
+                    ProcessRange(taskPrimes, taskBlock, kstart, kend, blockSizeMultiThreaded));
+            }
+            Task.WaitAll(tasks);
+            ConsolidatePrimes(morePrimes);
+        }
+
+        private void ConsolidatePrimes(List<Primes> morePrimes)
+        {
+            var threads = morePrimes.Count;
+            if (threads == 0)
+                return;
+            var tasks = new Task[threads];
+            var count = primes.Count;
+            primes.Count = count + morePrimes.Sum(item => item.Count);
+            for (int thread = 0; thread < threads; thread++)
+            {
+                var taskPrimes = morePrimes[thread];
+                var start = count;
+                tasks[thread] = Task.Factory.StartNew(() =>
+                    primes.AddPrimes(taskPrimes, start));
+                count += taskPrimes.Count;
             }
             Task.WaitAll(tasks);
         }
