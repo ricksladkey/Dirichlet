@@ -1,101 +1,90 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace Decompose.Numerics
 {
-#if false
     public class MobiusCollection
     {
-        private const int squareSentinel = 128;
+        private const int blockSize = 1 << 16;
+
+        private uint[] primes;
         private int size;
-        private byte[] primeDivisors;
+        private byte[] values;
 
         public int Size { get { return size; } }
+        public int this[int index] { get { return values[index] - 1; } }
 
-        public MobiusCollection(int size)
+        public MobiusCollection(int size, int threads)
         {
             this.size = size;
             var limit = (int)Math.Ceiling(Math.Sqrt(size));
-            primeDivisors = new byte[size];
-            for (int i = 2; i < limit; i++)
-            {
-                if (primeDivisors[i] == 0)
-                {
-                    for (int j = i; j < size; j += i)
-                        ++primeDivisors[j];
-                    var iSquared = i * i;
-                    for (int j = iSquared; j < size; j += iSquared)
-                        primeDivisors[j] = squareSentinel;
-                }
-            }
-            for (int i = limit; i < size; i++)
-            {
-                if (primeDivisors[i] == 0)
-                {
-                    for (int j = i; j < size; j += i)
-                        ++primeDivisors[j];
-                }
-            }
+            primes = new PrimeCollection(limit, 0).ToArray();
+            values = new byte[size];
+            GetValues(threads);
+            values[1] = 2;
         }
 
-        public int this[int index]
+        private void GetValues(int threads)
         {
-            get
+            if (threads == 0)
             {
-                var d = primeDivisors[index];
-                if (d >= squareSentinel)
-                    return 0;
-                return ((~d & 1) << 1) - 1;
+                ProcessRange(0, size);
+                return;
             }
+            var tasks = new Task[threads];
+            var batchSize = ((size + threads - 1) / threads + 1) & ~1;
+            for (var thread = 0; thread < threads; thread++)
+            {
+                var kstart = thread * batchSize;
+                var kend = Math.Min(kstart + batchSize, size);
+                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(kstart, kend));
+            }
+            Task.WaitAll(tasks);
         }
-    }
-#else
-    public class MobiusCollection
-    {
-        private const int squareSentinel = 128;
-        private int size;
-        private int[] products;
 
-        public int Size { get { return size; } }
-
-        public MobiusCollection(int size)
+        private void ProcessRange(int kstart, int kend)
         {
-            this.size = size;
-            var limit = (int)Math.Ceiling(Math.Sqrt(size));
-            products = new int[size];
-            products[1] = 1;
-            for (var i = 2; i < size; i++)
+            var products = new int[size];
+            for (var k = kstart; k < kend; k += blockSize)
+                SieveBlock(k, Math.Min(blockSize, kend - k), products);
+        }
+
+        private void SieveBlock(int k0, int length, int[] products)
+        {
+            for (var i = 0; i < length; i++)
                 products[i] = -1;
-            for (var i = 2; i < limit; i++)
-            {
-                if (products[i] == -1)
-                {
-                    var factor = -i;
-                    for (var j = i << 1; j < size; j += i)
-                        products[j] *= factor;
-                    var iSquared = i * i;
-                    for (var j = iSquared; j < size; j += iSquared)
-                        products[j] = 0;
-                }
-            }
-            for (var i = 2; i < size; i++)
-            {
-                if (products[i] == i || products[i] == -i)
-                    products[i] = -products[i];
-            }
-        }
 
-        public int this[int index]
-        {
-            get
+            for (var i = 0; i < primes.Length; i++)
             {
-                var p = products[index];
-                return p > 0 ? 1 : p < 0 ? -1 : 0;
+                var p = primes[i];
+                var pMinus = -(int)p;
+                var j0 = p - k0 % p;
+                if (j0 == p)
+                    j0 = 0;
+                for (var j = j0; j < length; j += p)
+                    products[j] *= pMinus;
+                var pSquared = p * p;
+                var j1 = pSquared - k0 % pSquared;
+                if (j1 == pSquared)
+                    j1 = 0;
+                for (var j = j1; j < length; j += pSquared)
+                    products[j] = 0;
+            }
+
+            byte value;
+            for (int i = 0, k = k0; i < length; i++, k++)
+            {
+                var p = products[i];
+                if (p > 0)
+                    value = p == k ? (byte)0 : (byte)2;
+                else if (p < 0)
+                    value = p == -k ? (byte)2 : (byte)0;
+                else
+                    value = 1;
+                values[k] = value;
             }
         }
     }
-#endif
 }

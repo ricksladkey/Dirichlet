@@ -927,10 +927,13 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void MobiusTest1()
         {
-            var n = 1 << 10;
-            var mobius = new MobiusCollection(n);
-            for (int i = 1; i < n; i++)
-                Assert.AreEqual(IntegerMath.Mobius(i), mobius[i]);
+            for (var threads = 0; threads < 4; threads++)
+            {
+                var n = 1 << 10;
+                var mobius = new MobiusCollection(n, threads);
+                for (int i = 1; i < n; i++)
+                    Assert.AreEqual(IntegerMath.Mobius(i), mobius[i]);
+            }
         }
 
         [TestMethod]

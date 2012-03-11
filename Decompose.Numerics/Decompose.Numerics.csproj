@@ -45,8 +45,8 @@
   <ItemGroup>
     <Compile Include="ArithmeticFunctions\DivisorsCollection.cs" />
     <Compile Include="ArithmeticFunctions\MobiusCollection.cs" />
-    <Compile Include="ArithmeticFunctions\MobiusProducer.cs" />
     <Compile Include="ArithmeticFunctions\PrimeCollection.cs" />
+    <Compile Include="ArithmeticFunctions\SimpleMobiusCollection.cs" />
     <Compile Include="Collections\BitMatrixHelper.cs" />
     <Compile Include="Collections\ByColSetBitMatrix.cs" />
     <Compile Include="Collections\Graph.cs" />

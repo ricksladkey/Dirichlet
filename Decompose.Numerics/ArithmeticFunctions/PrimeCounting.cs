@@ -79,7 +79,7 @@ namespace Decompose.Numerics
         {
             var limit = (int)IntegerMath.FloorSquareRoot(x);
             var sum = 0;
-            var mobius = new MobiusCollection(limit + 1);
+            var mobius = new MobiusCollection(limit + 1, threads);
             for (var d = 1; d <= limit; d++)
             {
                 var mu = mobius[d];
@@ -468,7 +468,7 @@ namespace Decompose.Numerics
         private int SumTwoToTheOmega(long x, int limit)
         {
             var sum = 0;
-            var mobius = new MobiusCollection(limit + 1);
+            var mobius = new MobiusCollection(limit + 1, threads);
             if (threads == 0)
             {
 #if false

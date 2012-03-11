@@ -74,7 +74,7 @@ namespace Sandbox
             var timer = new Stopwatch();
             timer.Start();
             var n = 1 << 28;
-            var mobius = new MobiusCollection(n + 1);
+            var mobius = new MobiusCollection(n + 1, 8);
             Console.WriteLine("|mobius| = {0}", mobius.Size);
 #if false
             for (int i = 0; i < primes.Count; i++)
