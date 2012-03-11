@@ -515,3 +515,23 @@ cycleSize = 15
 cycleStart = 15, 45, 75, 105, ...
 
 cycleStart = 15 % 30
+
+100 = 2 2 5 5
+99 = 3 3 11
+55 = 5 11
+
+When 2 is processed:
+66 is incremented (previously 0)
+66 is composite
+
+When 3 is processed:
+66 is incremented (previously 1)
+
+When 5 is processed:
+divisors[55] is incremented (previously 0)
+55 is composite
+
+all numbers less the p[n]# (nth primorial) have less than n prime factors
+
+2 * 3 * 5 = 30
+7 * 5 = 35

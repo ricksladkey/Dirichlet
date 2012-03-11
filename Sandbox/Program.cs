@@ -74,13 +74,28 @@ namespace Sandbox
             var timer = new Stopwatch();
             timer.Start();
             var n = (long)1 << 32;
-            var primes = new PrimeCollection(n + 1, 8);
+            var primes = new PrimeCollection(n + 1, 0);
             Console.WriteLine("|primes| = {0}", primes.Count, 0);
 #if false
             for (int i = 0; i < primes.Count; i++)
                 Console.WriteLine("prime[{0}] = {1}", i, primes[i]);
 #endif
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
+#if false
+            var factorer = new TrialDivisionFactorization();
+            for (var j = 10; j <= 20; j += 2)
+            {
+                var n = 1 << j;
+                var count = 0;
+                for (var i = 2; i < n; i++)
+                {
+                    var factors = factorer.Factor(i).ToArray();
+                    if (IntegerMath.IsSquareFree(factors) && factors.All(factor => factor * factor < i))
+                        ++count;
+                }
+                Console.WriteLine("n = {0}, count = {1}, n / count = {2}", n, count, (double)n / count);
+            }
 #endif
 #if false
             {

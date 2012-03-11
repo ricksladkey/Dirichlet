@@ -75,10 +75,10 @@ namespace Decompose.Numerics
                     AddPrime((uint)(i << 1) + k1);
             }
 
-            public void AddPrimes(Primes other, int start)
+            public void AddPrimes(Primes other, int startIndex)
             {
-                var bucketIndex = start / bucketSize;
-                var bucketOffset = start % bucketSize;
+                var bucketIndex = startIndex / bucketSize;
+                var bucketOffset = startIndex % bucketSize;
                 for (int otherBucketIndex = 0; otherBucketIndex <= other.fullBuckets; otherBucketIndex++)
                 {
                     var bucket = other.primes[otherBucketIndex];
@@ -202,8 +202,7 @@ namespace Decompose.Numerics
         {
             // Sieve for all primes < sqrt(size).
             var sublimit = (int)Math.Ceiling(Math.Sqrt(limit));
-            if (2 < limit)
-                primes.AddPrime(2);
+            primes.AddPrime(2);
             for (var i = 3; i < sublimit; i += 2)
             {
                 if (!block[i])
@@ -225,12 +224,14 @@ namespace Decompose.Numerics
         private void CreateCycle()
         {
             // Create pre-sieved cycle of small primes.
-            dlimit = Math.Min(numberOfDivisors, 6);
+            var dmin = 2;
+            var dmax = 6;
+            dlimit = Math.Min(numberOfDivisors, dmax);
             cycleSize = 1;
-            for (var d = 2; d < dlimit; d++)
+            for (var d = dmin; d < dlimit; d++)
                 cycleSize *= (int)divisors[d];
             cycle = new bool[cycleSize];
-            for (var d = 2; d < dlimit; d++)
+            for (var d = dmin; d < dlimit; d++)
             {
                 var i = (int)divisors[d];
                 for (var j = 0; j < cycleSize; j += i)
@@ -268,12 +269,10 @@ namespace Decompose.Numerics
         private void ConsolidatePrimes(List<Primes> morePrimes)
         {
             var threads = morePrimes.Count;
-            if (threads == 0)
-                return;
             var tasks = new Task[threads];
             var count = primes.Count;
             primes.Count = count + morePrimes.Sum(item => item.Count);
-            for (int thread = 0; thread < threads; thread++)
+            for (var thread = 0; thread < threads; thread++)
             {
                 var taskPrimes = morePrimes[thread];
                 var start = count;
