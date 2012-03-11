@@ -73,9 +73,21 @@ namespace Sandbox
 #if true
             var timer = new Stopwatch();
             timer.Start();
+            var n = 1 << 28;
+            var mobius = new MobiusCollection(n + 1);
+            Console.WriteLine("|mobius| = {0}", mobius.Size);
+#if false
+            for (int i = 0; i < primes.Count; i++)
+                Console.WriteLine("prime[{0}] = {1}", i, primes[i]);
+#endif
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
+#if false
+            var timer = new Stopwatch();
+            timer.Start();
             var n = (long)1 << 32;
             var primes = new PrimeCollection(n + 1, 0);
-            Console.WriteLine("|primes| = {0}", primes.Count, 0);
+            Console.WriteLine("|primes| = {0}", primes.Count);
 #if false
             for (int i = 0; i < primes.Count; i++)
                 Console.WriteLine("prime[{0}] = {1}", i, primes[i]);
