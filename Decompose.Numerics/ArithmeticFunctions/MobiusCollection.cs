@@ -46,7 +46,7 @@ namespace Decompose.Numerics
 
         private void ProcessRange(int kstart, int kend)
         {
-            var products = new int[size];
+            var products = new int[blockSize];
             for (var k = kstart; k < kend; k += blockSize)
                 SieveBlock(k, Math.Min(blockSize, kend - k), products);
         }

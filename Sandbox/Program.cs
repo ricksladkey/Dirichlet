@@ -71,9 +71,23 @@ namespace Sandbox
         static void ParityTest()
         {
 #if true
+            var algorithm = new PrimeCounting(4);
+            for (int j = 0; j < 1; j++)
+            {
+                for (int i = 58; i <= 58; i++)
+                {
+                    var timer = new Stopwatch();
+                    timer.Start();
+                    var n = (BigInteger)1 << i;
+                    Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, algorithm.ParityOfPi(n));
+                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                }
+            }
+#endif
+#if false
             var timer = new Stopwatch();
             timer.Start();
-            var n = 1 << 28;
+            var n = 1 << 30;
             var mobius = new MobiusCollection(n + 1, 8);
             Console.WriteLine("|mobius| = {0}", mobius.Size);
 #if false
@@ -81,6 +95,19 @@ namespace Sandbox
                 Console.WriteLine("prime[{0}] = {1}", i, primes[i]);
 #endif
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
+#if false
+            var n = 1 << 30;
+            var mobius1 = new SimpleMobiusCollection(n + 1);
+            var mobius2 = new MobiusCollection(n + 1, 8);
+            for (var i = 1; i < n; i++)
+            {
+                if (mobius1[i] != mobius2[i])
+                {
+                    Debugger.Break();
+                    Console.WriteLine();
+                }
+            }
 #endif
 #if false
             var timer = new Stopwatch();

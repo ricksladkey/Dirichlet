@@ -62,6 +62,7 @@ namespace Decompose.Numerics
 
         public int ParityOfPi(long x)
         {
+            // pi(x) mod 2 = SumTwoToTheOmega(x)/2 mod 2- sum(pi(floor(x^(1/j)) mod 2)
             if (x < piSmall.Length)
                 return piSmall[x] % 2;
             var parity = SumTwoToTheOmega(x) / 2 % 2;
@@ -75,8 +76,24 @@ namespace Decompose.Numerics
             return parity;
         }
 
+        public int ParityOfPi(BigInteger x)
+        {
+            if (x < piSmall.Length)
+                return piSmall[(int)x] % 2;
+            var parity = SumTwoToTheOmega(x) / 2 % 2;
+            for (int j = 2; true; j++)
+            {
+                var root = IntegerMath.FloorRoot(x, j);
+                if (root == 1)
+                    break;
+                parity ^= ParityOfPi(root);
+            }
+            return parity;
+        }
+
         private int SumTwoToTheOmega(long x)
         {
+            // sum(2^w(d), d=[1,x]) mod 4 = sum(mu(d)TauSum(x/d^2), d=[1,floor(sqrt(x))]) mod 4
             var limit = (int)IntegerMath.FloorSquareRoot(x);
             var sum = 0;
             var mobius = new MobiusCollection(limit + 1, threads);
@@ -91,40 +108,158 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private int TauSum(long y)
+        private int SumTwoToTheOmega(BigInteger x)
         {
-            if (y < tauSumSmall.Length)
-                return tauSumSmall[y];
-
-            //Console.WriteLine("TauSum({0})", y);
-#if false
+            var limit = IntegerMath.FloorSquareRoot(x);
+            if (limit <= int.MaxValue)
+                return SumTwoToTheOmega((long)x, (int)limit);
+            if (limit <= long.MaxValue)
+                return SumTwoToTheOmega((UInt128)x, (long)limit);
             var sum = 0;
-            if (y < 1024)
-                return TauSumSmall(y);
-            var limit = (int)IntegerMath.FloorSquareRoot(y);
-            var threads = 8;
-            var incr = (limit + threads - 1) / threads;
-            Parallel.For(0, 8,
-                () => 0,
-                (thread, loop, subtotal) =>
+            var nLast = (BigInteger)0;
+            var tauLast = 0;
+            for (var d = (BigInteger)1; d <= limit; d++)
+            {
+                var mu = IntegerMath.Mobius(d);
+                if (mu != 0)
                 {
-                    var min = incr * thread;
-                    var max = Math.Min(min + incr, limit);
-                    for (var n = min + 1; n <= max; n++)
-                        subtotal ^= (int)((y / n) & 1);
-                    return subtotal;
-                },
-                subtotal => Interlocked.Add(ref sum, subtotal));
-            sum = 2 * sum - limit * limit;
-#endif
-#if false
+                    var n = x / (d * d);
+                    var tau = n == nLast ? tauLast : TauSum(n);
+                    if (mu == 1)
+                        sum += tau;
+                    else
+                        sum += 4 - tau;
+                    tauLast = tau;
+                    nLast = n;
+                }
+            }
+            return sum;
+        }
+
+        private int SumTwoToTheOmegaSimple(long x, int limit)
+        {
+            var mobius = new MobiusCollection(limit + 1, 2 * threads);
             var sum = 0;
-            var limit = (int)IntegerMath.FloorSquareRoot(y);
-            for (var n = 1; n <= limit; n++)
-                sum ^= (int)((y / n) & 1);
-            sum = 2 * sum - limit * limit;
-#endif
-#if false
+            var nLast = (long)0;
+            var tauLast = 0;
+            for (var d = 1; d <= limit; d++)
+            {
+                var mu = mobius[d];
+                if (mu != 0)
+                {
+                    var n = x / ((long)d * d);
+                    var tau = n == nLast ? tauLast : TauSum(n);
+                    if (mu == 1)
+                        sum += tau;
+                    else
+                        sum += 4 - tau;
+                    tauLast = tau;
+                    nLast = n;
+                }
+            }
+            return sum;
+        }
+
+        private int SumTwoToTheOmega(long x, int limit)
+        {
+            var mobius = new MobiusCollection(limit + 1, 2 * threads);
+            var sum = 0;
+            if (threads == 0)
+            {
+                var last = (long)0;
+                var tauLast = 0;
+                var current = (long)1;
+                var delta = 0;
+                var d = limit;
+                while (d > 0)
+                {
+                    var mu = mobius[d];
+                    if (mu != 0)
+                    {
+                        var dSquared = (long)d * d;
+                        var product = (current + delta) * dSquared;
+                        if (product > x)
+                        {
+                            do
+                            {
+                                --delta;
+                                product -= dSquared;
+                            }
+                            while (product > x);
+                        }
+                        else if (product + dSquared <= x)
+                        {
+                            ++delta;
+                            if (product + 2 * dSquared <= x)
+                                break;
+                        }
+                        current += delta;
+                        Debug.Assert(x / dSquared == current);
+                        var tau = current == last ? tauLast : TauSum(current);
+                        if (mu == 1)
+                            sum += tau;
+                        else
+                            sum += 4 - tau;
+                        tauLast = tau;
+                        last = current;
+                    }
+                    --d;
+                }
+                while (d > 0)
+                {
+                    var mu = mobius[d];
+                    if (mu != 0)
+                    {
+                        var n = x / ((long)d * d);
+                        var tau = n == last ? tauLast : TauSum(n);
+                        if (mu == 1)
+                            sum += tau;
+                        else
+                            sum += 4 - tau;
+                        tauLast = tau;
+                        last = n;
+                    }
+                    --d;
+                }
+            }
+            else
+            {
+                var chunks = (limit + chunkSize - 1) / chunkSize;
+                Parallel.For(0, chunks,
+                    () => 0,
+                    (chunk, loop, subtotal) =>
+                    {
+                        var min = chunk * chunkSize;
+                        var max = Math.Min(min + chunkSize, limit);
+                        for (var d = min + 1; d <= max; d++)
+                        {
+                            var mu = mobius[d];
+                            if (mu != 0)
+                            {
+                                var n = x / ((long)d * d);
+                                var tau = TauSum(n);
+                                if (mu == 1)
+                                    subtotal += tau;
+                                else
+                                    subtotal += 4 - tau;
+                            }
+                        }
+                        return subtotal;
+                    },
+                    subtotal => Interlocked.Add(ref sum, subtotal));
+            }
+            return sum;
+        }
+
+        private int SumTwoToTheOmega(UInt128 x, long limit)
+        {
+            throw new NotImplementedException();
+        }
+
+        private int TauSumSimple(long y)
+        {
+            if (y == 0)
+                return 0;
             var sum = 0;
             var n = (long)1;
             var squared = y - 1;
@@ -137,25 +272,76 @@ namespace Decompose.Numerics
                 ++n;
             }
             sum = 2 * sum - (int)((n * n) & 3);
-#endif
-#if true
+            return sum & 3;
+        }
+
+        private int TauSum(long y)
+        {
+            // sum(tau(d), d=[1,y]) = 2 sum(y/d, d=[1,floor(sqrt(y))]) - floor(sqrt(y))^2
+            if (y < tauSumSmall.Length)
+                return tauSumSmall[y];
             var sqrt = 0;
             var sum = TauSumInner(y, out sqrt);
             sum = 2 * sum - (int)((sqrt * sqrt) & 3);
-#endif
             return sum & 3;
+        }
+
+        public int TauSum(BigInteger y)
+        {
+            if (y <= long.MaxValue)
+                return TauSum((long)y);
+            var sum = 0;
+            var n = (BigInteger)1;
+            var squared = y - 1;
+            while (true)
+            {
+                sum ^= (int)((y / n) & 1);
+                squared -= 2 * n + 1;
+                if (squared < 0)
+                    break;
+                ++n;
+            }
+            sum = 2 * sum - (int)((n * n) & 3);
+            return sum & 3;
+        }
+
+        public int TauSumInnerSimple(long y, out int sqrt)
+        {
+            // Computes sum(floor(y/d), d=[1,floor(sqrt(y))]) mod 2.
+            if (y == 0)
+            {
+                sqrt = 0;
+                return 0;
+            }
+            var sum = 0;
+            var n = (long)1;
+            var squared = y - 1;
+            while (true)
+            {
+                sum ^= (int)(y / n);
+                squared -= 2 * n + 1;
+                if (squared < 0)
+                    break;
+                ++n;
+            }
+            sqrt = (int)n;
+            return sum & 1;
         }
 
         public int TauSumInner(long y, out int sqrt)
         {
-#if false
-            return TauSumInnerSimple(y, out sqrt);
-#endif
-#if true
+            // Computes sum(floor(y/d), d=[1,floor(sqrt(y))]) mod 2.
+            // To avoid division, we start at the
+            // end and proceed backwards using multiplication
+            // with estimates.  We keep track of the
+            // difference between steps and let
+            // it increase by at most one each iteration.
+            // As soon as it starts changing too quickly
+            // we resort to a different method where
+            // the quantity floor(y/d) is odd iff y mod 2d >= d.
             if (y <= int.MaxValue)
                 return TauSumInnerSmall((int)y, out sqrt);
             return TauSumInnerLarge(y, out sqrt);
-#endif
         }
 
         public int TauSumInnerSmall(int y, out int sqrt)
@@ -234,91 +420,6 @@ namespace Decompose.Numerics
             return sum1 ^ sum2;
         }
 
-        public int TauSumInnerSimple(long y, out int sqrt)
-        {
-            if (y == 0)
-            {
-                sqrt = 0;
-                return 0;
-            }
-            var sum = 0;
-            var n = (long)1;
-            var squared = y - 1;
-            while (true)
-            {
-                sum ^= (int)(y / n);
-                squared -= 2 * n + 1;
-                if (squared < 0)
-                    break;
-                ++n;
-            }
-            sqrt = (int)n;
-            return sum & 1;
-        }
-
-        private int TauSumSimple(long y)
-        {
-            if (y == 0)
-                return 0;
-            var sum = 0;
-            var n = (long)1;
-            var squared = y - 1;
-            while (true)
-            {
-                sum ^= (int)((y / n) & 1);
-                squared -= 2 * n + 1;
-                if (squared < 0)
-                    break;
-                ++n;
-            }
-            sum = 2 * sum - (int)((n * n) & 3);
-            return sum & 3;
-        }
-
-        public int ParityOfPi(BigInteger x)
-        {
-            if (x < piSmall.Length)
-                return piSmall[(int)x] % 2;
-            var parity = SumTwoToTheOmega(x) / 2 % 2;
-            for (int j = 2; true; j++)
-            {
-                var root = IntegerMath.FloorRoot(x, j);
-                if (root == 1)
-                    break;
-                parity ^= ParityOfPi(root);
-            }
-            return parity;
-        }
-
-        private int SumTwoToTheOmega(BigInteger x)
-        {
-            //Console.WriteLine("SumTwoToTheOmega({0})", x);
-            var limit = IntegerMath.FloorSquareRoot(x);
-            if (limit <= int.MaxValue)
-                return SumTwoToTheOmega((long)x, (int)limit);
-            if (limit <= long.MaxValue)
-                return SumTwoToTheOmega((UInt128)x, (long)limit);
-            var sum = 0;
-            var nLast = (BigInteger)0;
-            var tauLast = 0;
-            for (var d = (BigInteger)1; d <= limit; d++)
-            {
-                var mu = IntegerMath.Mobius(d);
-                if (mu != 0)
-                {
-                    var n = x / (d * d);
-                    var tau = n == nLast ? tauLast : TauSum(n);
-                    if (mu == 1)
-                        sum += tau;
-                    else
-                        sum += 4 - tau;
-                    tauLast = tau;
-                    nLast = n;
-                }
-            }
-            return sum;
-        }
-
 #if false
         private struct WorkItem
         {
@@ -365,7 +466,7 @@ namespace Decompose.Numerics
                         Interlocked.Add(ref subtotal, 4 - TauSum(x / ((long)d * d)));
                 });
             Interlocked.Add(ref sum, subtotal);
-            Console.WriteLine("done with {0} values", numberOfInitialValues);
+            Console.WriteLine("done with {0} values", max);
         }
 
         private void ConsumeItems(BlockingCollection<WorkItem> queue, ref int sum)
@@ -380,11 +481,11 @@ namespace Decompose.Numerics
 #if true
             var timer = new Stopwatch();
             timer.Restart();
-            var mobius = new MobiusRange(limit + 1);
+            var mobius = new MobiusCollection(limit + 1, 2 * threads);
             Console.WriteLine("mobius elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
 #if false
-            var mobius = new MobiusRange(limit + 1);
+            var mobius = new MobiusCollection(limit + 1, 2 * threads);
 #endif
             var last = (long)0;
             var current = (long)1;
@@ -463,231 +564,5 @@ namespace Decompose.Numerics
             return 0;
         }
 #endif
-
-#if true
-        private int SumTwoToTheOmega(long x, int limit)
-        {
-            var sum = 0;
-            var mobius = new MobiusCollection(limit + 1, threads);
-            if (threads == 0)
-            {
-#if false
-                var nLast = (long)0;
-                var tauLast = 0;
-                for (var d = 1; d <= limit; d++)
-                {
-                    var mu = mobius[d];
-                    if (mu != 0)
-                    {
-                        var n = x / ((long)d * d);
-                        var tau = n == nLast ? tauLast : TauSum(n);
-                        if (mu == 1)
-                            sum += tau;
-                        else
-                            sum += 4 - tau;
-                        tauLast = tau;
-                        nLast = n;
-                    }
-                }
-#endif
-#if true
-                var last = (long)0;
-                var tauLast = 0;
-                var current = (long)1;
-                var delta = 0;
-                var d = limit;
-                while (d > 0)
-                {
-                    var mu = mobius[d];
-                    if (mu != 0)
-                    {
-                        var dSquared = (long)d * d;
-                        var product = (current + delta) * dSquared;
-                        if (product > x)
-                        {
-                            do
-                            {
-                                --delta;
-                                product -= dSquared;
-                            }
-                            while (product > x);
-                        }
-                        else if (product + dSquared <= x)
-                        {
-                            ++delta;
-                            if (product + 2 * dSquared <= x)
-                                break;
-                        }
-                        current += delta;
-                        Debug.Assert(x / dSquared == current);
-                        var tau = current == last ? tauLast : TauSum(current);
-                        if (mu == 1)
-                            sum += tau;
-                        else
-                            sum += 4 - tau;
-                        tauLast = tau;
-                        last = current;
-                    }
-                    --d;
-                }
-                while (d > 0)
-                {
-                    var mu = mobius[d];
-                    if (mu != 0)
-                    {
-                        var n = x / ((long)d * d);
-                        var tau = n == last ? tauLast : TauSum(n);
-                        if (mu == 1)
-                            sum += tau;
-                        else
-                            sum += 4 - tau;
-                        tauLast = tau;
-                        last = n;
-                    }
-                    --d;
-                }
-#endif
-            }
-            else
-            {
-                var chunks = (limit + chunkSize - 1) / chunkSize;
-                Parallel.For(0, chunks,
-                    () => 0,
-                    (chunk, loop, subtotal) =>
-                    {
-                        var min = chunk * chunkSize;
-                        var max = Math.Min(min + chunkSize, limit);
-                        for (var d = min + 1; d <= max; d++)
-                        {
-                            var mu = mobius[d];
-                            if (mu != 0)
-                            {
-                                var n = x / ((long)d * d);
-                                var tau = TauSum(n);
-                                if (mu == 1)
-                                    subtotal += tau;
-                                else
-                                    subtotal += 4 - tau;
-                            }
-                        }
-                        return subtotal;
-                    },
-                    subtotal => Interlocked.Add(ref sum, subtotal));
-            }
-            return sum;
-        }
-#endif
-
-        private int SumTwoToTheOmega(UInt128 x, long limit)
-        {
-#if true
-            throw new NotImplementedException();
-#endif
-#if false
-            var sum = 0;
-            var mobius = new MobiusRange(limit + 1);
-            if (threads == 0)
-            {
-#if true
-                var nLast = UInt128.Zero;
-                var tauLast = 0;
-                for (var d = (long)1; d <= limit; d++)
-                {
-                    var mu = mobius[d];
-                    if (mu != 0)
-                    {
-                        var n = x / ((ulong)d * (ulong)d);
-                        var tau = n == nLast ? tauLast : TauSum(n);
-                        if (mu == 1)
-                            sum += tau;
-                        else
-                            sum += 4 - tau;
-                        tauLast = tau;
-                        nLast = n;
-                    }
-                }
-#endif
-#if false
-#endif
-            }
-            else
-            {
-                var chunks = (limit + chunkSize - 1) / chunkSize;
-                Parallel.For(0, chunks,
-                    () => 0,
-                    (chunk, loop, subtotal) =>
-                    {
-                        var min = chunk * chunkSize;
-                        var max = Math.Min(min + chunkSize, limit);
-                        for (var d = min + 1; d <= max; d++)
-                        {
-                            var mu = mobius[d];
-                            if (mu != 0)
-                            {
-                                var n = x / ((ulong)d * (ulong)d);
-                                var tau = TauSum(n);
-                                if (mu == 1)
-                                    subtotal += tau;
-                                else
-                                    subtotal += 4 - tau;
-                            }
-                        }
-                        return subtotal;
-                    },
-                    subtotal => Interlocked.Add(ref sum, subtotal));
-            }
-            return sum;
-#endif
-        }
-
-        public int TauSum(BigInteger y)
-        {
-            if (y <= long.MaxValue)
-                return TauSum((long)y);
-            var sum = 0;
-            var  n = (BigInteger)1;
-            while (true)
-            {
-                var term = y / n - n;
-                if (term < 0)
-                    break;
-                sum ^= (int)(term & 1);
-                ++n;
-            }
-            sum = 2 * sum + (int)((n - 1) & 3);
-            return (int)(sum & 3);
-        }
-
-#if false
-        private Dictionary<BigInteger, int> tauSumMap = new Dictionary<BigInteger, int>();
-        public Dictionary<BigInteger, int> TauSumMap { get { return tauSumMap; } }
-#endif
-
-        private int TauSum(UInt128 y)
-        {
-#if false
-            lock (tauSumMap)
-            {
-                var yy = (BigInteger)y;
-                if (!tauSumMap.ContainsKey(yy))
-                    tauSumMap[yy] = 0;
-                ++tauSumMap[yy];
-            }
-#endif
-            if (y <= long.MaxValue)
-                return TauSum((long)y);
-            var sum = 0;
-            var n = (UInt128)1;
-            while (true)
-            {
-                var term = y / n - n;
-                if (term < 0)
-                    break;
-                sum ^= (int)(term & 1);
-                ++n;
-            }
-            sum = 2 * sum + (int)((n - 1) & 3);
-            return (int)(sum & 3);
-        }
     }
 }
