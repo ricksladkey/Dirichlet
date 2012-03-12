@@ -70,11 +70,11 @@ namespace Sandbox
 
         static void ParityTest()
         {
-#if false
-            var algorithm = new PrimeCounting(0);
+#if true
+            var algorithm = new PrimeCounting(4);
             for (int j = 0; j < 1; j++)
             {
-                for (int i = 58; i <= 58; i++)
+                for (int i = 20; i <= 60; i++)
                 {
                     var timer = new Stopwatch();
                     timer.Start();
@@ -87,7 +87,7 @@ namespace Sandbox
 #if false
             Console.WriteLine("procs = {0}", Environment.ProcessorCount);
 #endif
-#if true
+#if false
             var timer = new Stopwatch();
             timer.Start();
             var n = 1 << 30;

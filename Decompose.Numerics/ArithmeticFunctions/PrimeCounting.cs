@@ -160,7 +160,7 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private int SumTwoToTheOmega(long x, int limit)
+        private int SumTwoToTheOmegaOld(long x, int limit)
         {
             var mobius = new MobiusCollection(limit + 1, 2 * threads);
             var sum = 0;
@@ -420,28 +420,29 @@ namespace Decompose.Numerics
             return sum1 ^ sum2;
         }
 
-#if false
+#if true
         private struct WorkItem
         {
             public int Count { get; set; }
             public long Value { get; set; }
         }
 
-        private const int numberOfInitialValues = 1000000;
+        private const int numberOfInitialValues = 1000;
 
         private int SumTwoToTheOmega(long x, int limit)
         {
             var queue = new BlockingCollection<WorkItem>();
-            Task.Factory.StartNew(() => ProduceItems(queue, x, limit));
+            var mobius = new MobiusCollection(limit + 1, 2 * threads);
+            Task.Factory.StartNew(() => ProduceItems(queue, mobius, x, limit));
             var sum = 0;
             if (threads == 0)
             {
-                ProcessFirstFewValues(x, limit, ref sum);
+                ProcessFirstFewValues(mobius, x, limit, ref sum);
                 ConsumeItems(queue, ref sum);
             }
             else
             {
-                var initialTask = Task.Factory.StartNew(() => ProcessFirstFewValues(x, limit, ref sum));
+                var initialTask = Task.Factory.StartNew(() => ProcessFirstFewValues(mobius, x, limit, ref sum));
                 var tasks = new Task[threads];
                 for (int thread = 0; thread < threads; thread++)
                     tasks[thread] = Task.Factory.StartNew(() => ConsumeItems(queue, ref sum));
@@ -451,7 +452,7 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private void ProcessFirstFewValues(long x, int limit, ref int sum)
+        private void ProcessFirstFewValues(MobiusCollection mobius, long x, int limit, ref int sum)
         {
             var max = Math.Min(limit, numberOfInitialValues);
             var subtotal = 0;
@@ -459,14 +460,14 @@ namespace Decompose.Numerics
                 d =>
                 {
                     //Console.WriteLine("x = {0}, d = {1}", x, d);
-                    var mu = IntegerMath.Mobius(d);
+                    var mu = mobius[d];
                     if (mu == 1)
                         Interlocked.Add(ref subtotal, TauSum(x / ((long)d * d)));
                     else if (mu == -1)
                         Interlocked.Add(ref subtotal, 4 - TauSum(x / ((long)d * d)));
                 });
             Interlocked.Add(ref sum, subtotal);
-            Console.WriteLine("done with {0} values", max);
+            //Console.WriteLine("done with {0} values", max);
         }
 
         private void ConsumeItems(BlockingCollection<WorkItem> queue, ref int sum)
@@ -476,17 +477,8 @@ namespace Decompose.Numerics
                 Interlocked.Add(ref sum, ProcessBatch(item.Count, item.Value));
         }
 
-        private void ProduceItems(BlockingCollection<WorkItem> queue, long x, int limit)
+        private void ProduceItems(BlockingCollection<WorkItem> queue, MobiusCollection mobius, long x, int limit)
         {
-#if true
-            var timer = new Stopwatch();
-            timer.Restart();
-            var mobius = new MobiusCollection(limit + 1, 2 * threads);
-            Console.WriteLine("mobius elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-#endif
-#if false
-            var mobius = new MobiusCollection(limit + 1, 2 * threads);
-#endif
             var last = (long)0;
             var current = (long)1;
             var delta = 0;
