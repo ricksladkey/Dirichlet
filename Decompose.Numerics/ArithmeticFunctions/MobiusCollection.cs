@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
@@ -130,23 +129,20 @@ namespace Decompose.Numerics
                     products[j] = 0;
             }
 
-            byte value;
             for (int i = 0, k = k0; i < length; i++, k++)
             {
                 var p = products[i];
-                if (p > 0)
-                {
-                    // Equivalent to: value = p == k ? (byte)0 : (byte)2
-                    value = (byte)-(((p - k) >> 31) << 1);
-                }
-                else if (p < 0)
-                {
-                    // Equivalent to: value = p == -k ? (byte)2 : (byte)0
-                    value = (byte)-(((p + k - 1) >> 31) << 1);
-                }
-                else
-                    value = 1;
-                values[k] = value;
+                //if (p > 0)
+                //    values[k] = p == k ? (byte)0 : (byte)2;
+                //else if (p < 0)
+                //    values[k] = p == -k ? (byte)2 : (byte)0;
+                //else
+                //    values[k] = 1;
+                var pos = ((p - 1) >> 31) + 1; // pos = 1 if p > 0, zero otherwise
+                var neg = p >> 31; // neg = -1 if p is < 0, zero otherwise
+                var abs = (p + neg) ^ neg; // abs = Math.Abs(p)
+                var flip = ~((abs - k) >> 31) & 2; // flip = 2 if abs == k, zero otherwise
+                values[k] = (byte)((pos + neg + flip + 1) & 3);
             }
         }
     }
