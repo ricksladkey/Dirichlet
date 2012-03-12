@@ -12,6 +12,9 @@ namespace Decompose.Numerics
         private uint[] primes;
         private int size;
         private byte[] values;
+        private int dlimit;
+        private int cycleSize;
+        private int[] cycle;
 
         public int Size { get { return size; } }
         public int this[int index] { get { return values[index] - 1; } }
@@ -22,8 +25,32 @@ namespace Decompose.Numerics
             var limit = (int)Math.Ceiling(Math.Sqrt(size));
             primes = new PrimeCollection(limit, 0).ToArray();
             values = new byte[size];
+            CreateCycle();
             GetValues(threads);
             values[1] = 2;
+        }
+
+        private void CreateCycle()
+        {
+            // Create pre-sieved cycle of small primes.
+            var dmax = 5;
+            dlimit = Math.Min(primes.Length, dmax);
+            cycleSize = 1;
+            for (var d = 0; d < dlimit; d++)
+                cycleSize *= (int)primes[d];
+            cycleSize *= 2;
+            cycle = new int[cycleSize];
+            for (var i = 0; i < cycleSize; i++)
+                cycle[i] = -1;
+            for (var i = 0; i < dlimit; i++)
+            {
+                var p = primes[i];
+                var pMinus = -(int)p;
+                for (var j = (uint)0; j < cycleSize; j += p)
+                    cycle[j] *= pMinus;
+            }
+            for (var j = 0; j < cycleSize; j += 4)
+                cycle[j] = 0;
         }
 
         private void GetValues(int threads)
@@ -53,10 +80,28 @@ namespace Decompose.Numerics
 
         private void SieveBlock(int k0, int length, int[] products)
         {
-            for (var i = 0; i < length; i++)
-                products[i] = -1;
+            var cycleOffset = cycleSize - (int)(k0 % cycleSize);
+            if (cycleOffset == cycleSize)
+                cycleOffset = 0;
+            Array.Copy(cycle, cycleSize - cycleOffset, products, 0, cycleOffset);
+            while (cycleOffset < length)
+            {
+                Array.Copy(cycle, 0, products, cycleOffset, Math.Min(cycleSize, length - cycleOffset));
+                cycleOffset += cycleSize;
+            }
 
-            for (var i = 0; i < primes.Length; i++)
+            for (var i = 1; i < dlimit; i++)
+            {
+                var p = primes[i];
+                var pSquared = p * p;
+                var j1 = pSquared - k0 % pSquared;
+                if (j1 == pSquared)
+                    j1 = 0;
+                for (var j = j1; j < length; j += pSquared)
+                    products[j] = 0;
+            }
+
+            for (var i = dlimit; i < primes.Length; i++)
             {
                 var p = primes[i];
                 var pMinus = -(int)p;
