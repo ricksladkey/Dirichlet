@@ -7,7 +7,7 @@ namespace Decompose.Numerics
 {
     public class MobiusCollection
     {
-        private const int blockSize = 1 << 16;
+        private const int blockSize = 1 << 15;
 
         private uint[] primes;
         private int size;
@@ -75,23 +75,29 @@ namespace Decompose.Numerics
         {
             var products = new int[blockSize];
             var offsets = new int[primes.Length];
+            var offsetsSquared = new int[primes.Length];
             var cycleOffset = cycleSize - kstart % cycleSize;
             if (cycleOffset == cycleSize)
                 cycleOffset = 0;
             offsets[0] = cycleOffset;
-            for (var i = dlimit; i < primes.Length; i++)
+            for (var i = 1; i < primes.Length; i++)
             {
                 var p = (int)primes[i];
                 var offset = p - kstart % p;
                 if (offset == p)
                     offset = 0;
                 offsets[i] = offset;
+                var pSquared = p * p;
+                var offsetSquared = pSquared - kstart % pSquared;
+                if (offsetSquared == pSquared)
+                    offsetSquared = 0;
+                offsetsSquared[i] = offsetSquared;
             }
             for (var k = kstart; k < kend; k += blockSize)
-                SieveBlock(k, Math.Min(blockSize, kend - k), products, offsets);
+                SieveBlock(k, Math.Min(blockSize, kend - k), products, offsets, offsetsSquared);
         }
 
-        private void SieveBlock(int k0, int length, int[] products, int[] offsets)
+        private void SieveBlock(int k0, int length, int[] products, int[] offsets, int[] offsetsSquared)
         {
             var cycleOffset = offsets[0];
             Array.Copy(cycle, cycleSize - cycleOffset, products, 0, cycleOffset);
@@ -106,11 +112,10 @@ namespace Decompose.Numerics
             {
                 var p = (int)primes[i];
                 var pSquared = p * p;
-                var j1 = pSquared - k0 % pSquared;
-                if (j1 == pSquared)
-                    j1 = 0;
-                for (var j = j1; j < length; j += pSquared)
+                int j;
+                for (j = offsetsSquared[i]; j < length; j += pSquared)
                     products[j] = 0;
+                offsetsSquared[i] = j - length;
             }
 
             for (var i = dlimit; i < primes.Length; i++)
@@ -122,11 +127,9 @@ namespace Decompose.Numerics
                     products[j] *= pMinus;
                 offsets[i] = j - length;
                 var pSquared = p * p;
-                var j1 = pSquared - k0 % pSquared;
-                if (j1 == pSquared)
-                    j1 = 0;
-                for (j = j1; j < length; j += pSquared)
+                for (j = offsetsSquared[i]; j < length; j += pSquared)
                     products[j] = 0;
+                offsetsSquared[i] = j - length;
             }
 
             for (int i = 0, k = k0; i < length; i++, k++)
