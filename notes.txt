@@ -535,3 +535,10 @@ all numbers less the p[n]# (nth primorial) have less than n prime factors
 
 2 * 3 * 5 = 30
 7 * 5 = 35
+
+x -> v
+0 -> 0
+-1 -> 2
+v = -(x << 1)
+
+x -> v
