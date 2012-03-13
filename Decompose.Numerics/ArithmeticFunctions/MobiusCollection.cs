@@ -12,7 +12,7 @@ namespace Decompose.Numerics
         private uint[] primes;
         private int size;
         private byte[] values;
-        private int dlimit;
+        private int cycleLimit;
         private int cycleSize;
         private int[] cycle;
 
@@ -32,25 +32,28 @@ namespace Decompose.Numerics
 
         private void CreateCycle()
         {
-            // Create pre-sieved cycle of small primes.
-            var dmax = 5;
-            dlimit = Math.Min(primes.Length, dmax);
+            // Create pre-sieved cycle of the squares of small primes.
+            var dmax = 3;
+            cycleLimit = Math.Min(primes.Length, dmax);
             cycleSize = 1;
-            for (var d = 0; d < dlimit; d++)
-                cycleSize *= (int)primes[d];
-            cycleSize *= 2;
+            for (var i = 0; i < cycleLimit; i++)
+            {
+                var p = (int)primes[i];
+                cycleSize *= p * p;
+            }
             cycle = new int[cycleSize];
             for (var i = 0; i < cycleSize; i++)
                 cycle[i] = -1;
-            for (var i = 0; i < dlimit; i++)
+            for (var i = 0; i < cycleLimit; i++)
             {
                 var p = (int)primes[i];
                 var pMinus = -p;
-                for (var j = 0; j < cycleSize; j += p)
-                    cycle[j] *= pMinus;
+                for (var k = 0; k < cycleSize; k += p)
+                    cycle[k] *= pMinus;
+                var pSquared = p * p;
+                for (var k = 0; k < cycleSize; k += pSquared)
+                    cycle[k] = 0;
             }
-            for (var j = 0; j < cycleSize; j += 4)
-                cycle[j] = 0;
         }
 
         private void GetValues(int threads)
@@ -108,30 +111,23 @@ namespace Decompose.Numerics
             }
             offsets[0] = cycleOffset - length;
 
-            for (var i = 1; i < dlimit; i++)
-            {
-                var p = (int)primes[i];
-                var pSquared = p * p;
-                int j;
-                for (j = offsetsSquared[i]; j < length; j += pSquared)
-                    products[j] = 0;
-                offsetsSquared[i] = j - length;
-            }
-
-            for (var i = dlimit; i < primes.Length; i++)
+            for (var i = cycleLimit; i < primes.Length; i++)
             {
                 var p = (int)primes[i];
                 var pMinus = -p;
-                int j;
-                for (j = offsets[i]; j < length; j += p)
-                    products[j] *= pMinus;
-                offsets[i] = j - length;
+                int k;
+                for (k = offsets[i]; k < length; k += p)
+                    products[k] *= pMinus;
+                offsets[i] = k - length;
                 var pSquared = p * p;
-                for (j = offsetsSquared[i]; j < length; j += pSquared)
-                    products[j] = 0;
-                offsetsSquared[i] = j - length;
+                for (k = offsetsSquared[i]; k < length; k += pSquared)
+                    products[k] = 0;
+                offsetsSquared[i] = k - length;
             }
 
+            // Each product that is square-free can have at most one more
+            // prime factor.  It has that factor if the absolute value of
+            // the product is not equal to the full value.
             for (int i = 0, k = k0; i < length; i++, k++)
             {
                 var p = products[i];

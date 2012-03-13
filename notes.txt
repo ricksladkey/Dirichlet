@@ -533,12 +533,29 @@ divisors[55] is incremented (previously 0)
 
 all numbers less the p[n]# (nth primorial) have less than n prime factors
 
-2 * 3 * 5 = 30
-7 * 5 = 35
+- when adding/merging Primes to Primes in PrimeColleciton, re-use arrays instead of allocating new ones
 
-x -> v
-0 -> 0
--1 -> 2
-v = -(x << 1)
+Method of using approximate log base 2 values instead exact multiplication
+==========================================================================
 
-x -> v
+let k: number >= sqrt(size) with n unique prime factors p[1], p[2], ..., p[n]
+with p[1] < p[2] < ... < p[n] and p[n] > sqrt(k)
+
+sum(ceiling(log2(p[i]), i=[1,n]) >= floor(log2(k))
+
+sum(ceiling(log2(p), i=[1,n-1]) < floor(log2(k))
+
+because:
+
+sum(log2(p[i]), i=[1,n]) = log2(k)
+sum(log2(p[i]), i=[1,n-1]) + log2(p[n]) = log2(k)
+sum(log2(p[i]), i=[1,n-1]) = log2(k) - log2(p[n]) <= log2(k)/2
+sum(ceiling(log2(p[i])), i=[1,n-1]) <= log2(k)/2 + n - 1
+
+if k ~ 2^32, log2(k)/2 = 16, n <= 9 so 
+
+sum(ceiling(log2(p[i])), i=[1,n-1]) <= 16 + 9 - 1 = 24
+
+and yet:
+
+floor(log2(k)) >= 31
