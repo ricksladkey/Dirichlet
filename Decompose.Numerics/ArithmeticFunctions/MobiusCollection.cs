@@ -7,6 +7,12 @@ namespace Decompose.Numerics
 {
     public class MobiusCollection
     {
+        private struct Offsets
+        {
+            public int Offset;
+            public int OffsetSquared;
+        }
+
         private const int blockSize = 1 << 15;
 
         private uint[] primes;
@@ -33,7 +39,7 @@ namespace Decompose.Numerics
         private void CreateCycle()
         {
             // Create pre-sieved cycle of the squares of small primes.
-            var dmax = 3;
+            var dmax = 4;
             cycleLimit = Math.Min(primes.Length, dmax);
             cycleSize = 1;
             for (var i = 0; i < cycleLimit; i++)
@@ -77,52 +83,51 @@ namespace Decompose.Numerics
         private void ProcessRange(int kstart, int kend)
         {
             var products = new int[blockSize];
-            var offsets = new int[primes.Length];
-            var offsetsSquared = new int[primes.Length];
+            var offsets = new Offsets[primes.Length];
             var cycleOffset = cycleSize - kstart % cycleSize;
             if (cycleOffset == cycleSize)
                 cycleOffset = 0;
-            offsets[0] = cycleOffset;
+            offsets[0].Offset = cycleOffset;
             for (var i = 1; i < primes.Length; i++)
             {
                 var p = (int)primes[i];
                 var offset = p - kstart % p;
                 if (offset == p)
                     offset = 0;
-                offsets[i] = offset;
+                offsets[i].Offset = offset;
                 var pSquared = p * p;
                 var offsetSquared = pSquared - kstart % pSquared;
                 if (offsetSquared == pSquared)
                     offsetSquared = 0;
-                offsetsSquared[i] = offsetSquared;
+                offsets[i].OffsetSquared = offsetSquared;
             }
             for (var k = kstart; k < kend; k += blockSize)
-                SieveBlock(k, Math.Min(blockSize, kend - k), products, offsets, offsetsSquared);
+                SieveBlock(k, Math.Min(blockSize, kend - k), products, offsets);
         }
 
-        private void SieveBlock(int k0, int length, int[] products, int[] offsets, int[] offsetsSquared)
+        private void SieveBlock(int k0, int length, int[] products, Offsets[] offsets)
         {
-            var cycleOffset = offsets[0];
-            Array.Copy(cycle, cycleSize - cycleOffset, products, 0, cycleOffset);
+            var cycleOffset = offsets[0].Offset;
+            Array.Copy(cycle, cycleSize - cycleOffset, products, 0, Math.Min(length, cycleOffset));
             while (cycleOffset < length)
             {
                 Array.Copy(cycle, 0, products, cycleOffset, Math.Min(cycleSize, length - cycleOffset));
                 cycleOffset += cycleSize;
             }
-            offsets[0] = cycleOffset - length;
+            offsets[0].Offset = cycleOffset - length;
 
             for (var i = cycleLimit; i < primes.Length; i++)
             {
                 var p = (int)primes[i];
                 var pMinus = -p;
                 int k;
-                for (k = offsets[i]; k < length; k += p)
+                for (k = offsets[i].Offset; k < length; k += p)
                     products[k] *= pMinus;
-                offsets[i] = k - length;
+                offsets[i].Offset = k - length;
                 var pSquared = p * p;
-                for (k = offsetsSquared[i]; k < length; k += pSquared)
+                for (k = offsets[i].OffsetSquared; k < length; k += pSquared)
                     products[k] = 0;
-                offsetsSquared[i] = k - length;
+                offsets[i].OffsetSquared = k - length;
             }
 
             // Each product that is square-free can have at most one more
