@@ -17,23 +17,23 @@ namespace Decompose.Numerics
 
         private uint[] primes;
         private int size;
-        private byte[] values;
+        private sbyte[] values;
         private int cycleLimit;
         private int cycleSize;
         private int[] cycle;
 
         public int Size { get { return size; } }
-        public int this[int index] { get { return values[index] - 1; } }
+        public int this[int index] { get { return values[index]; } }
 
         public MobiusCollection(int size, int threads)
         {
             this.size = size;
             var limit = (int)Math.Ceiling(Math.Sqrt(size));
             primes = new PrimeCollection(limit, 0).ToArray();
-            values = new byte[size];
+            values = new sbyte[size];
             CreateCycle();
             GetValues(threads);
-            values[1] = 2;
+            values[1] = 1;
         }
 
         private void CreateCycle()
@@ -139,9 +139,9 @@ namespace Decompose.Numerics
                 var pos = (-p >> 31) & 1; // pos = 1 if p > 0, zero otherwise
                 var neg = p >> 31; // neg = -1 if p is < 0, zero otherwise
                 var abs = (p + neg) ^ neg; // abs = |p|
-                var flip = ~((abs - k) >> 31) & 2; // flip = 2 if abs == k, zero otherwise
-                values[k] = (byte)((pos + neg + flip + 1) & 3); // values[k] = mu(k) + 1
-                Debug.Assert(values[k] == Math.Sign(p) * (Math.Abs(p) == k ? -1 : 1) + 1);
+                var flip = (~((abs - k) >> 31) << 1) + 1; // flip = -1 if abs == k, 1 otherwise
+                values[k] = (sbyte)((pos + neg) * flip); // values[k] = mu(k)
+                Debug.Assert(values[k] == Math.Sign(p) * (Math.Abs(p) == k ? -1 : 1));
             }
         }
     }
