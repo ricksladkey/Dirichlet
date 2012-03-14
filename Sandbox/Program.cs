@@ -70,6 +70,29 @@ namespace Sandbox
 
         static void ParityTest()
         {
+#if true
+            var timer = new Stopwatch();
+            timer.Start();
+            var n = IntegerMath.Power((long)2, 32);
+            var mobius = new MobiusRange(n + 1, 8);
+            var batchSize = 1 << 30;
+            var values = new sbyte[batchSize];
+            var sum = 0;
+            for (var kmin = (long)1; kmin < n; kmin += batchSize)
+            {
+                var kmax = Math.Min(kmin + batchSize, mobius.Size);
+                mobius.GetValues(kmin, kmax, values);
+                var length = kmax - kmin;
+                for (var i = 0; i < length; i++)
+                    sum += values[i];
+            }
+            Console.WriteLine("Sum(mobius) = {0}", sum);
+#if false
+            for (int i = 0; i < primes.Count; i++)
+                Console.WriteLine("prime[{0}] = {1}", i, primes[i]);
+#endif
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
 #if false
             var algorithm = new PrimeCounting(4);
             for (int j = 0; j < 1; j++)
@@ -87,7 +110,7 @@ namespace Sandbox
 #if false
             Console.WriteLine("procs = {0}", Environment.ProcessorCount);
 #endif
-#if true
+#if false
             var timer = new Stopwatch();
             timer.Start();
             var n = 1 << 30;

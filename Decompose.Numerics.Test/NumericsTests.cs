@@ -937,6 +937,75 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
+        public void MobiusTest2()
+        {
+            for (var threads = 0; threads < 4; threads++)
+            {
+                var n = 1 << 10;
+                var mobius = new MobiusRange(n, threads);
+                var values = new sbyte[mobius.Size];
+                mobius.GetValues(1, mobius.Size, values);
+                for (int i = 1; i < n; i++)
+                    Assert.AreEqual(IntegerMath.Mobius(i), values[i - 1]);
+            }
+        }
+
+        [TestMethod]
+        public void MobiusTest3()
+        {
+            for (var threads = 0; threads < 4; threads++)
+            {
+                var n = 1 << 10;
+                var mobius = new MobiusRange(n, threads);
+                var batchSize = 10;
+                var values = new sbyte[batchSize];
+                for (var k = 1; k < mobius.Size; k += batchSize)
+                {
+                    var kmax = Math.Min(k + batchSize, mobius.Size);
+                    mobius.GetValues(k, kmax, values);
+                    var length = kmax - k;
+                    for (int i = 0; i < length; i++)
+                        Assert.AreEqual(IntegerMath.Mobius(i + k), values[i]);
+                }
+            }
+        }
+
+        // http://projecteuclid.org/DPubS/Repository/1.0/Disseminate?view=body&id=pdf_1&handle=euclid.em/1047565447
+        private Dictionary<int, int> mertensData = new Dictionary<int,int>()
+        {
+            { 6, 212 },
+            { 7, 1037 },
+            { 8, 1928 },
+            { 9, -222 },
+            { 10, -33722 },
+            { 11, -87856 },
+            { 12, 62366 },
+            { 13, 599582 },
+        };
+
+        [TestMethod]
+        public void MobiusTest4()
+        {
+            for (var j = 6; j <= 8; j++)
+            {
+                var n = IntegerMath.Power((long)10, j);
+                var mobius = new MobiusRange(n + 1, 8);
+                var batchSize = 1 << 16;
+                var values = new sbyte[batchSize];
+                var sum = 0;
+                for (var kmin = (long)1; kmin < n; kmin += batchSize)
+                {
+                    var kmax = Math.Min(kmin + batchSize, mobius.Size);
+                    mobius.GetValues(kmin, kmax, values);
+                    var length = kmax - kmin;
+                    for (var i = 0; i < length; i++)
+                        sum += values[i];
+                }
+                Assert.AreEqual(sum, mertensData[j]);
+            }
+        }
+
+        [TestMethod]
         public void DivisorsTest()
         {
             var n = 1 << 10;
