@@ -559,3 +559,6 @@ sum(ceiling(log2(p[i])), i=[1,n-1]) <= 16 + 9 - 1 = 24
 and yet:
 
 floor(log2(k)) >= 31
+
+neg = p >> 31
+abs(p) = (p & ~neg) - (p & neg)

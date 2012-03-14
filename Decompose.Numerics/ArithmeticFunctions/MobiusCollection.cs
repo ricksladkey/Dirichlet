@@ -102,7 +102,11 @@ namespace Decompose.Numerics
                 offsets[i].OffsetSquared = offsetSquared;
             }
             for (var k = kstart; k < kend; k += blockSize)
-                SieveBlock(k, Math.Min(blockSize, kend - k), products, offsets);
+            {
+                var length = (int)Math.Min(blockSize, kend - k);
+                SieveBlock(k, length, products, offsets);
+                AddValues(k, length, products);
+            }
         }
 
         private void SieveBlock(int k0, int length, int[] products, Offsets[] offsets)
@@ -129,18 +133,21 @@ namespace Decompose.Numerics
                     products[k] = 0;
                 offsets[i].OffsetSquared = k - length;
             }
+        }
 
+        private void AddValues(int k0, int length, int[] products)
+        {
             // Each product that is square-free can have at most one more
             // prime factor.  It has that factor if the absolute value of
             // the product is not equal to the full value.
             for (int i = 0, k = k0; i < length; i++, k++)
             {
                 var p = products[i];
-                var pos = (-p >> 31) & 1; // pos = 1 if p > 0, zero otherwise
+                var pos = -p >> 31; // pos = -1 if p > 0, zero otherwise
                 var neg = p >> 31; // neg = -1 if p is < 0, zero otherwise
                 var abs = (p + neg) ^ neg; // abs = |p|
-                var flip = (~((abs - k) >> 31) << 1) + 1; // flip = -1 if abs == k, 1 otherwise
-                values[k] = (sbyte)((pos + neg) * flip); // values[k] = mu(k)
+                var flip = ~(abs - k) >> 31; // flip = -1 if abs >= k, zero otherwise
+                values[k] = (sbyte)(((neg - pos) ^ flip) - flip); // values[k] = pos - neg if flip = -1, neg - pos otherwise
                 Debug.Assert(values[k] == Math.Sign(p) * (Math.Abs(p) == k ? -1 : 1));
             }
         }
