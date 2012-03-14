@@ -21,6 +21,8 @@ namespace Decompose.Numerics
         private int cycleLimit;
         private uint cycleSize;
         private long[] cycle;
+        private long[][] productsArray;
+        private Offsets[][] offsetsArray;
 
         public long Size { get { return size; } }
 
@@ -31,13 +33,23 @@ namespace Decompose.Numerics
             var limit = (int)Math.Ceiling(Math.Sqrt(size));
             primes = new PrimeCollection(limit, 0).ToArray();
             CreateCycle();
+            var arrayLength = Math.Max(1, threads);
+            productsArray = new long[arrayLength][];
+            offsetsArray = new Offsets[arrayLength][];
+            for (var thread = 0; thread < arrayLength; thread++)
+            {
+                productsArray[thread] = new long[blockSize];
+                offsetsArray[thread] = new Offsets[primes.Length];
+            }
         }
 
         public void GetValues(long kmin, long kmax, sbyte[] values)
         {
             if (threads == 0)
             {
-                ProcessRange(kmin, kmax, kmin, values);
+                var products = productsArray[0];
+                var offsets = offsetsArray[0];
+                ProcessRange(kmin, kmax, kmin, values, products, offsets);
                 return;
             }
             var tasks = new Task[threads];
@@ -47,7 +59,9 @@ namespace Decompose.Numerics
             {
                 var kstart = (long)thread * batchSize + kmin;
                 var kend = Math.Min(kstart + batchSize, kmax);
-                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(kstart, kend, kmin, values));
+                var products = productsArray[thread];
+                var offsets = offsetsArray[thread];
+                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(kstart, kend, kmin, values, products, offsets));
             }
             Task.WaitAll(tasks);
             if (kmin <= 1)
@@ -81,10 +95,8 @@ namespace Decompose.Numerics
             }
         }
 
-        private void ProcessRange(long kstart, long kend, long kmin, sbyte[] values)
+        private void ProcessRange(long kstart, long kend, long kmin, sbyte[] values, long[] products, Offsets[] offsets)
         {
-            var products = new long[blockSize];
-            var offsets = new Offsets[primes.Length];
             var cycleOffset = cycleSize - kstart % cycleSize;
             if (cycleOffset == cycleSize)
                 cycleOffset = 0;

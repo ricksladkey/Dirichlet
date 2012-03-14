@@ -562,3 +562,7 @@ floor(log2(k)) >= 31
 
 neg = p >> 31
 abs(p) = (p & ~neg) - (p & neg)
+
+sign = [1, 0 -1]
+flip = -1
+value = sign * flip

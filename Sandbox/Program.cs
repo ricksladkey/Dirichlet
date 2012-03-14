@@ -72,6 +72,7 @@ namespace Sandbox
         {
 #if true
             var timer = new Stopwatch();
+            var timer2 = new Stopwatch();
             timer.Start();
             var n = IntegerMath.Power((long)2, 32);
             var mobius = new MobiusRange(n + 1, 8);
@@ -81,16 +82,14 @@ namespace Sandbox
             for (var kmin = (long)1; kmin < n; kmin += batchSize)
             {
                 var kmax = Math.Min(kmin + batchSize, mobius.Size);
+                timer2.Restart();
                 mobius.GetValues(kmin, kmax, values);
+                output.WriteLine("elapsed2 = {0:F3} msec", (double)timer2.ElapsedTicks / Stopwatch.Frequency * 1000);
                 var length = kmax - kmin;
                 for (var i = 0; i < length; i++)
                     sum += values[i];
             }
             Console.WriteLine("Sum(mobius) = {0}", sum);
-#if false
-            for (int i = 0; i < primes.Count; i++)
-                Console.WriteLine("prime[{0}] = {1}", i, primes[i]);
-#endif
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
 #if false
