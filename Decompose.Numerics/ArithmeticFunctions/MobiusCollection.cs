@@ -49,7 +49,7 @@ namespace Decompose.Numerics
             }
             cycle = new int[cycleSize];
             for (var i = 0; i < cycleSize; i++)
-                cycle[i] = -1;
+                cycle[i] = 1;
             for (var i = 0; i < cycleLimit; i++)
             {
                 var p = (int)primes[i];
@@ -139,16 +139,16 @@ namespace Decompose.Numerics
         {
             // Each product that is square-free can have at most one more
             // prime factor.  It has that factor if the absolute value of
-            // the product is not equal to the full value.
+            // the product is less than the full value.
             for (int i = 0, k = k0; i < length; i++, k++)
             {
                 var p = products[i];
                 var pos = -p >> 31; // pos = -1 if p > 0, zero otherwise
                 var neg = p >> 31; // neg = -1 if p is < 0, zero otherwise
                 var abs = (p + neg) ^ neg; // abs = |p|
-                var flip = ~(abs - k) >> 31; // flip = -1 if abs >= k, zero otherwise
+                var flip = (abs - k) >> 31; // flip = -1 if abs < k, zero otherwise
                 values[k] = (sbyte)(((neg - pos) ^ flip) - flip); // values[k] = pos - neg if flip = -1, neg - pos otherwise
-                Debug.Assert(values[k] == Math.Sign(p) * (Math.Abs(p) == k ? -1 : 1));
+                Debug.Assert(values[k] == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
             }
         }
     }

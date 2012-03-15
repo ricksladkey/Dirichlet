@@ -9,7 +9,7 @@ namespace Decompose.Numerics
     {
         private struct Offsets
         {
-            public long Offset;
+            public int Offset;
             public long OffsetSquared;
         }
 
@@ -17,9 +17,9 @@ namespace Decompose.Numerics
 
         private long size;
         private int threads;
-        private uint[] primes;
+        private int[] primes;
         private int cycleLimit;
-        private uint cycleSize;
+        private int cycleSize;
         private long[] cycle;
         private long[][] productsArray;
         private Offsets[][] offsetsArray;
@@ -31,7 +31,7 @@ namespace Decompose.Numerics
             this.size = size;
             this.threads = threads;
             var limit = (int)Math.Ceiling(Math.Sqrt(size));
-            primes = new PrimeCollection(limit, 0).ToArray();
+            primes = new PrimeCollection(limit, 0).Select(p => (int)p).ToArray();
             CreateCycle();
             var arrayLength = Math.Max(1, threads);
             productsArray = new long[arrayLength][];
@@ -77,17 +77,17 @@ namespace Decompose.Numerics
             cycleSize = 1;
             for (var i = 0; i < cycleLimit; i++)
             {
-                var p = primes[i];
+                var p = (int)primes[i];
                 cycleSize *= p * p;
             }
             cycle = new long[cycleSize];
             for (var i = 0; i < cycleSize; i++)
-                cycle[i] = -1;
+                cycle[i] = 1;
             for (var i = 0; i < cycleLimit; i++)
             {
                 var p = primes[i];
                 var pMinus = -p;
-                for (var k = (uint)0; k < cycleSize; k += p)
+                for (var k = 0; k < cycleSize; k += p)
                     cycle[k] *= pMinus;
                 var pSquared = (long)p * p;
                 for (var k = (long)0; k < cycleSize; k += pSquared)
@@ -97,14 +97,14 @@ namespace Decompose.Numerics
 
         private void ProcessRange(long kstart, long kend, long kmin, sbyte[] values, long[] products, Offsets[] offsets)
         {
-            var cycleOffset = cycleSize - kstart % cycleSize;
+            var cycleOffset = cycleSize - (int)(kstart % cycleSize);
             if (cycleOffset == cycleSize)
                 cycleOffset = 0;
             offsets[0].Offset = cycleOffset;
             for (var i = 1; i < primes.Length; i++)
             {
                 var p = primes[i];
-                var offset = p - kstart % p;
+                var offset = p - (int)(kstart % p);
                 if (offset == p)
                     offset = 0;
                 offsets[i].Offset = offset;
@@ -135,16 +135,17 @@ namespace Decompose.Numerics
 
             for (var i = cycleLimit; i < primes.Length; i++)
             {
-                var p = (int)primes[i];
+                var p = primes[i];
                 var pMinus = -p;
-                long k;
+                int k;
                 for (k = offsets[i].Offset; k < length; k += p)
                     products[k] *= pMinus;
                 offsets[i].Offset = k - length;
                 var pSquared = (long)p * p;
-                for (k = offsets[i].OffsetSquared; k < length; k += pSquared)
-                    products[k] = 0;
-                offsets[i].OffsetSquared = k - length;
+                long kk;
+                for (kk = offsets[i].OffsetSquared; kk < length; kk += pSquared)
+                    products[kk] = 0;
+                offsets[i].OffsetSquared = kk - length;
             }
         }
 
@@ -152,7 +153,7 @@ namespace Decompose.Numerics
         {
             // Each product that is square-free can have at most one more
             // prime factor.  It has that factor if the absolute value of
-            // the product is not equal to the full value.
+            // the product is less than the full value.
             var k = k0;
             for (var i = 0; i < length; i++, k++)
             {
@@ -160,9 +161,9 @@ namespace Decompose.Numerics
                 var pos = -p >> 63; // pos = -1 if p > 0, zero otherwise
                 var neg = p >> 63; // neg = -1 if p is < 0, zero otherwise
                 var abs = (p + neg) ^ neg; // abs = |p|
-                var flip = ~(abs - k) >> 63; // flip = -1 if abs >= k, zero otherwise
+                var flip = (abs - k) >> 63; // flip = -1 if abs < k, zero otherwise
                 values[k - kmin] = (sbyte)(((neg - pos) ^ flip) - flip); // values[k] = pos - neg if flip = -1, neg - pos otherwise
-                Debug.Assert(values[k - kmin] == Math.Sign(p) * (Math.Abs(p) == k ? -1 : 1));
+                Debug.Assert(values[k - kmin] == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
             }
         }
     }

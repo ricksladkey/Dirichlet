@@ -74,7 +74,7 @@ namespace Sandbox
             var timer = new Stopwatch();
             var timer2 = new Stopwatch();
             timer.Start();
-            var n = IntegerMath.Power((long)2, 32);
+            var n = IntegerMath.Power((long)2, 40);
             var mobius = new MobiusRange(n + 1, 8);
             var batchSize = 1 << 30;
             var values = new sbyte[batchSize];
@@ -85,7 +85,7 @@ namespace Sandbox
                 timer2.Restart();
                 mobius.GetValues(kmin, kmax, values);
                 output.WriteLine("elapsed2 = {0:F3} msec", (double)timer2.ElapsedTicks / Stopwatch.Frequency * 1000);
-#if false
+#if true
                 var length = kmax - kmin;
                 for (var i = 0; i < length; i++)
                     sum += values[i];
