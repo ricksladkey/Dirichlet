@@ -85,9 +85,11 @@ namespace Sandbox
                 timer2.Restart();
                 mobius.GetValues(kmin, kmax, values);
                 output.WriteLine("elapsed2 = {0:F3} msec", (double)timer2.ElapsedTicks / Stopwatch.Frequency * 1000);
+#if false
                 var length = kmax - kmin;
                 for (var i = 0; i < length; i++)
                     sum += values[i];
+#endif
             }
             Console.WriteLine("Sum(mobius) = {0}", sum);
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
