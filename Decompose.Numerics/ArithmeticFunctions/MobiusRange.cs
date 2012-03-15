@@ -45,11 +45,15 @@ namespace Decompose.Numerics
 
         public void GetValues(long kmin, long kmax, sbyte[] values)
         {
+            var plimit = (int)Math.Ceiling(Math.Sqrt(kmax));
+            var pmax = 0;
+            while (pmax < primes.Length && primes[pmax] < plimit)
+                ++pmax;
             if (threads == 0)
             {
                 var products = productsArray[0];
                 var offsets = offsetsArray[0];
-                ProcessRange(kmin, kmax, kmin, values, products, offsets);
+                ProcessRange(pmax, kmin, kmax, kmin, values, products, offsets);
                 return;
             }
             var tasks = new Task[threads];
@@ -61,7 +65,7 @@ namespace Decompose.Numerics
                 var kend = Math.Min(kstart + batchSize, kmax);
                 var products = productsArray[thread];
                 var offsets = offsetsArray[thread];
-                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(kstart, kend, kmin, values, products, offsets));
+                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(pmax, kstart, kend, kmin, values, products, offsets));
             }
             Task.WaitAll(tasks);
             if (kmin <= 1)
@@ -95,13 +99,13 @@ namespace Decompose.Numerics
             }
         }
 
-        private void ProcessRange(long kstart, long kend, long kmin, sbyte[] values, long[] products, Offsets[] offsets)
+        private void ProcessRange(int pmax, long kstart, long kend, long kmin, sbyte[] values, long[] products, Offsets[] offsets)
         {
             var cycleOffset = cycleSize - (int)(kstart % cycleSize);
             if (cycleOffset == cycleSize)
                 cycleOffset = 0;
             offsets[0].Offset = cycleOffset;
-            for (var i = 1; i < primes.Length; i++)
+            for (var i = 1; i < pmax; i++)
             {
                 var p = primes[i];
                 var offset = p - (int)(kstart % p);
@@ -117,12 +121,12 @@ namespace Decompose.Numerics
             for (var k = kstart; k < kend; k += blockSize)
             {
                 var length = (int)Math.Min(blockSize, kend - k);
-                SieveBlock(k, length, products, offsets);
+                SieveBlock(pmax, k, length, products, offsets);
                 AddValues(k, length, products, kmin, values);
             }
         }
 
-        private void SieveBlock(long k0, int length, long[] products, Offsets[] offsets)
+        private void SieveBlock(int pmax, long k0, int length, long[] products, Offsets[] offsets)
         {
             var cycleOffset = offsets[0].Offset;
             Array.Copy(cycle, cycleSize - cycleOffset, products, 0, Math.Min(length, cycleOffset));
@@ -133,7 +137,7 @@ namespace Decompose.Numerics
             }
             offsets[0].Offset = cycleOffset - length;
 
-            for (var i = cycleLimit; i < primes.Length; i++)
+            for (var i = cycleLimit; i < pmax; i++)
             {
                 var p = primes[i];
                 var pMinus = -p;

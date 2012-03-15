@@ -74,7 +74,7 @@ namespace Sandbox
             var timer = new Stopwatch();
             var timer2 = new Stopwatch();
             timer.Start();
-            var n = IntegerMath.Power((long)2, 40);
+            var n = IntegerMath.Power((long)10, 10);
             var mobius = new MobiusRange(n + 1, 8);
             var batchSize = 1 << 30;
             var values = new sbyte[batchSize];
