@@ -70,7 +70,7 @@ namespace Sandbox
 
         static void ParityTest()
         {
-#if true
+#if false
             var timer = new Stopwatch();
             var timer2 = new Stopwatch();
             timer.Start();
@@ -85,7 +85,7 @@ namespace Sandbox
             output.WriteLine("elapsed2 = {0:F3} msec", (double)timer2.ElapsedTicks / Stopwatch.Frequency * 1000);
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
-#if false
+#if true
             var timer = new Stopwatch();
             var timer2 = new Stopwatch();
             timer.Start();

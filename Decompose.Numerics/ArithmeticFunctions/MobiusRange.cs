@@ -42,18 +42,23 @@ namespace Decompose.Numerics
 
         public void GetValues(long kmin, long kmax, sbyte[] values)
         {
+            // Determine the number of primes appropriate for values up to kmax.
             var plimit = (int)Math.Ceiling(Math.Sqrt(kmax));
-            var pmax = 0;
-            while (pmax < primes.Length && primes[pmax] < plimit)
-                ++pmax;
+            var pmax = primes.Length;
+            while (pmax > 0 && primes[pmax - 1] > plimit)
+                --pmax;
+
             if (threads == 0)
             {
                 var products = productsArray[0];
                 var offsets = offsetsArray[0];
                 var offsetsSquared = offsetsSquaredArray[0];
                 ProcessRange(pmax, kmin, kmax, kmin, values, products, offsets, offsetsSquared);
+                if (kmin <= 1)
+                    values[1 - kmin] = 1;
                 return;
             }
+
             var tasks = new Task[threads];
             var length = kmax - kmin;
             var batchSize = ((length + threads - 1) / threads + 1) & ~1;
@@ -100,10 +105,13 @@ namespace Decompose.Numerics
 
         private void ProcessRange(int pmax, long kstart, long kend, long kmin, sbyte[] values, long[] products, int[] offsets, long[] offsetsSquared)
         {
+            // Determine the initial cycle offset.
             var cycleOffset = cycleSize - (int)(kstart % cycleSize);
             if (cycleOffset == cycleSize)
                 cycleOffset = 0;
             offsets[0] = cycleOffset;
+
+            // Determine the initial offset and offset squared of each prime divisor.
             for (var i = 1; i < pmax; i++)
             {
                 var p = primes[i];
@@ -117,6 +125,8 @@ namespace Decompose.Numerics
                     offsetSquared = 0;
                 offsetsSquared[i] = offsetSquared;
             }
+
+            // Process the whole range in block-sized batches.
             for (var k = kstart; k < kend; k += blockSize)
             {
                 var length = (int)Math.Min(blockSize, kend - k);
