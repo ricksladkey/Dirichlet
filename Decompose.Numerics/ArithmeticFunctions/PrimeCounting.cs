@@ -160,17 +160,17 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private int SumTwoToTheOmegaOld(long x, int limit)
+        private int SumTwoToTheOmega(long x, int limit)
         {
             var mobius = new MobiusCollection(limit + 1, 2 * threads);
             var sum = 0;
             if (threads == 0)
             {
                 var last = (long)0;
-                var tauLast = 0;
                 var current = (long)1;
                 var delta = 0;
                 var d = limit;
+                var count = 0;
                 while (d > 0)
                 {
                     var mu = mobius[d];
@@ -195,13 +195,20 @@ namespace Decompose.Numerics
                         }
                         current += delta;
                         Debug.Assert(x / dSquared == current);
-                        var tau = current == last ? tauLast : TauSum(current);
-                        if (mu == 1)
-                            sum += tau;
-                        else
-                            sum += 4 - tau;
-                        tauLast = tau;
-                        last = current;
+                        if (current != last)
+                        {
+                            if ((count & 3) != 0)
+                            {
+                                var tau = TauSum(last);
+                                if (count > 0)
+                                    sum += count * tau;
+                                else
+                                    sum -= count * (4 - tau);
+                            }
+                            count = 0;
+                            last = current;
+                        }
+                        count += mu;
                     }
                     --d;
                 }
@@ -210,16 +217,27 @@ namespace Decompose.Numerics
                     var mu = mobius[d];
                     if (mu != 0)
                     {
-                        var n = x / ((long)d * d);
-                        var tau = n == last ? tauLast : TauSum(n);
-                        if (mu == 1)
-                            sum += tau;
-                        else
-                            sum += 4 - tau;
-                        tauLast = tau;
-                        last = n;
+                        current = x / ((long)d * d);
+                        if (current != last)
+                        {
+                            var tau = TauSum(last);
+                            if (count > 0)
+                                sum += count * tau;
+                            else
+                                sum -= count * (4 - tau);
+                            count = 0;
+                            last = current;
+                        }
+                        count += mu;
                     }
                     --d;
+                }
+                {
+                    var tau = TauSum(last);
+                    if (count > 0)
+                        sum += count * tau;
+                    else
+                        sum -= count * (4 - tau);
                 }
             }
             else
@@ -429,7 +447,7 @@ namespace Decompose.Numerics
 
         private const int numberOfInitialValues = 1000;
 
-        private int SumTwoToTheOmega(long x, int limit)
+        private int SumTwoToTheOmegaNew(long x, int limit)
         {
             var queue = new BlockingCollection<WorkItem>();
             var mobius = new MobiusCollection(limit + 1, 2 * threads);
@@ -479,6 +497,10 @@ namespace Decompose.Numerics
 
         private void ProduceItems(BlockingCollection<WorkItem> queue, MobiusCollection mobius, long x, int limit)
         {
+#if true
+            var totalAdded1 = (long)0;
+            var totalAdded2 = (long)0;
+#endif
             var last = (long)0;
             var current = (long)1;
             var delta = 0;
@@ -510,6 +532,9 @@ namespace Decompose.Numerics
                     Debug.Assert(x / dSquared == current);
                     if (current != last)
                     {
+#if true
+                        ++totalAdded1;
+#endif
                         queue.Add(new WorkItem { Count = count, Value = last });
                         count = 0;
                         last = current;
@@ -527,6 +552,9 @@ namespace Decompose.Numerics
                     current = x / ((long)d * d);
                     if (current != last)
                     {
+#if true
+                        ++totalAdded2;
+#endif
                         queue.Add(new WorkItem { Count = count, Value = last });
                         count = 0;
                         last = current;
@@ -534,6 +562,9 @@ namespace Decompose.Numerics
                     count += mu;
                 }
             }
+#if true
+            ++totalAdded2;
+#endif
             queue.Add(new WorkItem { Count = count, Value = last });
             queue.CompleteAdding();
         }

@@ -85,7 +85,7 @@ namespace Sandbox
             output.WriteLine("elapsed2 = {0:F3} msec", (double)timer2.ElapsedTicks / Stopwatch.Frequency * 1000);
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
-#if true
+#if false
             var timer = new Stopwatch();
             var timer2 = new Stopwatch();
             timer.Start();
@@ -109,11 +109,11 @@ namespace Sandbox
             Console.WriteLine("Sum(mobius) = {0}", sum);
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
-#if false
-            var algorithm = new PrimeCounting(4);
+#if true
+            var algorithm = new PrimeCounting(0);
             for (int j = 0; j < 1; j++)
             {
-                for (int i = 20; i <= 60; i++)
+                for (int i = 58; i <= 58; i++)
                 {
                     var timer = new Stopwatch();
                     timer.Start();
