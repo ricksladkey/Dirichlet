@@ -142,6 +142,7 @@ namespace Decompose.Numerics
             // the product is less than the full value.
             for (int i = 0, k = k0; i < length; i++, k++)
             {
+                // Look ma, no branching.
                 var p = products[i];
                 var pos = -p >> 31; // pos = -1 if p > 0, zero otherwise
                 var neg = p >> 31; // neg = -1 if p is < 0, zero otherwise

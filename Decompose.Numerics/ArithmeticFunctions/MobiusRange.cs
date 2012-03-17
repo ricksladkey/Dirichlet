@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,6 +8,20 @@ namespace Decompose.Numerics
 {
     public class MobiusRange
     {
+        private class Data
+        {
+            public long[] Products;
+            public int[] Offsets;
+            public long[] OffsetsSquared;
+
+            public Data(int length)
+            {
+                Products = new long[blockSize];
+                Offsets = new int[length];
+                OffsetsSquared = new long[length];
+            }
+        }
+
         private const int blockSize = 1 << 16;
 
         private long size;
@@ -15,9 +30,7 @@ namespace Decompose.Numerics
         private int cycleLimit;
         private int cycleSize;
         private long[] cycle;
-        private long[][] productsArray;
-        private int[][] offsetsArray;
-        private long[][] offsetsSquaredArray;
+        private ConcurrentQueue<Data> queue;
 
         public long Size { get { return size; } }
 
@@ -29,15 +42,7 @@ namespace Decompose.Numerics
             primes = new PrimeCollection(limit, 0).Select(p => (int)p).ToArray();
             CreateCycle();
             var arrayLength = Math.Max(1, threads);
-            productsArray = new long[arrayLength][];
-            offsetsArray = new int[arrayLength][];
-            offsetsSquaredArray = new long[arrayLength][];
-            for (var thread = 0; thread < arrayLength; thread++)
-            {
-                productsArray[thread] = new long[blockSize];
-                offsetsArray[thread] = new int[primes.Length];
-                offsetsSquaredArray[thread] = new long[primes.Length];
-            }
+            queue = new ConcurrentQueue<Data>();
         }
 
         public void GetValues(long kmin, long kmax, sbyte[] values)
@@ -50,10 +55,7 @@ namespace Decompose.Numerics
 
             if (threads == 0)
             {
-                var products = productsArray[0];
-                var offsets = offsetsArray[0];
-                var offsetsSquared = offsetsSquaredArray[0];
-                ProcessRange(pmax, kmin, kmax, kmin, values, products, offsets, offsetsSquared);
+                ProcessRange(pmax, kmin, kmax, kmin, values);
                 if (kmin <= 1)
                     values[1 - kmin] = 1;
                 return;
@@ -66,10 +68,10 @@ namespace Decompose.Numerics
             {
                 var kstart = (long)thread * batchSize + kmin;
                 var kend = Math.Min(kstart + batchSize, kmax);
-                var products = productsArray[thread];
-                var offsets = offsetsArray[thread];
-                var offsetsSquared = offsetsSquaredArray[thread];
-                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(pmax, kstart, kend, kmin, values, products, offsets, offsetsSquared));
+                Data data;
+                if (!queue.TryDequeue(out data))
+                    data = new Data(primes.Length);
+                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(pmax, kstart, kend, kmin, values));
             }
             Task.WaitAll(tasks);
             if (kmin <= 1)
@@ -103,8 +105,16 @@ namespace Decompose.Numerics
             }
         }
 
-        private void ProcessRange(int pmax, long kstart, long kend, long kmin, sbyte[] values, long[] products, int[] offsets, long[] offsetsSquared)
+        private void ProcessRange(int pmax, long kstart, long kend, long kmin, sbyte[] values)
         {
+            // Acquire resources.
+            Data data;
+            if (!queue.TryDequeue(out data))
+                data = new Data(primes.Length);
+            var products = data.Products;
+            var offsets = data.Offsets;
+            var offsetsSquared = data.OffsetsSquared;
+
             // Determine the initial cycle offset.
             var cycleOffset = cycleSize - (int)(kstart % cycleSize);
             if (cycleOffset == cycleSize)
@@ -133,6 +143,9 @@ namespace Decompose.Numerics
                 SieveBlock(pmax, k, length, products, offsets, offsetsSquared);
                 AddValues(k, length, products, kmin, values);
             }
+
+            // Release resources.
+            queue.Enqueue(data);
         }
 
         private void SieveBlock(int pmax, long k0, int length, long[] products, int[] offsets, long[] offsetsSquared)
@@ -177,6 +190,7 @@ namespace Decompose.Numerics
             var k = k0;
             for (var i = 0; i < length; i++, k++)
             {
+                // Look ma, no branching.
                 var p = products[i];
                 var pos = -p >> 63; // pos = -1 if p > 0, zero otherwise
                 var neg = p >> 63; // neg = -1 if p is < 0, zero otherwise
