@@ -164,107 +164,94 @@ namespace Decompose.Numerics
         {
             var mobius = new MobiusCollection(limit + 1, 2 * threads);
             var sum = 0;
-            if (threads == 0)
+            var units = limit > (1 << 16) ? 10 : 1;
+            var dlast = 1;
+            for (var unit = 0; unit < units; unit++)
             {
-                var last = (long)0;
-                var current = (long)1;
-                var delta = 0;
-                var d = limit;
-                var count = 0;
-                while (d > 0)
+                var dmin = dlast;
+                var dmax = unit == units - 1 ? limit + 1 : (int)Math.Exp((unit + 1) * Math.Log(limit + 1) / units);
+                sum += SumTwoToTheOmega(mobius, x, dmin, dmax);
+                dlast = dmax;
+            }
+            return sum & 3;
+        }
+
+        private int SumTwoToTheOmega(MobiusCollection mobius, long x, int dmin, int dmax)
+        {
+            //Console.WriteLine("dmin = {0}, dmax = {1}", dmin, dmax);
+            var sum = 0;
+            var last = (long)0;
+            var current = x / ((long)dmax * dmax);
+            var delta = dmax == 1 ? (long)0 : x / ((long)(dmax - 1) * (dmax - 1)) - current;
+            var d = dmax - 1;
+            var count = 0;
+            while (d >= dmin)
+            {
+                var mu = mobius[d];
+                if (mu != 0)
                 {
-                    var mu = mobius[d];
-                    if (mu != 0)
+                    var dSquared = (long)d * d;
+                    var product = (current + delta) * dSquared;
+                    if (product > x)
                     {
-                        var dSquared = (long)d * d;
-                        var product = (current + delta) * dSquared;
-                        if (product > x)
+                        do
                         {
-                            do
-                            {
-                                --delta;
-                                product -= dSquared;
-                            }
-                            while (product > x);
+                            --delta;
+                            product -= dSquared;
                         }
-                        else if (product + dSquared <= x)
-                        {
-                            ++delta;
-                            if (product + 2 * dSquared <= x)
-                                break;
-                        }
-                        current += delta;
-                        Debug.Assert(x / dSquared == current);
-                        if (current != last)
-                        {
-                            if ((count & 3) != 0)
-                            {
-                                var tau = TauSum(last);
-                                if (count > 0)
-                                    sum += count * tau;
-                                else
-                                    sum -= count * (4 - tau);
-                            }
-                            count = 0;
-                            last = current;
-                        }
-                        count += mu;
+                        while (product > x);
                     }
-                    --d;
-                }
-                while (d > 0)
-                {
-                    var mu = mobius[d];
-                    if (mu != 0)
+                    else if (product + dSquared <= x)
                     {
-                        current = x / ((long)d * d);
-                        if (current != last)
+                        ++delta;
+                        if (product + 2 * dSquared <= x)
+                            break;
+                    }
+                    current += delta;
+                    Debug.Assert(x / dSquared == current);
+                    if (current != last)
+                    {
+                        if ((count & 3) != 0)
                         {
                             var tau = TauSum(last);
                             if (count > 0)
                                 sum += count * tau;
                             else
                                 sum -= count * (4 - tau);
-                            count = 0;
-                            last = current;
                         }
-                        count += mu;
+                        count = 0;
+                        last = current;
                     }
-                    --d;
+                    count += mu;
                 }
-                {
-                    var tau = TauSum(last);
-                    if (count > 0)
-                        sum += count * tau;
-                    else
-                        sum -= count * (4 - tau);
-                }
+                --d;
             }
-            else
+            while (d >= dmin)
             {
-                var chunks = (limit + chunkSize - 1) / chunkSize;
-                Parallel.For(0, chunks,
-                    () => 0,
-                    (chunk, loop, subtotal) =>
+                var mu = mobius[d];
+                if (mu != 0)
+                {
+                    current = x / ((long)d * d);
+                    if (current != last)
                     {
-                        var min = chunk * chunkSize;
-                        var max = Math.Min(min + chunkSize, limit);
-                        for (var d = min + 1; d <= max; d++)
-                        {
-                            var mu = mobius[d];
-                            if (mu != 0)
-                            {
-                                var n = x / ((long)d * d);
-                                var tau = TauSum(n);
-                                if (mu == 1)
-                                    subtotal += tau;
-                                else
-                                    subtotal += 4 - tau;
-                            }
-                        }
-                        return subtotal;
-                    },
-                    subtotal => Interlocked.Add(ref sum, subtotal));
+                        var tau = TauSum(last);
+                        if (count > 0)
+                            sum += count * tau;
+                        else
+                            sum -= count * (4 - tau);
+                        count = 0;
+                        last = current;
+                    }
+                    count += mu;
+                }
+                --d;
+            }
+            {
+                var tau = TauSum(last);
+                if (count > 0)
+                    sum += count * tau;
+                else
+                    sum -= count * (4 - tau);
             }
             return sum;
         }

@@ -113,7 +113,7 @@ namespace Sandbox
             var algorithm = new PrimeCounting(0);
             for (int j = 0; j < 1; j++)
             {
-                for (int i = 58; i <= 58; i++)
+                for (int i = 55; i <= 55; i++)
                 {
                     var timer = new Stopwatch();
                     timer.Start();
