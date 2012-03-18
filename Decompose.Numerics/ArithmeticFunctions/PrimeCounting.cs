@@ -174,8 +174,6 @@ namespace Decompose.Numerics
 
         private int SumTwoToTheOmega(long x, int limit)
         {
-            //Console.WriteLine("Sum(2^w), x = {0}", x);
-
             var sum = 0;
 
             int d;
@@ -189,9 +187,6 @@ namespace Decompose.Numerics
                         sum += tau;
                     else
                         sum += 4 - tau;
-#if false
-                    Console.WriteLine("d = {0}, tau = {1}", d, tau);
-#endif
                 }
             }
 
@@ -235,26 +230,20 @@ namespace Decompose.Numerics
 
         private void ConsumeItems(int thread, BlockingCollection<WorkItem> queue, MobiusRange mobius, long x, ref int sum)
         {
-            var item = default(WorkItem);
             var values = new sbyte[blockSize];
+            var item = default(WorkItem);
             while (queue.TryTake(out item, Timeout.Infinite))
             {
-                //Console.WriteLine("+ Sum(2^w), dmin = {0}, dmax = {1}, thread = {2}", item.Min, item.Max, thread);
-                var timer = new Stopwatch();
-                timer.Start();
-                if (item.Max == item.Min + 1)
+                if (item.Max == item.Min + 1 && item.Min < mobiusSmall.Length)
                     values[0] = (sbyte)mobiusSmall[item.Min];
                 else
                     mobius.GetValues(item.Min, item.Max, values);
                 Interlocked.Add(ref sum, SumTwoToTheOmega(values, x, item.Min, item.Max));
-                //Console.WriteLine("- Sum(2^w), dmin = {0}, dmax = {1}, thread = {2}, elapsed = {3:F3} msec",
-                //    item.Min, item.Max, thread, (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
         }
 
         private int SumTwoToTheOmega(sbyte[] mobius, long x, int dmin, int dmax)
         {
-            //Console.WriteLine("dmin = {0}, dmax = {1}", dmin, dmax);
             var sum = 0;
             var last = (long)0;
             var current = x / ((long)dmax * dmax);
@@ -302,7 +291,6 @@ namespace Decompose.Numerics
                 }
                 --d;
             }
-            //Console.WriteLine("d middle = {0}", d);
             while (d >= dmin)
             {
                 var mu = mobius[d - dmin];
@@ -436,6 +424,40 @@ namespace Decompose.Numerics
             return TauSumInnerLarge(y, out sqrt);
         }
 
+        public int TauSumInnerParallel(long y, out int sqrt)
+        {
+#if false
+            Console.WriteLine("TauSumInnerParallel: y = {0}", y);
+            var timer = new Stopwatch();
+            timer.Restart();
+#endif
+            var limit = (int)Math.Floor(Math.Sqrt(y));
+            var sum = 0;
+            if (threads == 0)
+                sum += TauSumInnerWorker(y, 1, limit + 1);
+            else
+            {
+                var tasks = new Task[threads];
+                var batchSize = (limit + threads - 1) / threads;
+                for (var thread = 0; thread < threads; thread++)
+                {
+                    var imin = 1 + thread * batchSize;
+                    var imax = Math.Min(imin + batchSize, limit + 1);
+#if false
+                    Console.WriteLine("imin = {0}, imax = {1}", imin, imax);
+#endif
+                    tasks[thread] = Task.Factory.StartNew(() =>
+                        Interlocked.Add(ref sum, TauSumInnerWorker(y, imin, imax)));
+                }
+                Task.WaitAll(tasks);
+            }
+#if false
+            Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
+            sqrt = limit;
+            return sum & 1;
+        }
+
         public int TauSumInnerSmall(int y, out int sqrt)
         {
             var limit = (int)Math.Floor(Math.Sqrt(y));
@@ -477,79 +499,8 @@ namespace Decompose.Numerics
 
         public int TauSumInnerLarge(long y, out int sqrt)
         {
-            var limit = (int)Math.Floor(Math.Sqrt(y));
-            var sum1 = 0;
-            var current = y / (limit + 1);
-            var delta = y / limit - current;
-            var i = limit;
-            while (i > 0)
-            {
-                var product = (current + delta) * i;
-                if (product > y)
-                    --delta;
-                else if (product + i <= y)
-                {
-                    ++delta;
-                    product += i;
-                    if (product + i <= y)
-                        break;
-                }
-                current += delta;
-                Debug.Assert(y / i == current);
-                sum1 ^= (int)current;
-                --i;
-            }
-#if false
-            Console.WriteLine("TauSumInnerLarge: cross-over i = {0}", i);
-#endif
-            sum1 &= 1;
-            var sum2 = 0;
-            var count2 = 0;
-            while (i > 0)
-            {
-                sum2 ^= (int)(y % (i << 1)) - i;
-                --i;
-                ++count2;
-            }
-            sum2 = (sum2 >> 31) & 1;
-            if ((count2 & 1) != 0)
-                sum2 ^= 1;
-            sqrt = limit;
-            return sum1 ^ sum2;
-        }
-
-        public int TauSumInnerParallel(long y, out int sqrt)
-        {
-#if false
-            Console.WriteLine("TauSumInnerParallel: y = {0}", y);
-            var timer = new Stopwatch();
-            timer.Restart();
-#endif
-            var limit = (int)Math.Floor(Math.Sqrt(y));
-            var sum = 0;
-            if (threads == 0)
-                sum += TauSumInnerWorker(y, 1, limit + 1);
-            else
-            {
-                var tasks = new Task[threads];
-                var batchSize = (limit + threads - 1) / threads;
-                for (var thread = 0; thread < threads; thread++)
-                {
-                    var imin = 1 + thread * batchSize;
-                    var imax = Math.Min(imin + batchSize, limit + 1);
-#if false
-                    Console.WriteLine("imin = {0}, imax = {1}", imin, imax);
-#endif
-                    tasks[thread] = Task.Factory.StartNew(() =>
-                        Interlocked.Add(ref sum, TauSumInnerWorker(y, imin, imax)));
-                }
-                Task.WaitAll(tasks);
-            }
-#if false
-            Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-#endif
-            sqrt = limit;
-            return sum & 1;
+            sqrt = (int)Math.Floor(Math.Sqrt(y));
+            return TauSumInnerWorker(y, 1, sqrt + 1);
         }
 
         private int TauSumInnerWorker(long y, int imin, int imax)
@@ -575,9 +526,6 @@ namespace Decompose.Numerics
                 sum1 ^= (int)current;
                 --i;
             }
-#if false
-            Console.WriteLine("TauSumInnerWorker: cross-over i = {0}", i);
-#endif
             sum1 &= 1;
             var sum2 = 0;
             var count2 = 0;
@@ -592,155 +540,5 @@ namespace Decompose.Numerics
                 sum2 ^= 1;
             return sum1 ^ sum2;
         }
-
-#if false
-        private struct WorkItem
-        {
-            public int Count { get; set; }
-            public long Value { get; set; }
-        }
-
-        private const int numberOfInitialValues = 1000;
-
-        private int SumTwoToTheOmegaNew(long x, int limit)
-        {
-            var queue = new BlockingCollection<WorkItem>();
-            var mobius = new MobiusCollection(limit + 1, 2 * threads);
-            Task.Factory.StartNew(() => ProduceItems(queue, mobius, x, limit));
-            var sum = 0;
-            if (threads == 0)
-            {
-                ProcessFirstFewValues(mobius, x, limit, ref sum);
-                ConsumeItems(queue, ref sum);
-            }
-            else
-            {
-                var initialTask = Task.Factory.StartNew(() => ProcessFirstFewValues(mobius, x, limit, ref sum));
-                var tasks = new Task[threads];
-                for (int thread = 0; thread < threads; thread++)
-                    tasks[thread] = Task.Factory.StartNew(() => ConsumeItems(queue, ref sum));
-                Task.WaitAll(tasks);
-                initialTask.Wait();
-            }
-            return sum;
-        }
-
-        private void ProcessFirstFewValues(MobiusCollection mobius, long x, int limit, ref int sum)
-        {
-            var max = Math.Min(limit, numberOfInitialValues);
-            var subtotal = 0;
-            Parallel.For(1, max + 1,
-                d =>
-                {
-                    //Console.WriteLine("x = {0}, d = {1}", x, d);
-                    var mu = mobius[d];
-                    if (mu == 1)
-                        Interlocked.Add(ref subtotal, TauSum(x / ((long)d * d)));
-                    else if (mu == -1)
-                        Interlocked.Add(ref subtotal, 4 - TauSum(x / ((long)d * d)));
-                });
-            Interlocked.Add(ref sum, subtotal);
-            //Console.WriteLine("done with {0} values", max);
-        }
-
-        private void ConsumeItems(BlockingCollection<WorkItem> queue, ref int sum)
-        {
-            var item = default(WorkItem);
-            while (queue.TryTake(out item, Timeout.Infinite))
-                Interlocked.Add(ref sum, ProcessBatch(item.Count, item.Value));
-        }
-
-        private void ProduceItems(BlockingCollection<WorkItem> queue, MobiusCollection mobius, long x, int limit)
-        {
-#if true
-            var totalAdded1 = (long)0;
-            var totalAdded2 = (long)0;
-#endif
-            var last = (long)0;
-            var current = (long)1;
-            var delta = 0;
-            var d = limit;
-            var count = 0;
-            while (d > numberOfInitialValues)
-            {
-                var mu = mobius[d];
-                if (mu != 0)
-                {
-                    var dSquared = (long)d * d;
-                    var product = (current + delta) * dSquared;
-                    if (product > x)
-                    {
-                        do
-                        {
-                            --delta;
-                            product -= dSquared;
-                        }
-                        while (product > x);
-                    }
-                    else if (product + dSquared <= x)
-                    {
-                        ++delta;
-                        if (product + 2 * dSquared <= x)
-                            break;
-                    }
-                    current += delta;
-                    Debug.Assert(x / dSquared == current);
-                    if (current != last)
-                    {
-#if true
-                        ++totalAdded1;
-#endif
-                        queue.Add(new WorkItem { Count = count, Value = last });
-                        count = 0;
-                        last = current;
-                    }
-                    count += mu;
-                }
-                --d;
-            }
-            var dmax = d;
-            for (d = numberOfInitialValues + 1; d <= dmax; d++)
-            {
-                var mu = mobius[d];
-                if (mu != 0)
-                {
-                    current = x / ((long)d * d);
-                    if (current != last)
-                    {
-#if true
-                        ++totalAdded2;
-#endif
-                        queue.Add(new WorkItem { Count = count, Value = last });
-                        count = 0;
-                        last = current;
-                    }
-                    count += mu;
-                }
-            }
-#if true
-            ++totalAdded2;
-#endif
-            queue.Add(new WorkItem { Count = count, Value = last });
-            queue.CompleteAdding();
-        }
-
-        private int ProcessBatch(int count, long last)
-        {
-            if ((count & 3) != 0)
-            {
-                var tau = TauSum(last);
-                //Console.WriteLine("count = {0}, last = {1}, tau = {2}", count, last, tau);
-                if (count == 1)
-                    return tau;
-                else if (count == -1)
-                    return 4 - tau;
-                else if (count > 0)
-                    return (count * tau) & 3;
-                else
-                    return (-count * (4 - tau)) & 3;
-            }
-            return 0;
-        }
-#endif
     }
 }
