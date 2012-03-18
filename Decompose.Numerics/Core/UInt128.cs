@@ -176,6 +176,13 @@ namespace Decompose.Numerics
             return c;
         }
 
+        public static UInt128 operator --(UInt128 a)
+        {
+            UInt128 c;
+            Subtract(out c, ref a, ref one);
+            return c;
+        }
+
         public static UInt128 operator *(ulong a, UInt128 b)
         {
             UInt128 c;
