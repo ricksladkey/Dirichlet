@@ -71,6 +71,47 @@ namespace Sandbox
         static void ParityTest()
         {
 #if false
+            var algorithm = new PrimeCounting(8);
+            for (int j = 0; j < 1; j++)
+            {
+                for (int i = 60; i <= 60; i++)
+                {
+                    var timer = new Stopwatch();
+                    var n = (long)1 << i;
+                    timer.Restart();
+                    var sqrt = 0;
+                    var tau1 = algorithm.TauSumInner(n, out sqrt);
+                    Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, tau1);
+                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                    timer.Restart();
+                    var tau2 = TauSumInner(n);
+                    Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, tau2);
+                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#if true
+                    if (tau1 != tau2)
+                    {
+                        Debugger.Break();
+                        Console.WriteLine();
+                    }
+#endif
+                }
+            }
+#endif
+#if true
+            var algorithm = new PrimeCounting(8);
+            for (int j = 0; j < 1; j++)
+            {
+                for (int i = 20; i <= 60; i++)
+                {
+                    var timer = new Stopwatch();
+                    timer.Start();
+                    var n = (BigInteger)1 << i;
+                    Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, algorithm.ParityOfPi(n));
+                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                }
+            }
+#endif
+#if false
             var timer = new Stopwatch();
             var timer2 = new Stopwatch();
             timer.Start();
@@ -108,20 +149,6 @@ namespace Sandbox
             }
             Console.WriteLine("Sum(mobius) = {0}", sum);
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-#endif
-#if true
-            var algorithm = new PrimeCounting(0);
-            for (int j = 0; j < 1; j++)
-            {
-                for (int i = 55; i <= 55; i++)
-                {
-                    var timer = new Stopwatch();
-                    timer.Start();
-                    var n = (BigInteger)1 << i;
-                    Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, algorithm.ParityOfPi(n));
-                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-                }
-            }
 #endif
 #if false
             Console.WriteLine("procs = {0}", Environment.ProcessorCount);
@@ -236,33 +263,6 @@ namespace Sandbox
             foreach (var pair in algorithm.TauSumMap.OrderBy(pair => pair.Key))
                 Console.WriteLine("key = {0}, value = {1}", pair.Key, pair.Value);
 #endif
-#endif
-#if false
-            var algorithm = new PrimeCounting();
-            for (int j = 0; j < 1; j++)
-            {
-                for (int i = 1; i <= 55; i++)
-                {
-                    var timer = new Stopwatch();
-                    var n = (long)1 << i;
-                    timer.Restart();
-                    var sqrt = 0;
-                    var tau1 = algorithm.TauSumInner(n, out sqrt);
-                    Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, tau1);
-                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-                    timer.Restart();
-                    var tau2 = TauSumInner(n);
-                    Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, tau2);
-                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-#if true
-                    if (tau1 != tau2)
-                    {
-                        Debugger.Break();
-                        Console.WriteLine();
-                    }
-#endif
-                }
-            }
 #endif
 #if false
             for (var n = 0; n <= 30; n++)

@@ -16,6 +16,7 @@ namespace Decompose.Numerics
         private int threads;
         private int[] piSmall;
         private int[] tauSumSmall;
+        private int[] mobiusSmall;
 
         public PrimeCounting(int threads)
         {
@@ -38,6 +39,7 @@ namespace Decompose.Numerics
             tauSumSmall[0] = divisors[0];
             for (var j = 1; j < n; j++)
                 tauSumSmall[j] = (tauSumSmall[j - 1] + divisors[j]) & 3;
+            mobiusSmall = new MobiusCollection(sizeSmall, 0).ToArray();
         }
 
         public int Pi(int x)
@@ -160,23 +162,91 @@ namespace Decompose.Numerics
             return sum;
         }
 
+        private int blockSize = 1 << 24;
+        private int singleLimit1 = 1;
+        private int singleLimit2 = 100;
+
+        private struct WorkItem
+        {
+            public int Min;
+            public int Max;
+        }
+
         private int SumTwoToTheOmega(long x, int limit)
         {
-            var mobius = new MobiusCollection(limit + 1, 2 * threads);
+            //Console.WriteLine("Sum(2^w), x = {0}", x);
+            var mobius = new MobiusRange(limit + 1, 0);
+            var queue = new BlockingCollection<WorkItem>();
+            var units = limit < (1 << 16) ? 1 : 100;
+            var consumers = Math.Max(1, threads);
             var sum = 0;
-            var units = limit > (1 << 16) ? 10 : 1;
-            var dlast = 1;
+            var tasks = new Task[consumers];
+            for (var consumer = 0; consumer < consumers; consumer++)
+            {
+                var thread = consumer;
+                tasks[consumer] = Task.Factory.StartNew(() => ConsumeItems(thread, queue, mobius, x, ref sum));
+            }
+            int d;
+            for (d = 1; d < singleLimit1; d++)
+            {
+                var mu = mobiusSmall[d];
+                if (mu != 0)
+                {
+                    var tau = TauSumParallel(x / (d * d));
+                    if (mu == 1)
+                        sum += tau;
+                    else
+                        sum += 4 - tau;
+                }
+            }
+            for (d = singleLimit1; d < singleLimit2; d++)
+            {
+                if (mobiusSmall[d] != 0)
+                    queue.Add(new WorkItem { Min = d, Max = d + 1 });
+            }
             for (var unit = 0; unit < units; unit++)
             {
-                var dmin = dlast;
+                var dmin = d;
                 var dmax = unit == units - 1 ? limit + 1 : (int)Math.Exp((unit + 1) * Math.Log(limit + 1) / units);
-                sum += SumTwoToTheOmega(mobius, x, dmin, dmax);
-                dlast = dmax;
+                if (dmin >= dmax)
+                    continue;
+                if (dmax - dmin > blockSize)
+                    break;
+                queue.Add(new WorkItem { Min = dmin, Max = dmax });
+                d = dmax;
             }
+            while (d < limit + 1)
+            {
+                var dmin = d;
+                var dmax = Math.Min(dmin + blockSize, limit + 1);
+                queue.Add(new WorkItem { Min = dmin, Max = dmax });
+                d = dmax;
+            }
+            queue.CompleteAdding();
+            Task.WaitAll(tasks);
             return sum & 3;
         }
 
-        private int SumTwoToTheOmega(MobiusCollection mobius, long x, int dmin, int dmax)
+        private void ConsumeItems(int thread, BlockingCollection<WorkItem> queue, MobiusRange mobius, long x, ref int sum)
+        {
+            var item = default(WorkItem);
+            var values = new sbyte[blockSize];
+            while (queue.TryTake(out item, Timeout.Infinite))
+            {
+                //Console.WriteLine("+ Sum(2^w), dmin = {0}, dmax = {1}, thread = {2}", item.Min, item.Max, thread);
+                var timer = new Stopwatch();
+                timer.Start();
+                if (item.Max == item.Min + 1)
+                    values[0] = (sbyte)mobiusSmall[item.Min];
+                else
+                    mobius.GetValues(item.Min, item.Max, values);
+                Interlocked.Add(ref sum, SumTwoToTheOmega(values, x, item.Min, item.Max));
+                //Console.WriteLine("- Sum(2^w), dmin = {0}, dmax = {1}, thread = {2}, elapsed = {3:F3} msec",
+                //    item.Min, item.Max, thread, (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
+        }
+
+        private int SumTwoToTheOmega(sbyte[] mobius, long x, int dmin, int dmax)
         {
             //Console.WriteLine("dmin = {0}, dmax = {1}", dmin, dmax);
             var sum = 0;
@@ -187,7 +257,7 @@ namespace Decompose.Numerics
             var count = 0;
             while (d >= dmin)
             {
-                var mu = mobius[d];
+                var mu = mobius[d - dmin];
                 if (mu != 0)
                 {
                     var dSquared = (long)d * d;
@@ -226,9 +296,10 @@ namespace Decompose.Numerics
                 }
                 --d;
             }
+            //Console.WriteLine("d middle = {0}", d);
             while (d >= dmin)
             {
-                var mu = mobius[d];
+                var mu = mobius[d - dmin];
                 if (mu != 0)
                 {
                     current = x / ((long)d * d);
@@ -277,6 +348,16 @@ namespace Decompose.Numerics
                 ++n;
             }
             sum = 2 * sum - (int)((n * n) & 3);
+            return sum & 3;
+        }
+
+        private int TauSumParallel(long y)
+        {
+            if (y < tauSumSmall.Length)
+                return tauSumSmall[y];
+            var sqrt = 0;
+            var sum = TauSumInnerParallel(y, out sqrt);
+            sum = 2 * sum - (int)((sqrt * sqrt) & 3);
             return sum & 3;
         }
 
@@ -368,6 +449,7 @@ namespace Decompose.Numerics
                         break;
                 }
                 current += delta;
+                Debug.Assert(y / i == current);
                 sum1 ^= current;
                 --i;
             }
@@ -391,12 +473,12 @@ namespace Decompose.Numerics
         {
             var limit = (int)Math.Floor(Math.Sqrt(y));
             var sum1 = 0;
-            var current = limit - 1;
+            var current = (long)limit - 1;
             var delta = 1;
             var i = limit;
             while (i > 0)
             {
-                var product = (long)(current + delta) * i;
+                var product = (current + delta) * i;
                 if (product > y)
                     --delta;
                 else if (product + i <= y)
@@ -406,7 +488,8 @@ namespace Decompose.Numerics
                         break;
                 }
                 current += delta;
-                sum1 ^= current;
+                Debug.Assert(y / i == current);
+                sum1 ^= (int)current;
                 --i;
             }
             sum1 &= 1;
@@ -425,7 +508,53 @@ namespace Decompose.Numerics
             return sum1 ^ sum2;
         }
 
-#if true
+        public int TauSumInnerParallel(long y, out int sqrt)
+        {
+            var limit = (int)Math.Floor(Math.Sqrt(y));
+
+            var sum = TauSumInnerWorker(y, 1, limit + 1);
+            sqrt = limit;
+            return sum;
+        }
+
+        public int TauSumInnerWorker(long y, int imin, int imax)
+        {
+            var sum1 = 0;
+            var current = y / imax;
+            var delta = y / (imax - 1) - current;
+            var i = imax - 1;
+            while (i >= imin)
+            {
+                var product = (long)(current + delta) * i;
+                if (product > y)
+                    --delta;
+                else if (product + i <= y)
+                {
+                    ++delta;
+                    if (product + 2 * i <= y)
+                        break;
+                }
+                current += delta;
+                Debug.Assert(y / i == current);
+                sum1 ^= (int)current;
+                --i;
+            }
+            sum1 &= 1;
+            var sum2 = 0;
+            var count2 = 0;
+            while (i >= imin)
+            {
+                sum2 ^= (int)(y % (i << 1)) - i;
+                --i;
+                ++count2;
+            }
+            sum2 = (sum2 >> 31) & 1;
+            if ((count2 & 1) != 0)
+                sum2 ^= 1;
+            return sum1 ^ sum2;
+        }
+
+#if false
         private struct WorkItem
         {
             public int Count { get; set; }

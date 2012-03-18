@@ -909,7 +909,7 @@ namespace Decompose.Numerics.Test
             for (var j = 0; j <= 24; j++)
             {
                 var n = 1 << j;
-                Assert.AreEqual(piData[j] % 2, (BigInteger)algorithm.ParityOfPi(n));
+                Assert.AreEqual(piData[j] % 2, algorithm.ParityOfPi(n));
             }
         }
 

@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections;
 
 namespace Decompose.Numerics
 {
-    public class MobiusCollection
+    public class MobiusCollection : IEnumerable<int>
     {
         private struct Offsets
         {
@@ -151,6 +153,16 @@ namespace Decompose.Numerics
                 values[k] = (sbyte)(((neg - pos) ^ flip) - flip); // values[k] = pos - neg if flip = -1, neg - pos otherwise
                 Debug.Assert(values[k] == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
             }
+        }
+
+        public IEnumerator<int> GetEnumerator()
+        {
+            return values.Select(value => (int)value).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }
