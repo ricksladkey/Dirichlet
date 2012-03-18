@@ -163,7 +163,7 @@ namespace Decompose.Numerics
         }
 
         private int blockSize = 1 << 24;
-        private int singleLimit1 = 1;
+        private int singleLimit1 = 10;
         private int singleLimit2 = 100;
 
         private struct WorkItem
@@ -175,17 +175,9 @@ namespace Decompose.Numerics
         private int SumTwoToTheOmega(long x, int limit)
         {
             //Console.WriteLine("Sum(2^w), x = {0}", x);
-            var mobius = new MobiusRange(limit + 1, 0);
-            var queue = new BlockingCollection<WorkItem>();
-            var units = limit < (1 << 16) ? 1 : 100;
-            var consumers = Math.Max(1, threads);
+
             var sum = 0;
-            var tasks = new Task[consumers];
-            for (var consumer = 0; consumer < consumers; consumer++)
-            {
-                var thread = consumer;
-                tasks[consumer] = Task.Factory.StartNew(() => ConsumeItems(thread, queue, mobius, x, ref sum));
-            }
+
             int d;
             for (d = 1; d < singleLimit1; d++)
             {
@@ -197,7 +189,21 @@ namespace Decompose.Numerics
                         sum += tau;
                     else
                         sum += 4 - tau;
+#if false
+                    Console.WriteLine("d = {0}, tau = {1}", d, tau);
+#endif
                 }
+            }
+
+            var mobius = new MobiusRange(limit + 1, 0);
+            var queue = new BlockingCollection<WorkItem>();
+            var units = limit < (1 << 16) ? 1 : 100;
+            var consumers = Math.Max(1, threads);
+            var tasks = new Task[consumers];
+            for (var consumer = 0; consumer < consumers; consumer++)
+            {
+                var thread = consumer;
+                tasks[consumer] = Task.Factory.StartNew(() => ConsumeItems(thread, queue, mobius, x, ref sum));
             }
             for (d = singleLimit1; d < singleLimit2; d++)
             {
@@ -332,7 +338,7 @@ namespace Decompose.Numerics
             throw new NotImplementedException();
         }
 
-        private int TauSumSimple(long y)
+        public int TauSumSimple(long y)
         {
             if (y == 0)
                 return 0;
@@ -351,7 +357,7 @@ namespace Decompose.Numerics
             return sum & 3;
         }
 
-        private int TauSumParallel(long y)
+        public int TauSumParallel(long y)
         {
             if (y < tauSumSmall.Length)
                 return tauSumSmall[y];
@@ -473,8 +479,8 @@ namespace Decompose.Numerics
         {
             var limit = (int)Math.Floor(Math.Sqrt(y));
             var sum1 = 0;
-            var current = (long)limit - 1;
-            var delta = 1;
+            var current = y / (limit + 1);
+            var delta = y / limit - current;
             var i = limit;
             while (i > 0)
             {
@@ -484,7 +490,8 @@ namespace Decompose.Numerics
                 else if (product + i <= y)
                 {
                     ++delta;
-                    if (product + 2 * i <= y)
+                    product += i;
+                    if (product + i <= y)
                         break;
                 }
                 current += delta;
@@ -492,6 +499,9 @@ namespace Decompose.Numerics
                 sum1 ^= (int)current;
                 --i;
             }
+#if false
+            Console.WriteLine("TauSumInnerLarge: cross-over i = {0}", i);
+#endif
             sum1 &= 1;
             var sum2 = 0;
             var count2 = 0;
@@ -510,14 +520,39 @@ namespace Decompose.Numerics
 
         public int TauSumInnerParallel(long y, out int sqrt)
         {
+#if false
+            Console.WriteLine("TauSumInnerParallel: y = {0}", y);
+            var timer = new Stopwatch();
+            timer.Restart();
+#endif
             var limit = (int)Math.Floor(Math.Sqrt(y));
-
-            var sum = TauSumInnerWorker(y, 1, limit + 1);
+            var sum = 0;
+            if (threads == 0)
+                sum += TauSumInnerWorker(y, 1, limit + 1);
+            else
+            {
+                var tasks = new Task[threads];
+                var batchSize = (limit + threads - 1) / threads;
+                for (var thread = 0; thread < threads; thread++)
+                {
+                    var imin = 1 + thread * batchSize;
+                    var imax = Math.Min(imin + batchSize, limit + 1);
+#if false
+                    Console.WriteLine("imin = {0}, imax = {1}", imin, imax);
+#endif
+                    tasks[thread] = Task.Factory.StartNew(() =>
+                        Interlocked.Add(ref sum, TauSumInnerWorker(y, imin, imax)));
+                }
+                Task.WaitAll(tasks);
+            }
+#if false
+            Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
             sqrt = limit;
-            return sum;
+            return sum & 1;
         }
 
-        public int TauSumInnerWorker(long y, int imin, int imax)
+        private int TauSumInnerWorker(long y, int imin, int imax)
         {
             var sum1 = 0;
             var current = y / imax;
@@ -525,13 +560,14 @@ namespace Decompose.Numerics
             var i = imax - 1;
             while (i >= imin)
             {
-                var product = (long)(current + delta) * i;
+                var product = (current + delta) * i;
                 if (product > y)
                     --delta;
                 else if (product + i <= y)
                 {
                     ++delta;
-                    if (product + 2 * i <= y)
+                    product += i;
+                    if (product + i <= y)
                         break;
                 }
                 current += delta;
@@ -539,6 +575,9 @@ namespace Decompose.Numerics
                 sum1 ^= (int)current;
                 --i;
             }
+#if false
+            Console.WriteLine("TauSumInnerWorker: cross-over i = {0}", i);
+#endif
             sum1 &= 1;
             var sum2 = 0;
             var count2 = 0;

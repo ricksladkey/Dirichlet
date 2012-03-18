@@ -70,44 +70,43 @@ namespace Sandbox
 
         static void ParityTest()
         {
-#if false
-            var algorithm = new PrimeCounting(8);
-            for (int j = 0; j < 1; j++)
-            {
-                for (int i = 60; i <= 60; i++)
-                {
-                    var timer = new Stopwatch();
-                    var n = (long)1 << i;
-                    timer.Restart();
-                    var sqrt = 0;
-                    var tau1 = algorithm.TauSumInner(n, out sqrt);
-                    Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, tau1);
-                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-                    timer.Restart();
-                    var tau2 = TauSumInner(n);
-                    Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, tau2);
-                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-#if true
-                    if (tau1 != tau2)
-                    {
-                        Debugger.Break();
-                        Console.WriteLine();
-                    }
-#endif
-                }
-            }
-#endif
 #if true
             var algorithm = new PrimeCounting(8);
             for (int j = 0; j < 1; j++)
             {
-                for (int i = 20; i <= 60; i++)
+                for (int i = 61; i <= 61; i++)
                 {
                     var timer = new Stopwatch();
                     timer.Start();
                     var n = (BigInteger)1 << i;
                     Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, algorithm.ParityOfPi(n));
                     output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                }
+            }
+#endif
+#if false
+            var algorithm = new PrimeCounting(8);
+            for (int j = 0; j < 1; j++)
+            {
+                for (int i = 61; i <= 61; i++)
+                {
+                    var timer = new Stopwatch();
+                    var n = (long)1 << i;
+                    timer.Restart();
+                    var tau1 = algorithm.TauSumParallel(n);
+                    Console.WriteLine("i = {0}, n = {1}, sum(n) = {2}", i, n, tau1);
+                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                    timer.Restart();
+                    var tau2 = algorithm.TauSum(n);
+                    Console.WriteLine("i = {0}, n = {1}, sum(n) = {2}", i, n, tau2);
+                    output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#if false
+                    if (tau1 != tau2)
+                    {
+                        Debugger.Break();
+                        Console.WriteLine();
+                    }
+#endif
                 }
             }
 #endif

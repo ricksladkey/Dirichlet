@@ -925,6 +925,17 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
+        public void PrimeCountingTest4()
+        {
+            var algorithm = new PrimeCounting(8);
+            for (var j = 0; j <= 40; j++)
+            {
+                var n = (BigInteger)1 << j;
+                Assert.AreEqual(piData[j] % 2, algorithm.ParityOfPi(n));
+            }
+        }
+
+        [TestMethod]
         public void MobiusTest1()
         {
             for (var threads = 0; threads < 4; threads++)
