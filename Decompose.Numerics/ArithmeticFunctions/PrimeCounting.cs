@@ -193,8 +193,10 @@ namespace Decompose.Numerics
 
         private int SumTwoToTheOmega(sbyte[] mobius, UInt128 x, ulong dmin, ulong dmax)
         {
+#if true
             if (x < ulong.MaxValue)
                 return SumTwoToTheOmegaMedium(mobius, (ulong)x, (uint)dmin, (uint)dmax);
+#endif
             return SumTwoToTheOmegaLarge(mobius, x, dmin, dmax);
         }
 
@@ -282,8 +284,6 @@ namespace Decompose.Numerics
         {
             var sum = 0;
             var last = (UInt128)0;
-            var current = x / ((UInt128)dmax * dmax);
-            var delta = dmax == 1 ? (long)0 : x / ((UInt128)(dmax - 1) * (dmax - 1)) - current;
             var d = dmax - 1;
             var count = 0;
             while (d >= dmin)
@@ -291,49 +291,7 @@ namespace Decompose.Numerics
                 var mu = mobius[d - dmin];
                 if (mu != 0)
                 {
-                    var dSquared = (UInt128)d * d;
-                    var product = (current + delta) * dSquared;
-                    if (product > x)
-                    {
-                        do
-                        {
-                            --delta;
-                            product -= dSquared;
-                        }
-                        while (product > x);
-                    }
-                    else if (product + dSquared <= x)
-                    {
-                        ++delta;
-                        product += dSquared;
-                        if (product + dSquared <= x)
-                            break;
-                    }
-                    current += delta;
-                    Debug.Assert(x / dSquared == current);
-                    if (current != last)
-                    {
-                        if ((count & 3) != 0)
-                        {
-                            var tau = TauSum(last);
-                            if (count > 0)
-                                sum += count * tau;
-                            else
-                                sum -= count * (4 - tau);
-                        }
-                        count = 0;
-                        last = current;
-                    }
-                    count += mu;
-                }
-                --d;
-            }
-            while (d >= dmin)
-            {
-                var mu = mobius[d - dmin];
-                if (mu != 0)
-                {
-                    current = x / ((UInt128)d * d);
+                    var current = x / d / d;
                     if (current != last)
                     {
                         var tau = TauSum(last);
