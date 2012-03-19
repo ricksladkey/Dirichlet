@@ -332,7 +332,7 @@ namespace Decompose.Numerics
         public int CompareTo(ulong other)
         {
             if (r3 != 0 || r2 != 0)
-                return -1;
+                return 1;
             return ((ulong)this).CompareTo(other);
         }
 

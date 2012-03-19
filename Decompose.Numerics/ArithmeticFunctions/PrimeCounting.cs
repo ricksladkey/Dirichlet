@@ -99,7 +99,7 @@ namespace Decompose.Numerics
                 if (mu != 0)
                 {
                     var n = x / ((long)d * d);
-                    var tau = n == nLast ? tauLast : TauSum(n);
+                    var tau = n == nLast ? tauLast : TauSum((ulong)n);
                     if (mu == 1)
                         sum += tau;
                     else
@@ -193,17 +193,17 @@ namespace Decompose.Numerics
 
         private int SumTwoToTheOmega(sbyte[] mobius, UInt128 x, ulong dmin, ulong dmax)
         {
-            if (dmax < int.MaxValue)
-                return SumTwoToTheOmegaMedium(mobius, (long)x, (int)dmin, (int)dmax);
+            if (x < ulong.MaxValue)
+                return SumTwoToTheOmegaMedium(mobius, (ulong)x, (uint)dmin, (uint)dmax);
             return SumTwoToTheOmegaLarge(mobius, x, dmin, dmax);
         }
 
-        private int SumTwoToTheOmegaMedium(sbyte[] mobius, long x, int dmin, int dmax)
+        private int SumTwoToTheOmegaMedium(sbyte[] mobius, ulong x, uint dmin, uint dmax)
         {
             var sum = 0;
-            var last = (long)0;
-            var current = x / ((long)dmax * dmax);
-            var delta = dmax == 1 ? (long)0 : x / ((long)(dmax - 1) * (dmax - 1)) - current;
+            var last = (ulong)0;
+            var current = x / ((ulong)dmax * dmax);
+            var delta = dmax == 1 ? (long)0 : x / ((ulong)(dmax - 1) * (dmax - 1)) - current;
             var d = dmax - 1;
             var count = 0;
             while (d >= dmin)
@@ -211,7 +211,7 @@ namespace Decompose.Numerics
                 var mu = mobius[d - dmin];
                 if (mu != 0)
                 {
-                    var dSquared = (long)d * d;
+                    var dSquared = (ulong)d * d;
                     var product = (current + delta) * dSquared;
                     if (product > x)
                     {
@@ -225,7 +225,8 @@ namespace Decompose.Numerics
                     else if (product + dSquared <= x)
                     {
                         ++delta;
-                        if (product + 2 * dSquared <= x)
+                        product += dSquared;
+                        if (product + dSquared <= x)
                             break;
                     }
                     current += delta;
@@ -252,7 +253,7 @@ namespace Decompose.Numerics
                 var mu = mobius[d - dmin];
                 if (mu != 0)
                 {
-                    current = x / ((long)d * d);
+                    current = x / ((ulong)d * d);
                     if (current != last)
                     {
                         var tau = TauSum(last);
@@ -304,7 +305,8 @@ namespace Decompose.Numerics
                     else if (product + dSquared <= x)
                     {
                         ++delta;
-                        if (product + 2 * dSquared <= x)
+                        product += dSquared;
+                        if (product + dSquared <= x)
                             break;
                     }
                     current += delta;
@@ -385,12 +387,12 @@ namespace Decompose.Numerics
             return sum & 3;
         }
 
-        private int TauSum(long y)
+        private int TauSum(ulong y)
         {
             // sum(tau(d), d=[1,y]) = 2 sum(y/d, d=[1,floor(sqrt(y))]) - floor(sqrt(y))^2
-            if (y < tauSumSmall.Length)
+            if (y < (ulong)tauSumSmall.Length)
                 return tauSumSmall[y];
-            var sqrt = 0;
+            var sqrt = (uint)0;
             var sum = TauSumInner(y, out sqrt);
             sum = 2 * sum - (int)((sqrt * sqrt) & 3);
             return sum & 3;
@@ -430,7 +432,7 @@ namespace Decompose.Numerics
             return sum & 1;
         }
 
-        public int TauSumInner(long y, out int sqrt)
+        public int TauSumInner(ulong y, out uint sqrt)
         {
             // Computes sum(floor(y/d), d=[1,floor(sqrt(y))]) mod 2.
             // To avoid division, we start at the
@@ -441,24 +443,24 @@ namespace Decompose.Numerics
             // As soon as it starts changing too quickly
             // we resort to a different method where
             // the quantity floor(y/d) is odd iff y mod 2d >= d.
-            if (y <= int.MaxValue)
-                return TauSumInnerSmall((int)y, out sqrt);
+            if (y <= uint.MaxValue)
+                return TauSumInnerSmall((uint)y, out sqrt);
             return TauSumInnerMedium(y, out sqrt);
         }
 
         public int TauSumInner(UInt128 y, out ulong sqrt)
         {
-            if (y <= int.MaxValue)
+            if (y <= uint.MaxValue)
             {
-                var isqrt = 0;
-                var result = TauSumInnerSmall((int)y, out isqrt);
+                var isqrt = (uint)0;
+                var result = TauSumInnerSmall((uint)y, out isqrt);
                 sqrt = (ulong)isqrt;
                 return result;
             }
-            if (y <= long.MaxValue / 4)
+            if (y <= ulong.MaxValue)
             {
-                var isqrt = 0;
-                var result = TauSumInnerMedium((long)y, out isqrt);
+                var isqrt = (uint)0;
+                var result = TauSumInnerMedium((ulong)y, out isqrt);
                 sqrt = (ulong)isqrt;
                 return result;
             }
@@ -499,12 +501,12 @@ namespace Decompose.Numerics
             return sum & 1;
         }
 
-        public int TauSumInnerSmall(int y, out int sqrt)
+        public int TauSumInnerSmall(uint y, out uint sqrt)
         {
-            var limit = (int)Math.Floor(Math.Sqrt(y));
-            var sum1 = 0;
+            var limit = (uint)Math.Floor(Math.Sqrt(y));
+            var sum = (uint)0;
             var current = limit - 1;
-            var delta = 1;
+            var delta = (uint)1;
             var i = limit;
             while (i > 0)
             {
@@ -519,28 +521,21 @@ namespace Decompose.Numerics
                 }
                 current += delta;
                 Debug.Assert(y / i == current);
-                sum1 ^= current;
+                sum ^= current;
                 --i;
             }
-            sum1 &= 1;
-            var sum2 = 0;
-            var count2 = 0;
-            while (i > 0)
+            while (i >= 1)
             {
-                sum2 ^= (int)(y % (i << 1)) - i;
+                sum ^= (uint)(y / i);
                 --i;
-                ++count2;
             }
-            sum2 = (sum2 >> 31) & 1;
-            if ((count2 & 1) != 0)
-                sum2 ^= 1;
             sqrt = limit;
-            return sum1 ^ sum2;
+            return (int)(sum & 1);
         }
 
-        public int TauSumInnerMedium(long y, out int sqrt)
+        public int TauSumInnerMedium(ulong y, out uint sqrt)
         {
-            sqrt = (int)Math.Floor(Math.Sqrt(y));
+            sqrt = (uint)Math.Floor(Math.Sqrt(y));
             return TauSumInnerWorkerMedium(y, 1, sqrt + 1);
         }
 
@@ -552,14 +547,16 @@ namespace Decompose.Numerics
 
         private int TauSumInnerWorker(UInt128 y, ulong imin, ulong imax)
         {
-            if (imax < int.MaxValue)
-                return TauSumInnerWorkerMedium((long)y, (int)imin, (int)imax);
+#if true
+            if (y < ulong.MaxValue)
+                return TauSumInnerWorkerMedium((ulong)y, (uint)imin, (uint)imax);
+#endif
             return TauSumInnerWorkerLarge(y, imin, imax);
         }
 
-        private int TauSumInnerWorkerMedium(long y, int imin, int imax)
+        private int TauSumInnerWorkerMedium(ulong y, uint imin, uint imax)
         {
-            var sum1 = 0;
+            var sum = (uint)0;
             var current = y / imax;
             var delta = y / (imax - 1) - current;
             var i = imax - 1;
@@ -577,60 +574,23 @@ namespace Decompose.Numerics
                 }
                 current += delta;
                 Debug.Assert(y / i == current);
-                sum1 ^= (int)current;
+                sum ^= (uint)current;
                 --i;
             }
-            sum1 &= 1;
-            var sum2 = 0;
-            var count2 = 0;
             while (i >= imin)
             {
-                sum2 ^= (int)(y % (i << 1)) - i;
+                sum ^= (uint)(y / i);
                 --i;
-                ++count2;
             }
-            sum2 = (sum2 >> 31) & 1;
-            if ((count2 & 1) != 0)
-                sum2 ^= 1;
-            return sum1 ^ sum2;
+            return (int)(sum & 1);
         }
 
         private int TauSumInnerWorkerLarge(UInt128 y, ulong imin, ulong imax)
         {
-            var sum1 = 0;
-            var current = y / imax;
-            var delta = y / (imax - 1) - current;
-            var i = imax - 1;
-            while (i >= imin)
-            {
-                var product = (current + delta) * i;
-                if (product > y)
-                    --delta;
-                else if (product + i <= y)
-                {
-                    ++delta;
-                    product += i;
-                    if (product + i <= y)
-                        break;
-                }
-                current += delta;
-                Debug.Assert(y / i == current);
-                sum1 ^= (int)current;
-                --i;
-            }
-            sum1 &= 1;
-            var sum2 = 0;
-            var count2 = 0;
-            while (i >= imin)
-            {
-                sum2 ^= (int)((ulong)(y % (i << 1)) - i);
-                --i;
-                ++count2;
-            }
-            sum2 = (sum2 >> 31) & 1;
-            if ((count2 & 1) != 0)
-                sum2 ^= 1;
-            return sum1 ^ sum2;
+            var sum = (uint)0;
+            for (var i = imin; i < imax; i++)
+                sum ^= (uint)(y / i);
+            return (int)(sum & 1);
         }
     }
 }
