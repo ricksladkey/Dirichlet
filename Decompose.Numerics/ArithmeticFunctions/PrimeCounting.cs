@@ -596,7 +596,7 @@ namespace Decompose.Numerics
                 return (int)(sum & 1);
             }
 #endif
-#if true
+#if false
             var sum = (uint)0;
             var i = imax - 1;
             var current = (ulong)(y / (i + 1));
@@ -607,13 +607,7 @@ namespace Decompose.Numerics
             {
                 mod += (long)(current - delta * i);
                 current += delta;
-                if (mod < 0)
-                {
-                    --delta;
-                    --current;
-                    mod += (long)i;
-                }
-                else if (mod >= (long)i)
+                if (mod >= (long)i)
                 {
                     ++delta;
                     ++current;
@@ -621,6 +615,50 @@ namespace Decompose.Numerics
                     if (mod >= (long)i)
                         break;
                 }
+                else if (mod < 0)
+                {
+                    --delta;
+                    --current;
+                    mod += (long)i;
+                }
+                Debug.Assert(y / i == current);
+                sum ^= (uint)current;
+                --i;
+            }
+            while (i >= imin)
+            {
+                sum ^= (uint)(y / i);
+                --i;
+            }
+            return (int)(sum & 1);
+#endif
+#if true
+            var sum = (uint)0;
+            var i = imax - 1;
+            var current = (ulong)(y / (i + 1));
+            var delta = (ulong)(y / i - current);
+            var mod = (long)(y - current * (i + 1));
+            var imid = Math.Max(imin, (ulong)(y >> 62));
+            var deltai = delta * (i + 1);
+            while (i >= imid)
+            {
+                deltai -= delta;
+                mod += (long)(current - deltai);
+                if (mod >= (long)i)
+                {
+                    ++delta;
+                    deltai += i;
+                    mod -= (long)i;
+                    if (mod >= (long)i)
+                        break;
+                }
+                else if (mod < 0)
+                {
+                    --delta;
+                    deltai -= i;
+                    mod += (long)i;
+                }
+                current += delta;
                 Debug.Assert(y / i == current);
                 sum ^= (uint)current;
                 --i;

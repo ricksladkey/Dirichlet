@@ -646,4 +646,7 @@ mod = y - (current + delta) * i
 mod = y - current * i - delta * i
 mod += current - delta * i
 
+- rebalance TauSumInnerParallel when uneven
+- avoid 128-bit double division
+
 
