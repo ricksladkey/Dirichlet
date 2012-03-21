@@ -411,6 +411,7 @@ namespace Decompose.Numerics
 
         public int TauSumInner(UInt128 y, out ulong sqrt)
         {
+#if true
             if (y <= uint.MaxValue)
             {
                 var isqrt = (uint)0;
@@ -425,6 +426,7 @@ namespace Decompose.Numerics
                 sqrt = (ulong)isqrt;
                 return result;
             }
+#endif
             return TauSumInnerLarge(y, out sqrt);
         }
 
@@ -567,7 +569,7 @@ namespace Decompose.Numerics
             }
             return (int)(sum & 1);
 #endif
-#if true
+#if false
             // The quantity floor(y/d) is odd iff y mod 2d >= d.
             var sum = (ulong)0;
             for (var i = imin; i < imax; i++)
@@ -593,8 +595,42 @@ namespace Decompose.Numerics
                 }
                 return (int)(sum & 1);
             }
-            else
+#endif
+#if true
+            var sum = (uint)0;
+            var i = imax - 1;
+            var current = (ulong)(y / (i + 1));
+            var delta = (ulong)(y / i - current);
+            var mod = (long)(y - current * (i + 1));
+            var imid = Math.Max(imin, (ulong)(y >> 62));
+            while (i >= imid)
             {
+                mod += (long)(current - delta * i);
+                current += delta;
+                if (mod < 0)
+                {
+                    --delta;
+                    --current;
+                    mod += (long)i;
+                }
+                else if (mod >= (long)i)
+                {
+                    ++delta;
+                    ++current;
+                    mod -= (long)i;
+                    if (mod >= (long)i)
+                        break;
+                }
+                Debug.Assert(y / i == current);
+                sum ^= (uint)current;
+                --i;
+            }
+            while (i >= imin)
+            {
+                sum ^= (uint)(y / i);
+                --i;
+            }
+            return (int)(sum & 1);
 #endif
         }
     }

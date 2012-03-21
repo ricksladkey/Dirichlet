@@ -70,11 +70,11 @@ namespace Sandbox
 
         static void ParityTest()
         {
-#if false
+#if true
             var algorithm = new PrimeCounting(8);
             for (int j = 0; j < 1; j++)
             {
-                for (int i = 77; i <= 77; i++)
+                for (int i = 64; i <= 69; i++)
                 {
                     var timer = new Stopwatch();
                     timer.Start();
@@ -84,7 +84,7 @@ namespace Sandbox
                 }
             }
 #endif
-#if true
+#if false
             var algorithm = new PrimeCounting(8);
             for (int j = 0; j < 1; j++)
             {
@@ -93,7 +93,12 @@ namespace Sandbox
                     var timer = new Stopwatch();
                     var n = (UInt128)1 << i;
                     timer.Restart();
+#if true
                     var tau1 = algorithm.TauSumParallel(n);
+#else
+                    ulong sqrt;
+                    var tau1 = algorithm.TauSumInner(n, out sqrt);
+#endif
                     Console.WriteLine("i = {0}, n = {1}, sum(n) = {2}", i, n, tau1);
                     output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #if false

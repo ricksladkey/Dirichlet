@@ -625,4 +625,25 @@ d = x^(1/4)
 8 0 0 0 0 1
 9 1 0 1 0 1
 
-4 column = 
+
+              50
+1000 500 333 250 200 = current
+
+1    2   3   4   5
+
+
+
+
+
+current = y / (i + 1)
+delta = current - previous
+mod = y - currrent * (i + 1) = y - current * i - current
+
+current += delta
+--i
+
+mod = y - (current + delta) * i
+mod = y - current * i - delta * i
+mod += current - delta * i
+
+
