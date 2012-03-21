@@ -83,6 +83,7 @@ namespace Decompose.Numerics
 
         private void CheckLast(int newLast)
         {
+            CheckValid();
             if (bits.Length < newLast + 1)
                 Resize(newLast + 1);
         }
@@ -138,7 +139,7 @@ namespace Decompose.Numerics
 
         public MutableInteger Set(long a)
         {
-            CheckValid();
+            CheckLast(1);
             var aAbs = a < 0 ? -a : a;
             bits[0] = (uint)aAbs;
             bits[1] = (uint)(aAbs >> 32);
@@ -152,7 +153,7 @@ namespace Decompose.Numerics
 
         public MutableInteger Set(ulong a)
         {
-            CheckValid();
+            CheckLast(1);
             bits[0] = (uint)a;
             bits[1] = (uint)(a >> 32);
             for (int i = 2; i <= last; i++)
@@ -161,6 +162,19 @@ namespace Decompose.Numerics
             sign = 1;
             CheckValid();
             return this;
+        }
+
+        public MutableInteger Set(UInt128 a)
+        {
+            CheckLast(3);
+            bits[0] = a.R0;
+            bits[1] = a.R1;
+            bits[2] = a.R2;
+            bits[3] = a.R3;
+            for (int i = 4; i <= last; i++)
+                bits[i] = 0;
+            sign = 1;
+            return SetLast(3);
         }
 
         public MutableInteger Set(BigInteger a)
@@ -238,6 +252,11 @@ namespace Decompose.Numerics
         public static implicit operator MutableInteger(ulong a)
         {
             return new MutableInteger(2).Set(a);
+        }
+
+        public static implicit operator MutableInteger(UInt128 a)
+        {
+            return new MutableInteger(4).Set(a);
         }
 
         public static implicit operator MutableInteger(BigInteger a)

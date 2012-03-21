@@ -34,7 +34,21 @@ namespace Decompose.Numerics
         {
             return (UInt128)BigInteger.Parse(value);
         }
-        
+
+        public uint LeastSignificantWord
+        {
+            get { return r0; }
+        }
+
+        public uint R0 { get { return r0; } }
+        public uint R1 { get { return r1; } }
+        public uint R2 { get { return r2; } }
+        public uint R3 { get { return r3; } }
+
+        public bool IsZero { get { return (r3 | r2 | r1 | r0) == 0; } }
+        public bool IsOne { get { return ((r3 | r2 | r1) ^ r0) == 1; } }
+        public bool IsPowerOfTwo { get { return (this & (this - 1)).IsZero; } }
+
         public override string ToString()
         {
             return ((BigInteger)this).ToString();
@@ -54,11 +68,6 @@ namespace Decompose.Numerics
         public int GetBitCount()
         {
             return r0.GetBitCount() + r1.GetBitCount() + r2.GetBitCount() + r3.GetBitCount();
-        }
-
-        public uint LeastSignificantWord
-        {
-            get { return r0; }
         }
 
         public static implicit operator UInt128(uint a)

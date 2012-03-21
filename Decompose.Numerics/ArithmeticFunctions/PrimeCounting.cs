@@ -149,11 +149,13 @@ namespace Decompose.Numerics
                 var thread = consumer;
                 tasks[consumer] = Task.Factory.StartNew(() => ConsumeItems(thread, queue, mobius, x, ref sum));
             }
+
             for (d = singleLimit1; d < singleLimit2; d++)
             {
                 if (mobiusSmall[d] != 0)
                     queue.Add(new WorkItem { Min = d, Max = d + 1 });
             }
+
             for (var unit = 0; unit < units; unit++)
             {
                 var dmin = d;
@@ -165,6 +167,7 @@ namespace Decompose.Numerics
                 queue.Add(new WorkItem { Min = dmin, Max = dmax });
                 d = dmax;
             }
+
             while (d < limit + 1)
             {
                 var dmin = d;
@@ -172,6 +175,7 @@ namespace Decompose.Numerics
                 queue.Add(new WorkItem { Min = dmin, Max = dmax });
                 d = dmax;
             }
+
             queue.CompleteAdding();
             Task.WaitAll(tasks);
             return sum & 3;
@@ -399,8 +403,7 @@ namespace Decompose.Numerics
             // difference between steps and let
             // it increase by at most one each iteration.
             // As soon as it starts changing too quickly
-            // we resort to a different method where
-            // the quantity floor(y/d) is odd iff y mod 2d >= d.
+            // we resort to the naive method.
             if (y <= uint.MaxValue)
                 return TauSumInnerSmall((uint)y, out sqrt);
             return TauSumInnerMedium(y, out sqrt);
@@ -545,10 +548,54 @@ namespace Decompose.Numerics
 
         private int TauSumInnerWorkerLarge(UInt128 y, ulong imin, ulong imax)
         {
+#if false
             var sum = (uint)0;
             for (var i = imin; i < imax; i++)
                 sum ^= (uint)(y / i);
             return (int)(sum & 1);
+#endif
+#if false
+            var yRep = (MutableInteger)y;
+            var xRep = yRep.Copy();
+            var iRep = (MutableInteger)imin;
+            var store = new MutableIntegerStore(4);
+            var sum = (uint)0;
+            for (var i = imin; i < imax; i++)
+            {
+                sum ^= xRep.Set(yRep).Divide(iRep, store).LeastSignificantWord;
+                iRep.Increment();
+            }
+            return (int)(sum & 1);
+#endif
+#if true
+            // The quantity floor(y/d) is odd iff y mod 2d >= d.
+            var sum = (ulong)0;
+            for (var i = imin; i < imax; i++)
+                sum ^= y % (i << 1) - i;
+            sum >>= 63;
+            if (((imax - imin) & 1) != 0)
+                sum ^= 1;
+            return (int)(sum & 1);
+#endif
+#if false
+            if (y.IsPowerOfTwo)
+            {
+                var uBits = y.GetBitLength() - 32;
+                var sum = (uint)0;
+                var y0 = (UInt128)y.LeastSignificantWord;
+                var y12 = (ulong)(y >> 32);
+                for (var i = imin; i < imax; i++)
+                {
+                    var y12mod = y12 % i;
+                    var yPrime = y0 + ((y12 % i) << 32);
+                    var shift = 64 - i.GetBitCount();
+                    sum ^= (uint)(y / i);
+                }
+                return (int)(sum & 1);
+            }
+            else
+            {
+#endif
         }
     }
 }

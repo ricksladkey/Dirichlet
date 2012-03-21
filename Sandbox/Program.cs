@@ -70,28 +70,28 @@ namespace Sandbox
 
         static void ParityTest()
         {
-#if true
+#if false
             var algorithm = new PrimeCounting(8);
             for (int j = 0; j < 1; j++)
             {
-                for (int i = 64; i <= 70; i++)
+                for (int i = 77; i <= 77; i++)
                 {
                     var timer = new Stopwatch();
                     timer.Start();
-                    var n = (BigInteger)1 << i;
+                    var n = IntegerMath.Power((BigInteger)2, i);
                     Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, algorithm.ParityOfPi(n));
                     output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
                 }
             }
 #endif
-#if false
+#if true
             var algorithm = new PrimeCounting(8);
             for (int j = 0; j < 1; j++)
             {
-                for (int i = 60; i <= 63; i++)
+                for (int i = 60; i <= 60; i++)
                 {
                     var timer = new Stopwatch();
-                    var n = (ulong)1 << i;
+                    var n = (UInt128)1 << i;
                     timer.Restart();
                     var tau1 = algorithm.TauSumParallel(n);
                     Console.WriteLine("i = {0}, n = {1}, sum(n) = {2}", i, n, tau1);
