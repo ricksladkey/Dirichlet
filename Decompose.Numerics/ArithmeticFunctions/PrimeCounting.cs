@@ -147,7 +147,7 @@ namespace Decompose.Numerics
             for (var consumer = 0; consumer < consumers; consumer++)
             {
                 var thread = consumer;
-                tasks[consumer] = Task.Factory.StartNew(() => ConsumeItems(thread, queue, mobius, x, ref sum));
+                tasks[consumer] = Task.Factory.StartNew(() => ConsumeSumTwoToTheOmegaItems(thread, queue, mobius, x, ref sum));
             }
 
             for (d = singleLimit1; d < singleLimit2; d++)
@@ -181,7 +181,7 @@ namespace Decompose.Numerics
             return sum & 3;
         }
 
-        private void ConsumeItems(int thread, BlockingCollection<WorkItem> queue, MobiusRange mobius, UInt128 x, ref int sum)
+        private void ConsumeSumTwoToTheOmegaItems(int thread, BlockingCollection<WorkItem> queue, MobiusRange mobius, UInt128 x, ref int sum)
         {
             var values = new sbyte[blockSize];
             var item = default(WorkItem);
@@ -432,36 +432,49 @@ namespace Decompose.Numerics
 
         public int TauSumInnerParallel(UInt128 y, out ulong sqrt)
         {
-#if false
-            Console.WriteLine("TauSumInnerParallel: y = {0}", y);
-            var timer = new Stopwatch();
-            timer.Restart();
-#endif
-            var limit = (ulong)IntegerMath.FloorSquareRoot((BigInteger)y);
+            sqrt = (ulong)IntegerMath.FloorSquareRoot((BigInteger)y);
             var sum = 0;
+
+            // Create consumers.
+            var queue = new BlockingCollection<WorkItem>();
+            var consumers = Math.Max(1, threads);
+            var tasks = new Task[consumers];
+            for (var consumer = 0; consumer < consumers; consumer++)
+            {
+                var thread = consumer;
+                tasks[consumer] = Task.Factory.StartNew(() => ConsumeTauInnerSumItems(thread, queue, y, ref sum));
+            }
+
+            // Produce work items.
+            var slowLimit = (ulong)Math.Pow(sqrt, 0.8);
+            TauSumInnerParallel(queue, 1, slowLimit);
+            TauSumInnerParallel(queue, slowLimit, sqrt + 1);
+
+            // Wait for completion.
+            queue.CompleteAdding();
+            Task.WaitAll(tasks);
+            return sum & 1;
+        }
+
+        private const ulong maximumBatchSize = (ulong)1 << 28;
+
+        private void TauSumInnerParallel(BlockingCollection<WorkItem> queue, ulong imin, ulong imax)
+        {
             if (threads == 0)
-                sum += TauSumInnerWorker(y, 1, limit + 1);
+                queue.Add(new WorkItem { Min = imin, Max = imax });
             else
             {
-                var tasks = new Task[threads];
-                var batchSize = (limit + (ulong)threads - 1) / (ulong)threads;
-                for (var thread = (uint)0; thread < threads; thread++)
-                {
-                    var imin = 1 + thread * batchSize;
-                    var imax = Math.Min(imin + batchSize, limit + 1);
-#if false
-                    Console.WriteLine("imin = {0}, imax = {1}", imin, imax);
-#endif
-                    tasks[thread] = Task.Factory.StartNew(() =>
-                        Interlocked.Add(ref sum, TauSumInnerWorker(y, imin, imax)));
-                }
-                Task.WaitAll(tasks);
+                var batchSize = Math.Min(maximumBatchSize, (imax - imin + (ulong)threads - 1) / (ulong)threads);
+                for (var i = imin; i < imax; i += batchSize)
+                    queue.Add(new WorkItem { Min = i, Max = Math.Min(i + batchSize, imax) });
             }
-#if false
-            Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-#endif
-            sqrt = limit;
-            return sum & 1;
+        }
+
+        private void ConsumeTauInnerSumItems(int thread, BlockingCollection<WorkItem> queue, UInt128 y, ref int sum)
+        {
+            var item = default(WorkItem);
+            while (queue.TryTake(out item, Timeout.Infinite))
+                Interlocked.Add(ref sum, TauSumInnerWorker(y, item.Min, item.Max));
         }
 
         public int TauSumInnerSmall(uint y, out uint sqrt)
@@ -514,7 +527,15 @@ namespace Decompose.Numerics
             if (y < ulong.MaxValue)
                 return TauSumInnerWorkerMedium((ulong)y, (uint)imin, (uint)imax);
 #endif
-            return TauSumInnerWorkerLarge(y, imin, imax);
+#if false
+            var timer = new Stopwatch();
+            timer.Restart();
+#endif
+            var result = TauSumInnerWorkerLarge(y, imin, imax);
+#if false
+            Console.WriteLine("TauSumInnerWorker: y = {0}, imin = {1}, imax = {2}, elapsed = {3:F3}", y, imin, imax, (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
+            return result;
         }
 
         private int TauSumInnerWorkerMedium(ulong y, uint imin, uint imax)
@@ -602,7 +623,7 @@ namespace Decompose.Numerics
             var current = (ulong)(y / (i + 1));
             var delta = (ulong)(y / i - current);
             var mod = (long)(y - current * (i + 1));
-            var imid = Math.Max(imin, (ulong)(y >> 62));
+            var imid = Math.Max(imin, (ulong)(y >> (64 - 2)));
             while (i >= imid)
             {
                 mod += (long)(current - delta * i);
@@ -638,7 +659,7 @@ namespace Decompose.Numerics
             var current = (ulong)(y / (i + 1));
             var delta = (ulong)(y / i - current);
             var mod = (long)(y - current * (i + 1));
-            var imid = Math.Max(imin, (ulong)(y >> 62));
+            var imid = Math.Max(imin, (ulong)(y >> (64 - 2)));
             var deltai = delta * (i + 1);
             while (i >= imid)
             {

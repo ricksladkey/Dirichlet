@@ -646,7 +646,16 @@ mod = y - (current + delta) * i
 mod = y - current * i - delta * i
 mod += current - delta * i
 
+- test new multiplication free algorithm on TauSumInnerWorkerMedium => not faster
 - rebalance TauSumInnerParallel when uneven
 - avoid 128-bit double division
 
+y = n / x
 
+
+y' = -n / x^2
+y'' = 2n / x^3
+
+1 = 2n / x^3
+x^3 = 2n
+x = (2n)n^(1/3)
