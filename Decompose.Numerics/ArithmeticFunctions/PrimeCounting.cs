@@ -284,38 +284,102 @@ namespace Decompose.Numerics
             return sum;
         }
 
+        private const int safetyBits = 2;
+
         private int SumTwoToTheOmegaLarge(sbyte[] mobius, UInt128 x, ulong dmin, ulong dmax)
         {
             var sum = 0;
-            var last = (UInt128)0;
             var d = dmax - 1;
             var count = 0;
-            while (d >= dmin)
+#if true
             {
-                var mu = mobius[d - dmin];
-                if (mu != 0)
+                // Avoid 128-bit arithmetic as long as possible by
+                // computing x / d as in TauInnerSum if the result
+                // fits in 62 bits or so.  Then do the second
+                // division using 64-bit arithmetic.
+                var last = (ulong)0;
+                var current = (ulong)(x / (d + 1));
+                var delta = (ulong)(x / d) - current;
+                var mod = (long)(x - (UInt128)current * (d + 1));
+                var dmid = Math.Max(dmin, (ulong)(x >> (64 - safetyBits)));
+                var deltad = delta * (d + 1);
+                while (d >= dmid)
                 {
-                    var current = x / d / d;
-                    if (current != last)
+                    deltad -= delta;
+                    mod += (long)(current - deltad);
+                    if (mod >= (long)d)
                     {
-                        var tau = TauSum(last);
-                        if (count > 0)
-                            sum += count * tau;
-                        else
-                            sum -= count * (4 - tau);
-                        count = 0;
-                        last = current;
+                        ++delta;
+                        deltad += d;
+                        mod -= (long)d;
+                        if (mod >= (long)d)
+                            break;
                     }
-                    count += mu;
+                    else if (mod < 0)
+                    {
+                        --delta;
+                        deltad -= d;
+                        mod += (long)d;
+                    }
+                    current += delta;
+                    Debug.Assert(x / d == current);
+                    var mu = mobius[d - dmin];
+                    if (mu != 0)
+                    {
+                        var current2 = current / d;
+                        Debug.Assert(x / d / d == current2);
+                        if (current2 != last)
+                        {
+                            var tau = TauSum(last);
+                            if (count > 0)
+                                sum += count * tau;
+                            else
+                                sum -= count * (4 - tau);
+                            count = 0;
+                            last = current2;
+                        }
+                        count += mu;
+                    }
+                    --d;
                 }
-                --d;
+                {
+                    var tau = TauSum(last);
+                    if (count > 0)
+                        sum += count * tau;
+                    else
+                        sum -= count * (4 - tau);
+                }
             }
+#endif
             {
-                var tau = TauSum(last);
-                if (count > 0)
-                    sum += count * tau;
-                else
-                    sum -= count * (4 - tau);
+                var last = (UInt128)0;
+                while (d >= dmin)
+                {
+                    var mu = mobius[d - dmin];
+                    if (mu != 0)
+                    {
+                        var current = x / d / d;
+                        if (current != last)
+                        {
+                            var tau = TauSum(last);
+                            if (count > 0)
+                                sum += count * tau;
+                            else
+                                sum -= count * (4 - tau);
+                            count = 0;
+                            last = current;
+                        }
+                        count += mu;
+                    }
+                    --d;
+                }
+                {
+                    var tau = TauSum(last);
+                    if (count > 0)
+                        sum += count * tau;
+                    else
+                        sum -= count * (4 - tau);
+                }
             }
             return sum;
         }
@@ -622,8 +686,8 @@ namespace Decompose.Numerics
             var i = imax - 1;
             var current = (ulong)(y / (i + 1));
             var delta = (ulong)(y / i - current);
-            var mod = (long)(y - current * (i + 1));
-            var imid = Math.Max(imin, (ulong)(y >> (64 - 2)));
+            var mod = (long)(y - (UInt128)current * (i + 1));
+            var imid = Math.Max(imin, (ulong)(y >> (64 - safetyBits)));
             while (i >= imid)
             {
                 mod += (long)(current - delta * i);
@@ -657,9 +721,9 @@ namespace Decompose.Numerics
             var sum = (uint)0;
             var i = imax - 1;
             var current = (ulong)(y / (i + 1));
-            var delta = (ulong)(y / i - current);
-            var mod = (long)(y - current * (i + 1));
-            var imid = Math.Max(imin, (ulong)(y >> (64 - 2)));
+            var delta = (ulong)(y / i) - current;
+            var mod = (long)(y - (UInt128)current * (i + 1));
+            var imid = Math.Max(imin, (ulong)(y >> (64 - safetyBits)));
             var deltai = delta * (i + 1);
             while (i >= imid)
             {
