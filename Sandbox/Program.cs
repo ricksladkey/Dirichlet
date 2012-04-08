@@ -68,18 +68,181 @@ namespace Sandbox
             return true;
         }
 
+        static Rational SawToothStar(Rational x)
+        {
+            var mod = IntegerMath.Modulus(x.Numerator, x.Denominator);
+#if false
+            if (mod == 0)
+                return 0;
+#endif
+            return new Rational(mod, x.Denominator) - new Rational(1, 2);
+        }
+
+        static Rational SawTooth(BigInteger xn, BigInteger xd)
+        {
+            var mod = IntegerMath.Modulus(xn, xd);
+            return new Rational(mod, xd) - new Rational(1, 2);
+        }
+
+        static Rational DedekindSum(BigInteger a, BigInteger b, Rational x, Rational y)
+        {
+            var sum = (Rational)0;
+            for (BigInteger k = 0; k < b; k++)
+                sum += SawToothStar((k + y) * a / b + x) * SawToothStar((k + y) / b);
+            return sum;
+        }
+
+        static Rational GetLatticeCount(BigInteger t, BigInteger p, BigInteger q)
+        {
+            Rational one = 1;
+            Rational two = 2;
+            Rational l = new Rational(t * t, 2 * p * q)
+                + t * (one / p + one / q + one / (p * q)) / 2
+                + one / 4
+                + one / 12 * (new Rational(p, q) + new Rational(q, p) + one / (p * q))
+                - DedekindSum(q, p, new Rational(t, p), 0)
+                - DedekindSum(p, q, new Rational(t, q), 0)
+                - SawTooth(t, p)
+                - SawTooth(t, q);
+            return l;
+        }
+
+        static BigInteger GetLatticeCount(BigInteger t, BigInteger a, BigInteger b, BigInteger d, BigInteger c, BigInteger p, BigInteger q, BigInteger r)
+        {
+            BigInteger u = (Rational.Floor(new Rational(t * a - 1, d)) + 1) * c * p;
+            BigInteger v = (Rational.Floor(new Rational(t * b - 1, d)) + 1) * c * q;
+            Rational one = 1;
+            Rational truv = t * r - u - v;
+            Rational tr1c = SawTooth(t * r - 1, c);
+            var l = truv * truv / (2 * c * c * p * q)
+                + truv * (one / (2 * c * p) + one / (2 * c * q) + one / (c * c * p * q) + one / (c * p * q) * SawTooth(t * r, c))
+                + one / 4
+                + one / 12 * (new Rational(p, q) + new Rational(q, p))
+                + one / (24 * p * q)
+                + one / (c * c * p * q)
+                - SawTooth(t * r - v, c * p) / 2
+                - SawTooth(t * r - u, c * q) / 2
+                + SawTooth(t * r, c) / (c * p * q)
+                + tr1c / (c * p * q)
+                + tr1c * tr1c / (2 * p * q)
+                - DedekindSum(q, p, new Rational(t * r - v, c * p), 0)
+                - DedekindSum(p, q, new Rational(t * r - u, c * q), 0);
+            return (BigInteger)l;
+        }
+
         static void ParityTest()
         {
 #if true
-            var algorithm = new PrimeCounting(8);
-            for (int j = 0; j < 1; j++)
+            var p = 4;
+            var q = 7;
+            for (var t = 0; t <= p * q; t++)
             {
-                for (int i = 64; i <= 69; i++)
+                var count1 = 0;
+                for (int i = 0; i <= q; i++)
                 {
+                    for (int j = 0; j <= p; j++)
+                    {
+                        if (i * p + j * q <= t)
+                            ++count1;
+                    }
+                }
+                var count2 = GetLatticeCount(t, p, q);
+                var pp = (Rational)p;
+                var round = Rational.Floor(count2 + new Rational(1, 2));
+                var mod = (count2 - round) * 4 * p * q;
+                Console.WriteLine("t = {0}, count1 = {1}, count2 = {2}, mod = {3}, round = {4}", t, count1, count2, mod, round);
+            }
+#endif
+#if false
+            double y = (double)IntegerMath.NextPrime(1 << 30);
+            double imax = Math.Floor(Math.Sqrt(y));
+            double imin = Math.Pow(y, (double)1 / 3);
+            double i0 = imax;
+            int count = 0;
+            int parcount = 0;
+            while (i0 > imin)
+            {
+                double a = y / (i0 * i0 * i0);
+                double b = -3 * y / (i0 * i0);
+                double c = 3 * y / i0;
+                double d = 1 - y;
+                double lhs = 2 * b * b * b - 9 * a * b * c + 27 * a * a * d;
+                double rhs = Math.Sqrt(lhs * lhs - 4 * Math.Pow(b * b - 3 * a * c, 3));
+                double i1 = (-b - Math.Pow((lhs + rhs) / 2, (double)1 / 3) - Math.Pow((lhs - rhs) / 2, (double)1 / 3))/(3*a);
+                double e = i1 * (y / i1 - (a * i1 * i1 + b * i1 + c));
+                Console.WriteLine("|[{0}, {1})| = {2}, e = {3}", i1, i0, i0 - i1, e);
+                var jlimit = Math.Ceiling(i1 - i0);
+                for (double j = 0; j > jlimit; j--)
+                {
+                    var i = i0 + j;
+                    if (Math.Floor(y / i) != Math.Floor(a * i * i + b * i + c))
+                    {
+                        Debugger.Break();
+                        Console.WriteLine();
+                    }
+                    var divlin = Math.Floor(a * (-i0 * j + i0 * i0));
+                    var divpar = Math.Floor(a * (j * j - i0 * j + i0 * i0));
+                    if (divpar != divlin)
+                        ++parcount;
+                    if ((divpar - divlin != 0) != ((j - 1) * (j - 1) > y % i))
+                    {
+                        Debugger.Break();
+                        Console.WriteLine("i = {0}, divpar - divlin = {1}", i, divpar - divlin);
+                    }
+                }
+                i0 = Math.Ceiling(i1);
+                ++count;
+#if false
+                if (count == 5)
+                    break;
+#endif
+            }
+            Console.WriteLine("C(count) = {0}", count/(Math.Pow(y, (double)1 / 3) * Math.Log(y)));
+            Console.WriteLine("parcount/count = {0}", (double)parcount / count);
+#endif
+#if false
+            double y = 1 << 20;
+            double sqrty = 1 << 10;
+            double a = 1/sqrty;
+            double b = -3;
+            double c = 3*sqrty;
+            double d = 1-y;
+            double discriminant = 18*a*b*c*d - 4*b*b*b*d + b*b*c*c - 4*a*c*c*c - 27*a*a*d*d;
+            double tmp1 = 2*b*b*b - 9*a*b*c + 27*a*a*d;
+            double tmp2 = Math.Sqrt(tmp1*tmp1 - 4*Math.Pow(b*b - 3*a*c, 3));
+            double j = Math.Pow(y, (double)1/6);
+            double imax = sqrty - j;
+            double div = y/imax;
+            double divpar = a*imax*imax + b*imax + c;
+            double e = (div - divpar) * imax;
+            Console.WriteLine();
+#endif
+#if false
+            var y = 1 << 20;
+            var imax = (1 << 10) + 1;
+            var imin = 1;
+            var div = y / imax;
+            var d1 = 1;
+            for (var i = imax - 1; i >= imin; i--)
+            {
+                var d2 = (y / i - div) - d1;
+                d1 = y / i - div;
+                div = y / i;
+                Console.WriteLine("{0} / {1} = {2}, {3} % {4} = {5}, d1 = {6}, d2 = {7}", y, i, y / i, y, i, y % i, d1, d2);
+            }
+#endif
+#if false
+            var algorithm = new PrimeCounting(8);
+            var b = 10;
+            for (int i = 24; i <= 24; i++)
+            {
+                for (int j = 5; j <= 9; j++)
+                {
+                    Console.WriteLine("Start Time: {0}", DateTime.Now);
                     var timer = new Stopwatch();
                     timer.Start();
-                    var n = IntegerMath.Power((BigInteger)2, i);
-                    Console.WriteLine("i = {0}, n = {1}, parity of pi(n) = {2}", i, n, algorithm.ParityOfPi(n));
+                    var n = j * IntegerMath.Power((BigInteger)b, i);
+                    Console.WriteLine("{0}*{1}^{2}, parity of pi(n) = {3}", j, b, i, algorithm.ParityOfPi(n));
                     output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
                 }
             }

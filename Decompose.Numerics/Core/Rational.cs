@@ -41,6 +41,8 @@ namespace Decompose.Numerics
         public static Rational operator *(Rational a, Rational b) { return new Rational(a.n * b.n, a.d * b.d); }
         public static Rational operator /(Rational a, Rational b) { return new Rational(a.n * b.d, a.d * b.n); }
         public static Rational operator -(Rational a) { return new Rational(-a.n, a.d); }
+        public static Rational operator ++(Rational a) { return new Rational(a.n + a.d, a.d); }
+        public static Rational operator --(Rational a) { return new Rational(a.n - a.d, a.d); }
         public static bool operator ==(Rational a, Rational b) { return a.Equals(b); }
         public static bool operator !=(Rational a, Rational b) { return !a.Equals(b); }
         public static bool operator <(Rational a, Rational b) { return a.CompareTo(b) < 0; }

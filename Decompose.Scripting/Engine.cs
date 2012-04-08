@@ -186,6 +186,7 @@ namespace Decompose.Scripting
             globalMethods.Add("max", args => Invoke("Max", args));
             globalMethods.Add("numerator", args => Invoke("Numerator", args));
             globalMethods.Add("denominator", args => Invoke("Denominator", args));
+            globalMethods.Add("primorial", args => Invoke("Primorial", args));
         }
 
         public object Exit(params object[] args)
@@ -277,6 +278,11 @@ namespace Decompose.Scripting
         public BigInteger Denominator(Rational a)
         {
             return a.Denominator;
+        }
+
+        public BigInteger Primorial(Rational a)
+        {
+            return IntegerMath.Primorial((BigInteger)a);
         }
 
         public Rational NextPrime(Rational a)
