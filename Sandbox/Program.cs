@@ -68,73 +68,57 @@ namespace Sandbox
             return true;
         }
 
-        static Rational SawToothStar(Rational x)
+        static Rational SawToothStar(BigInteger xn, BigInteger xd)
         {
-            var mod = IntegerMath.Modulus(x.Numerator, x.Denominator);
-#if false
+            var mod = IntegerMath.Modulus(xn, xd);
+#if true
             if (mod == 0)
                 return 0;
 #endif
-            return new Rational(mod, x.Denominator) - new Rational(1, 2);
+            return new Rational(mod, xd) - new Rational(1, 2);
         }
 
         static Rational SawTooth(BigInteger xn, BigInteger xd)
         {
             var mod = IntegerMath.Modulus(xn, xd);
+#if false
+            if (mod == 0)
+                return 0;
+#endif
             return new Rational(mod, xd) - new Rational(1, 2);
         }
 
-        static Rational DedekindSum(BigInteger a, BigInteger b, Rational x, Rational y)
+        static Rational DedekindSum(BigInteger a, BigInteger b, BigInteger c)
         {
             var sum = (Rational)0;
             for (BigInteger k = 0; k < b; k++)
-                sum += SawToothStar((k + y) * a / b + x) * SawToothStar((k + y) / b);
+                sum += SawToothStar(k * a + c, b) * SawToothStar(k, b);
             return sum;
         }
 
         static Rational GetLatticeCount(BigInteger t, BigInteger p, BigInteger q)
         {
             Rational one = 1;
-            Rational two = 2;
             Rational l = new Rational(t * t, 2 * p * q)
                 + t * (one / p + one / q + one / (p * q)) / 2
                 + one / 4
                 + one / 12 * (new Rational(p, q) + new Rational(q, p) + one / (p * q))
-                - DedekindSum(q, p, new Rational(t, p), 0)
-                - DedekindSum(p, q, new Rational(t, q), 0)
-                - SawTooth(t, p)
-                - SawTooth(t, q);
+                - DedekindSum(q, p, t)
+                - DedekindSum(p, q, t)
+                - SawTooth(t, p) / 2
+                - SawTooth(t, q) / 2;
+            if (t % p != 0)
+                l -= SawTooth(t * IntegerMath.ModularInverse(q, p), p) / 2;
+            if (t % q != 0)
+                l -= SawTooth(t * IntegerMath.ModularInverse(p, q), q) / 2;
             return l;
-        }
-
-        static BigInteger GetLatticeCount(BigInteger t, BigInteger a, BigInteger b, BigInteger d, BigInteger c, BigInteger p, BigInteger q, BigInteger r)
-        {
-            BigInteger u = (Rational.Floor(new Rational(t * a - 1, d)) + 1) * c * p;
-            BigInteger v = (Rational.Floor(new Rational(t * b - 1, d)) + 1) * c * q;
-            Rational one = 1;
-            Rational truv = t * r - u - v;
-            Rational tr1c = SawTooth(t * r - 1, c);
-            var l = truv * truv / (2 * c * c * p * q)
-                + truv * (one / (2 * c * p) + one / (2 * c * q) + one / (c * c * p * q) + one / (c * p * q) * SawTooth(t * r, c))
-                + one / 4
-                + one / 12 * (new Rational(p, q) + new Rational(q, p))
-                + one / (24 * p * q)
-                + one / (c * c * p * q)
-                - SawTooth(t * r - v, c * p) / 2
-                - SawTooth(t * r - u, c * q) / 2
-                + SawTooth(t * r, c) / (c * p * q)
-                + tr1c / (c * p * q)
-                + tr1c * tr1c / (2 * p * q)
-                - DedekindSum(q, p, new Rational(t * r - v, c * p), 0)
-                - DedekindSum(p, q, new Rational(t * r - u, c * q), 0);
-            return (BigInteger)l;
         }
 
         static void ParityTest()
         {
 #if true
-            var p = 4;
-            var q = 7;
+            var p = 7;
+            var q = 11;
             for (var t = 0; t <= p * q; t++)
             {
                 var count1 = 0;

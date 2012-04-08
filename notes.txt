@@ -1003,3 +1003,18 @@ e1+e2+...+en <= log2 y
 1/2p + 3/2 - 1/2p + 1/2
 
 2
+
+k'a + x == 0 (mod b)
+
+k'a == -x
+k' == -xa^-1
+
+sum( (( (ka + x)/b )) (( k/b )), k mod b)
+
+k1|b iff k1 == 0
+(k2a + x)/b iff k2a + x | b iff k2 == -xa^-1
+
+sum( (( (ka + x)/b )) (( k/b )), k mod b) = sigma(a, b, x) - (( x/b ))(-1/2) - (-1/2)(( -xa^-1/b ))
+
+sum( (( (ka + x)/b )) (( k/b )), k mod b) = sigma(a, b, x) + ( (( x/b )) + (( -xa^-1/b )) )/2
+
