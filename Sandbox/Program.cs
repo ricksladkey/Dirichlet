@@ -71,21 +71,21 @@ namespace Sandbox
         static Rational SawToothStar(BigInteger xn, BigInteger xd)
         {
             var mod = IntegerMath.Modulus(xn, xd);
-#if true
             if (mod == 0)
                 return 0;
-#endif
             return new Rational(mod, xd) - new Rational(1, 2);
         }
 
         static Rational SawTooth(BigInteger xn, BigInteger xd)
         {
             var mod = IntegerMath.Modulus(xn, xd);
-#if false
-            if (mod == 0)
-                return 0;
-#endif
             return new Rational(mod, xd) - new Rational(1, 2);
+        }
+
+        static BigInteger ScaledSawTooth(BigInteger xn, BigInteger xd)
+        {
+            var mod = IntegerMath.Modulus(xn, xd);
+            return 2 * mod - xd;
         }
 
         static Rational DedekindSum(BigInteger a, BigInteger b, BigInteger c)
@@ -96,15 +96,63 @@ namespace Sandbox
             return sum;
         }
 
+        static BigInteger ScaledDedekindSum(BigInteger a, BigInteger b, BigInteger c)
+        {
+            var sum = (Rational)0;
+            for (var k = (BigInteger)0; k < b; k++)
+                sum += SawToothStar(k * a + c, b) * SawToothStar(k, b);
+            return (BigInteger)(sum * 12 * b);
+        }
+
+        static Rational SymmetricDedekindSum(BigInteger a, BigInteger b, BigInteger c)
+        {
+#if false
+            if (DedekindSum(a, b, c) != DedekindSum(a % b, b, c % b))
+                Debugger.Break();
+            if (DedekindSum(b, a, c) != DedekindSum(b % a, a, c % a))
+                Debugger.Break();
+#endif
+            var sum1 = DedekindSum(a, b, c) + DedekindSum(b, a, c);
+#if false
+            var sum2 = new Rational(a, b) + new Rational(b, a)
+                + new Rational(1 + 6 * c * c, a * b)
+                - 6 * (c / a)
+                - 3 * (c == 0 || c % a != 0 ? 1 : 0);
+            sum2 /= 12;
+#endif
+#if false
+            var sum2 = new Rational(c * c, 2 * a * b)
+                - new Rational(c, 2) * (new Rational(1, a * b) + new Rational(1, a) + new Rational(1, b))
+                + (new Rational(a, b) + new Rational(b, a) + new Rational(1, a * b)) / 12
+                + (SawToothStar(IntegerMath.ModularInverse(a, b) * c, b)
+                    + SawToothStar(IntegerMath.ModularInverse(b, a) * c, a)
+                    + SawToothStar(c, a)
+                    + SawToothStar(c, b)) / 2
+                + new Rational(1 + (c % a == 0 ? 1 : 0) + (c % b == 0 ? 1 : 0), 4);
+            Console.WriteLine("a = {0}, b = {1}, c = {2}, sum2 - sum1 = {3}", a, b, c, sum2 - sum1);
+#endif
+            return sum1;
+        }
+
         static Rational GetLatticeCount(BigInteger t, BigInteger p, BigInteger q)
         {
+#if true
+            var n = 6 * t * (t + p + q + 1) + 3 * p * q + 1
+                + p * (p - ScaledDedekindSum(p, q, t) - 3 * ScaledSawTooth(t, q))
+                + q * (q - ScaledDedekindSum(q, p, t) - 3 * ScaledSawTooth(t, p));
+            if (t % p != 0)
+                n -= 3 * q * ScaledSawTooth(t * IntegerMath.ModularInverse(q, p), p);
+            if (t % q != 0)
+                n -= 3 * p * ScaledSawTooth(t * IntegerMath.ModularInverse(p, q), q);
+            return new Rational(n, 12 * p * q);
+#endif
+#if false
             Rational one = 1;
             Rational l = new Rational(t * t, 2 * p * q)
                 + t * (one / p + one / q + one / (p * q)) / 2
                 + one / 4
                 + one / 12 * (new Rational(p, q) + new Rational(q, p) + one / (p * q))
-                - DedekindSum(q, p, t)
-                - DedekindSum(p, q, t)
+                - SymmetricDedekindSum(p, q, t)
                 - SawTooth(t, p) / 2
                 - SawTooth(t, q) / 2;
             if (t % p != 0)
@@ -112,6 +160,7 @@ namespace Sandbox
             if (t % q != 0)
                 l -= SawTooth(t * IntegerMath.ModularInverse(p, q), q) / 2;
             return l;
+#endif
         }
 
         static void ParityTest()
