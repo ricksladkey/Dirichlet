@@ -164,7 +164,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void TestExtendedGreatestCommonDivisor()
+        public void TestExtendedEuclideanAlgorithm()
         {
             var a = (BigInteger)120;
             var b = (BigInteger)23;
@@ -172,7 +172,7 @@ namespace Decompose.Numerics.Test
             var dExpected = (BigInteger)47;
             BigInteger c;
             BigInteger d;
-            IntegerMath.ExtendedGreatestCommonDivisor(a, b, out c, out d);
+            IntegerMath.ExtendedEuclideanAlgorithm(a, b, out c, out d);
             Assert.AreEqual(cExpected, c);
             Assert.AreEqual(dExpected, d);
         }

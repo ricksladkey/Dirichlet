@@ -113,12 +113,11 @@ namespace Sandbox
             return 3 * sum / b;
         }
 
-        static BigInteger ScaledDedekindSum(BigInteger a, BigInteger b, BigInteger c)
+        static BigInteger ScaledDedekindSum(BigInteger a, BigInteger b, BigInteger c, BigInteger aInv)
         {
             // See Knuth TAOCP Volume 2, 2nd edition, 3.3.3 Theorem D.
             var negate = 0;
             var aPrime = a % b;
-            var aInv = IntegerMath.ModularInverse(aPrime, b);
             var m1 = b;
             var m2 = aPrime;
             var c1 = c % b;
@@ -127,8 +126,8 @@ namespace Sandbox
             var p1 = a1;
             var sum1 = (BigInteger)0;
             var sum2 = (BigInteger)0;
-            var t = 1;
-            var s = c1 == 0 ? 1 : 0;
+            var t = 0;
+            var s = c1 == 0 ? 0 : -1;
 #if false
             Console.WriteLine("m1 = {0},           c1 = {1}", m1, c1);
 #endif
@@ -136,7 +135,7 @@ namespace Sandbox
             {
                 var b1 = c1 / m2;
                 var c2 = c1 - b1 * m2;
-                if (s + c2 == 0)
+                if (c2 == 0 && s == -1)
                     s = t + 1;
 #if false
                 Console.WriteLine("{0}: m2 = {1}, a1 = {2}, c2 = {3}, b1 = {4}, p0 = {5}", t, m2, a1, c2, b1, p0);
@@ -173,23 +172,34 @@ namespace Sandbox
 #if false
             Console.WriteLine("s = {0}, t = {1}", s, t);
 #endif
-            return aPrime + aInv + sum2 + b * (sum1 + 3 * (((s & 1) == 0 ? 1 : -1) + (s == 1 ? 1 : 0)) - 2 + ((t & 1) == 0 ? 1 : -1));
+            var sOdd = ((s & 1) << 1) - 1; // sOdd = (-1)^(s+1)
+            var tOdd = ((t & 1) << 1) - 1; // tOdd = (-1)^(s+1)
+            var sIsZero = (uint)s - 1 >> 31; // sIsZero = s == 0 ? 1 : 0
+            return aPrime + aInv + sum2 + b * (sum1 + 3 * (sOdd + sIsZero) - 2 + tOdd);
         }
 
-        static BigInteger GetLatticeCount(BigInteger t, BigInteger p, BigInteger q)
+        static BigInteger GetLatticeCount(BigInteger p, BigInteger q, BigInteger t)
         {
             Debug.Assert(IntegerMath.GreatestCommonDivisor(p, q) == 1);
-            var qInv = IntegerMath.ModularInverse(q, p);
-            var pInv = IntegerMath.ModularInverse(p, q);
-            var n = 6 * t * (t + p + q + 1) + 3 * p * q + 1
-                + p * (p - ScaledDedekindSum(p, q, t) - 3 * ScaledSawTooth(t, q))
-                + q * (q - ScaledDedekindSum(q, p, t) - 3 * ScaledSawTooth(t, p));
-            if (t % p != 0)
+            BigInteger qInv;
+            BigInteger pInv;
+            IntegerMath.ExtendedEuclideanAlgorithm(p, q, out pInv, out qInv);
+            if (pInv < 0)
+                pInv += q;
+            if (qInv < 0)
+                qInv += p;
+            var pq = p * q;
+            var tModP = t % p;
+            var tModQ = t % q;
+            var n = 6 * t * (t + p + q + 1) + 9 * pq + 1
+                + p * (p - ScaledDedekindSum(p, q, t, pInv) - 6 * tModQ)
+                + q * (q - ScaledDedekindSum(q, p, t, qInv) - 6 * tModP);
+            if (tModP != 0)
                 n -= 3 * q * ScaledSawTooth(t * qInv, p);
-            if (t % q != 0)
+            if (tModQ != 0)
                 n -= 3 * p * ScaledSawTooth(t * pInv, q);
             Debug.Assert(n % (12 * p * q) == 0);
-            return n / (12 * p * q);
+            return n / (12 * pq);
         }
 
         static void ParityTest()
@@ -223,7 +233,7 @@ namespace Sandbox
                             ++count1;
                     }
                 }
-                var count2 = GetLatticeCount(t, p, q);
+                var count2 = GetLatticeCount(p, q, t);
                 Debug.Assert(count1 == count2);
                 Console.WriteLine("t = {0}, count1 = {1}, count2 = {2}", t, count1, count2);
             }
@@ -1597,7 +1607,7 @@ namespace Sandbox
                     var aInv = IntegerMath.ModularInverse(pair.A, pair.B);
                     ulong c;
                     ulong d;
-                    IntegerMath.ExtendedGreatestCommonDivisor(pair.A, pair.B, out c, out d);
+                    IntegerMath.ExtendedEuclideanAlgorithm(pair.A, pair.B, out c, out d);
                     if (IntegerMath.ModularProduct(pair.A, c, pair.B) != 1)
                         throw new InvalidOperationException("miscalculation");
                     if (c != aInv)
@@ -2040,7 +2050,7 @@ namespace Sandbox
                 {
                     var a = pairs[i].Item1;
                     var b = pairs[i].Item2;
-                    ExtendedGreatestCommonDivisor(a, b, out c, out d);
+                    ExtendedEuclideanAlgorithm(a, b, out c, out d);
                     if (c < 0)
                         c += b;
                     if (IntegerMath.ModularProduct(a, c, b) != 1)
@@ -2060,7 +2070,7 @@ namespace Sandbox
                 var random = new MersenneTwister(0).Create<long>();
                 timer.Restart();
                 for (int i = 0; i < count; i++)
-                    ExtendedGreatestCommonDivisor(random.Next(max), random.Next(max), out c, out d);
+                    ExtendedEuclideanAlgorithm(random.Next(max), random.Next(max), out c, out d);
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
@@ -2077,7 +2087,7 @@ namespace Sandbox
                 {
                     var a = pairs[i].Item1;
                     var b = pairs[i].Item2;
-                    ExtendedGreatestCommonDivisor(a, b, out c, out d);
+                    ExtendedEuclideanAlgorithm(a, b, out c, out d);
                     if (c < 0)
                         c += b;
                     if (a * c % b != 1)
@@ -2127,7 +2137,7 @@ namespace Sandbox
                 {
                     var a = pairs[i].Item1;
                     var b = pairs[i].Item2;
-                    ExtendedGreatestCommonDivisor(a, b, out c, out d);
+                    ExtendedEuclideanAlgorithm(a, b, out c, out d);
                 }
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
@@ -2145,7 +2155,7 @@ namespace Sandbox
                 {
                     var a = pairs[i].Item1;
                     var b = pairs[i].Item2;
-                    ExtendedGreatestCommonDivisor(a, b, out c, out d);
+                    ExtendedEuclideanAlgorithm(a, b, out c, out d);
                 }
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
@@ -2297,7 +2307,7 @@ namespace Sandbox
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
         }
 
-        public static void ExtendedGreatestCommonDivisor(int a, int b, out int c, out int d)
+        public static void ExtendedEuclideanAlgorithm(int a, int b, out int c, out int d)
         {
             var x = (int)0;
             var lastx = (int)1;
@@ -2321,7 +2331,7 @@ namespace Sandbox
             d = lasty;
         }
 
-        public static void ExtendedGreatestCommonDivisor(long a, long b, out long c, out long d)
+        public static void ExtendedEuclideanAlgorithm(long a, long b, out long c, out long d)
         {
             var x = (long)0;
             var lastx = (long)1;
@@ -2345,7 +2355,7 @@ namespace Sandbox
             d = lasty;
         }
 
-        public static void ExtendedGreatestCommonDivisor(BigInteger a, BigInteger b, out BigInteger c, out BigInteger d)
+        public static void ExtendedEuclideanAlgorithm(BigInteger a, BigInteger b, out BigInteger c, out BigInteger d)
         {
             var x = (BigInteger)0;
             var lastx = (BigInteger)1;
@@ -2369,7 +2379,7 @@ namespace Sandbox
             d = lasty;
         }
 
-        public static void ExtendedGreatestCommonDivisor<T>(T a, T b, out T c, out T d)
+        public static void ExtendedEuclideanAlgorithm<T>(T a, T b, out T c, out T d)
         {
             var ops = Operations.Get<T>();
             var x = ops.Zero;
@@ -2394,7 +2404,7 @@ namespace Sandbox
             d = lasty;
         }
 
-        public static void ExtendedGreatestCommonDivisor<T>(Number<T> a, Number<T> b, out Number<T> c, out Number<T> d)
+        public static void ExtendedEuclideanAlgorithm<T>(Number<T> a, Number<T> b, out Number<T> c, out Number<T> d)
         {
             var x = Number<T>.Zero;
             var lastx = Number<T>.One;

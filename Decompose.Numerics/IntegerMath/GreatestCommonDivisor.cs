@@ -55,7 +55,7 @@ namespace Decompose.Numerics
             return BigInteger.GreatestCommonDivisor(a, b);
         }
 
-        public static void ExtendedGreatestCommonDivisor(int a, int b, out int c, out int d)
+        public static void ExtendedEuclideanAlgorithm(int a, int b, out int c, out int d)
         {
             var x = 0;
             var lastx = 1;
@@ -78,11 +78,11 @@ namespace Decompose.Numerics
             d = lasty;
         }
 
-        public static void ExtendedGreatestCommonDivisor(uint a, uint b, out uint c, out uint d)
+        public static void ExtendedEuclideanAlgorithm(uint a, uint b, out uint c, out uint d)
         {
             long cLong;
             long dLong;
-            ExtendedGreatestCommonDivisor(a, b, out cLong, out dLong);
+            ExtendedEuclideanAlgorithm(a, b, out cLong, out dLong);
             if (cLong < 0)
                 cLong += b;
             if (dLong < 0)
@@ -91,7 +91,7 @@ namespace Decompose.Numerics
             d = (uint)dLong;
         }
 
-        public static void ExtendedGreatestCommonDivisor(long a, long b, out long c, out long d)
+        public static void ExtendedEuclideanAlgorithm(long a, long b, out long c, out long d)
         {
             var x = (long)0;
             var lastx = (long)1;
@@ -207,7 +207,7 @@ namespace Decompose.Numerics
             d = lasty;
         }
 
-        public static void ExtendedGreatestCommonDivisor(ulong p, ulong q, out ulong c, out ulong d)
+        public static void ExtendedEuclideanAlgorithm(ulong p, ulong q, out ulong c, out ulong d)
         {
             var x = (Int65)0;
             var lastx = (Int65)1;
@@ -240,7 +240,7 @@ namespace Decompose.Numerics
             d = (ulong)lasty;
         }
 
-        public static void ExtendedGreatestCommonDivisor(BigInteger a, BigInteger b, out BigInteger c, out BigInteger d)
+        public static void ExtendedEuclideanAlgorithm(BigInteger a, BigInteger b, out BigInteger c, out BigInteger d)
         {
             var x = BigInteger.Zero;
             var lastx = BigInteger.One;

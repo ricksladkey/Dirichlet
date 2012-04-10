@@ -11,7 +11,7 @@ namespace Decompose.Numerics
             Debug.Assert(GreatestCommonDivisor(a, b) == 1);
             int x;
             int y;
-            ExtendedGreatestCommonDivisor(a, b, out x, out y);
+            ExtendedEuclideanAlgorithm(a, b, out x, out y);
             if (x == 0)
                 throw new InvalidOperationException("not relatively prime");
             if (x < 0)
@@ -53,7 +53,7 @@ namespace Decompose.Numerics
             Debug.Assert(GreatestCommonDivisor(a, b) == 1);
             long x;
             long y;
-            ExtendedGreatestCommonDivisor(a, b, out x, out y);
+            ExtendedEuclideanAlgorithm(a, b, out x, out y);
             if (x == 0)
                 throw new InvalidOperationException("not relatively prime");
             if (x < 0)
@@ -99,7 +99,7 @@ namespace Decompose.Numerics
             int r = (int)(a % b);
             int x;
             int y;
-            ExtendedGreatestCommonDivisor(r, b, out x, out y);
+            ExtendedEuclideanAlgorithm(r, b, out x, out y);
             if (x == 0)
                 throw new InvalidOperationException("not relatively prime");
             if (x < 0)

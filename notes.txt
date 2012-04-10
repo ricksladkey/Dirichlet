@@ -1022,3 +1022,11 @@ sum( (( (ka + x)/b )) (( k/b )), k mod b) = sigma(a, b, x) + ( (( x/b )) + (( -x
 -(1 + x)
 -1 => 0
 0 => -1
+
+- 3 * p * ScaledSawTooth(t, q)
+- 3 * p * (2 * (t % q) - q)
+- 6 * p * (t % q) + 3 * p * q
+
+- 3 * q * ScaledSawTooth(t * qInv, p)
+- 3 * q * (2 * (t * qInv % p) - p)
+- 6 * q * (t * qInv % p) - 3 * pq
