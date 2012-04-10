@@ -1018,3 +1018,7 @@ sum( (( (ka + x)/b )) (( k/b )), k mod b) = sigma(a, b, x) - (( x/b ))(-1/2) - (
 
 sum( (( (ka + x)/b )) (( k/b )), k mod b) = sigma(a, b, x) + ( (( x/b )) + (( -xa^-1/b )) )/2
 
+
+-(1 + x)
+-1 => 0
+0 => -1
