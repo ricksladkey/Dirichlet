@@ -104,13 +104,72 @@ namespace Sandbox
             return 2 * (xn % xd) - xd;
         }
 
-        static BigInteger ScaledDedekindSum(BigInteger a, BigInteger b, BigInteger c)
+        static BigInteger ScaledDedekindSumSlow(BigInteger a, BigInteger b, BigInteger c)
         {
             var sum = (BigInteger)0;
-            for (var k = (BigInteger)0; k < b; k++)
-                sum += ScaledSawToothStar(k * a + c, b) * ScaledSawToothStar(k, b);
+            for (var k = (BigInteger)1; k < b; k++)
+                sum += ScaledSawToothStar(k * a + c, b) * (2 * k - b);
             Debug.Assert(3 * sum % b == 0);
             return 3 * sum / b;
+        }
+
+        static BigInteger ScaledDedekindSum(BigInteger a, BigInteger b, BigInteger c)
+        {
+            // See Knuth TAOCP Volume 2, 2nd edition, 3.3.3 Theorem D.
+            var add = true;
+            var aPrime = a % b;
+            var aInv = IntegerMath.ModularInverse(aPrime, b);
+            var m1 = b;
+            var m2 = aPrime;
+            var c1 = c % b;
+            var p0 = (BigInteger)1;
+            var p1 = m1 / m2;
+            var sum1 = (BigInteger)0;
+            var sum2 = (BigInteger)0;
+            var t = 1;
+            var s = c1 == 0 ? 1 : 0;
+#if false
+            Console.WriteLine("m1 = {0},           c1 = {1}", m1, c1);
+#endif
+            while (true)
+            {
+                var a1 = m1 / m2;
+                var b1 = c1 / m2;
+                var c2 = c1 - b1 * m2;
+                if (s == 0 && c2 == 0)
+                    s = t + 1;
+#if false
+                Console.WriteLine("{0}: m2 = {1}, a1 = {2}, c2 = {3}, b1 = {4}, p0 = {5}", t, m2, a1, c2, b1, p0);
+#endif
+                var sixb1 = 6 * b1;
+                var term1 = a1 - sixb1;
+                var term2 = sixb1 * (c1 + c2) * p0;
+                if (add)
+                {
+                    sum1 += term1;
+                    sum2 += term2;
+                }
+                else
+                {
+                    sum1 -= term1;
+                    sum2 -= term2;
+                }
+                if (m2.IsOne)
+                    break;
+                var tmp1 = m1;
+                m1 = m2;
+                m2 = tmp1 - a1 * m2;
+                c1 = c2;
+                var tmp2 = p0;
+                p0 = p1;
+                p1 = m1 / m2 * p1 + tmp2;
+                add = !add;
+                ++t;
+            }
+#if false
+            Console.WriteLine("s = {0}, t = {1}", s, t);
+#endif
+            return aPrime + aInv + sum2 + b * (sum1 + 3 * ((s % 2 == 0 ? 1 : -1) + (s == 1 ? 1 : 0)) - 2 + (t % 2 == 0 ? 1 : -1));
         }
 
         static BigInteger GetLatticeCount(BigInteger t, BigInteger p, BigInteger q)
@@ -131,8 +190,23 @@ namespace Sandbox
 
         static void ParityTest()
         {
+#if false
+#if false
+            var a = IntegerMath.Power((BigInteger)2, 34) + 1;
+            var b = IntegerMath.Power((BigInteger)2, 35);
+            var c = 1;
+#endif
 #if true
-            var p = 4;
+            var a = 8;
+            var b = 7;
+            var c = 0;
+#endif
+            var sum1 = ScaledDedekindSumSlow(a, b, c);
+            var sum2 = ScaledDedekindSum(a, b, c);
+            Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);
+#endif
+#if true
+            var p = 16;
             var q = 7;
             for (var t = 0; t <= p * q; t++)
             {
