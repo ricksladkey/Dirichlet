@@ -113,10 +113,10 @@ namespace Sandbox
             return 3 * sum / b;
         }
 
-        static BigInteger ScaledDedekindSum(BigInteger a, BigInteger b, BigInteger c, BigInteger aInv)
+        static BigInteger ScaledDedekindSum(BigInteger a, BigInteger b, BigInteger c, out BigInteger aInv)
         {
             // See Knuth TAOCP Volume 2, 2nd edition, 3.3.3 Theorem D.
-            var negate = 0;
+            // See also http://matwbn.icm.edu.pl/ksiazki/aa/aa33/aa3341.pdf
             var aPrime = a % b;
             var m1 = b;
             var m2 = aPrime;
@@ -125,37 +125,27 @@ namespace Sandbox
             var p0 = (BigInteger)1;
             var p1 = a1;
             var sumWhole = (BigInteger)0;
-            var sumFraction = (BigInteger)0;
-            var t = 0;
-            var s = c1 == 0 ? 0 : -1;
-#if false
-            Console.WriteLine("m1 = {0},           c1 = {1}", m1, c1);
-#endif
+            var sumFraction = aPrime;
+            var t = 1;
             while (true)
             {
                 var b1 = c1 / m2;
                 var c2 = c1 - b1 * m2;
-                if (c2 == 0 && s == -1)
-                    s = t + 1;
-#if false
-                Console.WriteLine("{0}: m2 = {1}, a1 = {2}, c2 = {3}, b1 = {4}, p0 = {5}", t, m2, a1, c2, b1, p0);
-#endif
+                if (c2 == 0 && c1 != 0)
+                    sumWhole += 3 * t;
                 var sixb1 = 6 * b1;
                 var termWhole = a1 - sixb1;
                 var termFraction = sixb1 * (c1 + c2) * p0;
-#if true
-                if (negate != 0)
+                if (t > 0)
                 {
-                    termWhole = -termWhole;
-                    termFraction = -termFraction;
+                    sumWhole += termWhole;
+                    sumFraction += termFraction;
                 }
-#else
-                // Conditionally negate without branching.
-                termWhole = (termWhole ^ negate) - negate;
-                termFraction = (termFraction ^ negate) - negate;
-#endif
-                sumWhole += termWhole;
-                sumFraction += termFraction;
+                else
+                {
+                    sumWhole -= termWhole;
+                    sumFraction -= termFraction;
+                }
                 if (m2.IsOne)
                     break;
                 var tmp1 = m1;
@@ -166,16 +156,11 @@ namespace Sandbox
                 var tmp2 = p0;
                 p0 = p1;
                 p1 = a1 * p1 + tmp2;
-                negate ^= -1;
-                ++t;
+                t = -t;
             }
-#if false
-            Console.WriteLine("s = {0}, t = {1}", s, t);
-#endif
-            var sPower = ((s & 1) << 1) - 1; // (-1)^(s+1)
-            var tPower = ((t & 1) << 1) - 1; // (-1)^(s+1)
-            var sZero = (uint)s - 1 >> 31; // s == 0 ? 1 : 0
-            return aPrime + aInv + sumFraction + b * (sumWhole + 3 * (sPower + sZero) - 2 + tPower);
+            aInv = t > 0 ? p0 : b - p0;
+            Debug.Assert(aInv == IntegerMath.ModularInverse(a, b));
+            return b * (sumWhole + t - 2) + aInv + sumFraction;
         }
 
         static BigInteger GetLatticeCount(BigInteger p, BigInteger q, BigInteger t)
@@ -183,41 +168,48 @@ namespace Sandbox
             Debug.Assert(IntegerMath.GreatestCommonDivisor(p, q) == 1);
             BigInteger qInv;
             BigInteger pInv;
-            IntegerMath.ExtendedEuclideanAlgorithm(p, q, out pInv, out qInv);
+            var sumPQC = ScaledDedekindSum(p, q, t, out pInv);
+            var sumQPC = ScaledDedekindSum(q, p, t, out qInv);
             if (pInv < 0)
                 pInv += q;
             if (qInv < 0)
                 qInv += p;
-            var threepq = 3 * p * q;
+            var threePQ = 3 * p * q;
             var tModP = t % p;
             var tModQ = t % q;
-            var n = 6 * t * (t + p + q + 1) + 3 * threepq + 1
-                + p * (p - ScaledDedekindSum(p, q, t, pInv) - 6 * tModQ)
-                + q * (q - ScaledDedekindSum(q, p, t, qInv) - 6 * tModP);
+            var n = 6 * t * (t + p + q + 1) + 3 * threePQ + 1
+                + p * (p - sumPQC - 6 * tModQ)
+                + q * (q - sumQPC - 6 * tModP);
             if (tModP != 0)
-                n -= 6 * q * (t * qInv % p) - threepq;
+                n -= 6 * q * (t * qInv % p) - threePQ;
             if (tModQ != 0)
-                n -= 6 * p * (t * pInv % q) - threepq;
+                n -= 6 * p * (t * pInv % q) - threePQ;
             Debug.Assert(n % (12 * p * q) == 0);
-            return n / (4 * threepq);
+            return n / threePQ >> 2;
         }
 
         static void ParityTest()
         {
 #if false
-            var primes = new SieveOfErostothones().Take(10).ToArray();
-            for (var i = 0; i < primes.Length - 1; i++)
+            var p = 99;
+            var q = 13;
+            for (var t = 0; t <= p * q; t++)
             {
-                for (var j = i + 1; j < primes.Length; j++)
+                var count1 = 0;
+                for (int i = 0; i <= q; i++)
                 {
-                    var p = primes[i];
-                    var q = primes[j];
-                    var parity1 = GetLatticeCount(p, q, p * q) % 2;
-                    var parity2 = (((p + 1) * (q + 1) / 2) + 1) % 2;
-                    Console.WriteLine("p = {0}, q = {1}, parity1 = {2}, parity2 = {3}", p, q, parity1, parity2);
+                    for (int j = 0; j <= p; j++)
+                    {
+                        if (i * p + j * q <= t)
+                            ++count1;
+                    }
                 }
+                var count2 = GetLatticeCount(p, q, t);
+                Debug.Assert(count1 == count2);
+                Console.WriteLine("t = {0}, count1 = {1}, count2 = {2}", t, count1, count2);
             }
 #endif
+
 #if true
             var y = IntegerMath.NextPrime((BigInteger)1 << 50);
             var imax = IntegerMath.FloorRoot(y, 2);
@@ -252,6 +244,22 @@ namespace Sandbox
 #endif
             output.WriteLine("count1 = {0}, count2 = {1}", count1, count2);
 #endif
+
+#if false
+            var primes = new SieveOfErostothones().Take(10).ToArray();
+            for (var i = 0; i < primes.Length - 1; i++)
+            {
+                for (var j = i + 1; j < primes.Length; j++)
+                {
+                    var p = primes[i];
+                    var q = primes[j];
+                    var parity1 = GetLatticeCount(p, q, p * q) % 2;
+                    var parity2 = (((p + 1) * (q + 1) / 2) + 1) % 2;
+                    Console.WriteLine("p = {0}, q = {1}, parity1 = {2}, parity2 = {3}", p, q, parity1, parity2);
+                }
+            }
+#endif
+
 #if false
 #if false
             var a = IntegerMath.Power((BigInteger)2, 34) + 1;
@@ -266,25 +274,6 @@ namespace Sandbox
             var sum1 = ScaledDedekindSumSlow(a, b, c);
             var sum2 = ScaledDedekindSum(a, b, c);
             Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);
-#endif
-#if false
-            var p = 99;
-            var q = 13;
-            for (var t = 0; t <= p * q; t++)
-            {
-                var count1 = 0;
-                for (int i = 0; i <= q; i++)
-                {
-                    for (int j = 0; j <= p; j++)
-                    {
-                        if (i * p + j * q <= t)
-                            ++count1;
-                    }
-                }
-                var count2 = GetLatticeCount(p, q, t);
-                Debug.Assert(count1 == count2);
-                Console.WriteLine("t = {0}, count1 = {1}, count2 = {2}", t, count1, count2);
-            }
 #endif
 #if false
             double y = (double)IntegerMath.NextPrime(1 << 30);
