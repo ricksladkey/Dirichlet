@@ -1030,3 +1030,15 @@ sum( (( (ka + x)/b )) (( k/b )), k mod b) = sigma(a, b, x) + ( (( x/b )) + (( -x
 - 3 * q * ScaledSawTooth(t * qInv, p)
 - 3 * q * (2 * (t * qInv % p) - p)
 - 6 * q * (t * qInv % p) - 3 * pq
+
+divpar(j) = y/i0^3(j^2 - i0 j + i0^2)
+divlin(j) = y/i0^2(-j + i0)
+divlin(j) = -y/i0^2 j + y/i0
+
+y = -n/x0^2 x + n/x0
+x0^2y = -n x + x0 n0
+x0 n = n x + x0^2 y
+
+y j + i0^2 div <= i0 y
+
+divlin(j) = y/i0^2(-j + i0)
