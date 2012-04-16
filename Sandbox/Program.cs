@@ -190,6 +190,21 @@ namespace Sandbox
 
         static void ParityTest()
         {
+#if true
+            var n = (BigInteger)1 << 20;
+            var algorithm = new DivisorSummatoryFunction();
+            var sum = algorithm.Evaluate(n);
+            var slow1 = (BigInteger)0;
+            var imax = IntegerMath.FloorRoot(n, 2);
+            for (var i = (BigInteger)1; i <= imax; i++)
+                slow1 += n / i;
+            slow1 = 2 * slow1 - imax * imax;
+            var slow2 = (BigInteger)0;
+            for (var i = (BigInteger)1; i <= n; i++)
+                slow2 += n / i;
+            Console.WriteLine("n = {0}, sum = {1}, slow1 = {2}, slow2 = {3}", n, sum, slow1, slow2);
+#endif
+
 #if false
             var p = 99;
             var q = 13;
@@ -210,14 +225,26 @@ namespace Sandbox
             }
 #endif
 
-#if true
-            var y = IntegerMath.NextPrime((BigInteger)1 << 50);
+#if false
+            var y = IntegerMath.NextPrime((BigInteger)1 << 40);
             var imax = IntegerMath.FloorRoot(y, 2);
             var imin = IntegerMath.FloorRoot(y, 3);
             var step = IntegerMath.FloorRoot(y, 6);
+            var count0 = (BigInteger)0;
             var count1 = (BigInteger)0;
             var count2 = (BigInteger)0;
             var timer = new Stopwatch();
+#if true
+            timer.Restart();
+            for (var i0 = imax; i0 > imin; i0 -= step + 1)
+            {
+                var jmax = -step;
+                var i0Squared = i0 * i0;
+                for (var j = 0; j >= jmax; j--)
+                    count0 += y / (i0 + j);
+            }
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
 #if true
             timer.Restart();
             for (var i0 = imax; i0 > imin; i0 -= step + 1)
@@ -242,7 +269,7 @@ namespace Sandbox
             }
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
-            output.WriteLine("count1 = {0}, count2 = {1}", count1, count2);
+            output.WriteLine("count0 = {0}, count1 = {1}, count2 = {2}", count0, count1, count2);
 #endif
 
 #if false
