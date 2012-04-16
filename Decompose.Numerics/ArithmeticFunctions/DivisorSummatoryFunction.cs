@@ -58,6 +58,7 @@ namespace Decompose.Numerics
 
         private BigInteger n;
         private BigInteger xmin;
+        private BigInteger xmax;
 
         public BigInteger Evaluate(BigInteger n)
         {
@@ -65,25 +66,26 @@ namespace Decompose.Numerics
 
             var sum = (BigInteger)0;
 
-            var m0 = (Rational)1;
-            var xmax = (BigInteger)IntegerMath.FloorRoot(n / m0, 2);
             xmin = IntegerMath.FloorRoot(n, 3);
+            xmax = IntegerMath.FloorRoot(n, 2);
 
+            var m0 = (BigInteger)1;
             var x0 = xmax;
             var y0 = n / x0;
             var r0 = y0 + m0 * x0;
+            var width = x0 - xmin;
             Debug.Assert(-m0 * x0 + r0 == y0);
 
             // Add the bottom rectangle.
-            sum += (x0 - xmin) * x0;
+            sum += (width + 1) * x0;
 
             // Add the isosceles right triangle from the initial skew.
-            sum += (x0 - xmin) * x0 / 2;
+            sum += width * (width + 1) / 2;
 
             while (true)
             {
                 var m1 = m0 + 1;
-                var x1 = (BigInteger)IntegerMath.FloorRoot(n / m1, 2);
+                var x1 = IntegerMath.FloorRoot(n / m1, 2);
                 var y1 = n / x1;
                 var r1 = y1 + m1 * x1;
                 Debug.Assert(-m1 * x1 + r1 == y1);
@@ -100,8 +102,8 @@ namespace Decompose.Numerics
 
                 // Add the triangular wedge above the previous slope and below the new one.
                 var xintersect = (BigInteger)((r1 - r0) / (m1 - m0));
-                var width = xintersect - xmin;
-                sum += width * width / 2;
+                width = xintersect - xmin;
+                sum += width * (width + 1) / 2;
 
                 sum += ProcessRegion(x1, y1, m1, r1, x0, y0, m0, r0);
 
@@ -112,7 +114,7 @@ namespace Decompose.Numerics
             }
 
             // Process values one thru xmin.
-            for (var x = (BigInteger)1; x <= xmin; x++)
+            for (var x = (BigInteger)1; x < xmin; x++)
                 sum += n / x;
 
             // Account for the first octant.
@@ -147,7 +149,9 @@ namespace Decompose.Numerics
             var r2 = y2 + m2 * x2;
             Debug.Assert(x1 <= x2 && x2 <= x0);
 
+#if false
             Console.WriteLine("m1 = {0,5}, m2 = {1,5}, m0 = {2,5}, x1 = {3,4}, x2 = {4,4}, x0 = {5,4}, dx = {6}", m1, m2, m0, x1, x2, x0, x0 - x1);
+#endif
 
             // Determine the coordinates of the inscribed parallelogram.
             var xleft = (BigInteger)((y2 + m0 * x2 - r1) / (m0 - m1));
