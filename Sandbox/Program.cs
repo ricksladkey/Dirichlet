@@ -191,10 +191,30 @@ namespace Sandbox
         static void ParityTest()
         {
 #if true
+            var algorithm = new DivisorSummatoryFunction(false);
+            var nmax = (BigInteger)1 << 10;
+            for (var n = (BigInteger)36; n <= nmax; n++)
+            {
+                var fast = algorithm.Evaluate(n);
+                var slow = (BigInteger)0;
+                var imax = IntegerMath.FloorRoot(n, 2);
+                for (var i = (BigInteger)1; i <= imax; i++)
+                    slow += n / i;
+                slow = 2 * slow - imax * imax;
+                if (fast != slow)
+                {
+                    Console.WriteLine("n = {0}, fast = {1}, slow = {2}", n, fast, slow);
+                    break;
+                }
+            }
+#else
+            var diag = true;
+            var algorithm = new DivisorSummatoryFunction(diag);
+            var n = (BigInteger)44;
+            if (!diag)
+                algorithm.Evaluate(n);
             var timer = new Stopwatch();
             timer.Restart();
-            var n = (BigInteger)1 << 10;
-            var algorithm = new DivisorSummatoryFunction();
             var sum = algorithm.Evaluate(n);
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             timer.Restart();

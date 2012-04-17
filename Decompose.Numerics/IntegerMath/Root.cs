@@ -11,11 +11,6 @@ namespace Decompose.Numerics
         private const int maxShift = 64;
         private static double log2 = Math.Log(2);
 
-        public static Rational FloorRoot(Rational a, Rational b)
-        {
-            return FloorRoot(Rational.Floor(a), (BigInteger)b);
-        }
-
         public static T FloorRoot<T>(T a, T b)
         {
             var degree = (Number<T>)b;
@@ -31,6 +26,19 @@ namespace Decompose.Numerics
         {
             var c = (Number<T>)FloorRoot(a, b);
             if (Number<T>.Power(a, c) != c)
+                ++c;
+            return c;
+        }
+
+        public static Rational FloorRoot(Rational a, Rational b)
+        {
+            return FloorRoot(Rational.Floor(a), (BigInteger)b);
+        }
+
+        public static Rational CeilingRoot(Rational a, Rational b)
+        {
+            var c = FloorRoot(a, b);
+            if (IntegerMath.Power(a, c) != c)
                 ++c;
             return c;
         }
