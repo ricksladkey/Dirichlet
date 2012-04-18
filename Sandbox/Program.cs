@@ -192,7 +192,7 @@ namespace Sandbox
         {
 #if true
             var algorithm = new DivisorSummatoryFunction(false);
-            var nmax = (BigInteger)1 << 10;
+            var nmax = (BigInteger)1 << 20;
             for (var n = (BigInteger)36; n <= nmax; n++)
             {
                 var fast = algorithm.Evaluate(n);
@@ -210,7 +210,7 @@ namespace Sandbox
 #else
             var diag = true;
             var algorithm = new DivisorSummatoryFunction(diag);
-            var n = (BigInteger)44;
+            var n = (BigInteger)297;
             if (!diag)
                 algorithm.Evaluate(n);
             var timer = new Stopwatch();

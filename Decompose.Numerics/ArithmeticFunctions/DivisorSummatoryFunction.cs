@@ -66,6 +66,19 @@ namespace Decompose.Numerics
             this.diag = diag;
         }
 
+        private void CheckDeltaY(Rational m)
+        {
+            var x1 = (BigInteger)IntegerMath.FloorRoot(n / m, 2);
+            var y1 = n / x1;
+            var r1 = y1 + m * x1;
+#if false
+            if ((x1 + 1) * (r1 - m * (x1 + 1)) > n)
+                Console.WriteLine("x + 1 is over: m = {0}", m);
+#endif
+            if ((x1 + 2) * (r1 - m * (x1 + 2)) > n)
+                Console.WriteLine("x + 2 is over: m = {0}", m);
+        }
+
         public BigInteger Evaluate(BigInteger n)
         {
             this.n = n;
@@ -77,11 +90,33 @@ namespace Decompose.Numerics
 
             if (diag)
             {
-                for (var x = xmin; x <= xmax; x++)
+                Console.WriteLine("n = {0}", n);
+#if true
+                if (xmax < 100)
                 {
-                    var y = n / x;
-                    Console.WriteLine("x = {0}, y = {1}", x, y);
+                    for (var x = xmin; x <= xmax; x++)
+                    {
+                        var y = n / x;
+                        var s = "";
+                        for (var i = 0; i < y; i++)
+                            s += "*";
+                        Console.WriteLine("{0,5} {1}", x, s);
+                    }
+                    for (var x = xmin; x <= xmax; x++)
+                    {
+                        var y = n / x;
+                        Console.WriteLine("x = {0}, y = {1}", x, y);
+                    }
                 }
+#endif
+#if false
+                for (var m = (Rational)1; m <= xmin; m++)
+                {
+                    CheckDeltaY(m);
+                    CheckDeltaY(m + (Rational)1 / 2);
+                }
+                return 0;
+#endif
             }
 
             var m0 = (BigInteger)1;
@@ -138,10 +173,13 @@ namespace Decompose.Numerics
                 if (diag)
                     Console.WriteLine("wedge: x1 = {0}, m1 = {1}, area = {2}", x1a, m1, area);
 
-                if (r1a != r1b && x1b < xintersect)
+                if (r1a != r1b && x1a < xintersect)
                 {
-                    var adjustment = xintersect - x1b;
-                    sum -= adjustment;
+                    // Remove the old triangle and add the new triangle.
+                    var ow = x1a - xintersect;
+                    var dr = r1a - r1b;
+                    var adjustment = dr * (2 * ow + dr + 1) / 2; // (ow+dr)*(ow+dr+1)/2 - ow*(ow+1)/2
+                    sum += adjustment;
                     if (diag)
                         Console.WriteLine("wedge: x1 = {0}, adjustment = {1}", x1b, adjustment);
                 }
@@ -187,6 +225,29 @@ namespace Decompose.Numerics
             if (x01 < x1 || x01 > x0)
                 return 0;
 
+            if (x0 - x1 <= 10)
+            {
+                // Just count the remaining lattice points inside the parallelogram.
+                var count = 0;
+                var h = (int)((x01 - x1) / m1.Denominator) + 1;
+                var w = (int)((x0 - x01) / m0.Denominator) + 1;
+                for (var i = 1; i <= w; i++)
+                {
+                    var xrow = x01 + i * m0.Denominator;
+                    var yrow = y01 - i * m0.Numerator;
+                    for (var j = 1; j <= h; j++)
+                    {
+                        var x = xrow - j * m1.Denominator;
+                        var y = yrow + j * m1.Numerator;
+                        if (x * y <= n)
+                            ++count;
+                    }
+                }
+                if (diag)
+                    Console.WriteLine("bite: count = {0}", count);
+                return count;
+            }
+
             // L2 is the line with the mediant of the slopes of L0 and L1
             // passing through the point on or below the hyperbola nearest that slope.
             var m2 = Rational.Mediant(m0, m1);
@@ -203,19 +264,26 @@ namespace Decompose.Numerics
             Debug.Assert((x2a - 1) * (r2a - m1 * (x2a - 1)) <= n);
             Debug.Assert((x2b + 1) * (r2b - m1 * (x2b + 1)) <= n);
 
-            // Determine intersection of L1 and L2.
-            var x12 = (BigInteger)((r1 - r2a) / (m1 - m2));
-            var y12 = (BigInteger)(r2a - m2 * x12);
-            Debug.Assert(r2a - m2 * x12 == r1 - m1 * x12);
-            if (x12 >= x01)
+            // Determine intersection of L1 and L2a.
+            var x12a = (BigInteger)((r1 - r2a) / (m1 - m2));
+            var y12a = (BigInteger)(r2a - m2 * x12a);
+            Debug.Assert(r2a - m2 * x12a == r1 - m1 * x12a);
+            if (x12a >= x01)
                 return 0;
 
-#if false
+#if true
             if (diag)
-                Console.WriteLine("m1 = {0,5}, m2 = {1,5}, m0 = {2,5}, x1 = {3,4}, x2 = {4,4}, x0 = {5,4}, dx = {6}", m1, m2, m0, x1, x2, x0, x0 - x1);
+            {
+                Console.WriteLine("m1 = {0,5}, m2 = {1,5}, m0 = {2,5}, x1 = {3,4}, x2 = {4,4}, x0 = {5,4}, dx = {6}", m1, m2, m0, x1, x2a, x0, x0 - x1);
+                Console.WriteLine("x0, y0   = ({0}, {1}), m0 = {2}, r0 = {3}", x0, y0, m0, r0);
+                Console.WriteLine("x1, y1   = ({0}, {1}), m1 = {2}, r1 = {3}", x1, y1, m1, r1);
+                Console.WriteLine("x01, y01 = ({0}, {1})", x01, y01);
+                Console.WriteLine("x2a, y2a = ({0}, {1}), m2 = {2}, r2a = {3}", x2a, y2a, m2, r2a);
+                Console.WriteLine("x2b, y2b = ({0}, {1}), m2 = {2}, r2b = {3}", x2b, y2b, m2, r2b);
+            }
 #endif
 
-            var height = (x01 - x12) / m1.Denominator;
+            var height = (x01 - x12a) / m1.Denominator;
             var sum = (BigInteger)0;
 
             // Add the triangle defined L0, L1, and L2.
@@ -224,10 +292,17 @@ namespace Decompose.Numerics
             if (diag)
                 Console.WriteLine("corner: m2 = {0}, area = {1}", m2, area);
 
-            if (r2a != r2b && x2b < x12)
+            if (r2a != r2b)
             {
-                var adjustment = x12 - x2b;
-                sum -= adjustment;
+                // Determine intersection of L1 and L2b.
+                var x12b = (BigInteger)((r1 - r2b) / (m1 - m2));
+                var y12b = (BigInteger)(r2b - m2 * x12b);
+                var dh = (x01 - x12b) / m1.Denominator - height;
+                Debug.Assert(dh == (r2b - r2a) * m2.Denominator);
+
+                var adjustment = IntegerMath.Max(0, (height + dh) * (height + dh - 1) / 2)
+                    - IntegerMath.Max(0, (height - dh) * (height - dh - 1) / 2);
+                sum += adjustment;
                 if (diag)
                     Console.WriteLine("corner: x1 = {0}, adjustment = {1}", x2b, adjustment);
             }
