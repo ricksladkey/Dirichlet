@@ -184,7 +184,8 @@ namespace Decompose.Numerics
                         Console.WriteLine("wedge: x1 = {0}, adjustment = {1}", x1b, adjustment);
                 }
 
-                sum += ProcessRegion(x1b, y1b, m1, r1b, x0, y0, m0, r0);
+                var region = ProcessRegion(x1b, y1b, m1, r1b, x0, y0, m0, r0);
+                sum += region;
 
                 m0 = m1;
                 x0 = x1a;
@@ -209,6 +210,24 @@ namespace Decompose.Numerics
 
         private BigInteger ProcessRegion(BigInteger x1, BigInteger y1, Rational m1, Rational r1, BigInteger x0, BigInteger y0, Rational m0, Rational r0)
         {
+#if DEBUG
+            var expected = (BigInteger)0;
+            if (diag)
+            {
+                expected = ProcessRegionGrid(x1, y1, m1, r1, x0, y0, m0, r0, false);
+                var region = ProcessRegionDivide(x1, y1, m1, r1, x0, y0, m0, r0);
+                if (region != expected)
+                {
+                    Console.WriteLine("failed validation: actual = {0}, expected = {1}", region, expected);
+                }
+                return region;
+            }
+#endif
+            return ProcessRegionDivide(x1, y1, m1, r1, x0, y0, m0, r0);
+        }
+
+        private BigInteger ProcessRegionDivide(BigInteger x1, BigInteger y1, Rational m1, Rational r1, BigInteger x0, BigInteger y0, Rational m0, Rational r0)
+        {
             // Sub-divide the new hyperbolic region.
             if (x1 >= x0)
                 return 0;
@@ -218,35 +237,50 @@ namespace Decompose.Numerics
             Debug.Assert(r1 > r0);
             Debug.Assert(m1 > m0);
 
+            if (x0 - x1 <= 10)
+                return ProcessRegionLine(x1, y1, m1, r1, x0, y0, m0, r0, diag);
+
+            var sum = (BigInteger)0;
+
             // Determine intersection of L0 and L1.
             var x01 = (BigInteger)((r1 - r0) / (m1 - m0));
             var y01 = (BigInteger)(r0 - m0 * x01);
             Debug.Assert(r0 - m0 * x01 == r1 - m1 * x01);
-            if (x01 < x1 || x01 > x0)
-                return 0;
 
-            if (x0 - x1 <= 10)
+            if (x01 < x0 && (x1 + m0.Denominator) * (y1 - m0.Numerator) <= n)
             {
-                // Just count the remaining lattice points inside the parallelogram.
-                var count = 0;
-                var h = (int)((x01 - x1) / m1.Denominator) + 1;
-                var w = (int)((x0 - x01) / m0.Denominator) + 1;
-                for (var i = 1; i <= w; i++)
-                {
-                    var xrow = x01 + i * m0.Denominator;
-                    var yrow = y01 - i * m0.Numerator;
-                    for (var j = 1; j <= h; j++)
-                    {
-                        var x = xrow - j * m1.Denominator;
-                        var y = yrow + j * m1.Numerator;
-                        if (x * y <= n)
-                            ++count;
-                    }
-                }
+                var shrink = (x01 - x1) / m1.Denominator;
+                Debug.Assert((x01 - x1) % m1.Denominator == 0);
+                sum += shrink;
                 if (diag)
-                    Console.WriteLine("bite: count = {0}", count);
-                return count;
+                    Console.WriteLine("corner: shrink width = {0}", shrink);
+                x1 += m0.Denominator;
+                y1 -= m0.Numerator;
+                r1 += m1 * m0.Denominator - m0.Numerator;
+                x01 += m0.Denominator;
+                y01 -= m0.Numerator;
+                Debug.Assert(r1 - m1 * x1 - y1 == 0);
+                Debug.Assert(r1 - m1 * x01 - y01 == 0);
             }
+
+            if (x1 < x01 && (x0 - m1.Denominator) * (y0 + m1.Numerator) <= n)
+            {
+                var shrink = (x0 - x01) / m0.Denominator;
+                Debug.Assert((x0 - x01) % m0.Denominator == 0);
+                sum += shrink;
+                if (diag)
+                    Console.WriteLine("corner: shrink height = {0}", shrink);
+                x0 -= m1.Denominator;
+                y0 += m1.Numerator;
+                r0 -= m0 * m1.Denominator - m1.Numerator;
+                x01 -= m1.Denominator;
+                y01 += m1.Numerator;
+                Debug.Assert(r0 - m0 * x0 - y0 == 0);
+                Debug.Assert(r0 - m0 * x01 - y01 == 0);
+            }
+
+            if (x01 < x1 || x01 > x0)
+                return sum;
 
             // L2 is the line with the mediant of the slopes of L0 and L1
             // passing through the point on or below the hyperbola nearest that slope.
@@ -258,7 +292,7 @@ namespace Decompose.Numerics
             var y2b = n / x2b;
             var r2b = y2b + m2 * x2b;
             if (x2a < x1 || x2a > x0)
-                return 0;
+                return sum;
             Debug.Assert(x1 <= x2a && x2a <= x0);
 
             Debug.Assert((x2a - 1) * (r2a - m1 * (x2a - 1)) <= n);
@@ -268,8 +302,9 @@ namespace Decompose.Numerics
             var x12a = (BigInteger)((r1 - r2a) / (m1 - m2));
             var y12a = (BigInteger)(r2a - m2 * x12a);
             Debug.Assert(r2a - m2 * x12a == r1 - m1 * x12a);
+            //Debug.Assert(x1 <= x12a && x12a <= x01);
             if (x12a >= x01)
-                return 0;
+                return sum;
 
 #if true
             if (diag)
@@ -283,11 +318,11 @@ namespace Decompose.Numerics
             }
 #endif
 
-            var height = (x01 - x12a) / m1.Denominator;
-            var sum = (BigInteger)0;
+            var v12a = (x01 - x12a) / m1.Denominator;
+            Debug.Assert((x01 - x12a) % m1.Denominator == 0);
 
             // Add the triangle defined L0, L1, and L2.
-            var area = height * (height - 1) / 2;
+            var area = v12a * (v12a - 1) / 2;
             sum += area;
             if (diag)
                 Console.WriteLine("corner: m2 = {0}, area = {1}", m2, area);
@@ -297,11 +332,20 @@ namespace Decompose.Numerics
                 // Determine intersection of L1 and L2b.
                 var x12b = (BigInteger)((r1 - r2b) / (m1 - m2));
                 var y12b = (BigInteger)(r2b - m2 * x12b);
-                var dh = (x01 - x12b) / m1.Denominator - height;
-                Debug.Assert(dh == (r2b - r2a) * m2.Denominator);
+                var v12b = (x01 - x12b) / m1.Denominator;
+                var dh = (BigInteger)((r2b - r2a) * m2.Denominator);
+                var u2a = (x2a - x12a) / m2.Denominator;
+                var v2a = v12a - u2a;
+                var u2b = (x2b - x12b) / m2.Denominator;
+                var v2b = v12b - u2b;
+                Debug.Assert((x01 - x12b) % m1.Denominator == 0);
+                Debug.Assert((x2a - x12a) % m2.Denominator == 0);
+                Debug.Assert((x2b - x12b) % m2.Denominator == 0);
+                Debug.Assert(x1 <= x12b && x12b <= x01);
+                Debug.Assert(u2a >= 0 && v2a >= 0 && u2b >= 0 && v2b >= 0);
+                Debug.Assert(dh == (x01 - x12b) / m1.Denominator - v12a);
 
-                var adjustment = IntegerMath.Max(0, (height + dh) * (height + dh - 1) / 2)
-                    - IntegerMath.Max(0, (height - dh) * (height - dh - 1) / 2);
+                var adjustment = dh * v2b;
                 sum += adjustment;
                 if (diag)
                     Console.WriteLine("corner: x1 = {0}, adjustment = {1}", x2b, adjustment);
@@ -313,6 +357,50 @@ namespace Decompose.Numerics
             // Process left region.
             sum += ProcessRegion(x1, y1, m1, r1, x2a, y2a, m2, r2a);
 
+            return sum;
+        }
+
+        private BigInteger ProcessRegionGrid(BigInteger x1, BigInteger y1, Rational m1, Rational r1, BigInteger x0, BigInteger y0, Rational m0, Rational r0, bool verbose)
+        {
+            // Determine intersection of L0 and L1.
+            var x01 = (BigInteger)((r1 - r0) / (m1 - m0));
+            var y01 = (BigInteger)(r0 - m0 * x01);
+            Debug.Assert(r0 - m0 * x01 == r1 - m1 * x01);
+
+            if (x01 < x1 || x01 > x0)
+                return 0;
+
+            // Just count the remaining lattice points inside the parallelogram.
+            var count = 0;
+            var h = (int)((x01 - x1) / m1.Denominator);
+            var w = (int)((x0 - x01) / m0.Denominator);
+            for (var i = 1; i <= w; i++)
+            {
+                var xrow = x01 + i * m0.Denominator;
+                var yrow = y01 - i * m0.Numerator;
+                for (var j = 1; j <= h; j++)
+                {
+                    var x = xrow - j * m1.Denominator;
+                    var y = yrow + j * m1.Numerator;
+                    if (x * y <= n)
+                        ++count;
+                }
+            }
+            if (verbose)
+                Console.WriteLine("region: count = {0}", count);
+            return count;
+        }
+
+        private BigInteger ProcessRegionLine(BigInteger x1, BigInteger y1, Rational m1, Rational r1, BigInteger x0, BigInteger y0, Rational m0, Rational r0, bool verbose)
+        {
+            var sum = (BigInteger)0;
+            for (var x = x1; x <= x0; x++)
+            {
+                var y = n / x;
+                sum += IntegerMath.Min(IntegerMath.Max(y - Rational.Floor(r0 - m0 * x), 0), IntegerMath.Max(y - Rational.Floor(r1 - m1 * x), 0));
+            }
+            if (verbose)
+                Console.WriteLine("region: sum = {0}", sum);
             return sum;
         }
     }

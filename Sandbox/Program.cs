@@ -206,11 +206,13 @@ namespace Sandbox
                     Console.WriteLine("n = {0}, fast = {1}, slow = {2}", n, fast, slow);
                     break;
                 }
+                if (n % 1000 == 0)
+                    Console.WriteLine("n = {0}...", n);
             }
 #else
             var diag = true;
             var algorithm = new DivisorSummatoryFunction(diag);
-            var n = (BigInteger)297;
+            var n = (BigInteger)1558;
             if (!diag)
                 algorithm.Evaluate(n);
             var timer = new Stopwatch();
