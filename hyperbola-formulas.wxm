@@ -1,9 +1,37 @@
 /* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
 /* [ Created with wxMaxima version 12.01.0 ] */
 
+/* [wxMaxima: comment start ]
+Load packages.
+   [wxMaxima: comment end   ] */
+
 /* [wxMaxima: input   start ] */
 load("lrats")$
 load("format")$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Swap left and right hand sides of the equation. 
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+swapsides(eqs) := map(lambda([u],rhs(u)=lhs(u)), eqs)$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Back substitute common subexpressions into an expression.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+backsubst(eqs,expr) := subst(swapsides(eqs),subst(swapsides(-eqs),expr))$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Check values to test calculations.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+checkvalues: [n=1000000,m1n=3,m1d=2,m0n=4,m0d=3,x01=839,y01=1190];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -200,24 +228,8 @@ huv2: format(subst([diag],huv),%eq,%prod,%p(u));
 m01def: [m01d=m1d-m0d,m01n=m1n-m0n];
 /* [wxMaxima: input   end   ] */
 
-/* [wxMaxima: comment start ]
-Swap left and right hand sides of the equation. 
-   [wxMaxima: comment end   ] */
-
 /* [wxMaxima: input   start ] */
-swapsides(eqs) := map(lambda([u],rhs(u)=lhs(u)), eqs)$
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: comment start ]
-Poor man's ratsubst.
-   [wxMaxima: comment end   ] */
-
-/* [wxMaxima: input   start ] */
-substm01(expr) := subst(swapsides(m01def),subst(swapsides(-m01def),expr))$
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-huv3: substm01(huv2);
+huv3: backsubst(m01def,huv2);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: comment start ]
@@ -285,8 +297,12 @@ dhuv2: ratsimp(solve(subst([diff(v,u)=-1],dhuv),v)[1]);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-udiag5: solve(subst(dhuv2,huv),u)[1];
-vdiag5: solve(subst(solve(dhuv2,u)[1],huv),v)[1];
+udiag5: solve(subst(dhuv2,huv),u)[2];
+vdiag5: solve(subst(solve(dhuv2,u)[1],huv),v)[2];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+checkcoord: ev([udiag5,vdiag5],checkvalues),numer;
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -322,6 +338,10 @@ ufactor: part(udiag9,2,1,2,1);
 vfactor: part(vdiag9,2,1,2,1);
 /* [wxMaxima: input   end   ] */
 
+/* [wxMaxima: comment start ]
+Determinant.
+   [wxMaxima: comment end   ] */
+
 /* [wxMaxima: input   start ] */
 m01xdef: [m01x=m0d*m1n-m0n*m1d];
 /* [wxMaxima: input   end   ] */
@@ -341,13 +361,33 @@ After common subexpression elimination.
    [wxMaxima: comment end   ] */
 
 /* [wxMaxima: input   start ] */
-udiag12: append(m01def,m01nddef,m01xdef,[udiag11,vdiag11])$
-map('print,udiag12)$
+uvdiag12: append(m01def,m01nddef,m01xdef,[udiag11,vdiag11])$
+map('print,uvdiag12)$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Check.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+ev(uvdiag12,checkvalues);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+check: solve(ev(uvdiag12,checkvalues),[u,v,m01d,m01n,m01nd,m01x])[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+check,numer;
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: comment start ]
 Formula for v in terms of u.
    [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+coeffs(lhs(huv-rhs(huv)),v);
+/* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
 u2v1: solve(huv,v)[2];
@@ -389,16 +429,12 @@ radicand4: factor(radicand3-rest)+rest;
 u2v2: subst([radicand=radicand4],u2v1);
 /* [wxMaxima: input   end   ] */
 
-/* [wxMaxima: input   start ] */
-u2v3: subst(append(m01xdef,mxy1def),u2v2);
-/* [wxMaxima: input   end   ] */
-
 /* [wxMaxima: comment start ]
 Check calculations.
    [wxMaxima: comment end   ] */
 
 /* [wxMaxima: input   start ] */
-expand(subst(u2v3,huv));
+expand(subst(subst(append(m01xdef,mxy1def),u2v2),huv));
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -408,6 +444,65 @@ udiag12: subst(-swapsides(mxy1def),udiag11);
 /* [wxMaxima: input   start ] */
 uvdiagcrit: append(m01def,m01nddef,m01xdef,mxy1def,[u=floor(rhs(udiag12)),v=floor(rhs(u2v2))])$
 map('print,uvdiagcrit)$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+uvdiagcrit: append(m01def,m01nddef,mxy1def,subst([m01x=1],[u=floor(rhs(udiag12)),v=floor(rhs(u2v2))]))$
+map('print,uvdiagcrit)$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Equation of a line tangent to the hyperbola with -slope = 1.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+tangent1: ratsimp(udiag5+vdiag5);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+tangent2: format(tangent1,%rhs,%frac,%p(x01,y01),%expr,%f);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+tangent3: lratsubst(swapsides(m01nddef),backsubst(m01xdef,backsubst(m01def,ratsimp(backsubst(m01def,tangent2)))));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+uvdiagcrit2: append(m01def,m01nddef,mxy1def,subst([m01x=1],[udiag12,solve(tangent3,[v])[1]]))$
+map('print,uvdiagcrit2)$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Check.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+check1: solve(ev(uvdiagcrit2,checkvalues),[u,v,m01d,m01n,m01nd,mxy1])[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+check2: check1,numer;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Characterize m01x; this is called the determinant.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+MX(m1,m0) := denom(m0)*num(m1)-num(m0)*denom(m1)$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+mlist: [m1n/m1d,(m1n+m0n)/(m1d+m0d),m0n/m0d];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Proof that after insertion of the mediant, the two new intervals have the same determinant as the full interval.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+expand(MX(mlist[1],mlist[2])=1)-(MX(mlist[1],mlist[3])=1);
+expand(MX(mlist[2],mlist[3])=1)-(MX(mlist[1],mlist[3])=1);
 /* [wxMaxima: input   end   ] */
 
 /* Maxima can't load/batch files which end with a comment! */

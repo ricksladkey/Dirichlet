@@ -64,6 +64,7 @@ y2b: floor(H(x2b));
 
 /* [wxMaxima: input   start ] */
 m0n: num(m0)$ m0d: denom(m0)$ m1n: num(m1)$ m1d: denom(m1)$
+m0d*m1n-m0n*m1d;
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
