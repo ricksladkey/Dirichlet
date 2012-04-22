@@ -68,7 +68,7 @@ namespace Decompose.Numerics
 
         private void CheckDeltaY(Rational m)
         {
-            var x1 = (BigInteger)IntegerMath.FloorRoot(n / m, 2);
+            var x1 = (BigInteger)IntegerMath.FloorSquareRoot(n / m);
             var y1 = n / x1;
             var r1 = y1 + m * x1;
 #if false
@@ -141,7 +141,7 @@ namespace Decompose.Numerics
             while (true)
             {
                 var m1 = m0 + 1;
-                var x1a = IntegerMath.FloorRoot(n / m1, 2);
+                var x1a = IntegerMath.FloorSquareRoot(n / m1);
                 var y1a = n / x1a;
                 var r1a = y1a + m1 * x1a;
                 var x1b = x1a + 1;
@@ -237,7 +237,7 @@ namespace Decompose.Numerics
             Debug.Assert(r1 > r0);
             Debug.Assert(m1 > m0);
 
-            if (x0 - x1 <= 10)
+            if (x0 - x1 <= 20)
                 return ProcessRegionLine(x1, y1, m1, r1, x0, y0, m0, r0, diag);
 
             var sum = (BigInteger)0;
@@ -249,6 +249,7 @@ namespace Decompose.Numerics
 
             if (x01 < x0 && (x1 + m0.Denominator) * (y1 - m0.Numerator) <= n)
             {
+                // Remove an entire column on the left.
                 var shrink = (x01 - x1) / m1.Denominator;
                 Debug.Assert((x01 - x1) % m1.Denominator == 0);
                 sum += shrink;
@@ -265,6 +266,7 @@ namespace Decompose.Numerics
 
             if (x1 < x01 && (x0 - m1.Denominator) * (y0 + m1.Numerator) <= n)
             {
+                // Remove an entire row on the bottom.
                 var shrink = (x0 - x01) / m0.Denominator;
                 Debug.Assert((x0 - x01) % m0.Denominator == 0);
                 sum += shrink;
@@ -282,10 +284,33 @@ namespace Decompose.Numerics
             if (x01 < x1 || x01 > x0)
                 return sum;
 
+            // Calculate the intersection of the diagonal (u=v) with the hyperbola (x*y=n).
+            // Actually it's twice that when projected over to L0.
+            var m01d = m0.Denominator - m1.Denominator;
+            var m01n = m1.Numerator - m0.Numerator;
+            var vdiag = (BigInteger)0;
+            if (m01d == 0)
+                vdiag = 2 * (n - x01 * y01) / (m01n * x01);
+            else if (m01n == 0)
+                vdiag = 2 * (n - x01 * y01) / (m01d * y01);
+            else
+            {
+                var a = m01d * y01;
+                var b = m01n * x01;
+                var c = m01d * m01n;
+                vdiag = (IntegerMath.FloorSquareRoot((a - b) * (a - b) + 4 * c * n) - (a + b)) / c;
+            }
+
+            // Check point at (1, 1).
+            var xtest = x01 + m0.Denominator - m1.Denominator;
+            var ytest = y01 - m0.Numerator + m1.Numerator;
+            if (xtest * ytest > n)
+                return sum;
+
             // L2 is the line with the mediant of the slopes of L0 and L1
             // passing through the point on or below the hyperbola nearest that slope.
             var m2 = Rational.Mediant(m0, m1);
-            var x2a = (BigInteger)IntegerMath.FloorRoot(n / m2, 2);
+            var x2a = (BigInteger)IntegerMath.FloorSquareRoot(n / m2);
             var y2a = n / x2a;
             var r2a = y2a + m2 * x2a;
             var x2b = x2a + 1;
@@ -298,13 +323,16 @@ namespace Decompose.Numerics
             Debug.Assert((x2a - 1) * (r2a - m1 * (x2a - 1)) <= n);
             Debug.Assert((x2b + 1) * (r2b - m1 * (x2b + 1)) <= n);
 
-            // Determine intersection of L1 and L2a.
+            // Determine intersection of L1 with L2a and L2b.
             var x12a = (BigInteger)((r1 - r2a) / (m1 - m2));
             var y12a = (BigInteger)(r2a - m2 * x12a);
-            Debug.Assert(r2a - m2 * x12a == r1 - m1 * x12a);
-            //Debug.Assert(x1 <= x12a && x12a <= x01);
+            var x12b = (BigInteger)((r1 - r2b) / (m1 - m2));
+            var y12b = (BigInteger)(r2b - m2 * x12b);
+
             if (x12a >= x01)
+            {
                 return sum;
+            }
 
 #if true
             if (diag)
@@ -319,36 +347,42 @@ namespace Decompose.Numerics
 #endif
 
             var v12a = (x01 - x12a) / m1.Denominator;
+            var v12b = (x01 - x12b) / m1.Denominator;
+            var dh = (BigInteger)((r2b - r2a) * m2.Denominator);
+            var u2a = (x2a - x12a) / m2.Denominator;
+            var v2a = v12a - u2a;
+            var u2b = (x2b - x12b) / m2.Denominator;
+            var v2b = v12b - u2b;
+            Debug.Assert((x01 - x12b) % m1.Denominator == 0);
+            Debug.Assert((x2a - x12a) % m2.Denominator == 0);
+            Debug.Assert((x2b - x12b) % m2.Denominator == 0);
+            Debug.Assert(x1 <= x12b && x12b <= x01);
             Debug.Assert((x01 - x12a) % m1.Denominator == 0);
 
             // Add the triangle defined L0, L1, and L2.
-            var area = v12a * (v12a - 1) / 2;
-            sum += area;
-            if (diag)
-                Console.WriteLine("corner: m2 = {0}, area = {1}", m2, area);
+            if (v12a > 1)
+            {
+                var area = v12a * (v12a - 1) / 2;
+                sum += area;
+                if (diag)
+                {
+                    Console.WriteLine("corner: m2 = {0}, area = {1}", m2, area);
+                    Console.WriteLine("v12a = {0}, v12b = {1}, uvdiag = {2}", v12a, v12b, vdiag);
+                }
+            }
 
             if (r2a != r2b)
             {
-                // Determine intersection of L1 and L2b.
-                var x12b = (BigInteger)((r1 - r2b) / (m1 - m2));
-                var y12b = (BigInteger)(r2b - m2 * x12b);
-                var v12b = (x01 - x12b) / m1.Denominator;
-                var dh = (BigInteger)((r2b - r2a) * m2.Denominator);
-                var u2a = (x2a - x12a) / m2.Denominator;
-                var v2a = v12a - u2a;
-                var u2b = (x2b - x12b) / m2.Denominator;
-                var v2b = v12b - u2b;
-                Debug.Assert((x01 - x12b) % m1.Denominator == 0);
-                Debug.Assert((x2a - x12a) % m2.Denominator == 0);
-                Debug.Assert((x2b - x12b) % m2.Denominator == 0);
-                Debug.Assert(x1 <= x12b && x12b <= x01);
-                Debug.Assert(u2a >= 0 && v2a >= 0 && u2b >= 0 && v2b >= 0);
+                //Debug.Assert(u2a >= 0 && v2a >= 0 && u2b >= 0 && v2b >= 0);
                 Debug.Assert(dh == (x01 - x12b) / m1.Denominator - v12a);
 
-                var adjustment = dh * v2b;
-                sum += adjustment;
-                if (diag)
-                    Console.WriteLine("corner: x1 = {0}, adjustment = {1}", x2b, adjustment);
+                if (v2b > 0)
+                {
+                    var adjustment = dh * v2b - (u2b == 0 ? 1 : 0);
+                    sum += adjustment;
+                    if (diag)
+                        Console.WriteLine("corner: x1 = {0}, adjustment = {1}", x2b, adjustment);
+                }
             }
 
             // Process right region.

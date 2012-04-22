@@ -190,7 +190,7 @@ namespace Sandbox
 
         static void ParityTest()
         {
-#if true
+#if false
             var algorithm = new DivisorSummatoryFunction(false);
             var nmax = (BigInteger)1 << 20;
             for (var n = (BigInteger)36; n <= nmax; n++)
@@ -212,7 +212,7 @@ namespace Sandbox
 #else
             var diag = true;
             var algorithm = new DivisorSummatoryFunction(diag);
-            var n = (BigInteger)1558;
+            var n = (BigInteger)13500;
             if (!diag)
                 algorithm.Evaluate(n);
             var timer = new Stopwatch();

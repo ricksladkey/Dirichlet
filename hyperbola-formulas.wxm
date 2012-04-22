@@ -1,0 +1,414 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 12.01.0 ] */
+
+/* [wxMaxima: input   start ] */
+load("lrats")$
+load("format")$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+y:y(x);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+hyperbola: A*x^2+B*x*y+C*y^2+D*x+E*y+F=0;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+slope1: solve(subst(-1,diff(y,x),diff(hyperbola,x)),y)[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+slope2: subst(slope1, hyperbola);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+slope3: solve(slope2, x)[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+block([display2d: false], print(slope3))$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+h0: y = n / x;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+tdef: t = -4*A*C^2+(B^2+4*A*B-4*A^2)*C-B^3+A*B^2;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+slope4: ratsubst(lhs(tdef), rhs(tdef), slope3);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+udef: u = -B*C+B^2-A*B;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+slope5: ratsubst(lhs(udef), rhs(udef), slope4);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+vdef: v=C^2 + (A-B)*C;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+slope6: ratsubst(lhs(vdef),rhs(vdef),slope5);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+[tdef, udef, vdef, slope6];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+remvalue(y)$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+hyperbola2: A*x^2 + B*x*y + C*y^2 + D*x + E*y + F = 0;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+skewx: rat(expand(subst(x-y+r,x,hyperbola2)),x,y);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+skewy: rat(expand(subst(y-x+r,y,hyperbola2)),x,y);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+xlate1: [x = xold, y = yold];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+xlate2: solve(subst([y = y - x + r1], xlate1),[x,y])[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+xlate2: solve(subst([x = x - y + r2], xlate2),[x,y])[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+top: y = -m0*(x-x2)+y2;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+left: y = -m1*x + r1;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+topleft: solve([top,left],[x,y])[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+subst(topleft[1], left);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+bottom: y = -m0*x + r0;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+solve([left,bottom],[x,y])[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+m0: 1$
+m1: 2$
+m2: 3/2$
+r0: 13$
+r1: 18$
+r2: 31/2$
+x0: 6$
+x1: 4$
+x2: 5$
+n: 44$
+H(x) := n/x$
+L0(x) := -m0*x+r0$
+L1(x) := -m1*x+r1$
+L2(x) := -m2*x+r2$
+wxplot2d([H,L0,L1,L2],[x,x1,x0],
+    [gnuplot_preamble,
+        "set grid; set xtics 1; set ytics 1;"]),
+wxplot_size=[400,400];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+kill(n,x0,y0,m0,r0,x1,y1,m1,r0,x2,y2,m2,r2)$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Transformations between xy and uv coordinate systems.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+xy: [x = x01 + u*m0d - v*m1d,y = y01 - u*m0n + v*m1n];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+uv: ratsimp(solve(xy,[u,v])[1]);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Format the solution as a list of equations of sums of fractions of polynomials in m.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+uv2: format(uv, %list, %eq, %sum, %frac, %p(m0n, m0d, m1n, m1d));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Start again with newly acquired experience with Maxima.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+depends(y,x)$
+hyperbola: A*x^2+B*x*y+C*y^2+D*x+E*y+F=0;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+slope: solve(diff(hyperbola,x),diff(y,x))[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+diagonal: solve(subst(-1,diff(y,x),slope),y)[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+h: x*y=n;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+huv: psubst(xy,h);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+diag: v=u;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Find intersection of uv-based h with the diagonal u=v.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+huv2: format(subst([diag],huv),%eq,%prod,%p(u));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+m01def: [m01d=m1d-m0d,m01n=m1n-m0n];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Swap left and right hand sides of the equation. 
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+swapsides(eqs) := map(lambda([u],rhs(u)=lhs(u)), eqs)$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Poor man's ratsubst.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+substm01(expr) := subst(swapsides(m01def),subst(swapsides(-m01def),expr))$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+huv3: substm01(huv2);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Take the second solution with the subtraction of the radical.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+udiag: solve(huv3,u)[2];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+radicand: part(udiag,2,1,1,1);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+format(radicand,%p(m01d),%p(m01n));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Looks like (a-b)^2.  Complete the square.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+complete: (m01d*y01+m01n*x01)^2;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Formula for the intersection between u=v and the hyperbola.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+udiag2: subst([radicand=complete+ratsimp(radicand-complete)],udiag);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Special case for m01d zero.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+udiag3: solve(subst([m01d=0],huv3),[u])[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Special case for m01n zero.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+udiag4: solve(subst([m01n=0],huv3),[u])[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Formula for the value of u at which the slope of the uv-transformed hyperbola is -1.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+depends(v,u)$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+dhuv: solve(diff(huv,u),diff(v,u))[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+dhuv2: ratsimp(solve(subst([diff(v,u)=-1],dhuv),v)[1]);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+udiag5: solve(subst(dhuv2,huv),u)[1];
+vdiag5: solve(subst(solve(dhuv2,u)[1],huv),v)[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+udiag6: format(udiag5,%rhs,%frac,%poly(x01,y01),%factor);
+vdiag6: format(vdiag5,%rhs,%frac,%poly(x01,y01),%factor);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+m01def: [m01d=m1d+m0d,m01n=m1n+m0n];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+udiag7: subst(swapsides(m01def),udiag6);
+vdiag7: subst(swapsides(m01def),vdiag6);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+m01nddef: [m01nd=m01d*m01n];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+udiag8: lratsubst(swapsides(m01nddef), udiag7);
+vdiag8: lratsubst(swapsides(m01nddef), vdiag7);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+udiag9: format(udiag8,%rhs,%frac[%p(m01nd,m01nd*n),%f]);
+vdiag9: format(vdiag8,%rhs,%frac[%p(m01nd,m01nd*n),%f]);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+ufactor: part(udiag9,2,1,2,1);
+vfactor: part(vdiag9,2,1,2,1);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+m01xdef: [m01x=m0d*m1n-m0n*m1d];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+udiag10: subst([ufactor=format(expand(ufactor+m01x-subst(m01xdef,m01x)),%f+m01x)],udiag9);
+vdiag10: subst([vfactor=format(expand(vfactor+m01x-subst(m01xdef,m01x)),%f+m01x)],vdiag9);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+udiag11: subst(swapsides(m01xdef),subst(swapsides(m01def),udiag10));
+vdiag11: subst(swapsides(m01xdef),subst(swapsides(m01def),vdiag10));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+After common subexpression elimination.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+udiag12: append(m01def,m01nddef,m01xdef,[udiag11,vdiag11])$
+map('print,udiag12)$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Formula for v in terms of u.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+u2v1: solve(huv,v)[2];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+radicand: part(u2v1,2,1,1,1);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+format(radicand,%p(u),%f);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+complete: (m1d*y01+m1n*x01)^2;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+radicand2: format(expand(radicand-complete),%p(u),%f)+complete;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+mxy1def: [mxy1=m1d*y01+m1n*x01];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+radicand3: subst(swapsides(append(m01xdef,mxy1def)),radicand2);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+rest: part(radicand3,3);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+radicand4: factor(radicand3-rest)+rest;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+u2v2: subst([radicand=radicand4],u2v1);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+u2v3: subst(append(m01xdef,mxy1def),u2v2);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Check calculations.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+expand(subst(u2v3,huv));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+udiag12: subst(-swapsides(mxy1def),udiag11);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+uvdiagcrit: append(m01def,m01nddef,m01xdef,mxy1def,[u=floor(rhs(udiag12)),v=floor(rhs(u2v2))])$
+map('print,uvdiagcrit)$
+/* [wxMaxima: input   end   ] */
+
+/* Maxima can't load/batch files which end with a comment! */
+"Created with wxMaxima"$

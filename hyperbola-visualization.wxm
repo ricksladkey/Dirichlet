@@ -1,0 +1,175 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 12.01.0 ] */
+
+/* [wxMaxima: comment start ]
+Hyperbola visualization.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+n: 1000000$
+m0: 4/3$
+m1: 3/2$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+H(x) := n/x$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+mediant(a,b) := (num(a)+num(b))/(denom(a)+denom(b))$
+m2: mediant(m0, m1);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+x0: floor(sqrt(n/m0));
+x1: ceiling(sqrt(n/m1));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+y0: floor(H(x0));
+y1: floor(H(x1));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+r0: y0 + m0*x0;
+r1: y1 + m1*x1;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+x2tan: sqrt(n/m2),numer;
+y2tan: n/x2tan;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+L0(x) := y0-m0*(x-x0)$
+L1(x) := y1-m1*(x-x1)$
+L2tan(x) := y2tan-m2*(x-x2tan)$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+P01 is the intersction of L0 and L1.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+x01: rhs(solve([y=L0(x),y=L1(x)],[x,y])[1][1]);
+y01: L0(x01);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+x2a: floor(sqrt(n/m2));
+y2a: floor(H(x2a));
+x2b: x2a+1;
+y2b: floor(H(x2b));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+m0n: num(m0)$ m0d: denom(m0)$ m1n: num(m1)$ m1d: denom(m1)$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+uv2xy: [x = x01 + u*m0d - v*m1d,y = y01 - u*m0n + v*m1n];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+xy2uv: ratsimp(solve(uv2xy,[u,v])[1]);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+h: x*y=n;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+huv: psubst(uv2xy,h);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+vdiag: floor(2*rhs(solve([huv,u=v],[u,v])[1][1]));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+XY2UV(xi,yi) := map('rhs,ev(xy2uv,x=xi,y=yi))$
+UV2XY(ui,vi) := map('rhs,ev(uv2xy,u=ui,v=vi))$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+uv0: XY2UV(x0, y0)$
+uv1: XY2UV(x1, y1)$
+u0: uv0[1];
+v1: uv1[2];
+uv2a: XY2UV(x2a, y2a);
+uv2b: XY2UV(x2b, y2b);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+depends(v,u)$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+dhuv: subst([diff(v,u)=-1],solve(diff(huv,u),[diff(v,u)])[1]);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+dhuv2: multthru(part(dhuv,2,2),dhuv);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+dhuv3: dhuv2-rhs(dhuv2);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Calculate the pair of points such that (u2a,v2a) has -slope >= 1, (u2b,v2b) has -slope <= 1 and u2b-u2a=1.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+u2a: floor(rhs(solve(subst(solve(dhuv,v),huv),[u])[2]));
+v2a: floor(rhs(solve(subst(u=u2a,huv))[1]));
+u2b: u2a+1;
+v2b: floor(rhs(solve(subst(u=u2b,huv))[1]));
+P2a: UV2XY(u2a,v2a);
+P2b: UV2XY(u2b,v2b);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+umin: -1$ umax: u0+1$ vmin: -1$ vmax: v1+1$
+ugrid: map(lambda([ui],implicit(u=ui,u,0,u0+1,v,0,v1)),makelist(i,i,1,u0))$
+vgrid: map(lambda([vi],implicit(v=vi,u,0,u0,v,0,v1+1)),makelist(i,i,1,v1))$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+wxplot_size: [100*u0, 100*v1]$
+apply('wxdraw2d, append([
+    fill_color="white",
+    line_width=2,
+    points_joined=false,
+    point_type=filled_circle,
+    point_size=1,
+    color="black",
+    points([[0,0],uv0,uv1,uv2a,uv2b]),
+    implicit(u=0,u,umin,umax,v,vmin,vmax),
+    implicit(v=0,u,umin,umax,v,vmin,vmax),
+    color="purple",
+    implicit(dhuv3,u,umin,umax,v,vmin,vmax),
+    color="blue",
+    implicit(ev(huv),u,umin,umax,v,vmin,vmax),
+    color="yellow",
+    implicit(u+v=vdiag,u,0,u0,v,0,v1),
+    color="green",
+    implicit(u-uv2a[1]=uv2a[2]-v,u,0,uv2a[1],v,0,v1),
+    color="red",
+    implicit(u-uv2b[1]=uv2b[2]-v,u,0,u0,v,0,uv2b[2]),
+    xrange=[umin,umax],
+    yrange=[vmin,vmax],
+    line_width=1,
+    color="gray"
+], ugrid, vgrid))$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+wxplot2d([H,L0,L1,L2tan],[x,x1,x0],
+    [gnuplot_preamble,
+        "set grid; set xtics 1; set ytics 1;"]),
+wxplot_size=[800,800];
+/* [wxMaxima: input   end   ] */
+
+/* Maxima can't load/batch files which end with a comment! */
+"Created with wxMaxima"$
