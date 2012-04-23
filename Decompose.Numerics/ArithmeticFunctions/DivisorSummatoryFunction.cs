@@ -280,7 +280,7 @@ namespace Decompose.Numerics
                 ++v2b;
 
             var m2 = new Rational(m2n, m2d);
-            var v12a = u2a + u2b;
+            var v12a = u2a + v2a;
             var v12b = u2b + v2b;
 
             // Transform back to x, y coordinate system.
@@ -322,7 +322,7 @@ namespace Decompose.Numerics
 
             if (v12a != v12b)
             {
-                var adjustment = v2a;
+                var adjustment = u2a * (v12a - v12b);
                 sum += adjustment;
                 if (diag)
                     Console.WriteLine("corner: adjustment = {0}", adjustment);

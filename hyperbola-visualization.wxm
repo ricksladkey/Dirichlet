@@ -6,9 +6,9 @@ Hyperbola visualization.
    [wxMaxima: comment end   ] */
 
 /* [wxMaxima: input   start ] */
-n: 1000000$
-m0: 4/3$
-m1: 3/2$
+n: 5187$
+m0: 1$
+m1: 2$
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -56,13 +56,6 @@ y01: L0(x01);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-x2a: floor(sqrt(n/m2));
-y2a: floor(H(x2a));
-x2b: x2a+1;
-y2b: floor(H(x2b));
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
 m0n: num(m0)$ m0d: denom(m0)$ m1n: num(m1)$ m1d: denom(m1)$
 m0d*m1n-m0n*m1d;
 /* [wxMaxima: input   end   ] */
@@ -84,10 +77,6 @@ huv: psubst(uv2xy,h);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-vdiag: floor(2*rhs(solve([huv,u=v],[u,v])[1][1]));
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
 XY2UV(xi,yi) := map('rhs,ev(xy2uv,x=xi,y=yi))$
 UV2XY(ui,vi) := map('rhs,ev(uv2xy,u=ui,v=vi))$
 /* [wxMaxima: input   end   ] */
@@ -97,8 +86,6 @@ uv0: XY2UV(x0, y0)$
 uv1: XY2UV(x1, y1)$
 u0: uv0[1];
 v1: uv1[2];
-uv2a: XY2UV(x2a, y2a);
-uv2b: XY2UV(x2b, y2b);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -137,6 +124,10 @@ vgrid: map(lambda([vi],implicit(v=vi,u,0,u0,v,0,v1+1)),makelist(i,i,1,v1))$
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
+n; m1n; m1d; m0n; m0d; x01; y01;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
 wxplot_size: [100*u0, 100*v1]$
 apply('wxdraw2d, append([
     fill_color="white",
@@ -152,8 +143,6 @@ apply('wxdraw2d, append([
     implicit(dhuv3,u,umin,umax,v,vmin,vmax),
     color="blue",
     implicit(ev(huv),u,umin,umax,v,vmin,vmax),
-    color="yellow",
-    implicit(u+v=vdiag,u,0,u0,v,0,v1),
     color="green",
     implicit(u-uv2a[1]=uv2a[2]-v,u,0,uv2a[1],v,0,v1),
     color="red",

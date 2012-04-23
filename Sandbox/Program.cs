@@ -212,7 +212,7 @@ namespace Sandbox
 #else
             var diag = true;
             var algorithm = new DivisorSummatoryFunction(diag);
-            var n = (BigInteger)13500;
+            var n = (BigInteger)5368;
             if (!diag)
                 algorithm.Evaluate(n);
             var timer = new Stopwatch();
