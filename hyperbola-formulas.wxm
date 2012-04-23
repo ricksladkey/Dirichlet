@@ -311,7 +311,7 @@ vdiag6: format(vdiag5,%rhs,%frac,%poly(x01,y01),%factor);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-m01def: [m01d=m1d+m0d,m01n=m1n+m0n];
+m01def: [m2d=m1d+m0d,m2n=m1n+m0n];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -320,7 +320,7 @@ vdiag7: subst(swapsides(m01def),vdiag6);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-m01nddef: [m01nd=m01d*m01n];
+m01nddef: [m2nd=m2d*m2n];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -329,8 +329,8 @@ vdiag8: lratsubst(swapsides(m01nddef), vdiag7);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-udiag9: format(udiag8,%rhs,%frac[%p(m01nd,m01nd*n),%f]);
-vdiag9: format(vdiag8,%rhs,%frac[%p(m01nd,m01nd*n),%f]);
+udiag9: format(udiag8,%rhs,%frac[%p(m2nd,m2nd*n),%f]);
+vdiag9: format(vdiag8,%rhs,%frac[%p(m2nd,m2nd*n),%f]);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -374,7 +374,7 @@ ev(uvdiag12,checkvalues);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-check: solve(ev(uvdiag12,checkvalues),[u,v,m01d,m01n,m01nd,m01x])[1];
+check: solve(ev(uvdiag12,checkvalues),[u,v,m2d,m2n,m2nd,m01x])[1];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -468,8 +468,41 @@ tangent3: lratsubst(swapsides(m01nddef),backsubst(m01xdef,backsubst(m01def,ratsi
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-uvdiagcrit2: append(m01def,m01nddef,mxy1def,subst([m01x=1],[udiag12,solve(tangent3,[v])[1]]))$
+tangent4: subst([m01x=1],solve(tangent3,[v])[1]);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+udiag13: subst([m01x=1],udiag12);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+uvdiagcrit2: append(m01def,m01nddef,mxy1def,[udiag13,tangent4])$
 map('print,uvdiagcrit2)$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Final CSE.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+csedef: [mxy2=m2d*y01+m2n*x01,sqrt=sqrt(m2nd*n)];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+udiag14: format(lratsubst(swapsides(csedef),udiag13),%rhs,%frac,%p(sqrt));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+tangent5: lratsubst(swapsides(csedef),tangent4);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+mxy1def;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+uvdiagcrit3: append(m01def,m01nddef,mxy1def,csedef,[udiag14,tangent5])$
+map('print,uvdiagcrit3)$
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: comment start ]
@@ -477,7 +510,7 @@ Check.
    [wxMaxima: comment end   ] */
 
 /* [wxMaxima: input   start ] */
-check1: solve(ev(uvdiagcrit2,checkvalues),[u,v,m01d,m01n,m01nd,mxy1])[1];
+check1: solve(ev(uvdiagcrit3,checkvalues),[u,v,m2d,m2n,m2nd,mxy1,mxy2,sqrt])[1];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
