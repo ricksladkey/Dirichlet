@@ -25,7 +25,7 @@ namespace Decompose.Numerics
         public static T CeilingRoot<T>(T a, T b)
         {
             var c = (Number<T>)FloorRoot(a, b);
-            if (Number<T>.Power(a, c) != c)
+            if (Number<T>.Power(c, b) != a)
                 ++c;
             return c;
         }

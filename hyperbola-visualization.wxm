@@ -6,9 +6,13 @@ Hyperbola visualization.
    [wxMaxima: comment end   ] */
 
 /* [wxMaxima: input   start ] */
-n: 5187$
+n: 864$
 m0: 1$
 m1: 2$
+x0: 29$
+y0: 29$
+x1: 21$
+y1: 41$
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -21,13 +25,12 @@ m2: mediant(m0, m1);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
+/*
 x0: floor(sqrt(n/m0));
 x1: ceiling(sqrt(n/m1));
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
 y0: floor(H(x0));
 y1: floor(H(x1));
+*/0;
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -61,19 +64,10 @@ m0d*m1n-m0n*m1d;
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-uv2xy: [x = x01 + u*m0d - v*m1d,y = y01 - u*m0n + v*m1n];
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-xy2uv: ratsimp(solve(uv2xy,[u,v])[1]);
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
 h: x*y=n;
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
+uv2xy: [x = x01 + u*m0d - v*m1d,y = y01 - u*m0n + v*m1n];
 huv: psubst(uv2xy,h);
+xy2uv: ratsimp(solve(uv2xy,[u,v])[1]);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -109,16 +103,35 @@ Calculate the pair of points such that (u2a,v2a) has -slope >= 1, (u2b,v2b) has 
    [wxMaxima: comment end   ] */
 
 /* [wxMaxima: input   start ] */
-u2a: floor(rhs(solve(subst(solve(dhuv,v),huv),[u])[2]));
-v2a: floor(rhs(solve(subst(u=u2a,huv))[1]));
+u2a: floor(rhs(solve(subst(solve(dhuv,v),huv),[u])[1]));
+v2a: if u2a = 0 then v1 else floor(rhs(solve(subst(u=u2a,huv))[1]));
 u2b: u2a+1;
 v2b: floor(rhs(solve(subst(u=u2b,huv))[1]));
-P2a: UV2XY(u2a,v2a);
-P2b: UV2XY(u2b,v2b);
+u2b: if v2b = 0 then u0 else floor(rhs(solve(subst(v=v2b,huv))[1]));
+uv2a: [u2a, v2a];
+uv2b: [u2b, v2b];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-umin: -1$ umax: u0+1$ vmin: -1$ vmax: v1+1$
+/*
+u2a: 0$
+v2a: 1$
+u2b: 1$
+v2b: 0$
+*/0;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+P2a: UV2XY(u2a,v2a)$
+P2b: UV2XY(u2b,v2b)$
+x2a: P2a[1];
+y2a: P2a[2];
+x2b: P2b[1];
+y2b: P2b[2];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+umin: -1$ umax: u0+3$ vmin: -1$ vmax: v1+3$
 ugrid: map(lambda([ui],implicit(u=ui,u,0,u0+1,v,0,v1)),makelist(i,i,1,u0))$
 vgrid: map(lambda([vi],implicit(v=vi,u,0,u0,v,0,v1+1)),makelist(i,i,1,v1))$
 /* [wxMaxima: input   end   ] */
@@ -130,13 +143,20 @@ n; m1n; m1d; m0n; m0d; x01; y01;
 /* [wxMaxima: input   start ] */
 wxplot_size: [100*u0, 100*v1]$
 apply('wxdraw2d, append([
+    xrange=[umin,umax],
+    yrange=[vmin,vmax],
     fill_color="white",
     line_width=2,
     points_joined=false,
     point_type=filled_circle,
     point_size=1,
     color="black",
-    points([[0,0],uv0,uv1,uv2a,uv2b]),
+    points([[0,0],uv0,uv1]),
+    color="green",
+    points([uv2a]),
+    color="red",
+    points([uv2b]),
+    color="black",
     implicit(u=0,u,umin,umax,v,vmin,vmax),
     implicit(v=0,u,umin,umax,v,vmin,vmax),
     color="purple",
@@ -144,11 +164,9 @@ apply('wxdraw2d, append([
     color="blue",
     implicit(ev(huv),u,umin,umax,v,vmin,vmax),
     color="green",
-    implicit(u-uv2a[1]=uv2a[2]-v,u,0,uv2a[1],v,0,v1),
+    implicit(u-uv2a[1]=uv2a[2]-v,u,-1,uv2a[1]+1,v,-1,v1+1),
     color="red",
-    implicit(u-uv2b[1]=uv2b[2]-v,u,0,u0,v,0,uv2b[2]),
-    xrange=[umin,umax],
-    yrange=[vmin,vmax],
+    implicit(u-uv2b[1]=uv2b[2]-v,u,-1,u0+1,v,-1,uv2b[2]+1),
     line_width=1,
     color="gray"
 ], ugrid, vgrid))$

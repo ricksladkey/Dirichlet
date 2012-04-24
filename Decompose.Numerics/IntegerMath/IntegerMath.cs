@@ -231,6 +231,11 @@ namespace Decompose.Numerics
         {
             return FloorRoot<T>(n, (Number<T>)2);
         }
+
+        public static T CeilingSquareRoot<T>(T n)
+        {
+            return CeilingRoot<T>(n, (Number<T>)2);
+        }
 #endif
 
         public static int GetDigitLength(BigInteger n, int b)

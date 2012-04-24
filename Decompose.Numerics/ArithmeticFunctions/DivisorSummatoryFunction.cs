@@ -237,8 +237,10 @@ namespace Decompose.Numerics
             Debug.Assert(r1 > r0);
             Debug.Assert(m1 > m0);
 
+#if false
             if (x0 - x1 <= 20)
                 return ProcessRegionLine(x1, y1, m1, r1, x0, y0, m0, r0, diag);
+#endif
 
             var sum = (BigInteger)0;
 
@@ -253,14 +255,22 @@ namespace Decompose.Numerics
             if (xtest * ytest > n)
                 return sum;
 
-            // L2 is the line with the mediant of the slopes of L0 and L1
-            // passing through the point on or below the hyperbola nearest that slope.
+            // The new slope is the mediant the two slopes.
             var m0n = m0.Numerator;
             var m0d = m0.Denominator;
             var m1n = m1.Numerator;
             var m1d = m1.Denominator;
             var m2n = m0n + m1n;
             var m2d = m0d + m1d;
+
+            // Calculate the rectangle bounds: (0, 0) to (u0, v1).
+            var v1 = m0d * (y1 - y01) + m0n * (x1 - x01);
+            var u0 = m1d * (y0 - y01) + m1n * (x0 - x01);
+            if (u0 <= 0 || v1 <= 0)
+                return 0;
+
+            // L2 is the line with the mediant of the slopes of L0 and L1
+            // passing through the point on or below the hyperbola nearest that slope.
             var m2nd = m2n*m2d;
             var mxy1 = m1n * x01 + m1d * y01;
             var mxy2 = m2n * x01 + m2d * y01;
@@ -269,16 +279,28 @@ namespace Decompose.Numerics
             var sqrt1 = sqrt / 2;
             var sqrt2 = sqrt / mult;
             var u2a = (sqrt1 - m2nd * mxy1) / m2nd;
-            var v2a = sqrt2 - u2a - mxy2;
+            var v2a = u2a != 0 ? sqrt2 - u2a - mxy2 : v1;
             var u2b = u2a + 1;
             var v2b = sqrt2 - u2b - mxy2;
 
-            // Check for under-estimate of v.
-            if ((x01 - m1d * (v2a + 1) + m0d * u2a) * (y01 + m1n * (v2a + 1) - m0n * u2a) <= n)
+            // Check for under-estimate of v2a or u2b.
+            if (u2a != 0 && (x01 - m1d * (v2a + 1) + m0d * u2a) * (y01 + m1n * (v2a + 1) - m0n * u2a) <= n)
                 ++v2a;
-            if ((x01 - m1d * (v2b + 1) + m0d * u2b) * (y01 + m1n * (v2b + 1) - m0n * u2b) <= n)
-                ++v2b;
+            if (v2b != 0 && (x01 - m1d * v2b + m0d * (u2b + 1)) * (y01 + m1n * v2b - m0n * (u2b + 1)) <= n)
+                ++u2b;
 
+#if true
+            if (diag)
+            {
+                Console.WriteLine("m1 = {0,5}, m0 = {1,5}, x1 = {2,4}, x0 = {3,4}, dx = {4}", m1, m0, x1, x0, x1 - x0);
+                Console.WriteLine("x0, y0     = ({0}, {1}), m0 = {2}, r0 = {3}", x0, y0, m0, r0);
+                Console.WriteLine("x1, y1     = ({0}, {1}), m1 = {2}, r1 = {3}", x1, y1, m1, r1);
+                Console.WriteLine("x01, y01   = ({0}, {1})", x01, y01);
+                Console.WriteLine("u2a, v2a   = ({0}, {1})", u2a, v2a);
+                Console.WriteLine("u2b, v2b   = ({0}, {1})", u2b, v2b);
+                Console.WriteLine("v1 = {0}, u0 = {1}", v1, u0);
+            }
+#endif
             var m2 = new Rational(m2n, m2d);
             var v12a = u2a + v2a;
             var v12b = u2b + v2b;
@@ -291,23 +313,32 @@ namespace Decompose.Numerics
             var y2b = y01 + m1n * v2b - m0n * u2b;
             var r2b = y2b + m2 * x2b;
 
-            // Intersections of L1 with L2a and L2b.
+            // Intersection of L2a with L1.
             var x12a = x01 - m1d * v12a;
             var y12a = y01 + m1n * v12a;
-            var x12b = x01 - m1d * v12b;
-            var y12b = y01 + m1n * v12b;
+
+            // Intersection of L2b with L0.
+            var x02b = x01 + m0d * v12b;
+            var y02b = y01 - m0n * v12b;
+
+            // Process points horizontally or vertically if one axis collapses
+            // or if the triangle exceeds the bounds of the rectangle.
+            if (u2a == 0 || v2b == 0 || IntegerMath.Max(v12a, v12b) > IntegerMath.Min(u0, v1))
+            {
+                if (v1 > u0)
+                    return ProcessRegionVertical(u0, m0n, m0d, m1n, m1d, x01, y01);
+                else
+                    return ProcessRegionHorizontal(v1, m0n, m0d, m1n, m1d, x01, y01);
+            }
 
 #if true
             if (diag)
             {
-                Console.WriteLine("m1 = {0,5}, m2 = {1,5}, m0 = {2,5}, x1 = {3,4}, x2 = {4,4}, x0 = {5,4}, dx = {6}", m1, m2, m0, x1, x2a, x0, x0 - x1);
-                Console.WriteLine("x0, y0   = ({0}, {1}), m0 = {2}, r0 = {3}", x0, y0, m0, r0);
-                Console.WriteLine("x1, y1   = ({0}, {1}), m1 = {2}, r1 = {3}", x1, y1, m1, r1);
-                Console.WriteLine("x01, y01 = ({0}, {1})", x01, y01);
-                Console.WriteLine("x2a, y2a = ({0}, {1}), m2 = {2}, r2a = {3}", x2a, y2a, m2, r2a);
-                Console.WriteLine("x2b, y2b = ({0}, {1}), m2 = {2}, r2b = {3}", x2b, y2b, m2, r2b);
-                Console.WriteLine("u2a, v2a = ({0}, {1})", u2a, v2a);
-                Console.WriteLine("u2b, v2b = ({0}, {1})", u2b, v2b);
+                Console.WriteLine("m2 = {0}", m2);
+                Console.WriteLine("x2a, y2a   = ({0}, {1}), m2 = {2}, r2a = {3}", x2a, y2a, m2, r2a);
+                Console.WriteLine("x2b, y2b   = ({0}, {1}), m2 = {2}, r2b = {3}", x2b, y2b, m2, r2b);
+                Console.WriteLine("x12a, y12a = ({0}, {1})", x12a, y12a);
+                Console.WriteLine("x02b, y02b = ({0}, {1})", x02b, y02b);
             }
 #endif
 
@@ -334,6 +365,48 @@ namespace Decompose.Numerics
             // Process left region.
             sum += ProcessRegion(x1, y1, m1, r1, x2a, y2a, m2, r2a);
 
+            return sum;
+        }
+
+        private BigInteger ProcessRegionVertical(BigInteger u0, BigInteger m0n, BigInteger m0d, BigInteger m1n, BigInteger m1d, BigInteger x01, BigInteger y01)
+        {
+            var sum = (BigInteger)0;
+            var m01s = m0d * m1n + m0n * m1d;
+            var mxy1d = m1n * x01 - m1d * y01;
+            var m1nd = m1n * m1d;
+            var mxy1 = m1n * x01 + m1d * y01;
+            var denom = (2 * m1nd);
+            var a = mxy1 * mxy1 - 4 * m1nd * n;
+            var b = mxy1d;
+            for (var u = (BigInteger)1; u <= u0; u++)
+            {
+                a += 2 * (u + mxy1) - 1;
+                b += m01s;
+                var sqrt = IntegerMath.CeilingSquareRoot(a);
+                var v = (b - sqrt) / denom;
+                sum += v;
+            }
+            return sum;
+        }
+
+        private BigInteger ProcessRegionHorizontal(BigInteger v1, BigInteger m0n, BigInteger m0d, BigInteger m1n, BigInteger m1d, BigInteger x01, BigInteger y01)
+        {
+            var sum = (BigInteger)0;
+            var m01s = m0d * m1n + m0n * m1d;
+            var mxy0d = m0d * y01 - m0n * x01;
+            var m0nd = m0n * m0d;
+            var mxy0 = m0n * x01 + m0d * y01;
+            var denom = (2 * m0nd);
+            var a = mxy0 * mxy0 - 4 * m0nd * n;
+            var b = mxy0d;
+            for (var v = (BigInteger)1; v <= v1; v++)
+            {
+                a += 2 * (v + mxy0) - 1;
+                b += m01s;
+                var sqrt = IntegerMath.CeilingSquareRoot(a);
+                var u = (b - sqrt) / denom;
+                sum += u;
+            }
             return sum;
         }
 

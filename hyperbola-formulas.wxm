@@ -32,6 +32,9 @@ Check values to test calculations.
 
 /* [wxMaxima: input   start ] */
 checkvalues: [n=1000000,m1n=3,m1d=2,m0n=4,m0d=3,x01=839,y01=1190];
+checkvalues: [n=13500,m1n=2,m1d=1,m0n=1,m0d=1,x01=96,y01=136];
+checkvalues: [n=119,m1n=2,m1d=1,m0n=1,m0d=1,x01=9,y01=12];
+checkvalues: [n=70,m1n=2,m1d=1,m0n=1,m0d=1,x01=7,y01=9];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -176,7 +179,15 @@ xy: [x = x01 + u*m0d - v*m1d,y = y01 - u*m0n + v*m1n];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-uv: ratsimp(solve(xy,[u,v])[1]);
+uvdenom: m0d*m1n-m0n*m1d;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+ev(uvdenom, checkvalues);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+uv: subst([uvdenom=1],ratsimp(solve(xy,[u,v])[1]));
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: comment start ]
@@ -184,7 +195,7 @@ Format the solution as a list of equations of sums of fractions of polynomials i
    [wxMaxima: comment end   ] */
 
 /* [wxMaxima: input   start ] */
-uv2: format(uv, %list, %eq, %sum, %frac, %p(m0n, m0d, m1n, m1d));
+uv2: format(uv, %list, %eq, %p(m0n, m0d, m1n, m1d));
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: comment start ]
@@ -370,6 +381,14 @@ Check.
    [wxMaxima: comment end   ] */
 
 /* [wxMaxima: input   start ] */
+checkvalues;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+ev(huv,checkvalues);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
 ev(uvdiag12,checkvalues);
 /* [wxMaxima: input   end   ] */
 
@@ -390,43 +409,77 @@ coeffs(lhs(huv-rhs(huv)),v);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-u2v1: solve(huv,v)[2];
+u2v1: solve(huv,v)[1];
+v2u1: solve(huv,u)[1];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-radicand: part(u2v1,2,1,1,1);
+uradicand: part(u2v1,2,1,1,1,1);
+vradicand: part(v2u1,2,1,1,1,1);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-format(radicand,%p(u),%f);
+format(uradicand,%p(u),%f);
+format(vradicand,%p(v),%f);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-complete: (m1d*y01+m1n*x01)^2;
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-radicand2: format(expand(radicand-complete),%p(u),%f)+complete;
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
+mxy0def: [mxy0=m0d*y01+m0n*x01];
 mxy1def: [mxy1=m1d*y01+m1n*x01];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-radicand3: subst(swapsides(append(m01xdef,mxy1def)),radicand2);
+ucomplete: rhs(mxy1def[1])^2;
+vcomplete: rhs(mxy0def[1])^2;
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-rest: part(radicand3,3);
+uradicand2: format(expand(uradicand-ucomplete),%p(u),%f)+ucomplete;
+vradicand2: format(expand(vradicand-vcomplete),%p(v),%f)+vcomplete;
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-radicand4: factor(radicand3-rest)+rest;
+uradicand3: subst(swapsides(append(m01xdef,mxy1def)),uradicand2);
+vradicand3: subst(swapsides(append(m01xdef,mxy0def)),vradicand2);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-u2v2: subst([radicand=radicand4],u2v1);
+urest: part(uradicand3,3);
+vrest: part(vradicand3,3);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+uradicand4: factor(uradicand3-urest)+urest;
+vradicand4: factor(vradicand3-vrest)+vrest;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+u2v2: subst([uradicand=uradicand4],u2v1);
+v2u2: subst([vradicand=vradicand4],v2u1);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+u2v3: subst([m01x=1],u2v2);
+v2u3: subst([m01x=1],v2u2);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+uvdefs: [m01s=m0d*m1n+m0n*m1d,m0nd=m0n*m0d,m1nd=m1n*m1d,mxy0d=m0d*y01-m0n*x01,mxy1d=-m1d*y01+m1n*x01];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+u2v4: lratsubst(swapsides(uvdefs),u2v3);
+v2u4: lratsubst(swapsides(uvdefs),v2u3);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+u2v5: format(u2v4,%rhs,%frac[%sum[%expr[%expr[%f-4*m1nd*n]]]]);
+v2u5: format(v2u4,%rhs,%frac[%sum[%expr[%expr[%f-4*m0nd*n]]]]);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+uvformulas: append(uvdefs,mxy0def,mxy1def,[u2v5,v2u5])$
+map('print,uvformulas)$
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: comment start ]
@@ -434,7 +487,33 @@ Check calculations.
    [wxMaxima: comment end   ] */
 
 /* [wxMaxima: input   start ] */
-expand(subst(subst(append(m01xdef,mxy1def),u2v2),huv));
+utest: [u=1];
+vtest: [v=1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+ucheck: subst(append(checkvalues,utest),append(uvdefs,mxy0def,mxy1def,[u2v5]));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+solve(ucheck,[m01s,m0nd,m1nd,mxy0d,mxy1d,mxy0,mxy1,v])[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+vcheck: subst(append(checkvalues,vtest),append(uvdefs,mxy0def,mxy1def,[v2u5]));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+vcheck2: solve(vcheck,[m01s,m0nd,m1nd,mxy0d,mxy1d,mxy0,mxy1,u])[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+vcheck2,numer;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+expand(subst(subst(append(m01xdef,mxy0def,mxy1def),u2v2),huv));
+expand(subst(subst(append(m01xdef,mxy0def,mxy1def),v2u2),huv));
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -536,6 +615,106 @@ Proof that after insertion of the mediant, the two new intervals have the same d
 /* [wxMaxima: input   start ] */
 expand(MX(mlist[1],mlist[2])=1)-(MX(mlist[1],mlist[3])=1);
 expand(MX(mlist[2],mlist[3])=1)-(MX(mlist[1],mlist[3])=1);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Alternative formula for v in terms of u.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+u2v3: format(huv-lhs(huv),%rhs,%p(v));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+u2vsubst: [a/m1n=x01+m0d*u,b/m1d=y01-m0n*u,m1nd=m1n*m1d];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+u2vdef: format(solve(u2vsubst,[a,b,m1nd])[1],%list,%eq,%p(m1n,m1d));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+u2v4: lratsubst(swapsides(u2vsubst),backsubst(u2vdef,u2v3));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+u2v5: solve(u2v4,v)[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+radical: part(u2v5,2,1,1,1,1);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+u2v6: subst([radical=format(radical,%f-4*m1nd*n)],u2v5);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+u2vformula: append(u2vdef,[u2v6])$
+map('print,u2vformula)$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Check.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+utest: u=1;
+vtest: subst([utest],ev(ev(u2v6,u2vdef),checkvalues));
+vtestfloor: v=floor(rhs(vtest));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+expand(ev(ev(huv,[utest,vtest]),checkvalues));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+check1: ev(ev(xy,[utest,vtest]),checkvalues);
+floor(check1);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+subst(append([utest],checkvalues),u2vdef);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+expand(ev(lhs(h),check1) <= rhs(ev(h,checkvalues)));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Experiment.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+u2v3;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+expand(((u+1)+mxy1)^2-(u+mxy1)^2);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+rad[0] = mxy1^2-4*m1nd;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+rad[i] = rad[i-1]+2*u+c1;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+v[i]=(sqrt(rad[i])+c3*u+c4)/c5;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+ev(solve(isolate(format(expand(rhs(huv)-huv),%p(u)),u),[u])[1]);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+term: coeffs(lhs(rhs(huv)-huv),u)[3][1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+format(format(expand(term)-rhs(mxy0def[1])-rhs(m01xdef[1]*v),%p(v),%f)+mxy0+1*v,%p(v),%f);
 /* [wxMaxima: input   end   ] */
 
 /* Maxima can't load/batch files which end with a comment! */
