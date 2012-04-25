@@ -9,6 +9,8 @@ namespace Decompose.Numerics
 {
     public class DivisorSummatoryFunction
     {
+        private readonly BigInteger smallRegionCutoff = 10;
+
         private bool diag;
         private BigInteger n;
         private BigInteger xmin;
@@ -285,7 +287,7 @@ namespace Decompose.Numerics
 
             // Process points horizontally or vertically if one axis collapses
             // or if the triangle exceeds the bounds of the rectangle.
-            if (u2a == 0 || v2b == 0 || IntegerMath.Max(v12a, v12b) > IntegerMath.Min(w, h))
+            if (u2a <= smallRegionCutoff || v2b <= smallRegionCutoff || IntegerMath.Max(v12a, v12b) > IntegerMath.Min(w, h))
             {
                 if (h > w)
                     sum += ProcessRegionHorizontal(w, m0n, m0d, m1n, m1d, x01, y01);
