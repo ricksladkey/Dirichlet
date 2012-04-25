@@ -9,6 +9,29 @@ namespace Decompose.Numerics
 {
     public class DivisorSummatoryFunction
     {
+        private struct Region
+        {
+            public Region(BigInteger m1n, BigInteger m1d, BigInteger m0n, BigInteger m0d, BigInteger x01, BigInteger y01, BigInteger w, BigInteger h)
+            {
+                this.m1n = m1n;
+                this.m1d = m1d;
+                this.m0n = m0n;
+                this.m0d = m0d;
+                this.x01 = x01;
+                this.y01 = y01;
+                this.w = w;
+                this.h = h;
+            }
+            public BigInteger m1n;
+            public BigInteger m1d;
+            public BigInteger m0n;
+            public BigInteger m0d;
+            public BigInteger x01;
+            public BigInteger y01;
+            public BigInteger w;
+            public BigInteger h;
+        }
+
         private readonly BigInteger smallRegionCutoff = 10;
         private readonly BigInteger minimumMultiplier = 10;
 
@@ -17,9 +40,12 @@ namespace Decompose.Numerics
         private BigInteger xmin;
         private BigInteger xmax;
 
+        private Stack<Region> stack;
+
         public DivisorSummatoryFunction(bool diag)
         {
             this.diag = diag;
+            stack = new Stack<Region>();
         }
 
         public BigInteger Evaluate(BigInteger n)
@@ -34,24 +60,7 @@ namespace Decompose.Numerics
             if (diag)
             {
                 Console.WriteLine("n = {0}", n);
-#if true
-                if (xmax < 100)
-                {
-                    for (var x = xmin; x <= xmax; x++)
-                    {
-                        var y = n / x;
-                        var s = "";
-                        for (var i = 0; i < y; i++)
-                            s += "*";
-                        Console.WriteLine("{0,5} {1}", x, s);
-                    }
-                    for (var x = xmin; x <= xmax; x++)
-                    {
-                        var y = n / x;
-                        Console.WriteLine("x = {0}, y = {1}", x, y);
-                    }
-                }
-#endif
+                PrintValuesInRange();
             }
 
             var m0 = (BigInteger)1;
@@ -59,7 +68,7 @@ namespace Decompose.Numerics
             var y0 = n / x0;
             var r0 = y0 + m0 * x0;
             var width = x0 - xmin;
-            Debug.Assert(r0 - m0 * x0== y0);
+            Debug.Assert(r0 - m0 * x0 == y0);
 
             // Add the bottom rectangle.
             var square = (width + 1) * y0;
@@ -167,18 +176,6 @@ namespace Decompose.Numerics
             return ProcessRegion(m1n, m1d, m0n, m0d, x01, y01, w, h);
         }
 
-        private struct Region
-        {
-            public BigInteger m1n;
-            public BigInteger m1d;
-            public BigInteger m0n;
-            public BigInteger m0d;
-            public BigInteger x01;
-            public BigInteger y01;
-            public BigInteger w;
-            public BigInteger h;
-        }
-
         private void UV2XY(ref Region r, BigInteger u, BigInteger v, out BigInteger x, out BigInteger y)
         {
             x = r.x01 - r.m1d * v + r.m0d * u;
@@ -195,151 +192,164 @@ namespace Decompose.Numerics
 
         private BigInteger ProcessRegion(BigInteger m1n, BigInteger m1d, BigInteger m0n, BigInteger m0d, BigInteger x01, BigInteger y01, BigInteger w, BigInteger h)
         {
-            // Sub-divide the new hyperbolic region.
-            if (w <= 0 || h <= 0)
-                return 0;
-
             var sum = (BigInteger)0;
 
-            // Check for removal of first row.
+            while (true)
             {
-                // Check point at (w, 1).
-                var xtest = x01 + m0d * w - m1d;
-                var ytest = y01 - m0n * w + m1n;
-                if (xtest * ytest <= n)
+                while (true)
                 {
-                    // Remove the first row.
-                    var row = w;
-                    sum += row;
-                    if (diag)
-                        Console.WriteLine("removed: row = {0}", row);
+                    // Sub-divide the new hyperbolic region.
+                    if (w <= 0 || h <= 0)
+                        break;
 
-                    x01 -= m1d;
-                    y01 += m1n;
-                    --h;
-                    if (h == 0)
-                        return sum;
-                }
-            }
+                    // Check for removal of first row.
+                    {
+                        // Check point at (w, 1).
+                        if ((x01 + m0d * w - m1d) * (y01 - m0n * w + m1n) <= n)
+                        {
+                            // Remove the first row.
+                            sum += w;
+                            if (diag)
+                                Console.WriteLine("removed: row = {0}", w);
 
-            // Check for removal of first column.
-            {
-                // Check point at (1, h).
-                var xtest = x01 + m0d - m1d * h;
-                var ytest = y01 - m0n + m1n * h;
-                if (xtest * ytest <= n)
-                {
-                    // Remove the first column.
-                    var column = h;
-                    sum += column;
-                    if (diag)
-                        Console.WriteLine("removed: column = {0}", column);
+                            x01 -= m1d;
+                            y01 += m1n;
+                            --h;
+                            if (h == 0)
+                                break;
+                        }
+                    }
 
-                    x01 += m0d;
-                    y01 -= m0n;
-                    --w;
-                    if (w == 0)
-                        return sum;
-                }
-            }
+                    // Check for removal of first column.
+                    {
+                        // Check point at (1, h).
+                        if ((x01 + m0d - m1d * h) * (y01 - m0n + m1n * h) <= n)
+                        {
+                            // Remove the first column.
+                            sum += h;
+                            if (diag)
+                                Console.WriteLine("removed: column = {0}", h);
 
-            // L2 is the line with the mediant of the slopes of L0 and L1
-            // passing through the point on or below the hyperbola nearest that slope.
-            // The new slope is the mediant the two slopes.
-            var m2n = m0n + m1n;
-            var m2d = m0d + m1d;
-            var m2nd = m2n * m2d;
-            var mxy1 = m1n * x01 + m1d * y01;
-            var mxy2 = m2n * x01 + m2d * y01;
-            var mult = (2 * m1d * m2n + 1);
-            var sqrt = IntegerMath.FloorSquareRoot(4 * mult * mult * m2nd * n);
-            var sqrt1 = sqrt / 2;
-            var sqrt2 = sqrt / mult;
-            var u2a = (sqrt1 - m2nd * mxy1) / m2nd;
-            var v2a = u2a != 0 ? sqrt2 - u2a - mxy2 : h;
-            var u2b = u2a < w ? u2a + 1 : w;
-            var v2b = sqrt2 - u2b - mxy2;
+                            x01 += m0d;
+                            y01 -= m0n;
+                            --w;
+                            if (w == 0)
+                                break;
+                        }
+                    }
 
-            // Check for under-estimate of v2a or v2b.
-            if (u2a != 0 && (x01 - m1d * (v2a + 1) + m0d * u2a) * (y01 + m1n * (v2a + 1) - m0n * u2a) <= n)
-                ++v2a;
-            if ((x01 - m1d * (v2b + 1) + m0d * u2b) * (y01 + m1n * (v2b + 1) - m0n * u2b) <= n)
-                ++v2b;
+                    // L2 is the line with the mediant of the slopes of L0 and L1
+                    // passing through the point on or below the hyperbola nearest that slope.
+                    // The new slope is the mediant the two slopes.
+                    var m2n = m0n + m1n;
+                    var m2d = m0d + m1d;
+                    var m2nd = m2n * m2d;
+                    var mxy1 = m1n * x01 + m1d * y01;
+                    var mxy2 = m2n * x01 + m2d * y01;
+                    var mult = (2 * m1d * m2n + 1);
+                    var sqrt = IntegerMath.FloorSquareRoot(4 * mult * mult * m2nd * n);
+                    var sqrt1 = sqrt / 2;
+                    var sqrt2 = sqrt / mult;
+                    var u2a = (sqrt1 - m2nd * mxy1) / m2nd;
+                    var v2a = u2a != 0 ? sqrt2 - u2a - mxy2 : h;
+                    var u2b = u2a < w ? u2a + 1 : w;
+                    var v2b = sqrt2 - u2b - mxy2;
+
+                    // Check for under-estimate of v2a or v2b.
+                    if (u2a != 0 && (x01 - m1d * (v2a + 1) + m0d * u2a) * (y01 + m1n * (v2a + 1) - m0n * u2a) <= n)
+                        ++v2a;
+                    if ((x01 - m1d * (v2b + 1) + m0d * u2b) * (y01 + m1n * (v2b + 1) - m0n * u2b) <= n)
+                        ++v2b;
 
 #if true
-            if (diag)
-            {
-                var x0 = x01 + m0d * w;
-                var y0 = y01 - m0n * w;
-                var x1 = x01 - m1d * h;
-                var y1 = y01 + m1n * h;
-                Console.WriteLine("m1 = {0,5}, m0 = {1,5}, x1 = {2,4}, x0 = {3,4}, dx = {4}",
-                    new Rational(m1n, m1d), new Rational(m0n, m0d), x1, x0, x0 - x1);
-                Console.WriteLine("x0, y0     = ({0}, {1})", x0, y0);
-                Console.WriteLine("x1, y1     = ({0}, {1})", x1, y1);
-                Console.WriteLine("x01, y01   = ({0}, {1})", x01, y01);
-                Console.WriteLine("u2a, v2a   = ({0}, {1})", u2a, v2a);
-                Console.WriteLine("u2b, v2b   = ({0}, {1})", u2b, v2b);
-                Console.WriteLine("w = {0}, h = {1}", w, h);
-            }
-#endif
-            var v12a = u2a + v2a;
-            var v12b = u2b + v2b;
-
-            // Process points horizontally or vertically if one axis collapses
-            // or if the triangle exceeds the bounds of the rectangle.
-            if (u2a <= smallRegionCutoff || v2b <= smallRegionCutoff || IntegerMath.Max(v12a, v12b) > IntegerMath.Min(w, h))
-            {
-                if (h > w)
-                    sum += ProcessRegionHorizontal(w, m0n, m0d, m1n, m1d, x01, y01);
-                else
-                    sum += ProcessRegionVertical(h, m0n, m0d, m1n, m1d, x01, y01);
-                return sum;
-            }
-
-#if fals
-            if (diag)
-            {
-                Console.WriteLine("m2 = {0}", m2);
-                Console.WriteLine("x2a, y2a   = ({0}, {1}), m2 = {2}, r2a = {3}", x2a, y2a, m2, r2a);
-                Console.WriteLine("x2b, y2b   = ({0}, {1}), m2 = {2}, r2b = {3}", x2b, y2b, m2, r2b);
-                Console.WriteLine("x12a, y12a = ({0}, {1})", x12a, y12a);
-                Console.WriteLine("x02b, y02b = ({0}, {1})", x02b, y02b);
-            }
+                    if (diag)
+                    {
+                        var x0 = x01 + m0d * w;
+                        var y0 = y01 - m0n * w;
+                        var x1 = x01 - m1d * h;
+                        var y1 = y01 + m1n * h;
+                        Console.WriteLine("m1 = {0,5}, m0 = {1,5}, x1 = {2,4}, x0 = {3,4}, dx = {4}",
+                            new Rational(m1n, m1d), new Rational(m0n, m0d), x1, x0, x0 - x1);
+                        Console.WriteLine("x0, y0     = ({0}, {1})", x0, y0);
+                        Console.WriteLine("x1, y1     = ({0}, {1})", x1, y1);
+                        Console.WriteLine("x01, y01   = ({0}, {1})", x01, y01);
+                        Console.WriteLine("u2a, v2a   = ({0}, {1})", u2a, v2a);
+                        Console.WriteLine("u2b, v2b   = ({0}, {1})", u2b, v2b);
+                        Console.WriteLine("w = {0}, h = {1}", w, h);
+                    }
 #endif
 
-            // Add the triangle defined L0, L1, and L2b.
-            var v12 = IntegerMath.Min(v12a, v12b);
-            var area = v12 * (v12 - 1) / 2;
-            sum += area;
-            if (diag)
-            {
-                Console.WriteLine("corner: m1 = {0}, m2 = {1}, area = {2}",
-                    new Rational(m0n, m0d), new Rational(m1n, m1d), area);
-                Console.WriteLine("v12a = {0}, v12b = {1}", v12a, v12b);
+                    // Intercept of L2a and L2b.  Since the lines are diagonal,
+                    // the intercept is the same on both U and V axes.
+                    var uv12a = u2a + v2a;
+                    var uv12b = u2b + v2b;
+
+                    // Process points horizontally or vertically if one axis collapses
+                    // or if the triangle exceeds the bounds of the rectangle.
+                    if (u2a <= smallRegionCutoff || v2b == smallRegionCutoff || IntegerMath.Max(uv12a, uv12b) > IntegerMath.Min(w, h))
+                    {
+                        if (h > w)
+                            sum += ProcessRegionHorizontal(w, m0n, m0d, m1n, m1d, x01, y01);
+                        else
+                            sum += ProcessRegionVertical(h, m0n, m0d, m1n, m1d, x01, y01);
+                        break;
+                    }
+
+#if false
+                    if (diag)
+                    {
+                        Console.WriteLine("m2 = {0}", m2);
+                        Console.WriteLine("x2a, y2a   = ({0}, {1}), m2 = {2}, r2a = {3}", x2a, y2a, m2, r2a);
+                        Console.WriteLine("x2b, y2b   = ({0}, {1}), m2 = {2}, r2b = {3}", x2b, y2b, m2, r2b);
+                        Console.WriteLine("x12a, y12a = ({0}, {1})", x12a, y12a);
+                        Console.WriteLine("x02b, y02b = ({0}, {1})", x02b, y02b);
+                    }
+#endif
+
+                    // Add the triangle defined L0, L1, and L2b.
+                    var v12 = IntegerMath.Min(uv12a, uv12b);
+                    var area = v12 * (v12 - 1) / 2;
+                    sum += area;
+                    if (diag)
+                    {
+                        Console.WriteLine("corner: m1 = {0}, m2 = {1}, area = {2}",
+                            new Rational(m0n, m0d), new Rational(m1n, m1d), area);
+                        Console.WriteLine("v12a = {0}, v12b = {1}", uv12a, uv12b);
+                    }
+
+                    if (uv12a != uv12b)
+                    {
+                        var adjustment = uv12a > uv12b ? u2a : v2b;
+                        sum += adjustment;
+                        if (diag)
+                            Console.WriteLine("corner: adjustment = {0}", adjustment);
+                    }
+
+                    // Push left region.
+                    stack.Push(new Region(m1n, m1d, m2n, m2d, x01 - m1d * uv12a, y01 + m1n * uv12a, u2a, h - uv12a));
+
+                    // Process right region (no change to m0n and m0d).
+                    m1n = m2n;
+                    m1d = m2d;
+                    x01 = x01 + m0d * uv12b;
+                    y01 = y01 - m0n * uv12b;
+                    w -= uv12b;
+                    h = v2b;
+                }
+
+                if (stack.Count == 0)
+                    break;
+
+                var region = stack.Pop();
+                m1n = region.m1n;
+                m1d = region.m1d;
+                m0n = region.m0n;
+                m0d = region.m0d;
+                x01 = region.x01;
+                y01 = region.y01;
+                w = region.w;
+                h = region.h;
             }
-
-            if (v12a != v12b)
-            {
-                var adjustment = v12a > v12b ? u2a : v2b;
-                sum += adjustment;
-                if (diag)
-                    Console.WriteLine("corner: adjustment = {0}", adjustment);
-            }
-
-            // Intersection of L2a with L1.
-            var x12a = x01 - m1d * v12a;
-            var y12a = y01 + m1n * v12a;
-
-            // Intersection of L2b with L0.
-            var x02b = x01 + m0d * v12b;
-            var y02b = y01 - m0n * v12b;
-
-            // Process right region.
-            sum += ProcessRegion(m2n, m2d, m0n, m0d, x02b, y02b, w - v12b, v2b);
-
-            // Process left region.
-            sum += ProcessRegion(m1n, m1d, m2n, m2d, x12a, y12a, u2a, h - v12a);
 
             return sum;
         }
@@ -361,8 +371,7 @@ namespace Decompose.Numerics
                 a += da;
                 b += m01s;
                 var sqrt = IntegerMath.CeilingSquareRoot(a);
-                var v = (b - sqrt) / denom;
-                sum += v;
+                sum += (b - sqrt) / denom;
             }
             return sum;
         }
@@ -384,8 +393,7 @@ namespace Decompose.Numerics
                 a += da;
                 b += m01s;
                 var sqrt = IntegerMath.CeilingSquareRoot(a);
-                var u = (b - sqrt) / denom;
-                sum += u;
+                sum += (b - sqrt) / denom;
             }
             return sum;
         }
@@ -425,6 +433,26 @@ namespace Decompose.Numerics
             if (verbose)
                 Console.WriteLine("region: sum = {0}", sum);
             return sum;
+        }
+
+        private void PrintValuesInRange()
+        {
+            if (xmax < 100)
+            {
+                for (var x = xmin; x <= xmax; x++)
+                {
+                    var y = n / x;
+                    var s = "";
+                    for (var i = 0; i < y; i++)
+                        s += "*";
+                    Console.WriteLine("{0,5} {1}", x, s);
+                }
+                for (var x = xmin; x <= xmax; x++)
+                {
+                    var y = n / x;
+                    Console.WriteLine("x = {0}, y = {1}", x, y);
+                }
+            }
         }
     }
 }
