@@ -369,18 +369,10 @@ namespace Decompose.Numerics
                 Console.WriteLine("w = {0}, h = {1}", w, h);
             }
 #endif
-            var m2 = new Rational(m2n, m2d);
             var v12a = u2a + v2a;
             var v12b = u2b + v2b;
 
-            // Transform back to x, y coordinate system.
-            var x2a = x01 - m1d * v2a + m0d * u2a;
-            var y2a = y01 + m1n * v2a - m0n * u2a;
-            var r2a = y2a + m2 * x2a;
-            var x2b = x01 - m1d * v2b + m0d * u2b;
-            var y2b = y01 + m1n * v2b - m0n * u2b;
-            var r2b = y2b + m2 * x2b;
-
+#if false
             // Intersection of L2a with L1.
             var x12a = x01 - m1d * v12a;
             var y12a = y01 + m1n * v12a;
@@ -388,6 +380,7 @@ namespace Decompose.Numerics
             // Intersection of L2b with L0.
             var x02b = x01 + m0d * v12b;
             var y02b = y01 - m0n * v12b;
+#endif
 
             // Process points horizontally or vertically if one axis collapses
             // or if the triangle exceeds the bounds of the rectangle.
@@ -400,7 +393,7 @@ namespace Decompose.Numerics
                 return sum;
             }
 
-#if true
+#if fals
             if (diag)
             {
                 Console.WriteLine("m2 = {0}", m2);
@@ -417,7 +410,7 @@ namespace Decompose.Numerics
             sum += area;
             if (diag)
             {
-                Console.WriteLine("corner: m2 = {0}, area = {1}", m2, area);
+                Console.WriteLine("corner: m1 = {0}, m2 = {1}, area = {2}", m0, m1, area);
                 Console.WriteLine("v12a = {0}, v12b = {1}", v12a, v12b);
             }
 
@@ -428,6 +421,15 @@ namespace Decompose.Numerics
                 if (diag)
                     Console.WriteLine("corner: adjustment = {0}", adjustment);
             }
+
+            // Transform back to x, y coordinate system.
+            var m2 = new Rational(m2n, m2d);
+            var x2a = x01 - m1d * v2a + m0d * u2a;
+            var y2a = y01 + m1n * v2a - m0n * u2a;
+            var r2a = y2a + m2 * x2a;
+            var x2b = x01 - m1d * v2b + m0d * u2b;
+            var y2b = y01 + m1n * v2b - m0n * u2b;
+            var r2b = y2b + m2 * x2b;
 
             // Process right region.
             sum += ProcessRegion(x2b, y2b, m2, r2b, x0, y0, m0, r0);
@@ -441,16 +443,18 @@ namespace Decompose.Numerics
         private BigInteger ProcessRegionHorizontal(BigInteger w, BigInteger m0n, BigInteger m0d, BigInteger m1n, BigInteger m1d, BigInteger x01, BigInteger y01)
         {
             var sum = (BigInteger)0;
+            var mx1 = m1n * x01;
+            var my1 = m1d * y01;
+            var mxy1 = mx1 + my1;
             var m01s = m0d * m1n + m0n * m1d;
-            var mxy1d = m1n * x01 - m1d * y01;
-            var m1nd = m1n * m1d;
-            var mxy1 = m1n * x01 + m1d * y01;
-            var denom = (2 * m1nd);
-            var a = mxy1 * mxy1 - 4 * m1nd * n;
-            var b = mxy1d;
-            for (var u = (BigInteger)1; u <= w; u++)
+            var denom = 2 * m1n * m1d;
+            var a = mxy1 * mxy1 - 2 * denom * n;
+            var ac = 2 * mxy1 - 1;
+            var b = mx1 - my1;
+            var damax = 2 * w + ac;
+            for (var da = (BigInteger)2 + ac; da <= damax; da += 2)
             {
-                a += 2 * (u + mxy1) - 1;
+                a += da;
                 b += m01s;
                 var sqrt = IntegerMath.CeilingSquareRoot(a);
                 var v = (b - sqrt) / denom;
@@ -462,16 +466,18 @@ namespace Decompose.Numerics
         private BigInteger ProcessRegionVertical(BigInteger h, BigInteger m0n, BigInteger m0d, BigInteger m1n, BigInteger m1d, BigInteger x01, BigInteger y01)
         {
             var sum = (BigInteger)0;
+            var mx0 = m0n * x01;
+            var my0 = m0d * y01;
+            var mxy0 = mx0 + my0;
             var m01s = m0d * m1n + m0n * m1d;
-            var mxy0d = m0d * y01 - m0n * x01;
-            var m0nd = m0n * m0d;
-            var mxy0 = m0n * x01 + m0d * y01;
-            var denom = (2 * m0nd);
-            var a = mxy0 * mxy0 - 4 * m0nd * n;
-            var b = mxy0d;
-            for (var v = (BigInteger)1; v <= h; v++)
+            var denom = 2 * m0n * m0d;
+            var a = mxy0 * mxy0 - 2 * denom * n;
+            var ac = 2 * mxy0 - 1;
+            var b = my0 - mx0;
+            var damax = 2 * h + ac;
+            for (var da = (BigInteger)2 + ac; da <= damax; da += 2)
             {
-                a += 2 * (v + mxy0) - 1;
+                a += da;
                 b += m01s;
                 var sqrt = IntegerMath.CeilingSquareRoot(a);
                 var u = (b - sqrt) / denom;

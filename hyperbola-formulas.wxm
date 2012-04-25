@@ -779,8 +779,8 @@ h_eqs2: rest(solve(h_eqs,[r[0],r[new],x[new],y[new]])[1],-2);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-w_eq3: expand(solve(subst([uvdenom=1],ratsimp(expand(w_eqs2[2]-w_eqs2[1]))),r[new]));
-h_eq3: expand(solve(subst([uvdenom=1],ratsimp(expand(h_eqs2[2]-h_eqs2[1]))),r[new]));
+w_eq3: expand(solve(subst([uvdenom=1],ratsimp(w_eqs2[2]-w_eqs2[1])),r[new]));
+h_eq3: expand(solve(subst([uvdenom=1],ratsimp(h_eqs2[2]-h_eqs2[1])),r[new]));
 /* [wxMaxima: input   end   ] */
 
 /* Maxima can't load/batch files which end with a comment! */

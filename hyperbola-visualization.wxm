@@ -6,13 +6,13 @@ Hyperbola visualization.
    [wxMaxima: comment end   ] */
 
 /* [wxMaxima: input   start ] */
-n: 868$
+n: 1325$
 m0: 1$
 m1: 2$
-x0: 29$
-y0: 29$
-x1: 21$
-y1: 41$
+x0: 36$
+y0: 36$
+x1: 26$
+y1: 50$
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -99,19 +99,31 @@ dhuv3: dhuv2-rhs(dhuv2);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: comment start ]
+Return the least positive value from a list of solutions.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+leastpositive(list) := apply('min,sublist(map('rhs,list),lambda([arg], arg >= 0)))$
+leastpositive([u=0,u=-1]);
+leastpositive([u=3,u=2]);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
 Calculate the pair of points such that (u2a,v2a) has -slope >= 1, (u2b,v2b) has -slope <= 1 and u2b-u2a=1.
    [wxMaxima: comment end   ] */
 
 /* [wxMaxima: input   start ] */
-diag1: solve(subst(solve(dhuv,v),huv),[u]);
+u2: leastpositive(solve(subst(solve(dhuv,v),huv),[u]))$
+v2: leastpositive(solve(subst(solve(dhuv,u),huv),[v]))$
+uv2: [u2, v2];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-u2a: floor(rhs(solve(subst(solve(dhuv,v),huv),[u])[2]));
-v2a: if u2a = 0 then v1 else floor(rhs(solve(subst(u=u2a,huv))[1]));
+u2a: floor(leastpositive(solve(subst(solve(dhuv,v),huv),[u])));
+v2a: if u2a = 0 then v1 else floor(leastpositive(solve(subst(u=u2a,huv))));
 u2b: u2a+1;
-v2b: floor(rhs(solve(subst(u=u2b,huv))[1]));
-u2b: if v2b = 0 then u0 else floor(rhs(solve(subst(v=v2b,huv))[2]));
+v2b: floor(leastpositive(solve(subst(u=u2b,huv))));
+/* u2b: if v2b = 0 then u0 else floor(leastpositive(solve(subst(v=v2b,huv)))); */
 uv2a: [u2a, v2a];
 uv2b: [u2b, v2b];
 /* [wxMaxima: input   end   ] */
@@ -153,18 +165,20 @@ apply('wxdraw2d, append([
     line_width=2,
     points_joined=false,
     point_type=filled_circle,
-    point_size=1,
+    point_size=2,
     color="black",
     points([[0,0],uv0,uv1]),
     color="green",
     points([uv2a]),
     color="red",
     points([uv2b]),
+    color="blue",
+    points([uv2]),
+    color="gray",
+    points([[uv0[1],1],[1,uv1[2]]]),
     color="black",
     implicit(u=0,u,umin,umax,v,vmin,vmax),
     implicit(v=0,u,umin,umax,v,vmin,vmax),
-    color="purple",
-    implicit(dhuv3,u,umin,umax,v,vmin,vmax),
     color="blue",
     implicit(ev(huv),u,umin,umax,v,vmin,vmax),
     color="green",
