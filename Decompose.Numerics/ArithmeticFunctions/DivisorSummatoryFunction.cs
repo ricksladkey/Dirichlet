@@ -184,7 +184,12 @@ namespace Decompose.Numerics
                         Console.WriteLine("wedge: x1 = {0}, adjustment = {1}", x1b, adjustment);
                 }
 
-                var region = ProcessRegion(x1b, y1b, m1, r1b, x0, y0, m0, r0);
+                // Determine intersection of L0 and L1.
+                var x01 = (BigInteger)((r1b - r0) / (m1 - m0));
+                var y01 = (BigInteger)(r0 - m0 * x01);
+                Debug.Assert(r0 - m0 * x01 == r1b - m1 * x01);
+
+                var region = ProcessRegion(x1b, y1b, m1, x0, y0, m0, x01, y01);
                 sum += region;
 
                 m0 = m1;
@@ -208,22 +213,20 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private BigInteger ProcessRegion(BigInteger x1, BigInteger y1, Rational m1, Rational r1, BigInteger x0, BigInteger y0, Rational m0, Rational r0)
+        private BigInteger ProcessRegionChecked(BigInteger x1, BigInteger y1, Rational m1, BigInteger x0, BigInteger y0, Rational m0, BigInteger x01, BigInteger y01)
         {
-#if DEBUG
             var expected = (BigInteger)0;
             if (diag)
             {
-                expected = ProcessRegionGrid(x1, y1, m1, r1, x0, y0, m0, r0, false);
-                var region = ProcessRegionDivide(x1, y1, m1, r1, x0, y0, m0, r0);
+                expected = ProcessRegionGrid(x1, y1, m1, x0, y0, m0, x01, y01, false);
+                var region = ProcessRegion(x1, y1, m1, x0, y0, m0, x01, y01);
                 if (region != expected)
                 {
                     Console.WriteLine("failed validation: actual = {0}, expected = {1}", region, expected);
                 }
                 return region;
             }
-#endif
-            return ProcessRegionDivide(x1, y1, m1, r1, x0, y0, m0, r0);
+            return ProcessRegion(x1, y1, m1, x0, y0, m0, x01, y01);
         }
 
         private struct Region
@@ -252,7 +255,7 @@ namespace Decompose.Numerics
             v = r.m0d * dy + r.m0n * dx;
         }
 
-        private BigInteger ProcessRegionDivide(BigInteger x1, BigInteger y1, Rational m1, Rational r1, BigInteger x0, BigInteger y0, Rational m0, Rational r0)
+        private BigInteger ProcessRegion(BigInteger x1, BigInteger y1, Rational m1, BigInteger x0, BigInteger y0, Rational m0, BigInteger x01, BigInteger y01)
         {
             // Sub-divide the new hyperbolic region.
             if (x1 >= x0)
@@ -260,7 +263,6 @@ namespace Decompose.Numerics
 
             Debug.Assert(x1 < x0);
             Debug.Assert(y1 > y0);
-            Debug.Assert(r1 > r0);
             Debug.Assert(m1 > m0);
 
 #if false
@@ -269,11 +271,6 @@ namespace Decompose.Numerics
 #endif
 
             var sum = (BigInteger)0;
-
-            // Determine intersection of L0 and L1.
-            var x01 = (BigInteger)((r1 - r0) / (m1 - m0));
-            var y01 = (BigInteger)(r0 - m0 * x01);
-            Debug.Assert(r0 - m0 * x01 == r1 - m1 * x01);
 
             // The new slope is the mediant the two slopes.
             var m0n = m0.Numerator;
@@ -306,7 +303,6 @@ namespace Decompose.Numerics
                     y01 += m1n;
                     x0 -= m1d;
                     y0 += m1n;
-                    r0 += new Rational(1, m0d);
                     --h;
                     if (h == 0)
                         return sum;
@@ -330,7 +326,6 @@ namespace Decompose.Numerics
                     y01 -= m0n;
                     x0 += m0d;
                     y0 -= m0n;
-                    r1 += new Rational(1, m1d);
                     --w;
                     if (w == 0)
                         return sum;
@@ -361,8 +356,8 @@ namespace Decompose.Numerics
             if (diag)
             {
                 Console.WriteLine("m1 = {0,5}, m0 = {1,5}, x1 = {2,4}, x0 = {3,4}, dx = {4}", m1, m0, x1, x0, x0 - x1);
-                Console.WriteLine("x0, y0     = ({0}, {1}), m0 = {2}, r0 = {3}", x0, y0, m0, r0);
-                Console.WriteLine("x1, y1     = ({0}, {1}), m1 = {2}, r1 = {3}", x1, y1, m1, r1);
+                Console.WriteLine("x0, y0     = ({0}, {1}), m0 = {2}", x0, y0, m0);
+                Console.WriteLine("x1, y1     = ({0}, {1}), m1 = {2}", x1, y1, m1);
                 Console.WriteLine("x01, y01   = ({0}, {1})", x01, y01);
                 Console.WriteLine("u2a, v2a   = ({0}, {1})", u2a, v2a);
                 Console.WriteLine("u2b, v2b   = ({0}, {1})", u2b, v2b);
@@ -371,16 +366,6 @@ namespace Decompose.Numerics
 #endif
             var v12a = u2a + v2a;
             var v12b = u2b + v2b;
-
-#if false
-            // Intersection of L2a with L1.
-            var x12a = x01 - m1d * v12a;
-            var y12a = y01 + m1n * v12a;
-
-            // Intersection of L2b with L0.
-            var x02b = x01 + m0d * v12b;
-            var y02b = y01 - m0n * v12b;
-#endif
 
             // Process points horizontally or vertically if one axis collapses
             // or if the triangle exceeds the bounds of the rectangle.
@@ -431,11 +416,19 @@ namespace Decompose.Numerics
             var y2b = y01 + m1n * v2b - m0n * u2b;
             var r2b = y2b + m2 * x2b;
 
+            // Intersection of L2a with L1.
+            var x12a = x01 - m1d * v12a;
+            var y12a = y01 + m1n * v12a;
+
+            // Intersection of L2b with L0.
+            var x02b = x01 + m0d * v12b;
+            var y02b = y01 - m0n * v12b;
+
             // Process right region.
-            sum += ProcessRegion(x2b, y2b, m2, r2b, x0, y0, m0, r0);
+            sum += ProcessRegion(x2b, y2b, m2, x0, y0, m0, x02b, y02b);
 
             // Process left region.
-            sum += ProcessRegion(x1, y1, m1, r1, x2a, y2a, m2, r2a);
+            sum += ProcessRegion(x1, y1, m1, x2a, y2a, m2, x12a, y12a);
 
             return sum;
         }
@@ -486,13 +479,8 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private BigInteger ProcessRegionGrid(BigInteger x1, BigInteger y1, Rational m1, Rational r1, BigInteger x0, BigInteger y0, Rational m0, Rational r0, bool verbose)
+        private BigInteger ProcessRegionGrid(BigInteger x1, BigInteger y1, Rational m1, BigInteger x0, BigInteger y0, Rational m0, BigInteger x01, BigInteger y01, bool verbose)
         {
-            // Determine intersection of L0 and L1.
-            var x01 = (BigInteger)((r1 - r0) / (m1 - m0));
-            var y01 = (BigInteger)(r0 - m0 * x01);
-            Debug.Assert(r0 - m0 * x01 == r1 - m1 * x01);
-
             if (x01 < x1 || x01 > x0)
                 return 0;
 
