@@ -9,53 +9,6 @@ namespace Decompose.Numerics
 {
     public class DivisorSummatoryFunction
     {
-        public struct Hyperbola
-        {
-            public Rational A;
-            public Rational B;
-            public Rational C;
-            public Rational D;
-            public Rational E;
-            public Rational F;
-
-            public Hyperbola SkewX(Rational r)
-            {
-                var h = new Hyperbola();
-                h.A = A;
-                h.B = B - 2 * A;
-                h.C = C - B + A;
-                h.D = 2 * A * r + D;
-                h.E = E - D + r * B + 2 * r * A;
-                h.F = F + r * D + r * r * A;
-                return h;
-            }
-
-            public Hyperbola SkewY(Rational r)
-            {
-                var h = new Hyperbola();
-                h.A = C - B + A;
-                h.B = B - 2 * C;
-                h.C = C;
-                h.D = (B - 2 * C) * r - E + D;
-                h.E = 2 * C * r + E;
-                h.F = C * r * r + E * r + F;
-                return h;
-            }
-
-            public double CriticalPoint()
-            {
-                var p = (double)(2 * C - B);
-                var q = (double)((-4 * A * C * C + (B * B + 4 * A * B - 4 * A * A) * C - B * B * B + A * B * B) * F
-                    + (A * C - A * B + A * A) * E * E + (-B * C + B * B - A * B) * D * E
-                    + (C * C + (A - B) * C) * D * D);
-                var r = (double)((-B * C + B * B - A * B) * E + (2 * C * C + (2 * A - 2 * B) * C) * D);
-                var s = (double)(4 * A * C * C + (-B * B - 4 * A * B + 4 * A * A) * C + B * B * B - A * B * B);
-                var root1 = (r + p * Math.Sqrt(q)) / s;
-                var root2 = (r - p * Math.Sqrt(q)) / s;
-                return Math.Max(root1, root2);
-            }
-        };
-
         private bool diag;
         private BigInteger n;
         private BigInteger xmin;
@@ -64,19 +17,6 @@ namespace Decompose.Numerics
         public DivisorSummatoryFunction(bool diag)
         {
             this.diag = diag;
-        }
-
-        private void CheckDeltaY(Rational m)
-        {
-            var x1 = (BigInteger)IntegerMath.FloorSquareRoot(n / m);
-            var y1 = n / x1;
-            var r1 = y1 + m * x1;
-#if false
-            if ((x1 + 1) * (r1 - m * (x1 + 1)) > n)
-                Console.WriteLine("x + 1 is over: m = {0}", m);
-#endif
-            if ((x1 + 2) * (r1 - m * (x1 + 2)) > n)
-                Console.WriteLine("x + 2 is over: m = {0}", m);
         }
 
         public BigInteger Evaluate(BigInteger n)
@@ -108,14 +48,6 @@ namespace Decompose.Numerics
                         Console.WriteLine("x = {0}, y = {1}", x, y);
                     }
                 }
-#endif
-#if false
-                for (var m = (Rational)1; m <= xmin; m++)
-                {
-                    CheckDeltaY(m);
-                    CheckDeltaY(m + (Rational)1 / 2);
-                }
-                return 0;
 #endif
             }
 
@@ -154,7 +86,7 @@ namespace Decompose.Numerics
                 {
                     for (var x = (BigInteger)xmin; x < x0; x++)
                     {
-                        var delta = n / x - Rational.Floor(r0 - m0 * x);
+                        var delta = n / x - (r0 - m0 * x);
                         sum += delta;
                         if (diag)
                             Console.WriteLine("singleton >= xmin: x = {0}, delta = {1}", x, delta);
@@ -189,7 +121,7 @@ namespace Decompose.Numerics
                 var y01 = (BigInteger)(r0 - m0 * x01);
                 Debug.Assert(r0 - m0 * x01 == r1b - m1 * x01);
 
-                var region = ProcessRegion(x1b, y1b, m1, x0, y0, m0, x01, y01);
+                var region = ProcessRegion(x1b, y1b, m1, 1, x0, y0, m0, 1, x01, y01);
                 sum += region;
 
                 m0 = m1;
@@ -213,20 +145,20 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private BigInteger ProcessRegionChecked(BigInteger x1, BigInteger y1, Rational m1, BigInteger x0, BigInteger y0, Rational m0, BigInteger x01, BigInteger y01)
+        private BigInteger ProcessRegionChecked(BigInteger x1, BigInteger y1, BigInteger m1n, BigInteger m1d, BigInteger x0, BigInteger y0, BigInteger m0n, BigInteger m0d, BigInteger x01, BigInteger y01)
         {
             var expected = (BigInteger)0;
             if (diag)
             {
-                expected = ProcessRegionGrid(x1, y1, m1, x0, y0, m0, x01, y01, false);
-                var region = ProcessRegion(x1, y1, m1, x0, y0, m0, x01, y01);
+                expected = ProcessRegionGrid(x1, y1, m1n, m1d, x0, y0, m0n, m0d, x01, y01, false);
+                var region = ProcessRegion(x1, y1, m1n, m1d, x0, y0, m0n, m0d, x01, y01);
                 if (region != expected)
                 {
                     Console.WriteLine("failed validation: actual = {0}, expected = {1}", region, expected);
                 }
                 return region;
             }
-            return ProcessRegion(x1, y1, m1, x0, y0, m0, x01, y01);
+            return ProcessRegion(x1, y1, m1n, m1d, x0, y0, m0n, m0d, x01, y01);
         }
 
         private struct Region
@@ -255,7 +187,7 @@ namespace Decompose.Numerics
             v = r.m0d * dy + r.m0n * dx;
         }
 
-        private BigInteger ProcessRegion(BigInteger x1, BigInteger y1, Rational m1, BigInteger x0, BigInteger y0, Rational m0, BigInteger x01, BigInteger y01)
+        private BigInteger ProcessRegion(BigInteger x1, BigInteger y1, BigInteger m1n, BigInteger m1d, BigInteger x0, BigInteger y0, BigInteger m0n, BigInteger m0d, BigInteger x01, BigInteger y01)
         {
             // Sub-divide the new hyperbolic region.
             if (x1 >= x0)
@@ -263,7 +195,6 @@ namespace Decompose.Numerics
 
             Debug.Assert(x1 < x0);
             Debug.Assert(y1 > y0);
-            Debug.Assert(m1 > m0);
 
 #if false
             if (x0 - x1 <= 20)
@@ -273,10 +204,6 @@ namespace Decompose.Numerics
             var sum = (BigInteger)0;
 
             // The new slope is the mediant the two slopes.
-            var m0n = m0.Numerator;
-            var m0d = m0.Denominator;
-            var m1n = m1.Numerator;
-            var m1d = m1.Denominator;
             var m2n = m0n + m1n;
             var m2d = m0d + m1d;
 
@@ -289,8 +216,8 @@ namespace Decompose.Numerics
             // Check for removal of first row.
             {
                 // Check point at (w, 1).
-                var xtest = x01 + m0.Denominator * w - m1.Denominator;
-                var ytest = y01 - m0.Numerator * w + m1.Numerator;
+                var xtest = x01 + m0d * w - m1d;
+                var ytest = y01 - m0n * w + m1n;
                 if (xtest * ytest <= n)
                 {
                     // Remove the first row.
@@ -312,8 +239,8 @@ namespace Decompose.Numerics
             // Check for removal of first column.
             {
                 // Check point at (1, h).
-                var xtest = x01 + m0.Denominator - m1.Denominator * h;
-                var ytest = y01 - m0.Numerator + m1.Numerator * h;
+                var xtest = x01 + m0d - m1d * h;
+                var ytest = y01 - m0n + m1n * h;
                 if (xtest * ytest <= n)
                 {
                     // Remove the first column.
@@ -355,9 +282,10 @@ namespace Decompose.Numerics
 #if true
             if (diag)
             {
-                Console.WriteLine("m1 = {0,5}, m0 = {1,5}, x1 = {2,4}, x0 = {3,4}, dx = {4}", m1, m0, x1, x0, x0 - x1);
-                Console.WriteLine("x0, y0     = ({0}, {1}), m0 = {2}", x0, y0, m0);
-                Console.WriteLine("x1, y1     = ({0}, {1}), m1 = {2}", x1, y1, m1);
+                Console.WriteLine("m1 = {0,5}, m0 = {1,5}, x1 = {2,4}, x0 = {3,4}, dx = {4}",
+                    new Rational(m1n, m1d), new Rational(m0n, m0d), x1, x0, x0 - x1);
+                Console.WriteLine("x0, y0     = ({0}, {1})", x0, y0);
+                Console.WriteLine("x1, y1     = ({0}, {1})", x1, y1);
                 Console.WriteLine("x01, y01   = ({0}, {1})", x01, y01);
                 Console.WriteLine("u2a, v2a   = ({0}, {1})", u2a, v2a);
                 Console.WriteLine("u2b, v2b   = ({0}, {1})", u2b, v2b);
@@ -395,7 +323,8 @@ namespace Decompose.Numerics
             sum += area;
             if (diag)
             {
-                Console.WriteLine("corner: m1 = {0}, m2 = {1}, area = {2}", m0, m1, area);
+                Console.WriteLine("corner: m1 = {0}, m2 = {1}, area = {2}",
+                    new Rational(m0n, m0d), new Rational(m1n, m1d), area);
                 Console.WriteLine("v12a = {0}, v12b = {1}", v12a, v12b);
             }
 
@@ -408,13 +337,10 @@ namespace Decompose.Numerics
             }
 
             // Transform back to x, y coordinate system.
-            var m2 = new Rational(m2n, m2d);
             var x2a = x01 - m1d * v2a + m0d * u2a;
             var y2a = y01 + m1n * v2a - m0n * u2a;
-            var r2a = y2a + m2 * x2a;
             var x2b = x01 - m1d * v2b + m0d * u2b;
             var y2b = y01 + m1n * v2b - m0n * u2b;
-            var r2b = y2b + m2 * x2b;
 
             // Intersection of L2a with L1.
             var x12a = x01 - m1d * v12a;
@@ -425,10 +351,10 @@ namespace Decompose.Numerics
             var y02b = y01 - m0n * v12b;
 
             // Process right region.
-            sum += ProcessRegion(x2b, y2b, m2, x0, y0, m0, x02b, y02b);
+            sum += ProcessRegion(x2b, y2b, m2n, m2d, x0, y0, m0n, m0d, x02b, y02b);
 
             // Process left region.
-            sum += ProcessRegion(x1, y1, m1, x2a, y2a, m2, x12a, y12a);
+            sum += ProcessRegion(x1, y1, m1n, m1d, x2a, y2a, m2n, m2d, x12a, y12a);
 
             return sum;
         }
@@ -479,23 +405,23 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private BigInteger ProcessRegionGrid(BigInteger x1, BigInteger y1, Rational m1, BigInteger x0, BigInteger y0, Rational m0, BigInteger x01, BigInteger y01, bool verbose)
+        private BigInteger ProcessRegionGrid(BigInteger x1, BigInteger y1, BigInteger m1n, BigInteger m1d, BigInteger x0, BigInteger y0, BigInteger m0n, BigInteger m0d, BigInteger x01, BigInteger y01, bool verbose)
         {
             if (x01 < x1 || x01 > x0)
                 return 0;
 
             // Just count the remaining lattice points inside the parallelogram.
             var count = 0;
-            var h = (int)((x01 - x1) / m1.Denominator);
-            var w = (int)((x0 - x01) / m0.Denominator);
+            var h = (int)((x01 - x1) / m1d);
+            var w = (int)((x0 - x01) / m0d);
             for (var i = 1; i <= w; i++)
             {
-                var xrow = x01 + i * m0.Denominator;
-                var yrow = y01 - i * m0.Numerator;
+                var xrow = x01 + i * m0d;
+                var yrow = y01 - i * m0n;
                 for (var j = 1; j <= h; j++)
                 {
-                    var x = xrow - j * m1.Denominator;
-                    var y = yrow + j * m1.Numerator;
+                    var x = xrow - j * m1d;
+                    var y = yrow + j * m1n;
                     if (x * y <= n)
                         ++count;
                 }
