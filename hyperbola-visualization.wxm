@@ -6,7 +6,7 @@ Hyperbola visualization.
    [wxMaxima: comment end   ] */
 
 /* [wxMaxima: input   start ] */
-n: 864$
+n: 868$
 m0: 1$
 m1: 2$
 x0: 29$
@@ -103,11 +103,15 @@ Calculate the pair of points such that (u2a,v2a) has -slope >= 1, (u2b,v2b) has 
    [wxMaxima: comment end   ] */
 
 /* [wxMaxima: input   start ] */
-u2a: floor(rhs(solve(subst(solve(dhuv,v),huv),[u])[1]));
+diag1: solve(subst(solve(dhuv,v),huv),[u]);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+u2a: floor(rhs(solve(subst(solve(dhuv,v),huv),[u])[2]));
 v2a: if u2a = 0 then v1 else floor(rhs(solve(subst(u=u2a,huv))[1]));
 u2b: u2a+1;
 v2b: floor(rhs(solve(subst(u=u2b,huv))[1]));
-u2b: if v2b = 0 then u0 else floor(rhs(solve(subst(v=v2b,huv))[1]));
+u2b: if v2b = 0 then u0 else floor(rhs(solve(subst(v=v2b,huv))[2]));
 uv2a: [u2a, v2a];
 uv2b: [u2b, v2b];
 /* [wxMaxima: input   end   ] */
@@ -164,9 +168,9 @@ apply('wxdraw2d, append([
     color="blue",
     implicit(ev(huv),u,umin,umax,v,vmin,vmax),
     color="green",
-    implicit(u-uv2a[1]=uv2a[2]-v,u,-1,uv2a[1]+1,v,-1,v1+1),
+    implicit(u-uv2a[1]=uv2a[2]-v,u,-1,uv2a[1],v,-1,vmax),
     color="red",
-    implicit(u-uv2b[1]=uv2b[2]-v,u,-1,u0+1,v,-1,uv2b[2]+1),
+    implicit(u-uv2b[1]=uv2b[2]-v,u,-1,umax,v,-1,uv2b[2]),
     line_width=1,
     color="gray"
 ], ugrid, vgrid))$
