@@ -10,6 +10,7 @@ namespace Decompose.Numerics
     public class DivisorSummatoryFunction
     {
         private readonly BigInteger smallRegionCutoff = 10;
+        private readonly BigInteger minimumMultiplier = 10;
 
         private bool diag;
         private BigInteger n;
@@ -27,7 +28,7 @@ namespace Decompose.Numerics
 
             var sum = (BigInteger)0;
 
-            xmin = IntegerMath.FloorRoot(n, 3);
+            xmin = IntegerMath.FloorRoot(n, 3) * minimumMultiplier;
             xmax = IntegerMath.FloorRoot(n, 2);
 
             if (diag)
