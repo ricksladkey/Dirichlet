@@ -11,7 +11,7 @@ namespace Decompose.Numerics
     {
         private struct Region
         {
-            public Region(BigInteger m1n, BigInteger m1d, BigInteger m0n, BigInteger m0d, BigInteger x01, BigInteger y01, BigInteger w, BigInteger h)
+            public Region(long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01, long w, long h)
             {
                 this.m1n = m1n;
                 this.m1d = m1d;
@@ -22,14 +22,14 @@ namespace Decompose.Numerics
                 this.w = w;
                 this.h = h;
             }
-            public BigInteger m1n;
-            public BigInteger m1d;
-            public BigInteger m0n;
-            public BigInteger m0d;
+            public long m1n;
+            public long m1d;
+            public long m0n;
+            public long m0d;
             public BigInteger x01;
             public BigInteger y01;
-            public BigInteger w;
-            public BigInteger h;
+            public long w;
+            public long h;
         }
 
         private readonly BigInteger smallRegionCutoff = 10;
@@ -63,7 +63,7 @@ namespace Decompose.Numerics
                 PrintValuesInRange();
             }
 
-            var m0 = (BigInteger)1;
+            var m0 = (long)1;
             var x0 = xmax;
             var y0 = n / x0;
             var r0 = y0 + m0 * x0;
@@ -133,8 +133,8 @@ namespace Decompose.Numerics
                 var y01 = (BigInteger)(r0 - m0 * x01);
                 Debug.Assert(r0 - m0 * x01 == r1b - m1 * x01);
 
-                var w = (y0 - y01) + m1 * (x0 - x01);
-                var h = (y1b - y01) + m0 * (x1b - x01);
+                var w = (long)((y0 - y01) + m1 * (x0 - x01));
+                var h = (long)((y1b - y01) + m0 * (x1b - x01));
 
                 var region = ProcessRegion(m1, 1, m0, 1, x01, y01, w, h);
                 sum += region;
@@ -160,7 +160,7 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private BigInteger ProcessRegionChecked(BigInteger m1n, BigInteger m1d, BigInteger m0n, BigInteger m0d, BigInteger x01, BigInteger y01, BigInteger w, BigInteger h)
+        private BigInteger ProcessRegionChecked(long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01, long w, long h)
         {
             var expected = (BigInteger)0;
             if (diag)
@@ -190,7 +190,7 @@ namespace Decompose.Numerics
             v = r.m0d * dy + r.m0n * dx;
         }
 
-        private BigInteger ProcessRegion(BigInteger m1n, BigInteger m1d, BigInteger m0n, BigInteger m0d, BigInteger x01, BigInteger y01, BigInteger w, BigInteger h)
+        private BigInteger ProcessRegion(long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01, long  w, long h)
         {
             var sum = (BigInteger)0;
 
@@ -250,10 +250,10 @@ namespace Decompose.Numerics
                     var sqrt = IntegerMath.FloorSquareRoot(4 * mult * mult * m2nd * n);
                     var sqrt1 = sqrt / 2;
                     var sqrt2 = sqrt / mult;
-                    var u2a = (sqrt1 - m2nd * mxy1) / m2nd;
-                    var v2a = u2a != 0 ? sqrt2 - u2a - mxy2 : h;
+                    var u2a = (long)((sqrt1 - m2nd * mxy1) / m2nd);
+                    var v2a = u2a != 0 ? (long)(sqrt2 - u2a - mxy2) : h;
                     var u2b = u2a < w ? u2a + 1 : w;
-                    var v2b = sqrt2 - u2b - mxy2;
+                    var v2b = (long)(sqrt2 - u2b - mxy2);
 
                     // Check for under-estimate of v2a or v2b.
                     if (u2a != 0 && (x01 - m1d * (v2a + 1) + m0d * u2a) * (y01 + m1n * (v2a + 1) - m0n * u2a) <= n)
@@ -354,9 +354,9 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private BigInteger ProcessRegionHorizontal(BigInteger w, BigInteger m0n, BigInteger m0d, BigInteger m1n, BigInteger m1d, BigInteger x01, BigInteger y01)
+        private long ProcessRegionHorizontal(long w, long m0n, long m0d, long m1n, long m1d, BigInteger x01, BigInteger y01)
         {
-            var sum = (BigInteger)0;
+            var sum = (long)0;
             var mx1 = m1n * x01;
             var my1 = m1d * y01;
             var mxy1 = mx1 + my1;
@@ -365,20 +365,21 @@ namespace Decompose.Numerics
             var a = mxy1 * mxy1 - 2 * denom * n;
             var ac = 2 * mxy1 - 1;
             var b = mx1 - my1;
-            var damax = 2 * w + ac;
-            for (var da = (BigInteger)2 + ac; da <= damax; da += 2)
+            var da = ac;
+            for (var u = (long)1; u <= w; u++)
             {
+                da += 2;
                 a += da;
                 b += m01s;
                 var sqrt = IntegerMath.CeilingSquareRoot(a);
-                sum += (b - sqrt) / denom;
+                sum += (long)((b - sqrt) / denom);
             }
             return sum;
         }
 
-        private BigInteger ProcessRegionVertical(BigInteger h, BigInteger m0n, BigInteger m0d, BigInteger m1n, BigInteger m1d, BigInteger x01, BigInteger y01)
+        private long ProcessRegionVertical(long h, long m0n, long m0d, long m1n, long m1d, BigInteger x01, BigInteger y01)
         {
-            var sum = (BigInteger)0;
+            var sum = (long)0;
             var mx0 = m0n * x01;
             var my0 = m0d * y01;
             var mxy0 = mx0 + my0;
@@ -387,13 +388,14 @@ namespace Decompose.Numerics
             var a = mxy0 * mxy0 - 2 * denom * n;
             var ac = 2 * mxy0 - 1;
             var b = my0 - mx0;
-            var damax = 2 * h + ac;
-            for (var da = (BigInteger)2 + ac; da <= damax; da += 2)
+            var da = ac;
+            for (var v = (long)1; v <= h; v++)
             {
+                da += 2;
                 a += da;
                 b += m01s;
                 var sqrt = IntegerMath.CeilingSquareRoot(a);
-                sum += (b - sqrt) / denom;
+                sum += (long)((b - sqrt) / denom);
             }
             return sum;
         }
