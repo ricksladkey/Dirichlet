@@ -121,7 +121,10 @@ namespace Decompose.Numerics
                 var y01 = (BigInteger)(r0 - m0 * x01);
                 Debug.Assert(r0 - m0 * x01 == r1b - m1 * x01);
 
-                var region = ProcessRegion(x1b, y1b, m1, 1, x0, y0, m0, 1, x01, y01);
+                var w = (y0 - y01) + m1 * (x0 - x01);
+                var h = (y1b - y01) + m0 * (x1b - x01);
+
+                var region = ProcessRegion(m1, 1, m0, 1, x01, y01, w, h);
                 sum += region;
 
                 m0 = m1;
@@ -145,20 +148,20 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private BigInteger ProcessRegionChecked(BigInteger x1, BigInteger y1, BigInteger m1n, BigInteger m1d, BigInteger x0, BigInteger y0, BigInteger m0n, BigInteger m0d, BigInteger x01, BigInteger y01)
+        private BigInteger ProcessRegionChecked(BigInteger m1n, BigInteger m1d, BigInteger m0n, BigInteger m0d, BigInteger x01, BigInteger y01, BigInteger w, BigInteger h)
         {
             var expected = (BigInteger)0;
             if (diag)
             {
-                expected = ProcessRegionGrid(x1, y1, m1n, m1d, x0, y0, m0n, m0d, x01, y01, false);
-                var region = ProcessRegion(x1, y1, m1n, m1d, x0, y0, m0n, m0d, x01, y01);
+                expected = ProcessRegionGrid(m1n, m1d, m0n, m0d, x01, y01, w, h, false);
+                var region = ProcessRegion(m1n, m1d, m0n, m0d, x01, y01, w, h);
                 if (region != expected)
                 {
                     Console.WriteLine("failed validation: actual = {0}, expected = {1}", region, expected);
                 }
                 return region;
             }
-            return ProcessRegion(x1, y1, m1n, m1d, x0, y0, m0n, m0d, x01, y01);
+            return ProcessRegion(m1n, m1d, m0n, m0d, x01, y01, w, h);
         }
 
         private struct Region
@@ -187,31 +190,13 @@ namespace Decompose.Numerics
             v = r.m0d * dy + r.m0n * dx;
         }
 
-        private BigInteger ProcessRegion(BigInteger x1, BigInteger y1, BigInteger m1n, BigInteger m1d, BigInteger x0, BigInteger y0, BigInteger m0n, BigInteger m0d, BigInteger x01, BigInteger y01)
+        private BigInteger ProcessRegion(BigInteger m1n, BigInteger m1d, BigInteger m0n, BigInteger m0d, BigInteger x01, BigInteger y01, BigInteger w, BigInteger h)
         {
             // Sub-divide the new hyperbolic region.
-            if (x1 >= x0)
-                return 0;
-
-            Debug.Assert(x1 < x0);
-            Debug.Assert(y1 > y0);
-
-#if false
-            if (x0 - x1 <= 20)
-                return ProcessRegionLine(x1, y1, m1, r1, x0, y0, m0, r0, diag);
-#endif
-
-            var sum = (BigInteger)0;
-
-            // The new slope is the mediant the two slopes.
-            var m2n = m0n + m1n;
-            var m2d = m0d + m1d;
-
-            // Calculate the rectangle bounds: (0, 0) to (w, h).
-            var h = m0d * (y1 - y01) + m0n * (x1 - x01);
-            var w = m1d * (y0 - y01) + m1n * (x0 - x01);
             if (w <= 0 || h <= 0)
                 return 0;
+
+            var sum = (BigInteger)0;
 
             // Check for removal of first row.
             {
@@ -228,8 +213,6 @@ namespace Decompose.Numerics
 
                     x01 -= m1d;
                     y01 += m1n;
-                    x0 -= m1d;
-                    y0 += m1n;
                     --h;
                     if (h == 0)
                         return sum;
@@ -251,8 +234,6 @@ namespace Decompose.Numerics
 
                     x01 += m0d;
                     y01 -= m0n;
-                    x0 += m0d;
-                    y0 -= m0n;
                     --w;
                     if (w == 0)
                         return sum;
@@ -261,6 +242,9 @@ namespace Decompose.Numerics
 
             // L2 is the line with the mediant of the slopes of L0 and L1
             // passing through the point on or below the hyperbola nearest that slope.
+            // The new slope is the mediant the two slopes.
+            var m2n = m0n + m1n;
+            var m2d = m0d + m1d;
             var m2nd = m2n * m2d;
             var mxy1 = m1n * x01 + m1d * y01;
             var mxy2 = m2n * x01 + m2d * y01;
@@ -282,6 +266,10 @@ namespace Decompose.Numerics
 #if true
             if (diag)
             {
+                var x0 = x01 + m0d * w;
+                var y0 = y01 - m0n * w;
+                var x1 = x01 - m1d * h;
+                var y1 = y01 + m1n * h;
                 Console.WriteLine("m1 = {0,5}, m0 = {1,5}, x1 = {2,4}, x0 = {3,4}, dx = {4}",
                     new Rational(m1n, m1d), new Rational(m0n, m0d), x1, x0, x0 - x1);
                 Console.WriteLine("x0, y0     = ({0}, {1})", x0, y0);
@@ -336,12 +324,6 @@ namespace Decompose.Numerics
                     Console.WriteLine("corner: adjustment = {0}", adjustment);
             }
 
-            // Transform back to x, y coordinate system.
-            var x2a = x01 - m1d * v2a + m0d * u2a;
-            var y2a = y01 + m1n * v2a - m0n * u2a;
-            var x2b = x01 - m1d * v2b + m0d * u2b;
-            var y2b = y01 + m1n * v2b - m0n * u2b;
-
             // Intersection of L2a with L1.
             var x12a = x01 - m1d * v12a;
             var y12a = y01 + m1n * v12a;
@@ -351,10 +333,10 @@ namespace Decompose.Numerics
             var y02b = y01 - m0n * v12b;
 
             // Process right region.
-            sum += ProcessRegion(x2b, y2b, m2n, m2d, x0, y0, m0n, m0d, x02b, y02b);
+            sum += ProcessRegion(m2n, m2d, m0n, m0d, x02b, y02b, w - v12b, v2b);
 
             // Process left region.
-            sum += ProcessRegion(x1, y1, m1n, m1d, x2a, y2a, m2n, m2d, x12a, y12a);
+            sum += ProcessRegion(m1n, m1d, m2n, m2d, x12a, y12a, u2a, h - v12a);
 
             return sum;
         }
@@ -405,15 +387,13 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private BigInteger ProcessRegionGrid(BigInteger x1, BigInteger y1, BigInteger m1n, BigInteger m1d, BigInteger x0, BigInteger y0, BigInteger m0n, BigInteger m0d, BigInteger x01, BigInteger y01, bool verbose)
+        private BigInteger ProcessRegionGrid(BigInteger m1n, BigInteger m1d, BigInteger m0n, BigInteger m0d, BigInteger x01, BigInteger y01, BigInteger w, BigInteger h, bool verbose)
         {
-            if (x01 < x1 || x01 > x0)
+            if (w <= 0 || h <= 0)
                 return 0;
 
             // Just count the remaining lattice points inside the parallelogram.
             var count = 0;
-            var h = (int)((x01 - x1) / m1d);
-            var w = (int)((x0 - x01) / m0d);
             for (var i = 1; i <= w; i++)
             {
                 var xrow = x01 + i * m0d;
