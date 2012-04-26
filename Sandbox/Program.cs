@@ -222,7 +222,7 @@ namespace Sandbox
             timer.Restart();
             var slow = (BigInteger)0;
             var imax = IntegerMath.FloorSquareRoot(n);
-#if false
+#if true
             for (var i = (BigInteger)1; i <= imax; i++)
                 slow += n / i;
             slow = 2 * slow - imax * imax;

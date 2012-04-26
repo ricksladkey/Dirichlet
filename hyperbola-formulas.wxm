@@ -565,7 +565,7 @@ udiag13: subst([m01x=1],udiag12);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-uvdiagcrit2: append(m01def,m01nddef,mxy1def,[udiag13,tangent4])$
+uvdiagcrit2: append(m01def,m01nddef,mxy1def,[format(udiag13,%f-mxy1),tangent4])$
 map('print,uvdiagcrit2)$
 /* [wxMaxima: input   end   ] */
 
@@ -782,77 +782,6 @@ h_eqs2: rest(solve(h_eqs,[r[0],r[new],x[new],y[new]])[1],-2);
 /* [wxMaxima: input   start ] */
 w_eq3: expand(solve(subst([uvdenom=1],ratsimp(w_eqs2[2]-w_eqs2[1])),r[new]));
 h_eq3: expand(solve(subst([uvdenom=1],ratsimp(h_eqs2[2]-h_eqs2[1])),r[new]));
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: comment start ]
-Square root stuff.
-   [wxMaxima: comment end   ] */
-
-/* [wxMaxima: input   start ] */
-expand((c + 1)^2 - c^2);
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-test1: format(expand(block([tmp],tmp: subst([diff(v,u)=-1],dvdu)*part(dvdu,2,2), tmp-rhs(tmp))),%lhs,%p(u,v),%p(x01,y01));
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-ucoeff: part(test1,1,4,1);
-vcoeff: part(test1,1,3,1);
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-upart: m0d*m2n+m0n*m2d;
-vpart: m1d*m2n+m1n*m2d;
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-[upart=expand(subst(m01def,upart))];
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-m01def;
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-test2: subst(swapsides(m01def),lratsubst([expand(subst(m01def,upart))=upart,expand(subst(m01def,vpart))=vpart],test1));
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-format(test1,%lhs,%p(u,v),%p(m1n+m1d));
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-subst([],subst([m1n+m0n=m2n,m1d+m0d=m2d],factor(m1d*m1n+m0d*m1n)+factor(m1d*m1n+m0n*m1d)));
-subst([],subst([m1n+m0n=m2n,m1d+m0d=m2d],factor(m0d*m0n+m0d*m1n)+factor(m0d*m0n+m0n*m1d)));
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-test3: ratsimp(solve(subst(solve(test2,v),huv),[u])[1]);
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-test4: format(test3,%rhs,%frac,%p(x01,y01),%f);
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-test5: part(test4,2,1,2,1);
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-ab: [m1n*m2d=a,m1d*m2n=b];
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-m01def;
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-test6: subst(swapsides(ab),subst([a-b=1],lratsubst(ab,test5)));
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-test7: factor(expand(subst(swapsides(ab),test6-(m1d+m0d)+m2d+m2d*(a-b)-m2d*1)));
 /* [wxMaxima: input   end   ] */
 
 /* Maxima can't load/batch files which end with a comment! */

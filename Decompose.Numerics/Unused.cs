@@ -6,6 +6,93 @@ using System.Text;
 namespace Decompose.Numerics
 {
 #if false
+#if false
+        private BigInteger ProcessRegionChecked(long w, long h, long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01)
+        {
+            var expected = (BigInteger)0;
+            if (diag)
+            {
+                expected = ProcessRegionGrid(w, h, m1n, m1d, m0n, m0d, x01, y01, false);
+                var region = ProcessRegion(w, h, m1n, m1d, m0n, m0d, x01, y01);
+                if (region != expected)
+                {
+                    Console.WriteLine("failed validation: actual = {0}, expected = {1}", region, expected);
+                }
+                return region;
+            }
+            return ProcessRegion(w, h, m1n, m1d, m0n, m0d, x01, y01);
+        }
+
+        private BigInteger ProcessRegionGrid(long w, long h, long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01, bool verbose)
+        {
+            // Just count the remaining lattice points inside the parallelogram.
+            var count = 0;
+            for (var u = 1; u <= w; u++)
+            {
+                var xrow = x01 + u * m0d;
+                var yrow = y01 - u * m0n;
+                for (var v = 1; v <= h; v++)
+                {
+                    var x = xrow - v * m1d;
+                    var y = yrow + v * m1n;
+                    if (x * y <= n)
+                        ++count;
+                }
+            }
+            if (verbose)
+                Console.WriteLine("region: count = {0}", count);
+            return count;
+        }
+
+        private void UV2XY(ref Region r, BigInteger u, BigInteger v, out BigInteger x, out BigInteger y)
+        {
+            x = r.x01 - r.m1d * v + r.m0d * u;
+            y = r.y01 + r.m1n * v - r.m0n * u;
+        }
+
+        private void XY2UV(ref Region r, BigInteger x, BigInteger y, out BigInteger u, out BigInteger v)
+        {
+            var dx = x - r.x01;
+            var dy = y - r.y01;
+            u = r.m1d * dy + r.m1n * dx;
+            v = r.m0d * dy + r.m0n * dx;
+        }
+
+        private BigInteger ProcessRegionLine(BigInteger x1, BigInteger y1, Rational m1, Rational r1, BigInteger x0, BigInteger y0, Rational m0, Rational r0, bool verbose)
+        {
+            var sum = (BigInteger)0;
+            for (var x = x1; x <= x0; x++)
+            {
+                var y = n / x;
+                sum += IntegerMath.Min(IntegerMath.Max(y - Rational.Floor(r0 - m0 * x), 0), IntegerMath.Max(y - Rational.Floor(r1 - m1 * x), 0));
+            }
+            if (verbose)
+                Console.WriteLine("region: sum = {0}", sum);
+            return sum;
+        }
+
+        private void PrintValuesInRange()
+        {
+            if (xmax < 100)
+            {
+                for (var x = xmin; x <= xmax; x++)
+                {
+                    var y = n / x;
+                    var s = "";
+                    for (var i = 0; i < y; i++)
+                        s += "*";
+                    Console.WriteLine("{0,5} {1}", x, s);
+                }
+                for (var x = xmin; x <= xmax; x++)
+                {
+                    var y = n / x;
+                    Console.WriteLine("x = {0}, y = {1}", x, y);
+                }
+            }
+        }
+#endif
+#endif
+#if false
         public static BigInteger AddMod(BigInteger a, BigInteger b, BigInteger n)
         {
             Debug.Assert(a >= BigInteger.Zero && a < n);
