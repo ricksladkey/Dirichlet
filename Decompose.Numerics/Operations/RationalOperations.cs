@@ -29,9 +29,10 @@ namespace Decompose.Numerics
         public Rational Or(Rational a, Rational b) { return (BigInteger)a | (BigInteger)b; }
         public Rational ExclusiveOr(Rational a, Rational b) { return (BigInteger)a ^ (BigInteger)b; }
         public Rational OnesComplement(Rational a) { return ~(BigInteger)a; }
-        public bool IsZero(Rational a) { return ((BigInteger)a).IsZero; }
-        public bool IsOne(Rational a) { return ((BigInteger)a).IsOne; }
-        public bool IsEven(Rational a) { return ((BigInteger)a).IsEven; }
+        public int Sign(Rational a) { return (a.Numerator.Sign); }
+        public bool IsZero(Rational a) { return a.Numerator.IsZero; }
+        public bool IsOne(Rational a) { return a.Denominator == 1 && a.Numerator.IsOne; }
+        public bool IsEven(Rational a) { return a.Denominator == 1 && a.Numerator.IsEven; }
         public bool Equals(Rational x, Rational y) { return x.Equals(y); }
         public int GetHashCode(Rational obj) { return obj.GetHashCode(); }
         public int Compare(Rational x, Rational y) { return x.CompareTo(y); }

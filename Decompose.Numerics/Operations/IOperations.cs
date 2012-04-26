@@ -36,6 +36,7 @@ namespace Decompose.Numerics
         T Or(T a, T b);
         T ExclusiveOr(T a, T b);
         T OnesComplement(T a);
+        int Sign(T a);
         bool IsZero(T a);
         bool IsOne(T a);
         bool IsEven(T a);

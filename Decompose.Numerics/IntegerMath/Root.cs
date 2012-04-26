@@ -11,6 +11,39 @@ namespace Decompose.Numerics
         private const int maxShift = 64;
         private static double log2 = Math.Log(2);
 
+        private static readonly ulong largestRepresentableInteger = 9007199254740992;
+
+        public static BigInteger FloorSquareRoot(BigInteger n)
+        {
+            if (n <= largestRepresentableInteger)
+                return (BigInteger)Math.Floor(Math.Sqrt((double)n));
+            return FloorSquareRoot<BigInteger>(n);
+        }
+
+        public static BigInteger CeilingSquareRoot(BigInteger n)
+        {
+            if (n <= largestRepresentableInteger)
+                return (BigInteger)Math.Ceiling(Math.Sqrt((double)n));
+            return CeilingSquareRoot<BigInteger>(n);
+        }
+
+        public static T FloorSquareRoot<T>(T a)
+        {
+            if (((Number<T>)a).Sign < 0)
+                throw new InvalidOperationException("negative radicand");
+            Number<T> power;
+            return FloorSquareRootCore(a, Number<T>.Log(a).Real, out power);
+        }
+
+        public static T CeilingSquareRoot<T>(T a)
+        {
+            if (((Number<T>)a).Sign < 0)
+                throw new InvalidOperationException("negative radicand");
+            Number<T> power;
+            var c = FloorSquareRootCore(a, Number<T>.Log(a).Real, out power);
+            return power == a ? c : c + 1;
+        }
+
         public static T FloorRoot<T>(T a, T b)
         {
             var degree = (Number<T>)b;
@@ -108,6 +141,41 @@ namespace Decompose.Numerics
                     return false;
             }
             return true;
+        }
+
+        private static Number<T> FloorSquareRootCore<T>(Number<T> a, double logA, out Number<T> power)
+        {
+            if (a.IsZero)
+            {
+                power = Number<T>.Zero;
+                return a;
+            }
+            var log = logA / 2;
+            var shift = Math.Max((int)Math.Floor(log / log2) - maxShift, 0);
+            log -= shift * log2;
+            var c = (Number<T>)Math.Floor(Math.Exp(log)) << shift;
+            if (shift == 0)
+            {
+                power = c * c;
+                if (power <= a && power + (c << 1) + 1 > a)
+                    return c;
+            }
+            var cPrev = Number<T>.Zero;
+            while (true)
+            {
+                var cNext = (a / c + c) >> 1;
+                if (cNext == cPrev)
+                {
+                    if (cNext < c)
+                        c = cNext;
+                    break;
+                }
+                cPrev = c;
+                c = cNext;
+            }
+            power = c * c;
+            Debug.Assert(power <= a && Power((BigInteger)c + 1, 2) > a);
+            return c;
         }
 
         private static Number<T> FloorRootCore<T>(Number<T> a, double logA, Number<T> degree, out Number<T> power)

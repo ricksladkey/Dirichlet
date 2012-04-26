@@ -226,32 +226,6 @@ namespace Decompose.Numerics
         {
             return sqrt.Sqrt(n);
         }
-#else
-        private static readonly BigInteger largestRepresentableInteger = 9007199254740992;
-
-        public static BigInteger FloorSquareRoot(BigInteger n)
-        {
-            if (n <= largestRepresentableInteger)
-                return (BigInteger)Math.Floor(Math.Sqrt((double)n));
-            return FloorSquareRoot<BigInteger>(n);
-        }
-
-        public static BigInteger CeilingSquareRoot(BigInteger n)
-        {
-            if (n <= largestRepresentableInteger)
-                return (BigInteger)Math.Ceiling(Math.Sqrt((double)n));
-            return CeilingSquareRoot<BigInteger>(n);
-        }
-
-        public static T FloorSquareRoot<T>(T n)
-        {
-            return FloorRoot<T>(n, (Number<T>)2);
-        }
-
-        public static T CeilingSquareRoot<T>(T n)
-        {
-            return CeilingRoot<T>(n, (Number<T>)2);
-        }
 #endif
 
         public static int GetDigitLength(BigInteger n, int b)

@@ -32,8 +32,8 @@ namespace Decompose.Numerics
             public long h;
         }
 
-        private readonly BigInteger smallRegionCutoff = 10;
-        private readonly BigInteger minimumMultiplier = 10;
+        private readonly BigInteger smallRegionCutoff = 50;
+        private readonly BigInteger minimumMultiplier = 8;
 
         private bool diag;
         private BigInteger n;

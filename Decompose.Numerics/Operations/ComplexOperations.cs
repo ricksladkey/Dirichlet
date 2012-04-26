@@ -29,6 +29,7 @@ namespace Decompose.Numerics
         public Complex Or(Complex a, Complex b) { return (Complex)(ToBigInteger(a) | ToBigInteger(b)); }
         public Complex ExclusiveOr(Complex a, Complex b) { return (Complex)(ToBigInteger(a) ^ ToBigInteger(b)); }
         public Complex OnesComplement(Complex a) { return (Complex)~ToBigInteger(a); }
+        public int Sign(Complex a) { if (a != a.Real) throw new InvalidCastException("not real"); return Math.Sign(a.Real); }
         public bool IsZero(Complex a) { return a == 0; }
         public bool IsOne(Complex a) { return a == 1; }
         public bool IsEven(Complex a) { return ToDouble(a) % 2 == 0; }

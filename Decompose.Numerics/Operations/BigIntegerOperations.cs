@@ -29,6 +29,7 @@ namespace Decompose.Numerics
         public BigInteger Or(BigInteger a, BigInteger b) { return a | b; }
         public BigInteger ExclusiveOr(BigInteger a, BigInteger b) { return a ^ b; }
         public BigInteger OnesComplement(BigInteger a) { return ~a; }
+        public int Sign(BigInteger a) { return a.Sign; }
         public bool IsZero(BigInteger a) { return a.IsZero; }
         public bool IsOne(BigInteger a) { return a.IsOne; }
         public bool IsEven(BigInteger a) { return a.IsEven; }

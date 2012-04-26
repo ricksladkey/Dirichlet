@@ -29,6 +29,7 @@ namespace Decompose.Numerics
         public int Or(int a, int b) { return a | b; }
         public int ExclusiveOr(int a, int b) { return a ^ b; }
         public int OnesComplement(int a) { return ~a; }
+        public int Sign(int a) { return Math.Sign(a); }
         public bool IsZero(int a) { return a == 0; }
         public bool IsOne(int a) { return a == 1; }
         public bool IsEven(int a) { return (a & 1) == 0; }

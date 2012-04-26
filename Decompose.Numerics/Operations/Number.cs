@@ -27,6 +27,7 @@ namespace Decompose.Numerics
         public bool IsZero { get { return ops.IsZero(value); } }
         public bool IsOne { get { return ops.IsOne(value); } }
         public bool IsEven { get { return ops.IsEven(value); } }
+        public int Sign { get { return ops.Sign(value); } }
         public static implicit operator Number<T>(int value) { return new Number<T>(ops.Convert(value)); }
         public static explicit operator Number<T>(BigInteger value) { return new Number<T>(ops.Convert(value)); }
         public static implicit operator Number<T>(double value) { return new Number<T>(ops.Convert(value)); }
