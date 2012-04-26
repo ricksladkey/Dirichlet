@@ -25,7 +25,7 @@ namespace Decompose.Numerics
             public BigInteger y01;
         }
 
-        private readonly BigInteger smallRegionCutoff = 50;
+        private readonly BigInteger smallRegionCutoff = 20;
         private readonly BigInteger minimumMultiplier = 8;
 
         private bool diag;
@@ -157,15 +157,15 @@ namespace Decompose.Numerics
         {
             var sum = (BigInteger)0;
 
+            // Sub-divide the new hyperbolic region.
             while (true)
             {
                 while (true)
                 {
-                    // Sub-divide the new hyperbolic region.
                     if (w <= 0 || h <= 0)
                         break;
 
-                    // Check for removal of first row.
+                    // Check for row removal.
                     {
                         // Check point at (w, 1).
                         if ((x01 + m0d * w - m1d) * (y01 - m0n * w + m1n) <= n)
@@ -183,7 +183,7 @@ namespace Decompose.Numerics
                         }
                     }
 
-                    // Check for removal of first column.
+                    // Check for column removal.
                     {
                         // Check point at (1, h).
                         if ((x01 + m0d - m1d * h) * (y01 - m0n + m1n * h) <= n)
@@ -208,7 +208,7 @@ namespace Decompose.Numerics
                     // -dv/du at u=w >= 0
                     // In other words: the hyperbola is less than one unit away
                     // from P0 and P1 and the distance to the hyperbola
-                    // increases as you approach (u, v) = (0, 0).
+                    // increases monotonically as you approach (u, v) = (0, 0).
                     Debug.Assert((x01 + m0d - m1d * h) * (y01 - m0n + m1n * h) > n);
                     Debug.Assert((x01 + m0d * w - m1d) * (y01 - m0n * w + m1n) > n);
 
@@ -245,7 +245,7 @@ namespace Decompose.Numerics
 
                     // Process points horizontally or vertically if one axis collapses
                     // or if the triangle exceeds the bounds of the rectangle.
-                    if (u2a <= smallRegionCutoff || v2b == smallRegionCutoff || IntegerMath.Max(uv12a, uv12b) > IntegerMath.Min(w, h))
+                    if (u2a <= smallRegionCutoff || v2b <= smallRegionCutoff || IntegerMath.Max(uv12a, uv12b) > IntegerMath.Min(w, h))
                     {
                         if (h > w)
                             sum += CountPoints(true, w, m0n, m0d, m1n, m1d, x01, y01);
@@ -302,7 +302,7 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private long CountPoints(bool horizontal, long w, long m0n, long m0d, long m1n, long m1d, BigInteger x01, BigInteger y01)
+        private long CountPoints(bool horizontal, long max, long m0n, long m0d, long m1n, long m1d, BigInteger x01, BigInteger y01)
         {
             var sum = (long)0;
             var mx1 = m1n * x01;
@@ -311,10 +311,9 @@ namespace Decompose.Numerics
             var m01s = m0d * m1n + m0n * m1d;
             var denom = 2 * m1n * m1d;
             var a = mxy1 * mxy1 - 2 * denom * n;
-            var ac = 2 * mxy1 - 1;
             var b = horizontal ? mx1 - my1 : my1 - mx1;
-            var da = ac;
-            for (var u = (long)1; u <= w; u++)
+            var da = 2 * mxy1 - 1;
+            for (var i = (long)1; i <= max; i++)
             {
                 da += 2;
                 a += da;
