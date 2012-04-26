@@ -11,25 +11,25 @@ namespace Decompose.Numerics
     {
         private struct Region
         {
-            public Region(long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01, long w, long h)
+            public Region(long w, long h, long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01)
             {
+                this.w = w;
+                this.h = h;
                 this.m1n = m1n;
                 this.m1d = m1d;
                 this.m0n = m0n;
                 this.m0d = m0d;
                 this.x01 = x01;
                 this.y01 = y01;
-                this.w = w;
-                this.h = h;
             }
+            public long w;
+            public long h;
             public long m1n;
             public long m1d;
             public long m0n;
             public long m0d;
             public BigInteger x01;
             public BigInteger y01;
-            public long w;
-            public long h;
         }
 
         private readonly BigInteger smallRegionCutoff = 50;
@@ -136,7 +136,7 @@ namespace Decompose.Numerics
                 var w = (long)((y0 - y01) + m1 * (x0 - x01));
                 var h = (long)((y1b - y01) + m0 * (x1b - x01));
 
-                var region = ProcessRegion(m1, 1, m0, 1, x01, y01, w, h);
+                var region = ProcessRegion(w, h, m1, 1, m0, 1, x01, y01);
                 sum += region;
 
                 m0 = m1;
@@ -160,20 +160,20 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private BigInteger ProcessRegionChecked(long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01, long w, long h)
+        private BigInteger ProcessRegionChecked(long w, long h, long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01)
         {
             var expected = (BigInteger)0;
             if (diag)
             {
-                expected = ProcessRegionGrid(m1n, m1d, m0n, m0d, x01, y01, w, h, false);
-                var region = ProcessRegion(m1n, m1d, m0n, m0d, x01, y01, w, h);
+                expected = ProcessRegionGrid(w, h, m1n, m1d, m0n, m0d, x01, y01, false);
+                var region = ProcessRegion(w, h, m1n, m1d, m0n, m0d, x01, y01);
                 if (region != expected)
                 {
                     Console.WriteLine("failed validation: actual = {0}, expected = {1}", region, expected);
                 }
                 return region;
             }
-            return ProcessRegion(m1n, m1d, m0n, m0d, x01, y01, w, h);
+            return ProcessRegion(w, h, m1n, m1d, m0n, m0d, x01, y01);
         }
 
         private void UV2XY(ref Region r, BigInteger u, BigInteger v, out BigInteger x, out BigInteger y)
@@ -190,7 +190,7 @@ namespace Decompose.Numerics
             v = r.m0d * dy + r.m0n * dx;
         }
 
-        private BigInteger ProcessRegion(long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01, long  w, long h)
+        private BigInteger ProcessRegion(long  w, long h, long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01)
         {
             var sum = (BigInteger)0;
 
@@ -238,16 +238,28 @@ namespace Decompose.Numerics
                         }
                     }
 
-                    // L2 is the line with the mediant of the slopes of L0 and L1
-                    // passing through the point on or below the hyperbola nearest that slope.
-                    // The new slope is the mediant the two slopes.
+                    // Invariants:
+                    // h(u,v) at v=h < n
+                    // h(u,v) at u=w < n
+                    // -du/dv at v=h >= 0
+                    // -dv/du at u=w >= 0
+                    // In other words: the hyperbola is less than one unit away
+                    // from P0 and P1 and the distance to the hyperbola
+                    // increases as you approach (u, v) = (0, 0).
+                    Debug.Assert((x01 + m0d - m1d * h) * (y01 - m0n + m1n * h) > n);
+                    Debug.Assert((x01 + m0d * w - m1d) * (y01 - m0n * w + m1n) > n);
+
+                    // Find the pair of points (u2a, v2a) and (u2b, v2b) below h(u,v) where:
+                    // -dv/du at u=u2a >= 1
+                    // -dv/du at u=u2b <= 1
+                    // u2b = u2a + 1
                     var m2n = m0n + m1n;
                     var m2d = m0d + m1d;
                     var m2nd = m2n * m2d;
                     var mxy1 = m1n * x01 + m1d * y01;
                     var mxy2 = m2n * x01 + m2d * y01;
-                    var mult = (2 * m1d * m2n + 1);
-                    var sqrt = IntegerMath.FloorSquareRoot(4 * mult * mult * m2nd * n);
+                    var mult = 2 * m1d * m2n + 1;
+                    var sqrt = IntegerMath.FloorSquareRoot((BigInteger)4 * mult * mult * m2nd * n);
                     var sqrt1 = sqrt / 2;
                     var sqrt2 = sqrt / mult;
                     var u2a = (long)((sqrt1 - m2nd * mxy1) / m2nd);
@@ -256,28 +268,12 @@ namespace Decompose.Numerics
                     var v2b = (long)(sqrt2 - u2b - mxy2);
 
                     // Check for under-estimate of v2a or v2b.
-                    if (u2a != 0 && (x01 - m1d * (v2a + 1) + m0d * u2a) * (y01 + m1n * (v2a + 1) - m0n * u2a) <= n)
+                    var v2aplus = v2a + 1;
+                    var v2bplus = v2b + 1;
+                    if (u2a != 0 && (m0d * u2a - m1d * v2aplus + x01) * (m1n * v2aplus - m0n * u2a + y01) <= n)
                         ++v2a;
-                    if ((x01 - m1d * (v2b + 1) + m0d * u2b) * (y01 + m1n * (v2b + 1) - m0n * u2b) <= n)
+                    if ((m0d * u2b - m1d * v2bplus + x01) * (m1n * v2bplus - m0n * u2b + y01) <= n)
                         ++v2b;
-
-#if true
-                    if (diag)
-                    {
-                        var x0 = x01 + m0d * w;
-                        var y0 = y01 - m0n * w;
-                        var x1 = x01 - m1d * h;
-                        var y1 = y01 + m1n * h;
-                        Console.WriteLine("m1 = {0,5}, m0 = {1,5}, x1 = {2,4}, x0 = {3,4}, dx = {4}",
-                            new Rational(m1n, m1d), new Rational(m0n, m0d), x1, x0, x0 - x1);
-                        Console.WriteLine("x0, y0     = ({0}, {1})", x0, y0);
-                        Console.WriteLine("x1, y1     = ({0}, {1})", x1, y1);
-                        Console.WriteLine("x01, y01   = ({0}, {1})", x01, y01);
-                        Console.WriteLine("u2a, v2a   = ({0}, {1})", u2a, v2a);
-                        Console.WriteLine("u2b, v2b   = ({0}, {1})", u2b, v2b);
-                        Console.WriteLine("w = {0}, h = {1}", w, h);
-                    }
-#endif
 
                     // Intercept of L2a and L2b.  Since the lines are diagonal,
                     // the intercept is the same on both U and V axes.
@@ -294,17 +290,6 @@ namespace Decompose.Numerics
                             sum += ProcessRegionVertical(h, m0n, m0d, m1n, m1d, x01, y01);
                         break;
                     }
-
-#if false
-                    if (diag)
-                    {
-                        Console.WriteLine("m2 = {0}", m2);
-                        Console.WriteLine("x2a, y2a   = ({0}, {1}), m2 = {2}, r2a = {3}", x2a, y2a, m2, r2a);
-                        Console.WriteLine("x2b, y2b   = ({0}, {1}), m2 = {2}, r2b = {3}", x2b, y2b, m2, r2b);
-                        Console.WriteLine("x12a, y12a = ({0}, {1})", x12a, y12a);
-                        Console.WriteLine("x02b, y02b = ({0}, {1})", x02b, y02b);
-                    }
-#endif
 
                     // Add the triangle defined L0, L1, and L2b.
                     var v12 = IntegerMath.Min(uv12a, uv12b);
@@ -326,15 +311,15 @@ namespace Decompose.Numerics
                     }
 
                     // Push left region.
-                    stack.Push(new Region(m1n, m1d, m2n, m2d, x01 - m1d * uv12a, y01 + m1n * uv12a, u2a, h - uv12a));
+                    stack.Push(new Region(u2a, h - uv12a, m1n, m1d, m2n, m2d, x01 - m1d * uv12a, y01 + m1n * uv12a));
 
                     // Process right region (no change to m0n and m0d).
+                    w -= uv12b;
+                    h = v2b;
                     m1n = m2n;
                     m1d = m2d;
                     x01 = x01 + m0d * uv12b;
                     y01 = y01 - m0n * uv12b;
-                    w -= uv12b;
-                    h = v2b;
                 }
 
                 if (stack.Count == 0)
@@ -400,21 +385,18 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private BigInteger ProcessRegionGrid(BigInteger m1n, BigInteger m1d, BigInteger m0n, BigInteger m0d, BigInteger x01, BigInteger y01, BigInteger w, BigInteger h, bool verbose)
+        private BigInteger ProcessRegionGrid(long w, long h, long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01, bool verbose)
         {
-            if (w <= 0 || h <= 0)
-                return 0;
-
             // Just count the remaining lattice points inside the parallelogram.
             var count = 0;
-            for (var i = 1; i <= w; i++)
+            for (var u = 1; u <= w; u++)
             {
-                var xrow = x01 + i * m0d;
-                var yrow = y01 - i * m0n;
-                for (var j = 1; j <= h; j++)
+                var xrow = x01 + u * m0d;
+                var yrow = y01 - u * m0n;
+                for (var v = 1; v <= h; v++)
                 {
-                    var x = xrow - j * m1d;
-                    var y = yrow + j * m1n;
+                    var x = xrow - v * m1d;
+                    var y = yrow + v * m1n;
                     if (x * y <= n)
                         ++count;
                 }
