@@ -13,14 +13,7 @@ namespace Decompose.Numerics
         {
             public Region(long w, long h, long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01)
             {
-                this.w = w;
-                this.h = h;
-                this.m1n = m1n;
-                this.m1d = m1d;
-                this.m0n = m0n;
-                this.m0d = m0d;
-                this.x01 = x01;
-                this.y01 = y01;
+                this.w = w; this.h = h; this.m1n = m1n; this.m1d = m1d; this.m0n = m0n; this.m0d = m0d; this.x01 = x01; this.y01 = y01;
             }
             public long w;
             public long h;
@@ -60,7 +53,7 @@ namespace Decompose.Numerics
             if (diag)
             {
                 Console.WriteLine("n = {0}", n);
-                PrintValuesInRange();
+                //PrintValuesInRange();
             }
 
             var m0 = (long)1;
@@ -160,36 +153,6 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private BigInteger ProcessRegionChecked(long w, long h, long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01)
-        {
-            var expected = (BigInteger)0;
-            if (diag)
-            {
-                expected = ProcessRegionGrid(w, h, m1n, m1d, m0n, m0d, x01, y01, false);
-                var region = ProcessRegion(w, h, m1n, m1d, m0n, m0d, x01, y01);
-                if (region != expected)
-                {
-                    Console.WriteLine("failed validation: actual = {0}, expected = {1}", region, expected);
-                }
-                return region;
-            }
-            return ProcessRegion(w, h, m1n, m1d, m0n, m0d, x01, y01);
-        }
-
-        private void UV2XY(ref Region r, BigInteger u, BigInteger v, out BigInteger x, out BigInteger y)
-        {
-            x = r.x01 - r.m1d * v + r.m0d * u;
-            y = r.y01 + r.m1n * v - r.m0n * u;
-        }
-
-        private void XY2UV(ref Region r, BigInteger x, BigInteger y, out BigInteger u, out BigInteger v)
-        {
-            var dx = x - r.x01;
-            var dy = y - r.y01;
-            u = r.m1d * dy + r.m1n * dx;
-            v = r.m0d * dy + r.m0n * dx;
-        }
-
         private BigInteger ProcessRegion(long  w, long h, long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01)
         {
             var sum = (BigInteger)0;
@@ -239,8 +202,8 @@ namespace Decompose.Numerics
                     }
 
                     // Invariants:
-                    // h(u,v) at v=h < n
-                    // h(u,v) at u=w < n
+                    // H(u,v) at v=h, 0 <= u < 1
+                    // H(u,v) at u=w, 0 <= v < 1
                     // -du/dv at v=h >= 0
                     // -dv/du at u=w >= 0
                     // In other words: the hyperbola is less than one unit away
@@ -249,7 +212,7 @@ namespace Decompose.Numerics
                     Debug.Assert((x01 + m0d - m1d * h) * (y01 - m0n + m1n * h) > n);
                     Debug.Assert((x01 + m0d * w - m1d) * (y01 - m0n * w + m1n) > n);
 
-                    // Find the pair of points (u2a, v2a) and (u2b, v2b) below h(u,v) where:
+                    // Find the pair of points (u2a, v2a) and (u2b, v2b) below H(u,v) where:
                     // -dv/du at u=u2a >= 1
                     // -dv/du at u=u2b <= 1
                     // u2b = u2a + 1
@@ -262,7 +225,7 @@ namespace Decompose.Numerics
                     var sqrt = IntegerMath.FloorSquareRoot((BigInteger)4 * mult * mult * m2nd * n);
                     var sqrt1 = sqrt / 2;
                     var sqrt2 = sqrt / mult;
-                    var u2a = (long)((sqrt1 - m2nd * mxy1) / m2nd);
+                    var u2a = (long)(sqrt1 / m2nd - mxy1);
                     var v2a = u2a != 0 ? (long)(sqrt2 - u2a - mxy2) : h;
                     var u2b = u2a < w ? u2a + 1 : w;
                     var v2b = (long)(sqrt2 - u2b - mxy2);
@@ -285,9 +248,9 @@ namespace Decompose.Numerics
                     if (u2a <= smallRegionCutoff || v2b == smallRegionCutoff || IntegerMath.Max(uv12a, uv12b) > IntegerMath.Min(w, h))
                     {
                         if (h > w)
-                            sum += ProcessRegionHorizontal(w, m0n, m0d, m1n, m1d, x01, y01);
+                            sum += CountPoints(true, w, m0n, m0d, m1n, m1d, x01, y01);
                         else
-                            sum += ProcessRegionVertical(h, m0n, m0d, m1n, m1d, x01, y01);
+                            sum += CountPoints(false, h, m1n, m1d, m0n, m0d, x01, y01);
                         break;
                     }
 
@@ -339,7 +302,7 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private long ProcessRegionHorizontal(long w, long m0n, long m0d, long m1n, long m1d, BigInteger x01, BigInteger y01)
+        private long CountPoints(bool horizontal, long w, long m0n, long m0d, long m1n, long m1d, BigInteger x01, BigInteger y01)
         {
             var sum = (long)0;
             var mx1 = m1n * x01;
@@ -349,7 +312,7 @@ namespace Decompose.Numerics
             var denom = 2 * m1n * m1d;
             var a = mxy1 * mxy1 - 2 * denom * n;
             var ac = 2 * mxy1 - 1;
-            var b = mx1 - my1;
+            var b = horizontal ? mx1 - my1 : my1 - mx1;
             var da = ac;
             for (var u = (long)1; u <= w; u++)
             {
@@ -362,27 +325,21 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private long ProcessRegionVertical(long h, long m0n, long m0d, long m1n, long m1d, BigInteger x01, BigInteger y01)
+#if false
+        private BigInteger ProcessRegionChecked(long w, long h, long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01)
         {
-            var sum = (long)0;
-            var mx0 = m0n * x01;
-            var my0 = m0d * y01;
-            var mxy0 = mx0 + my0;
-            var m01s = m0d * m1n + m0n * m1d;
-            var denom = 2 * m0n * m0d;
-            var a = mxy0 * mxy0 - 2 * denom * n;
-            var ac = 2 * mxy0 - 1;
-            var b = my0 - mx0;
-            var da = ac;
-            for (var v = (long)1; v <= h; v++)
+            var expected = (BigInteger)0;
+            if (diag)
             {
-                da += 2;
-                a += da;
-                b += m01s;
-                var sqrt = IntegerMath.CeilingSquareRoot(a);
-                sum += (long)((b - sqrt) / denom);
+                expected = ProcessRegionGrid(w, h, m1n, m1d, m0n, m0d, x01, y01, false);
+                var region = ProcessRegion(w, h, m1n, m1d, m0n, m0d, x01, y01);
+                if (region != expected)
+                {
+                    Console.WriteLine("failed validation: actual = {0}, expected = {1}", region, expected);
+                }
+                return region;
             }
-            return sum;
+            return ProcessRegion(w, h, m1n, m1d, m0n, m0d, x01, y01);
         }
 
         private BigInteger ProcessRegionGrid(long w, long h, long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01, bool verbose)
@@ -404,6 +361,20 @@ namespace Decompose.Numerics
             if (verbose)
                 Console.WriteLine("region: count = {0}", count);
             return count;
+        }
+
+        private void UV2XY(ref Region r, BigInteger u, BigInteger v, out BigInteger x, out BigInteger y)
+        {
+            x = r.x01 - r.m1d * v + r.m0d * u;
+            y = r.y01 + r.m1n * v - r.m0n * u;
+        }
+
+        private void XY2UV(ref Region r, BigInteger x, BigInteger y, out BigInteger u, out BigInteger v)
+        {
+            var dx = x - r.x01;
+            var dy = y - r.y01;
+            u = r.m1d * dy + r.m1n * dx;
+            v = r.m0d * dy + r.m0n * dx;
         }
 
         private BigInteger ProcessRegionLine(BigInteger x1, BigInteger y1, Rational m1, Rational r1, BigInteger x0, BigInteger y0, Rational m0, Rational r0, bool verbose)
@@ -438,5 +409,6 @@ namespace Decompose.Numerics
                 }
             }
         }
+#endif
     }
 }
