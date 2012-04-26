@@ -26,7 +26,7 @@ namespace Decompose.Numerics
         }
 
         private readonly BigInteger smallRegionCutoff = 20;
-        private readonly BigInteger minimumMultiplier = 8;
+        private readonly BigInteger minimumMultiplier = 5;
 
         private bool diag;
         private BigInteger n;
@@ -75,8 +75,11 @@ namespace Decompose.Numerics
             if (diag)
                 Console.WriteLine("wedge: m0 = {0}, area = {1}", m0, triangle);
 
+            // Process regions between integral slopes 1 & 2, 2 & 3, etc.
+            // until we reach xmin.
             while (true)
             {
+                // Find the largest point (x1a, y1a) where -H'(X) >= the new slope.
                 var m1 = m0 + 1;
                 var x1a = IntegerMath.FloorSquareRoot(n / m1);
                 var y1a = n / x1a;
@@ -89,6 +92,8 @@ namespace Decompose.Numerics
 
                 if (x1a < xmin)
                 {
+                    // Process the last few values above xmin as the number of
+                    // points above the last L0.
                     for (var x = (BigInteger)xmin; x < x0; x++)
                     {
                         var delta = n / x - (r0 - m0 * x);
@@ -168,7 +173,7 @@ namespace Decompose.Numerics
                     // Check for row removal.
                     {
                         // Check point at (w, 1).
-                        if ((x01 + m0d * w - m1d) * (y01 - m0n * w + m1n) <= n)
+                        if ((m0d * w - m1d + x01) * (m1n - m0n * w + y01) <= n)
                         {
                             // Remove the first row.
                             sum += w;
@@ -186,7 +191,7 @@ namespace Decompose.Numerics
                     // Check for column removal.
                     {
                         // Check point at (1, h).
-                        if ((x01 + m0d - m1d * h) * (y01 - m0n + m1n * h) <= n)
+                        if ((m0d - m1d * h + x01) * (m1n * h - m0n + y01) <= n)
                         {
                             // Remove the first column.
                             sum += h;
@@ -209,8 +214,8 @@ namespace Decompose.Numerics
                     // In other words: the hyperbola is less than one unit away
                     // from P0 and P1 and the distance to the hyperbola
                     // increases monotonically as you approach (u, v) = (0, 0).
-                    Debug.Assert((x01 + m0d - m1d * h) * (y01 - m0n + m1n * h) > n);
-                    Debug.Assert((x01 + m0d * w - m1d) * (y01 - m0n * w + m1n) > n);
+                    Debug.Assert((m0d - m1d * h + x01) * (+m1n * h - m0n + y01) > n);
+                    Debug.Assert((m0d * w - m1d + x01) * (m1n -  m0n * w + y01) > n);
 
                     // Find the pair of points (u2a, v2a) and (u2b, v2b) below H(u,v) where:
                     // -dv/du at u=u2a >= 1
@@ -221,31 +226,32 @@ namespace Decompose.Numerics
                     var m2nd = m2n * m2d;
                     var mxy1 = m1n * x01 + m1d * y01;
                     var mxy2 = m2n * x01 + m2d * y01;
-                    var mult = 2 * m1d * m2n + 1;
-                    var sqrt = IntegerMath.FloorSquareRoot((BigInteger)4 * mult * mult * m2nd * n);
-                    var sqrt1 = sqrt / 2;
-                    var sqrt2 = sqrt / mult;
-                    var u2a = (long)(sqrt1 / m2nd - mxy1);
-                    var v2a = u2a != 0 ? (long)(sqrt2 - u2a - mxy2) : h;
+                    var sqrtcoef = 2 * m1d * m2n + 1;
+                    var u2a = (long)(IntegerMath.FloorSquareRoot(sqrtcoef * sqrtcoef * n / m2nd) - mxy1);
+                    var tan = (long)(IntegerMath.FloorSquareRoot(2 * 2 * m2nd * n) - mxy2);
+                    var v2a = u2a != 0 ? tan - u2a : h;
                     var u2b = u2a < w ? u2a + 1 : w;
-                    var v2b = (long)(sqrt2 - u2b - mxy2);
+                    var v2b = tan - u2b;
 
-                    // Check for under-estimate of v2a or v2b.
-                    var v2aplus = v2a + 1;
-                    var v2bplus = v2b + 1;
-                    if (u2a != 0 && (m0d * u2a - m1d * v2aplus + x01) * (m1n * v2aplus - m0n * u2a + y01) <= n)
+                    // Check for under-estimate of v2a and/or v2b.
+                    if (u2a != 0)
+                    {
+                        var v2aplus = v2a + 1;
+                        if ((m0d * u2a - m1d * v2aplus + x01) * (m1n * v2aplus - m0n * u2a + y01) <= n)
                         ++v2a;
+                    }
+                    var v2bplus = v2b + 1;
                     if ((m0d * u2b - m1d * v2bplus + x01) * (m1n * v2bplus - m0n * u2b + y01) <= n)
                         ++v2b;
 
-                    // Intercept of L2a and L2b.  Since the lines are diagonal,
-                    // the intercept is the same on both U and V axes.
-                    var uv12a = u2a + v2a;
-                    var uv12b = u2b + v2b;
+                    // V intercept of L2a and L2b.  Since the lines are diagonal the intercept
+                    // is the same on both U and V axes, so v12a = u02a and v12b = u02b.
+                    var v12a = u2a + v2a;
+                    var v12b = u2b + v2b;
 
-                    // Process points horizontally or vertically if one axis collapses
+                    // Count points horizontally or vertically if one axis collapses
                     // or if the triangle exceeds the bounds of the rectangle.
-                    if (u2a <= smallRegionCutoff || v2b <= smallRegionCutoff || IntegerMath.Max(uv12a, uv12b) > IntegerMath.Min(w, h))
+                    if (u2a <= smallRegionCutoff || v2b <= smallRegionCutoff || IntegerMath.Max(v12a, v12b) > IntegerMath.Min(w, h))
                     {
                         if (h > w)
                             sum += CountPoints(true, w, m0n, m0d, m1n, m1d, x01, y01);
@@ -255,39 +261,36 @@ namespace Decompose.Numerics
                     }
 
                     // Add the triangle defined L0, L1, and L2b.
-                    var v12 = IntegerMath.Min(uv12a, uv12b);
+                    var v12 = IntegerMath.Min(v12a, v12b);
                     var area = v12 * (v12 - 1) / 2;
                     sum += area;
                     if (diag)
-                    {
-                        Console.WriteLine("corner: m1 = {0}, m2 = {1}, area = {2}",
-                            new Rational(m0n, m0d), new Rational(m1n, m1d), area);
-                        Console.WriteLine("v12a = {0}, v12b = {1}", uv12a, uv12b);
-                    }
+                        Console.WriteLine("corner: m1 = {0}, m0 = {1}, area = {2}", new Rational(m1n, m1d), new Rational(m0n, m0d), area);
 
-                    if (uv12a != uv12b)
+                    if (v12a != v12b)
                     {
-                        var adjustment = uv12a > uv12b ? u2a : v2b;
+                        var adjustment = v12a > v12b ? u2a : v2b;
                         sum += adjustment;
                         if (diag)
                             Console.WriteLine("corner: adjustment = {0}", adjustment);
                     }
 
-                    // Push left region.
-                    stack.Push(new Region(u2a, h - uv12a, m1n, m1d, m2n, m2d, x01 - m1d * uv12a, y01 + m1n * uv12a));
+                    // Push left region onto the stack.
+                    stack.Push(new Region(u2a, h - v12a, m1n, m1d, m2n, m2d, x01 - m1d * v12a, y01 + m1n * v12a));
 
                     // Process right region (no change to m0n and m0d).
-                    w -= uv12b;
+                    w -= v12b;
                     h = v2b;
                     m1n = m2n;
                     m1d = m2d;
-                    x01 = x01 + m0d * uv12b;
-                    y01 = y01 - m0n * uv12b;
+                    x01 = x01 + m0d * v12b;
+                    y01 = y01 - m0n * v12b;
                 }
 
                 if (stack.Count == 0)
                     break;
 
+                // Pop a region off the stack for processing.
                 var region = stack.Pop();
                 m1n = region.m1n;
                 m1d = region.m1d;

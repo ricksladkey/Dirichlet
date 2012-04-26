@@ -225,8 +225,8 @@ namespace Sandbox
 #if false
             for (var i = (BigInteger)1; i <= imax; i++)
                 slow += n / i;
-#endif
             slow = 2 * slow - imax * imax;
+#endif
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             Console.WriteLine("n = {0}, sum = {1}, slow = {2}", n, sum, slow);
 #endif
