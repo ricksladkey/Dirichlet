@@ -89,36 +89,38 @@ namespace Decompose.Numerics
                 // Invariants:
                 // The value before x1a along L1a is on or below the hyperbola.
                 // The value after x1b along l2b is on or below the hyperbola.
+                // The new slope is one greater than the old slope.
                 Debug.Assert((x1a - 1) * (r1a - m1 * (x1a - 1)) <= n);
                 Debug.Assert((x1b + 1) * (r1b - m1 * (x1b + 1)) <= n);
+                Debug.Assert(m1 - m0 == 1);
 
                 // Add the triangular wedge above the previous slope and below the new one
                 // and bounded on the left by xmin.
-                var xintersect = (BigInteger)((r1a - r0) / (m1 - m0));
-                width = xintersect - xmin;
+                var x01a = (BigInteger)(r1a - r0);
+                width = x01a - xmin;
                 sum += width * (width + 1) / 2;
 
                 // Account for a drop or rise from L1a to L1b.
-                if (r1a != r1b && x1a < xintersect)
+                if (r1a != r1b && x1a < x01a)
                 {
                     // Remove the old triangle and add the new triangle.
-                    // The equation is (ow+dr)*(ow+dr+1)/2 - ow*(ow+1)/2.
-                    var ow = x1a - xintersect;
+                    // The formula is (ow+dr)*(ow+dr+1)/2 - ow*(ow+1)/2.
+                    var ow = x1a - x01a;
                     var dr = r1a - r1b;
                     sum += dr * (2 * ow + dr + 1) / 2;
                 }
 
-                // Determine intersection of L0 and L1.
-                var x01 = (BigInteger)((r1b - r0) / (m1 - m0));
-                var y01 = (BigInteger)(r0 - m0 * x01);
-                Debug.Assert(r0 - m0 * x01 == r1b - m1 * x01);
+                // Determine intersection of L0 and L1b.
+                var x01b = (BigInteger)(r1b - r0);
+                var y01b = (BigInteger)(r0 - m0 * x01b);
+                Debug.Assert(r0 - m0 * x01b == r1b - m1 * x01b);
 
                 // Calculate width and height of parallelogram counting only lattice points.
-                var w = (long)((y0 - y01) + m1 * (x0 - x01));
-                var h = (long)((y1b - y01) + m0 * (x1b - x01));
+                var w = (long)((y0 - y01b) + m1 * (x0 - x01b));
+                var h = (long)((y1b - y01b) + m0 * (x1b - x01b));
 
                 // Process the hyperbolic region bounded by L1b and L0.
-                sum += ProcessRegion(w, h, m1, 1, m0, 1, x01, y01);
+                sum += ProcessRegion(w, h, m1, 1, m0, 1, x01b, y01b);
 
                 // Advance to the next region.
                 m0 = m1;
@@ -146,8 +148,9 @@ namespace Decompose.Numerics
             // Line L1 has slope m1 = -m1n/m1d.
             // Both lines pass through P01 = (x01, y01).
             // The region is a parallelogram with the left side bounded L1,
-            // the bottom bounded by L0, with width w and height h.
-            // The lower-left corner is P01 and represents (u, v) = (0, 0).
+            // the bottom bounded by L0, with width w (along L0) and height h
+            // (along L1).  The lower-left corner is P01 (the intersection of
+            // L0 and L1) and represents (u, v) = (0, 0).
             // Both w and h are counted in terms of lattice points, not length.
 
             // For the purposes of counting, the lattice points on lines L0 and L1
@@ -172,21 +175,27 @@ namespace Decompose.Numerics
             // of a translation and two shear mappings.  The UV-based hyperbola
             // is essentially a "mini" hyperbola that resembles the full
             // hyperbola in that:
-            // The equation is still a hyperbola (although it is a quadratic in two variables)
-            // The endpoints of the curve are roughly tangent to the axes.
+            // - The equation is still a hyperbola (although it is a quadratic in two variables)
+            // - The endpoints of the curve are roughly tangent to the axes
 
-            // We process the region by "lopping off" the isosceles right triangle
-            // in the lower-left corner and then processing the two remaining
-            // "slivers" in the upper-left and lower-right, which creates two
-            // smaller "mini" hyperbolas, which we process recursively.
+            // We process the region by "lopping off" the maximal isosceles
+            // right triangle in the lower-left corner and then processing
+            // the two remaining "slivers" in the upper-left and lower-right,
+            // which creates two smaller "micro" hyperbolas, which we process
+            // recursively.
+
+            // A line with -slope = 1 in UV-space has -slope = (m0n+m1n)/(m0d+m1d)
+            // in XY-space.  We call this m2 and the line defining the third side
+            // of the triangle as L2 contain point P2 tangent to the hyperbola.
 
             // This is all slightly complicated by the fact that diagonal that
             // defines the region that we "lop off" may be broken and shifted
-            // up or down near the tangent point.
+            // up or down near the tangent point.  As a result we actually have
+            // P2a and P2b and L2a and L2b.
 
             // Because we take a bite out of the middle, the sum of the sizes
-            // of the two smaller regions will be less than the size of the region we
-            // started with.
+            // of the two smaller regions will be less than the size of 
+            // region we started with.
 
             // When we are in the region of the original hyperbola where
             // the curvature is roughly constant, the deformed hyperbola
@@ -197,16 +206,25 @@ namespace Decompose.Numerics
             // As a result, each iteration reduces the problem space by about
             // a factor of two resulting in 1 + 2 + 4 + ... + sqrt(r) steps or O(sqrt(r)).
             // Since the sum of the sizes of the top-level regions is O(sqrt(n)),
-            // This gives a O(n^(1/4)) algorithm when the arc is circular.
+            // This gives a O(n^(1/4)) algorithm for nearly constant curvature.
 
             // However, since the hyperbola is increasing non-circular for small
             // values of x, the subdivision is not nearly as beneficial (and
-            // not symmetric) so it is only worthwhile to use region
+            // also not symmetric) so it is only worthwhile to use region
             // subdivision on regions where cubrt(n) < n < sqrt(n).
 
-            // Finally, at some point the region becomes small enough and we can
-            // just count points under the hyperbola using whichever axis
-            // is shorter.  This is quite a bit harder than calculating y = n/x
+            // The sqrt(n) bound comes from symmetry and the Dirichlet
+            // hyperbola method, which we also use.  The cubrt(n)
+            // bound comes from the fact that the second deriviative H''(x)
+            // exceeds one at (2n)^(1/3) ~= 1.26*cbrt(n).  Since we process
+            // regions with adjacent integral slopes at the top level, by the
+            // time we get to cbrt(n), the size of the region is at most
+            // one, so we might as well process those values using the
+            // naive approach of summing y = n/x.
+
+            // Finally, at some point the region becomes small enough and we
+            // can just count points under the hyperbola using whichever axis
+            // is shorter.  This is quite a bit harder than computing y = n/x
             // because the transformations we are using result in a general
             // quadratic in two variables.  Nevertheless, with some
             // preliminary calculations, each value can be calculated with
@@ -275,7 +293,7 @@ namespace Decompose.Numerics
                     // Note that there are two solutions, one negative and one positive.
                     // We take the positive solution.
 
-                    // We use the identities (a >= 0, b >= 0, c > 0):
+                    // We use the identities (a >= 0, b >= 0, c > 0; a, b, c elements of Z):
                     // floor(b*sqrt(a)/c) = floor(floor(sqrt(b^2*a))/c)
                     // floor(b*sqrt(a*c)/c) = floor(sqrt(b^2*a/c))
                     // to enable using integer arithmetic.
@@ -310,6 +328,7 @@ namespace Decompose.Numerics
                     // is the same on both U and V axes and v12a = u02a and v12b = u02b.
                     var v12a = u2a + v2a;
                     var v12b = u2b + v2b;
+                    Debug.Assert(IntegerMath.Abs(v12a - v12b) >= 0 && IntegerMath.Abs(v12a - v12b) <= 1);
 
                     // Count points horizontally or vertically if one axis collapses (or is below our cutoff)
                     // or if the triangle exceeds the bounds of the rectangle.
@@ -373,7 +392,7 @@ namespace Decompose.Numerics
             // By being frugal we can re-use most of the calculation
             // from the previous point.
 
-            // We use the identity (a >= 0, b >= 0, c > 0):
+            // We use the identity (a >= 0, b >= 0, c > 0; a, b, c elements of Z):
             // floor((b-sqrt(a)/c) = floor((b-ceiling(sqrt(a)))/c)
             // to enable using integer arithmetic.
 

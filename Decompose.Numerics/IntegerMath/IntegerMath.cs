@@ -34,14 +34,54 @@ namespace Decompose.Numerics
             return 0 - a;
         }
 
+        public static int Abs(int a)
+        {
+            return a >= 0 ? a : -a;
+        }
+
+        public static uint Abs(uint a)
+        {
+            return a;
+        }
+
+        public static long Abs(long a)
+        {
+            return a >= 0 ? a : -a;
+        }
+
+        public static ulong Abs(ulong a)
+        {
+            return a;
+        }
+
+        public static BigInteger Abs(BigInteger a)
+        {
+            return a.Sign != -1 ? a : -a;
+        }
+
         public static int Min(int a, int b)
+        {
+            return a < b ? a : b;
+        }
+
+        public static uint Min(uint a, uint b)
+        {
+            return a < b ? a : b;
+        }
+
+        public static long Min(long a, long b)
+        {
+            return a < b ? a : b;
+        }
+
+        public static ulong Min(ulong a, ulong b)
         {
             return a < b ? a : b;
         }
 
         public static BigInteger Min(BigInteger a, BigInteger b)
         {
-            return a < b ? a : b;
+            return BigInteger.Min(a, b);
         }
 
         public static int Max(int a, int b)
@@ -49,9 +89,24 @@ namespace Decompose.Numerics
             return a > b ? a : b;
         }
 
-        public static BigInteger Max(BigInteger a, BigInteger b)
+        public static uint Max(uint a, uint b)
         {
             return a > b ? a : b;
+        }
+
+        public static long Max(long a, long b)
+        {
+            return a > b ? a : b;
+        }
+
+        public static ulong Max(ulong a, ulong b)
+        {
+            return a > b ? a : b;
+        }
+
+        public static BigInteger Max(BigInteger a, BigInteger b)
+        {
+            return BigInteger.Max(a, b);
         }
 
         public static int QuotientFloor(int a, int b)
