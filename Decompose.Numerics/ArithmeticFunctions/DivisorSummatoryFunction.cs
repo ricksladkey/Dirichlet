@@ -76,6 +76,7 @@ namespace Decompose.Numerics
                 Debug.Assert(r1a - m1 * x1a == y1a);
                 Debug.Assert(r1b - m1 * x1b == y1b);
 
+                // Handle left-overs.
                 if (x1a < xmin)
                 {
                     // Process the last few values above xmin as the number of
@@ -85,20 +86,26 @@ namespace Decompose.Numerics
                     break;
                 }
 
+                // Invariants:
+                // The value before x1a along L1a is on or below the hyperbola.
+                // The value after x1b along l2b is on or below the hyperbola.
                 Debug.Assert((x1a - 1) * (r1a - m1 * (x1a - 1)) <= n);
                 Debug.Assert((x1b + 1) * (r1b - m1 * (x1b + 1)) <= n);
 
-                // Add the triangular wedge above the previous slope and below the new one.
+                // Add the triangular wedge above the previous slope and below the new one
+                // and bounded on the left by xmin.
                 var xintersect = (BigInteger)((r1a - r0) / (m1 - m0));
                 width = xintersect - xmin;
                 sum += width * (width + 1) / 2;
 
+                // Account for a drop or rise from L1a to L1b.
                 if (r1a != r1b && x1a < xintersect)
                 {
                     // Remove the old triangle and add the new triangle.
+                    // The equation is (ow+dr)*(ow+dr+1)/2 - ow*(ow+1)/2.
                     var ow = x1a - xintersect;
                     var dr = r1a - r1b;
-                    sum += dr * (2 * ow + dr + 1) / 2; // (ow+dr)*(ow+dr+1)/2 - ow*(ow+1)/2
+                    sum += dr * (2 * ow + dr + 1) / 2;
                 }
 
                 // Determine intersection of L0 and L1.
@@ -106,11 +113,11 @@ namespace Decompose.Numerics
                 var y01 = (BigInteger)(r0 - m0 * x01);
                 Debug.Assert(r0 - m0 * x01 == r1b - m1 * x01);
 
-                // Calculate width and height of parallelogram.
+                // Calculate width and height of parallelogram counting only lattice points.
                 var w = (long)((y0 - y01) + m1 * (x0 - x01));
                 var h = (long)((y1b - y01) + m0 * (x1b - x01));
 
-                // Process the hyperbolic sub-region.
+                // Process the hyperbolic region bounded by L1b and L0.
                 sum += ProcessRegion(w, h, m1, 1, m0, 1, x01, y01);
 
                 // Advance to the next region.
@@ -134,7 +141,7 @@ namespace Decompose.Numerics
 
         private BigInteger ProcessRegion(long  w, long h, long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01)
         {
-            // The hyperbola is defined by H(x, y): x * y = n.
+            // The hyperbola is defined by H(x, y): x*y = n.
             // Line L0 has slope m0 = -m0n/m0d.
             // Line L1 has slope m1 = -m1n/m1d.
             // Both lines pass through P01 = (x01, y01).
@@ -143,14 +150,17 @@ namespace Decompose.Numerics
             // The lower-left corner is P01 and represents (u, v) = (0, 0).
             // Both w and h are counted in terms of lattice points, not length.
 
+            // For the purposes of counting, the lattice points on lines L0 and L1
+            // have already been counted.
+
             // Note that m0d*m1n - m0n*m1d = 1 because
-            // m0 and m1 are Farey neighbors.
+            // m0 and m1 are Farey neighbors, e.g. 1 & 2 or 3/2 & 2 or 8/5 & 5/3
 
             // The equations that define (u, v) in terms of (x, y) are:
             // u = m1d*(y-y01)+m1n*(x-x01)
             // v = m0d*(y-y01)+m0n*(x-x01)
  
-            // Conversely, the equations that define (x, y) in terms of (u, v) are:
+            // And therefore the equations that define (x, y) in terms of (u, v) are:
             // x = x01-m1d*v+m0d*u
             // y = y01+m1n*v-m0n*u
 
@@ -159,9 +169,50 @@ namespace Decompose.Numerics
             // and vice-versa.
 
             // Geometrically, the UV coordinate system is the composition
-            // of a translation and two shear mappings.
+            // of a translation and two shear mappings.  The UV-based hyperbola
+            // is essentially a "mini" hyperbola that resembles the full
+            // hyperbola in that:
+            // The equation is still a hyperbola (although it is a quadratic in two variables)
+            // The endpoints of the curve are roughly tangent to the axes.
 
-            // Sub-divide the new hyperbolic region and sum the lattice points.
+            // We process the region by "lopping off" the isosceles right triangle
+            // in the lower-left corner and then processing the two remaining
+            // "slivers" in the upper-left and lower-right, which creates two
+            // smaller "mini" hyperbolas, which we process recursively.
+
+            // This is all slightly complicated by the fact that diagonal that
+            // defines the region that we "lop off" may be broken and shifted
+            // up or down near the tangent point.
+
+            // Because we take a bite out of the middle, the sum of the sizes
+            // of the two smaller regions will be less than the size of the region we
+            // started with.
+
+            // When we are in the region of the original hyperbola where
+            // the curvature is roughly constant, the deformed hyperbola
+            // will in fact resemble a circular arc.  For a true circular
+            // arc with r=w=h, the new sub-regions will will be
+            // (sqrt(2)-1)*r in size or about 41% of r.
+
+            // As a result, each iteration reduces the problem space by about
+            // a factor of two resulting in 1 + 2 + 4 + ... + sqrt(r) steps or O(sqrt(r)).
+            // Since the sum of the sizes of the top-level regions is O(sqrt(n)),
+            // This gives a O(n^(1/4)) algorithm when the arc is circular.
+
+            // However, since the hyperbola is increasing non-circular for small
+            // values of x, the subdivision is not nearly as beneficial (and
+            // not symmetric) so it is only worthwhile to use region
+            // subdivision on regions where cubrt(n) < n < sqrt(n).
+
+            // Finally, at some point the region becomes small enough and we can
+            // just count points under the hyperbola using whichever axis
+            // is shorter.  This is quite a bit harder than calculating y = n/x
+            // because the transformations we are using result in a general
+            // quadratic in two variables.  Nevertheless, with some
+            // preliminary calculations, each value can be calculated with
+            // a few additions, a square root and a division.
+
+            // Sum the lattice points.
             var sum = (BigInteger)0;
 
             // Process regions on the stack.
@@ -221,6 +272,13 @@ namespace Decompose.Numerics
                     // Then u2a = floor(u) and u2b = u2a + 1.
                     // Finally compute v2a and v2b from u2a and u2b using the tangent line
                     // which may result in a value too small by at most one.
+                    // Note that there are two solutions, one negative and one positive.
+                    // We take the positive solution.
+
+                    // We use the identities (a >= 0, b >= 0, c > 0):
+                    // floor(b*sqrt(a)/c) = floor(floor(sqrt(b^2*a))/c)
+                    // floor(b*sqrt(a*c)/c) = floor(sqrt(b^2*a/c))
+                    // to enable using integer arithmetic.
 
                     // m2nd = m2d*m2n, mxy1 = m1d*y01+m1n*x01, mxy2 = m2d*y01+m2n*x01
                     // u = floor((2*m1d*m2n+1)*sqrt(m2nd*n)/m2nd-mxy1)
@@ -284,6 +342,7 @@ namespace Decompose.Numerics
                     y01 = y01 - m0n * v12b;
                 }
 
+                // Any more regions to process?
                 if (stack.Count == 0)
                     break;
 
@@ -299,6 +358,7 @@ namespace Decompose.Numerics
                 y01 = region.y01;
             }
 
+            // Return the sum of lattice points in this region.
             return sum;
         }
 
@@ -308,6 +368,14 @@ namespace Decompose.Numerics
             // (x01 - m1d*v + m0d*u)*(y01 + m1n*v - m0n*u) = n
             // Horizontal: For u = 1 to max calculate v in terms of u.
             // vertical: For v = 1 to max calculate u in terms of v.
+            // Note that there are two positive solutions and we
+            // take the smaller of the two, the one nearest the axis.
+            // By being frugal we can re-use most of the calculation
+            // from the previous point.
+
+            // We use the identity (a >= 0, b >= 0, c > 0):
+            // floor((b-sqrt(a)/c) = floor((b-ceiling(sqrt(a)))/c)
+            // to enable using integer arithmetic.
 
             // m0nd = m0d*m0n, m1nd = m1d*m1n, 
             // m01s = m0d*m1n+m0n*m1d, mxy0d = m0d*y01-m0n*x01,
