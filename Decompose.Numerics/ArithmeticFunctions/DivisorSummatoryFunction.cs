@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Numerics;
-using System.Text;
 
 namespace Decompose.Numerics
 {
@@ -47,11 +45,8 @@ namespace Decompose.Numerics
 
             var sum = (BigInteger)0;
 
-            xmin = IntegerMath.FloorRoot(n, 3) * minimumMultiplier;
             xmax = IntegerMath.FloorRoot(n, 2);
-
-            if (diag)
-                Console.WriteLine("n = {0}", n);
+            xmin = IntegerMath.Min(IntegerMath.FloorRoot(n, 3) * minimumMultiplier, xmax);
 
             var m0 = (long)1;
             var x0 = xmax;
@@ -61,16 +56,10 @@ namespace Decompose.Numerics
             Debug.Assert(r0 - m0 * x0 == y0);
 
             // Add the bottom rectangle.
-            var square = (width + 1) * y0;
-            sum += square;
-            if (diag)
-                Console.WriteLine("square: area = {1}", m0, square);
+            sum += (width + 1) * y0;
 
             // Add the isosceles right triangle from the initial skew.
-            var triangle = width * (width + 1) / 2;
-            sum += triangle;
-            if (diag)
-                Console.WriteLine("wedge: m0 = {0}, area = {1}", m0, triangle);
+            sum += width * (width + 1) / 2;
 
             // Process regions between integral slopes 1 & 2, 2 & 3, etc.
             // until we reach xmin.
@@ -120,8 +109,7 @@ namespace Decompose.Numerics
                 var w = (long)((y0 - y01) + m1 * (x0 - x01));
                 var h = (long)((y1b - y01) + m0 * (x1b - x01));
 
-                var region = ProcessRegion(w, h, m1, 1, m0, 1, x01, y01);
-                sum += region;
+                sum += ProcessRegion(w, h, m1, 1, m0, 1, x01, y01);
 
                 m0 = m1;
                 x0 = x1a;
@@ -129,7 +117,7 @@ namespace Decompose.Numerics
                 r0 = r1a;
             }
 
-            // Process values one thru xmin.
+            // Process values one up to xmin.
             for (var x = (BigInteger)1; x < xmin; x++)
             {
                 sum += n / x;
@@ -261,14 +249,14 @@ namespace Decompose.Numerics
 
                 // Pop a region off the stack for processing.
                 var region = stack.Pop();
+                w = region.w;
+                h = region.h;
                 m1n = region.m1n;
                 m1d = region.m1d;
                 m0n = region.m0n;
                 m0d = region.m0d;
                 x01 = region.x01;
                 y01 = region.y01;
-                w = region.w;
-                h = region.h;
             }
 
             return sum;
