@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
+using Integer = System.Numerics.BigInteger;
 
 namespace Decompose.Numerics
 {
@@ -9,27 +10,27 @@ namespace Decompose.Numerics
     {
         private struct Region
         {
-            public Region(long w, long h, long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01)
+            public Region(Integer w, Integer h, Integer m1n, Integer m1d, Integer m0n, Integer m0d, Integer x01, Integer y01)
             {
                 this.w = w; this.h = h; this.m1n = m1n; this.m1d = m1d; this.m0n = m0n; this.m0d = m0d; this.x01 = x01; this.y01 = y01;
             }
-            public long w;
-            public long h;
-            public long m1n;
-            public long m1d;
-            public long m0n;
-            public long m0d;
-            public BigInteger x01;
-            public BigInteger y01;
+            public Integer w;
+            public Integer h;
+            public Integer m1n;
+            public Integer m1d;
+            public Integer m0n;
+            public Integer m0d;
+            public Integer x01;
+            public Integer y01;
         }
 
-        private readonly BigInteger smallRegionCutoff = 20;
-        private readonly BigInteger minimumMultiplier = 5;
+        private readonly Integer smallRegionCutoff = 20;
+        private readonly Integer minimumMultiplier = 5;
 
         private bool diag;
-        private BigInteger n;
-        private BigInteger xmin;
-        private BigInteger xmax;
+        private Integer n;
+        private Integer xmin;
+        private Integer xmax;
 
         private Stack<Region> stack;
 
@@ -39,12 +40,12 @@ namespace Decompose.Numerics
             stack = new Stack<Region>();
         }
 
-        public BigInteger Evaluate(BigInteger n)
+        public Integer Evaluate(Integer n)
         {
             this.n = n;
 
             // Count lattice points under the hyperbola x*y = n.
-            var sum = (BigInteger)0;
+            var sum = (Integer)0;
 
             // Compute the range of values over which we will apply the
             // geometric algorithm.
@@ -52,7 +53,7 @@ namespace Decompose.Numerics
             xmin = IntegerMath.Min(IntegerMath.FloorRoot(n, 3) * minimumMultiplier, xmax);
 
             // Calculate the line tangent to the hyperbola at the x = sqrt(n).
-            var m0 = (long)1;
+            var m0 = (Integer)1;
             var x0 = xmax;
             var y0 = n / x0;
             var r0 = y0 + m0 * x0;
@@ -90,14 +91,14 @@ namespace Decompose.Numerics
                 {
                     // Process the last few values above xmin as the number of
                     // points above the last L0.
-                    for (var x = (BigInteger)xmin; x < x0; x++)
+                    for (var x = xmin; x < x0; x++)
                         sum += n / x - (r0 - m0 * x);
                     break;
                 }
 
                 // Invariants:
-                // The value before x1a along L1a is on or below the hyperbola.
-                // The value after x1b along l2b is on or below the hyperbola.
+                // The value before x1a aInteger L1a is on or below the hyperbola.
+                // The value after x1b aInteger l2b is on or below the hyperbola.
                 // The new slope is one greater than the old slope.
                 Debug.Assert((x1a - 1) * (r1a - m1 * (x1a - 1)) <= n);
                 Debug.Assert((x1b + 1) * (r1b - m1 * (x1b + 1)) <= n);
@@ -105,7 +106,7 @@ namespace Decompose.Numerics
 
                 // Add the triangular wedge above the previous slope and below the new one
                 // and bounded on the left by xmin.
-                var x01a = (BigInteger)(r1a - r0);
+                var x01a = r1a - r0;
                 width = x01a - xmin;
                 sum += width * (width + 1) / 2;
 
@@ -120,13 +121,13 @@ namespace Decompose.Numerics
                 }
 
                 // Determine intersection of L0 and L1b.
-                var x01b = (BigInteger)(r1b - r0);
-                var y01b = (BigInteger)(r0 - m0 * x01b);
+                var x01b = r1b - r0;
+                var y01b = r0 - m0 * x01b;
                 Debug.Assert(r0 - m0 * x01b == r1b - m1 * x01b);
 
                 // Calculate width and height of parallelogram counting only lattice points.
-                var w = (long)((y0 - y01b) + m1 * (x0 - x01b));
-                var h = (long)((y1b - y01b) + m0 * (x1b - x01b));
+                var w = (y0 - y01b) + m1 * (x0 - x01b);
+                var h = (y1b - y01b) + m0 * (x1b - x01b);
 
                 // Process the hyperbolic region bounded by L1b and L0.
                 sum += ProcessRegion(w, h, m1, 1, m0, 1, x01b, y01b);
@@ -139,7 +140,7 @@ namespace Decompose.Numerics
             }
 
             // Process values one up to xmin.
-            for (var x = (BigInteger)1; x < xmin; x++)
+            for (var x = (Integer)1; x < xmin; x++)
                 sum += n / x;
 
             // Account for sqrt(n) < x <= n using the Dirichlet hyperbola method.
@@ -148,15 +149,15 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private BigInteger ProcessRegion(long  w, long h, long m1n, long m1d, long m0n, long m0d, BigInteger x01, BigInteger y01)
+        private Integer ProcessRegion(Integer  w, Integer h, Integer m1n, Integer m1d, Integer m0n, Integer m0d, Integer x01, Integer y01)
         {
             // The hyperbola is defined by H(x, y): x*y = n.
             // Line L0 has slope m0 = -m0n/m0d.
             // Line L1 has slope m1 = -m1n/m1d.
             // Both lines pass through P01 = (x01, y01).
             // The region is a parallelogram with the left side bounded L1,
-            // the bottom bounded by L0, with width w (along L0) and height h
-            // (along L1).  The lower-left corner is P01 (the intersection of
+            // the bottom bounded by L0, with width w (aInteger L0) and height h
+            // (aInteger L1).  The lower-left corner is P01 (the intersection of
             // L0 and L1) and represents (u, v) = (0, 0).
             // Both w and h are counted in terms of lattice points, not length.
 
@@ -238,7 +239,7 @@ namespace Decompose.Numerics
             // a few additions, a square root and a division.
 
             // Sum the lattice points.
-            var sum = (BigInteger)0;
+            var sum = (Integer)0;
 
             // Process regions on the stack.
             while (true)
@@ -305,6 +306,7 @@ namespace Decompose.Numerics
                     // floor(b*sqrt(a*c)/c) = floor(sqrt(b^2*a/c))
                     // to enable using integer arithmetic.
 
+                    // Formulas:
                     // m2nd = m2d*m2n, mxy1 = m1d*y01+m1n*x01, mxy2 = m2d*y01+m2n*x01
                     // u = floor((2*m1d*m2n+1)*sqrt(m2nd*n)/m2nd-mxy1)
                     // v = floor(-u+2*sqrt(m2nd*n)-mxy2)
@@ -314,8 +316,8 @@ namespace Decompose.Numerics
                     var mxy1 = m1n * x01 + m1d * y01;
                     var mxy2 = m2n * x01 + m2d * y01;
                     var sqrtcoef = 2 * m1d * m2n + 1;
-                    var tan = (long)(IntegerMath.FloorSquareRoot(2 * 2 * m2nd * n) - mxy2);
-                    var u2a = (long)(IntegerMath.FloorSquareRoot(sqrtcoef * sqrtcoef * n / m2nd) - mxy1);
+                    var tan = IntegerMath.FloorSquareRoot(2 * 2 * m2nd * n) - mxy2;
+                    var u2a = IntegerMath.FloorSquareRoot(sqrtcoef * sqrtcoef * n / m2nd) - mxy1;
                     var v2a = u2a != 0 ? tan - u2a : h;
                     var u2b = u2a < w ? u2a + 1 : w;
                     var v2b = tan - u2b;
@@ -339,7 +341,7 @@ namespace Decompose.Numerics
 
                     // Count points horizontally or vertically if one axis collapses (or is below our cutoff)
                     // or if the triangle exceeds the bounds of the rectangle.
-                    if (u2a <= smallRegionCutoff || v2b <= smallRegionCutoff || IntegerMath.Max(v12a, v12b) > IntegerMath.Min(w, h))
+                    if (u2a <= smallRegionCutoff || v2b <= smallRegionCutoff || v12a > w || v12b > h)
                     {
                         if (h > w)
                             sum += CountPoints(true, w, m0n, m0d, m1n, m1d, x01, y01);
@@ -388,7 +390,7 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private long CountPoints(bool horizontal, long max, long m0n, long m0d, long m1n, long m1d, BigInteger x01, BigInteger y01)
+        private Integer CountPoints(bool horizontal, Integer max, Integer m0n, Integer m0d, Integer m1n, Integer m1d, Integer x01, Integer y01)
         {
             // Count points under the hyperbola:
             // (x01 - m1d*v + m0d*u)*(y01 + m1n*v - m0n*u) = n
@@ -403,13 +405,14 @@ namespace Decompose.Numerics
             // floor((b-sqrt(a)/c) = floor((b-ceiling(sqrt(a)))/c)
             // to enable using integer arithmetic.
 
+            // Formulas:
             // m0nd = m0d*m0n, m1nd = m1d*m1n, 
             // m01s = m0d*m1n+m0n*m1d, mxy0d = m0d*y01-m0n*x01,
             // mxy1d = m1n*x01-m1d*y01,
             // mxy0 = m0d*y01+m0n*x01, mxy1 = m1d*y01+m1n*x01
             // v = floor((-sqrt((u+mxy1)^2-4*m1nd*n)+m01s*u+mxy1d)/(2*m1nd))
             // u = floor((-sqrt((v+mxy0)^2-4*m0nd*n)+m01s*v+mxy0d)/(2*m0nd))
-            var sum = (long)0;
+            var sum = (Integer)0;
             var mx1 = m1n * x01;
             var my1 = m1d * y01;
             var mxy1 = mx1 + my1;
@@ -418,12 +421,12 @@ namespace Decompose.Numerics
             var a = mxy1 * mxy1 - 2 * denom * n;
             var b = horizontal ? mx1 - my1 : my1 - mx1;
             var da = 2 * mxy1 - 1;
-            for (var i = (long)1; i <= max; i++)
+            for (var i = (Integer)1; i <= max; i++)
             {
                 da += 2;
                 a += da;
                 b += m01s;
-                sum += (long)((b - IntegerMath.CeilingSquareRoot(a)) / denom);
+                sum += (b - IntegerMath.CeilingSquareRoot(a)) / denom;
             }
             return sum;
         }

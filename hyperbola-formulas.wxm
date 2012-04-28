@@ -505,6 +505,7 @@ v2u5: format(v2u4,%rhs,%frac[%sum[%expr[%expr[%f-4*m0nd*n]]]]);
 /* [wxMaxima: input   start ] */
 uvformulas: append(uvdefs,mxy0def,mxy1def,[u2v5,v2u5])$
 map('print,uvformulas)$
+map('print1d,uvformulas)$
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: comment start ]
@@ -598,19 +599,15 @@ Final CSE.
    [wxMaxima: comment end   ] */
 
 /* [wxMaxima: input   start ] */
-csedef: [mxy2=m2d*y01+m2n*x01,sqrt=sqrt(m2nd*n)];
+csedef: [mxy2=m2d*y01+m2n*x01];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-udiag14: format(lratsubst(swapsides(csedef),udiag13),%rhs,%frac,%p(sqrt));
+udiag14: format(lratsubst(swapsides(csedef),udiag13),%rhs,%frac,%p(sqrt(m2nd*n)));
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
 tangent5: lratsubst(swapsides(csedef),tangent4);
-/* [wxMaxima: input   end   ] */
-
-/* [wxMaxima: input   start ] */
-mxy1def;
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -810,6 +807,14 @@ h_eq3: expand(solve(subst([uvdenom=1],ratsimp(h_eqs2[2]-h_eqs2[1])),r[new]));
 
 /* [wxMaxima: input   start ] */
 uvdenom;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+radcan(r - radcan(sqrt(2)*(sqrt(2)*r - r)))/r;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+solve(1=diff(rhs(solve(h,y)[1]),x,2),x)[3],numer;
 /* [wxMaxima: input   end   ] */
 
 /* Maxima can't load/batch files which end with a comment! */

@@ -212,12 +212,16 @@ namespace Sandbox
 #else
             var diag = false;
             var algorithm = new DivisorSummatoryFunction(diag);
-            var n = (BigInteger)1 << 50;
+            var n = (long)1 << 60;
             if (!diag)
-                algorithm.Evaluate((BigInteger)1 << 30);
+                algorithm.Evaluate((long)1 << 30);
             var timer = new Stopwatch();
             timer.Restart();
-            var sum = algorithm.Evaluate(n);
+            var sum = (BigInteger)0;
+            checked
+            {
+                sum = algorithm.Evaluate(n);
+            }
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             timer.Restart();
             var slow = (BigInteger)0;
