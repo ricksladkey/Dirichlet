@@ -212,7 +212,7 @@ namespace Sandbox
 #else
             var diag = false;
             var algorithm = new DivisorSummatoryFunction(diag);
-            var n = (BigInteger)1 << 56;
+            var n = (BigInteger)1 << 50;
             if (!diag)
                 algorithm.Evaluate((BigInteger)1 << 30);
             var timer = new Stopwatch();
@@ -222,7 +222,7 @@ namespace Sandbox
             timer.Restart();
             var slow = (BigInteger)0;
             var imax = IntegerMath.FloorSquareRoot(n);
-#if true
+#if false
             for (var i = (BigInteger)1; i <= imax; i++)
                 slow += n / i;
             slow = 2 * slow - imax * imax;

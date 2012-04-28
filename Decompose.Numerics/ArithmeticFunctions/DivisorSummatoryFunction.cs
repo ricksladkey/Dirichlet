@@ -43,11 +43,15 @@ namespace Decompose.Numerics
         {
             this.n = n;
 
+            // Count lattice points under the hyperbola x*y = n.
             var sum = (BigInteger)0;
 
+            // Compute the range of values over which we will apply the
+            // geometric algorithm.
             xmax = IntegerMath.FloorRoot(n, 2);
             xmin = IntegerMath.Min(IntegerMath.FloorRoot(n, 3) * minimumMultiplier, xmax);
 
+            // Calculate the line tangent to the hyperbola at the x = sqrt(n).
             var m0 = (long)1;
             var x0 = xmax;
             var y0 = n / x0;
@@ -58,11 +62,16 @@ namespace Decompose.Numerics
             // Add the bottom rectangle.
             sum += (width + 1) * y0;
 
-            // Add the isosceles right triangle from the initial skew.
+            // Add the isosceles right triangle corresponding to the initial
+            // line L0 with -slope = 1.
             sum += width * (width + 1) / 2;
 
-            // Process regions between integral slopes 1 & 2, 2 & 3, etc.
-            // until we reach xmin.
+            // Process regions between tangent lines with integral slopes 1 & 2,
+            // 2 & 3, etc. until we reach xmin.  This provides a first
+            // approximation to the hyperbola and accounts for the majority
+            // of the lattice points between xmin and max.  The remainder of
+            // the points are computed by processing the regions bounded
+            // by the two tangent lines and the hyperbola itself.
             while (true)
             {
                 // Find the largest point (x1a, y1a) where -H'(X) >= the new slope.
@@ -131,11 +140,9 @@ namespace Decompose.Numerics
 
             // Process values one up to xmin.
             for (var x = (BigInteger)1; x < xmin; x++)
-            {
                 sum += n / x;
-            }
 
-            // Account for the first octant.
+            // Account for sqrt(n) < x <= n using the Dirichlet hyperbola method.
             sum = 2 * sum - xmax * xmax;
 
             return sum;
