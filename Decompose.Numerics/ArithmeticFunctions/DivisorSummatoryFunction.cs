@@ -24,8 +24,8 @@ namespace Decompose.Numerics
             public Integer y01;
         }
 
-        private readonly Integer smallRegionCutoff = 20;
-        private readonly Integer minimumMultiplier = 5;
+        private readonly Integer smallRegionCutoff = 10;
+        private readonly Integer minimumMultiplier = 10;
 
         private bool diag;
         private Integer n;
@@ -183,14 +183,18 @@ namespace Decompose.Numerics
             // of a translation and two shear mappings.  The UV-based hyperbola
             // is essentially a "mini" hyperbola that resembles the full
             // hyperbola in that:
-            // - The equation is still a hyperbola (although it is a quadratic in two variables)
+            // - The equation is still a hyperbola (although it is now a quadratic in two variables)
             // - The endpoints of the curve are roughly tangent to the axes
 
             // We process the region by "lopping off" the maximal isosceles
             // right triangle in the lower-left corner and then processing
             // the two remaining "slivers" in the upper-left and lower-right,
-            // which creates two smaller "micro" hyperbolas, which we process
-            // recursively.
+            // which creates two smaller "micro" hyperbolas, which we then
+            // process recursively.
+
+            // When we are in the region of the original hyperbola where
+            // the curvature is roughly constant, the deformed hyperbola
+            // will in fact resemble a circular arc.
 
             // A line with -slope = 1 in UV-space has -slope = (m0n+m1n)/(m0d+m1d)
             // in XY-space.  We call this m2 and the line defining the third side
@@ -201,22 +205,21 @@ namespace Decompose.Numerics
             // up or down near the tangent point.  As a result we actually have
             // P2a and P2b and L2a and L2b.
 
-            // Because we take a bite out of the middle, the sum of the sizes
-            // of the two smaller regions will be less than the size of 
-            // region we started with.
+            // We can measure work in units of X because it is the short
+            // axis and it ranges from cbrt(n) to sqrt(n).  If we did one
+            // unit of work for each X coordinate we would have an O(sqrt(n))
+            // algorithm.  But because there is only one lattice point on a
+            // line with slope m per the denominator of m in X and because
+            // the denominator of m roughly doubles for each subdivision,
+            // there will be less than one unit of work for each unit of X.
 
-            // When we are in the region of the original hyperbola where
-            // the curvature is roughly constant, the deformed hyperbola
-            // will in fact resemble a circular arc.  For a true circular
-            // arc with r=w=h, the new sub-regions will will be
-            // (sqrt(2)-1)*r in size or about 41% of r.
+            // As a result, each iteration reduces the work by about
+            // a factor of two resulting in 1 + 2 + 4 + ... + sqrt(r) steps
+            // or O(sqrt(r)).  Since the sum of the sizes of the top-level
+            // regions is O(sqrt(n)), this gives a O(n^(1/4)) algorithm for
+            // nearly constant curvature.
 
-            // As a result, each iteration reduces the problem space by about
-            // a factor of two resulting in 1 + 2 + 4 + ... + sqrt(r) steps or O(sqrt(r)).
-            // Since the sum of the sizes of the top-level regions is O(sqrt(n)),
-            // This gives a O(n^(1/4)) algorithm for nearly constant curvature.
-
-            // However, since the hyperbola is increasing non-circular for small
+            // However, since the hyperbola is increasingly non-circular for small
             // values of x, the subdivision is not nearly as beneficial (and
             // also not symmetric) so it is only worthwhile to use region
             // subdivision on regions where cubrt(n) < n < sqrt(n).

@@ -190,6 +190,7 @@ namespace Sandbox
 
         static void ParityTest()
         {
+#if true
 #if false
             var algorithm = new DivisorSummatoryFunction(false);
             var nmax = (BigInteger)1 << 20;
@@ -212,9 +213,9 @@ namespace Sandbox
 #else
             var diag = false;
             var algorithm = new DivisorSummatoryFunction(diag);
-            var n = (long)1 << 60;
+            var n = (BigInteger)1 << 70;
             if (!diag)
-                algorithm.Evaluate((long)1 << 30);
+                algorithm.Evaluate((BigInteger)1 << 30);
             var timer = new Stopwatch();
             timer.Restart();
             var sum = (BigInteger)0;
@@ -224,15 +225,32 @@ namespace Sandbox
             }
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             timer.Restart();
+#if false
             var slow = (BigInteger)0;
             var imax = IntegerMath.FloorSquareRoot(n);
-#if false
             for (var i = (BigInteger)1; i <= imax; i++)
                 slow += n / i;
             slow = 2 * slow - imax * imax;
+#else
+            var algorithm2 = new PrimeCounting(8);
+            var slow = algorithm2.TauSum((UInt128)n);
 #endif
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             Console.WriteLine("n = {0}, sum = {1}, slow = {2}", n, sum, slow);
+#endif
+#endif
+
+#if false
+            var maxRep = (BigInteger)1 << 53;
+            var n = maxRep * maxRep * 7 / 10;
+            var s = (BigInteger)Math.Floor(Math.Sqrt((double)n));
+            var r = n - s * s;
+            if (r.Sign == -1)
+                --s;
+            else if (r > (s << 1))
+               ++s;
+            var sqrt = IntegerMath.FloorRoot(n, 2);
+            Console.WriteLine("");
 #endif
 
 #if false

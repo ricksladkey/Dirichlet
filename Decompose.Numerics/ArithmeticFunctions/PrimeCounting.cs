@@ -424,7 +424,7 @@ namespace Decompose.Numerics
             return sum & 3;
         }
 
-        private int TauSum(UInt128 y)
+        public int TauSum(UInt128 y)
         {
             // sum(tau(d), d=[1,y]) = 2 sum(y/d, d=[1,floor(sqrt(y))]) - floor(sqrt(y))^2
             if (y < (ulong)tauSumSmall.Length)

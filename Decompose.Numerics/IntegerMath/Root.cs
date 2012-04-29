@@ -11,19 +11,43 @@ namespace Decompose.Numerics
         private const int maxShift = 64;
         private static double log2 = Math.Log(2);
 
-        private static readonly ulong largestRepresentableInteger = 9007199254740992;
+        private const int maxRepShift = 53;
+        private static readonly ulong maxRep = (ulong)1 << maxRepShift;
+        private static readonly BigInteger maxRepSquared = (BigInteger)maxRep * maxRep;
 
         public static BigInteger FloorSquareRoot(BigInteger n)
         {
-            if (n <= largestRepresentableInteger)
+            if (n <= maxRep)
                 return (BigInteger)Math.Floor(Math.Sqrt((double)n));
+            else if (n <= maxRepSquared)
+            {
+                var s = (BigInteger)Math.Floor(Math.Sqrt((double)n));
+                var r = n - s * s;
+                if (r.Sign == -1)
+                    --s;
+                else if (r > (s << 1))
+                    ++s;
+                Debug.Assert(FloorSquareRoot<BigInteger>(n) == s);
+                return s;
+            }
             return FloorSquareRoot<BigInteger>(n);
         }
 
         public static BigInteger CeilingSquareRoot(BigInteger n)
         {
-            if (n <= largestRepresentableInteger)
+            if (n <= maxRep)
                 return (BigInteger)Math.Ceiling(Math.Sqrt((double)n));
+            else if (n <= maxRepSquared)
+            {
+                var s = (BigInteger)Math.Ceiling(Math.Sqrt((double)n));
+                var r = s * s - n;
+                if (r.Sign == -1)
+                    ++s;
+                else if (r > (s << 1))
+                    --s;
+                Debug.Assert(CeilingSquareRoot<BigInteger>(n) == s);
+                return s;
+            }
             return CeilingSquareRoot<BigInteger>(n);
         }
 
