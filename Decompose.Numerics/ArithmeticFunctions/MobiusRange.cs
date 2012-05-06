@@ -61,6 +61,7 @@ namespace Decompose.Numerics
                 return;
             }
 
+            // Choose batch size such that: batchSize*threads >= length and batchSize is even.
             var tasks = new Task[threads];
             var length = kmax - kmin;
             var batchSize = ((length + threads - 1) / threads + 1) & ~1;
@@ -68,9 +69,6 @@ namespace Decompose.Numerics
             {
                 var kstart = (long)thread * batchSize + kmin;
                 var kend = Math.Min(kstart + batchSize, kmax);
-                Data data;
-                if (!queue.TryDequeue(out data))
-                    data = new Data(primes.Length);
                 tasks[thread] = Task.Factory.StartNew(() => ProcessRange(pmax, kstart, kend, kmin, values));
             }
             Task.WaitAll(tasks);

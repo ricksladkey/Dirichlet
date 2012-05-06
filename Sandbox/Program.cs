@@ -191,6 +191,28 @@ namespace Sandbox
         static void ParityTest()
         {
 #if true
+            var diag = false;
+            var algorithm = new DivisorSummatoryFunction();
+            var algorithm2 = new DivisorSummatoryFunction2(diag);
+            var n = (BigInteger)1 << 60;
+            var sum = algorithm.Evaluate(n);
+            var sum2 = algorithm2.Evaluate(n);
+            Console.WriteLine("sum = {0}, sum2 = {1}", sum, sum2);
+#endif
+
+#if false
+            for (var i = BigInteger.Pow(10, 26); i < BigInteger.Pow(10, 27); i++) Console.WriteLine(i);
+#endif
+#if false
+            var algorithm = new PrimeCounting(8);
+            for (var e = 0; e < 20; e++)
+            {
+                var s = algorithm.NumberOfSquareFree(IntegerMath.Power((BigInteger)10, e));
+                Console.WriteLine("e = {0}, s = {1}", e, s);
+            }
+#endif
+
+#if false
 #if false
             var algorithm = new DivisorSummatoryFunction(false);
             var nmax = (BigInteger)1 << 20;
@@ -212,20 +234,17 @@ namespace Sandbox
             }
 #else
             var diag = false;
-            var algorithm = new DivisorSummatoryFunction(diag);
-            var n = (BigInteger)1 << 70;
+            var algorithm = new DivisorSummatoryFunction();
+            var n = (BigInteger)1 << 60;
             if (!diag)
                 algorithm.Evaluate((BigInteger)1 << 30);
             var timer = new Stopwatch();
             timer.Restart();
             var sum = (BigInteger)0;
-            checked
-            {
-                sum = algorithm.Evaluate(n);
-            }
+            sum = algorithm.Evaluate(n);
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             timer.Restart();
-#if false
+#if true
             var slow = (BigInteger)0;
             var imax = IntegerMath.FloorSquareRoot(n);
             for (var i = (BigInteger)1; i <= imax; i++)

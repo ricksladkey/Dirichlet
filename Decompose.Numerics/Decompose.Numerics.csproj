@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="ArithmeticFunctions\DivisorsCollection.cs" />
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunction.cs" />
+    <Compile Include="ArithmeticFunctions\DivisorSummatoryFunction2.cs" />
     <Compile Include="ArithmeticFunctions\MobiusCollection.cs" />
     <Compile Include="ArithmeticFunctions\MobiusRange.cs" />
     <Compile Include="ArithmeticFunctions\PrimeCollection.cs" />

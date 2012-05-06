@@ -1176,3 +1176,75 @@ singleton < xmin: x = 5, y = 59
 elapsed = 425.682 msec
 elapsed = 0.012 msec
 n = 297, sum = 1739, slow = 1741
+
+d(n)
+1   1 
+2   2 p  = 2
+3   2 p  = 2
+4   3 pp = j
+5   2 p  = 2
+6   4 sf = 0
+7   2 p  = 2
+8   4 pp = j
+9   3 pp = j
+10  4 sf = 0
+11  2 p  = 2
+
+formula for number of divisors:
+
+n = p1^a1 p2^a2 ... pk^ak
+
+d(n) = (a1 + 1)(a2 + 1) ... (ak + 1)
+
+if a1 == a2 == ... == ak == 1 then d(n) = 2^k
+    if k == 1, 2^k == 2 = 2 (mod 4)
+    if k > 1, 2^k == 4 2^k-2 = 0 (mod 4)
+
+if any ai == 3, d(n) == 0 (mod 4)
+
+(2 + 1) = 3 = 3 (mod 4), p^2 prime power
+(3 + 1) = 4 = 0 (mod 4), p^3 prime power
+(4 + 1) = 5 = 1 (mod 4), p^4 prime power
+(5 + 1) = 6 = 2 (mod 4), p^5 prime power
+
+prime powers we can account for
+
+foreach j from 2 to log2(n): k = (j + 1) mod 4, if k != 0 subtract k pi(n^(1/j))
+
+(2 + 1)(1 + 1) = 6, p^2 q
+(3 + 1)(1 + 1) = 8, p^3 q
+(4 + 1)(1 + 1) = 10, p^4 q
+
+prime powers time a prime: odd powers appear composite, even powers appear prime
+
+if a1 == 1 and a2 == ... == ak == 0 (mod 2), d == 2 (mod 2)
+
+or:
+
+n = p1 p2^(2a2) .. pk^(2ak)
+
+e.g. 2 3^2, 2 3^4, 2 3^2 5^2, 2 3^4 5^2
+
+p^2 q: p^2 2, p^2 3, ... p^2 n/(p^2) or pi(n/p^2) - 1 elements (excluding p^2 p)
+
+more generally:
+
+n = p1 (q1^a1 q1^a2 ... qk^ak)^2
+
+or:
+
+n = p1 d^2
+
+(D(n) - prime powers)/2 = pi(n) + pi(n/(2^2)) + pi(n/(3^2)) + ... pi(n/floor(sqrt(n)^2)) (mod 2)
+
+or D(n) - prime powers)
+
+sum(D(n/d^2),d=1,sqrt(n))
+
+cbrt(n) + cbrt(n/2^2) + ... + cbrt(n/D^2)
+cbrt(n) + cbrt(n)/cbrt(2^2) + ...
+cbrt(n)(1 + 1/2^(2/3) + ... 1/D^(2/3))
+
+cbrt(n)*sum(i^-(2/3), 1, D)
+
+integrate(i

@@ -33,8 +33,16 @@ namespace Decompose.Numerics
             var limit = (int)Math.Ceiling(Math.Sqrt(size));
             primes = new PrimeCollection(limit, 0).ToArray();
             values = new sbyte[size];
-            CreateCycle();
-            GetValues(threads);
+            if (primes.Length == 0)
+            {
+                values[2] = -1;
+                values[3] = -1;
+            }
+            else
+            {
+                CreateCycle();
+                GetValues(threads);
+            }
             values[1] = 1;
         }
 

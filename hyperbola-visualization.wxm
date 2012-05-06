@@ -11,8 +11,8 @@ m0: 1$
 m1: 2$
 x0: 36$
 y0: 36$
-x1: 26$
-y1: 50$
+x1: 27$
+y1: 49$
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -46,6 +46,9 @@ y2tan: n/x2tan;
 /* [wxMaxima: input   start ] */
 L0(x) := y0-m0*(x-x0)$
 L1(x) := y1-m1*(x-x1)$
+L0t(x) := y1-m0*(x-x1)$
+L1t(x) := y0-m1*(x-x0)$
+
 L2tan(x) := y2tan-m2*(x-x2tan)$
 /* [wxMaxima: input   end   ] */
 
@@ -147,9 +150,7 @@ y2b: P2b[2];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-umin: -1$ umax: u0+3$ vmin: -1$ vmax: v1+3$
-ugrid: map(lambda([ui],implicit(u=ui,u,0,u0+1,v,0,v1)),makelist(i,i,1,u0))$
-vgrid: map(lambda([vi],implicit(v=vi,u,0,u0,v,0,v1+1)),makelist(i,i,1,v1))$
+makelist
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -191,7 +192,7 @@ apply('wxdraw2d, append([
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-wxplot2d([H,L0,L1,L2tan],[x,x1,x0],
+wxplot2d([H,L0,L1,L0t,L1t],[x,x1-1,x0+1],[y,y0-1,y1+1],
     [gnuplot_preamble,
         "set grid; set xtics 1; set ytics 1;"]),
 wxplot_size=[800,800];

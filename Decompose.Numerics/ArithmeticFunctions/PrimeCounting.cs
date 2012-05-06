@@ -756,5 +756,23 @@ namespace Decompose.Numerics
             return (int)(sum & 1);
 #endif
         }
+
+        public BigInteger NumberOfSquareFree(BigInteger x)
+        {
+            if (x == 1)
+                return 1;
+            var limit = (int)IntegerMath.FloorSquareRoot(x);
+            var mobius = new MobiusCollection(limit + 1, 2 * threads);
+            var sum = (BigInteger)0;
+            for (var d = 1; d <= limit; d++)
+            {
+                var mu = mobius[d];
+                if (mu == 1)
+                    sum += x / ((long)d * d);
+                else if (mu == -1)
+                    sum -= x / ((long)d * d);
+            }
+            return sum;
+        }
     }
 }

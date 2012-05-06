@@ -6,35 +6,37 @@ using Integer = System.Numerics.BigInteger;
 
 namespace Decompose.Numerics
 {
-    public class DivisorSummatoryFunction
+    public class DivisorSummatoryFunction2
     {
         private struct Region
         {
-            public Region(Integer w, Integer h, Integer m1n, Integer m1d, Integer m0n, Integer m0d, Integer x01, Integer y01)
+            public Region(Integer w, Integer h, Integer a1, Integer b1, Integer a2, Integer b2, Integer x0, Integer y0)
             {
-                this.w = w; this.h = h; this.m1n = m1n; this.m1d = m1d; this.m0n = m0n; this.m0d = m0d; this.x01 = x01; this.y01 = y01;
+                this.w = w; this.h = h; this.a1 = a1; this.b1 = b1; this.a2 = a2; this.b2 = b2; this.x0 = x0; this.y0 = y0;
             }
             public Integer w;
             public Integer h;
-            public Integer m1n;
-            public Integer m1d;
-            public Integer m0n;
-            public Integer m0d;
-            public Integer x01;
-            public Integer y01;
+            public Integer a1;
+            public Integer b1;
+            public Integer a2;
+            public Integer b2;
+            public Integer x0;
+            public Integer y0;
         }
 
         private readonly Integer smallRegionCutoff = 10;
         private readonly Integer minimumMultiplier = 10;
 
+        private bool diag;
         private Integer n;
         private Integer xmin;
         private Integer xmax;
 
         private Stack<Region> stack;
 
-        public DivisorSummatoryFunction()
+        public DivisorSummatoryFunction2(bool diag)
         {
+            this.diag = diag;
             stack = new Stack<Region>();
         }
 
@@ -51,18 +53,18 @@ namespace Decompose.Numerics
             xmin = IntegerMath.Min(IntegerMath.FloorRoot(n, 3) * minimumMultiplier, xmax);
 
             // Calculate the line tangent to the hyperbola at the x = sqrt(n).
-            var m0 = (Integer)1;
+            var m2 = (Integer)1;
             var x0 = xmax;
             var y0 = n / x0;
-            var r0 = y0 + m0 * x0;
+            var r0 = y0 + m2 * x0;
             var width = x0 - xmin;
-            Debug.Assert(r0 - m0 * x0 == y0);
+            Debug.Assert(r0 - m2 * x0 == y0);
 
             // Add the bottom rectangle.
             sum += (width + 1) * y0;
 
             // Add the isosceles right triangle corresponding to the initial
-            // line L0 with -slope = 1.
+            // line L2 with -slope = 1.
             sum += width * (width + 1) / 2;
 
             // Process regions between tangent lines with integral slopes 1 & 2,
@@ -74,7 +76,7 @@ namespace Decompose.Numerics
             while (true)
             {
                 // Find the largest point (x1a, y1a) where -H'(X) >= the new slope.
-                var m1 = m0 + 1;
+                var m1 = m2 + 1;
                 var x1a = IntegerMath.FloorSquareRoot(n / m1);
                 var y1a = n / x1a;
                 var r1a = y1a + m1 * x1a;
@@ -88,19 +90,19 @@ namespace Decompose.Numerics
                 if (x1a < xmin)
                 {
                     // Process the last few values above xmin as the number of
-                    // points above the last L0.
+                    // points above the last L2.
                     for (var x = xmin; x < x0; x++)
-                        sum += n / x - (r0 - m0 * x);
+                        sum += n / x - (r0 - m2 * x);
                     break;
                 }
 
                 // Invariants:
-                // The value before x1a aInteger L1a is on or below the hyperbola.
-                // The value after x1b aInteger l2b is on or below the hyperbola.
+                // The value before x1a along L1a is on or below the hyperbola.
+                // The value after x1b along L1b is on or below the hyperbola.
                 // The new slope is one greater than the old slope.
                 Debug.Assert((x1a - 1) * (r1a - m1 * (x1a - 1)) <= n);
                 Debug.Assert((x1b + 1) * (r1b - m1 * (x1b + 1)) <= n);
-                Debug.Assert(m1 - m0 == 1);
+                Debug.Assert(m1 - m2 == 1);
 
                 // Add the triangular wedge above the previous slope and below the new one
                 // and bounded on the left by xmin.
@@ -118,20 +120,20 @@ namespace Decompose.Numerics
                     sum += dr * (2 * ow + dr + 1) / 2;
                 }
 
-                // Determine intersection of L0 and L1b.
+                // Determine intersection of L2 and L1b.
                 var x01b = r1b - r0;
-                var y01b = r0 - m0 * x01b;
-                Debug.Assert(r0 - m0 * x01b == r1b - m1 * x01b);
+                var y01b = r0 - m2 * x01b;
+                Debug.Assert(r0 - m2 * x01b == r1b - m1 * x01b);
 
                 // Calculate width and height of parallelogram counting only lattice points.
                 var w = (y0 - y01b) + m1 * (x0 - x01b);
-                var h = (y1b - y01b) + m0 * (x1b - x01b);
+                var h = (y1b - y01b) + m2 * (x1b - x01b);
 
-                // Process the hyperbolic region bounded by L1b and L0.
-                sum += ProcessRegion(w, h, m1, 1, m0, 1, x01b, y01b);
+                // Process the hyperbolic region bounded by L1b and L2.
+                sum += ProcessRegion(w, h, m1, 1, m2, 1, x01b, y01b);
 
                 // Advance to the next region.
-                m0 = m1;
+                m2 = m1;
                 x0 = x1a;
                 y0 = y1a;
                 r0 = r1a;
@@ -147,33 +149,33 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private Integer ProcessRegion(Integer  w, Integer h, Integer m1n, Integer m1d, Integer m0n, Integer m0d, Integer x01, Integer y01)
+        private Integer ProcessRegion(Integer w, Integer h, Integer a1, Integer b1, Integer a2, Integer b2, Integer x0, Integer y0)
         {
             // The hyperbola is defined by H(x, y): x*y = n.
-            // Line L0 has slope m0 = -m0n/m0d.
-            // Line L1 has slope m1 = -m1n/m1d.
-            // Both lines pass through P01 = (x01, y01).
+            // Line L1 has -slope m1 = a1/b1.
+            // Line L2 has -slope m2 = a2/b2.
+            // Both lines pass through P0 = (x0, y0).
             // The region is a parallelogram with the left side bounded L1,
-            // the bottom bounded by L0, with width w (aInteger L0) and height h
-            // (aInteger L1).  The lower-left corner is P01 (the intersection of
-            // L0 and L1) and represents (u, v) = (0, 0).
+            // the bottom bounded by L2, with width w (along L2) and height h
+            // (along L1).  The lower-left corner is P0 (the intersection of
+            // L2 and L1) and represents (u, v) = (0, 0).
             // Both w and h are counted in terms of lattice points, not length.
 
-            // For the purposes of counting, the lattice points on lines L0 and L1
+            // For the purposes of counting, the lattice points on lines L1 and L2
             // have already been counted.
 
-            // Note that m0d*m1n - m0n*m1d = 1 because
-            // m0 and m1 are Farey neighbors, e.g. 1 & 2 or 3/2 & 2 or 8/5 & 5/3
+            // Note that a1*b2 - b1*a2 = 1 because
+            // m2 and m1 are Farey neighbors, e.g. 1 & 2 or 3/2 & 2 or 8/5 & 5/3
 
             // The equations that define (u, v) in terms of (x, y) are:
-            // u = m1d*(y-y01)+m1n*(x-x01)
-            // v = m0d*(y-y01)+m0n*(x-x01)
- 
-            // And therefore the equations that define (x, y) in terms of (u, v) are:
-            // x = x01-m1d*v+m0d*u
-            // y = y01+m1n*v-m0n*u
+            // u = b1*(y-y0)+a1*(x-x0)
+            // v = b2*(y-y0)+a2*(x-x0)
 
-            // Since all parameters are integers and m0d*m1n - m0n*m1d = 1,
+            // And therefore the equations that define (x, y) in terms of (u, v) are:
+            // x = x0-b1*v+b2*u
+            // y = y0+a1*v-a2*u
+
+            // Since all parameters are integers and a1*b2 - b1*a2 = 1,
             // every lattice point in (x, y) is a lattice point in (u, v)
             // and vice-versa.
 
@@ -194,14 +196,14 @@ namespace Decompose.Numerics
             // the curvature is roughly constant, the deformed hyperbola
             // will in fact resemble a circular arc.
 
-            // A line with -slope = 1 in UV-space has -slope = (m0n+m1n)/(m0d+m1d)
-            // in XY-space.  We call this m2 and the line defining the third side
-            // of the triangle as L2 contain point P2 tangent to the hyperbola.
+            // A line with -slope = 1 in UV-space has -slope = (a1+a2)/(b1+b2)
+            // in XY-space.  We call this m3 and the line defining the third side
+            // of the triangle as L3 containing point P3 tangent to the hyperbola.
 
             // This is all slightly complicated by the fact that diagonal that
             // defines the region that we "lop off" may be broken and shifted
             // up or down near the tangent point.  As a result we actually have
-            // P2a and P2b and L2a and L2b.
+            // P3 and P4 and L3 and L4.
 
             // We can measure work in units of X because it is the short
             // axis and it ranges from cbrt(n) to sqrt(n).  If we did one
@@ -223,7 +225,7 @@ namespace Decompose.Numerics
             // subdivision on regions where cubrt(n) < n < sqrt(n).
 
             // The sqrt(n) bound comes from symmetry and the Dirichlet
-            // hyperbola method, which we also use.  The cubrt(n)
+            // hyperbola method (which we also use).  The cubrt(n)
             // bound comes from the fact that the second deriviative H''(x)
             // exceeds one at (2n)^(1/3) ~= 1.26*cbrt(n).  Since we process
             // regions with adjacent integral slopes at the top level, by the
@@ -253,24 +255,24 @@ namespace Decompose.Numerics
                         break;
 
                     // Check whether the point at (w, 1) is inside the hyperbola.
-                    if ((m0d * w - m1d + x01) * (m1n - m0n * w + y01) <= n)
+                    if ((b2 * w - b1 + x0) * (a1 - a2 * w + y0) <= n)
                     {
                         // Remove the first row.
                         sum += w;
-                        x01 -= m1d;
-                        y01 += m1n;
+                        x0 -= b1;
+                        y0 += a1;
                         --h;
                         if (h == 0)
                             break;
                     }
 
                     // Check whether the point at (1, h) is inside the hyperbola.
-                    if ((m0d - m1d * h + x01) * (m1n * h - m0n + y01) <= n)
+                    if ((b2 - b1 * h + x0) * (a1 * h - a2 + y0) <= n)
                     {
                         // Remove the first column.
                         sum += h;
-                        x01 += m0d;
-                        y01 -= m0n;
+                        x0 += b2;
+                        y0 -= a2;
                         --w;
                         if (w == 0)
                             break;
@@ -285,19 +287,19 @@ namespace Decompose.Numerics
                     // from the axis at P0 and P1 and the distance from the axis
                     // to the hyperbola increases monotonically as you approach
                     // (u, v) = (0, 0).
-                    Debug.Assert((m0d - m1d * h + x01) * (+m1n * h - m0n + y01) > n);
-                    Debug.Assert((m0d * w - m1d + x01) * (m1n -  m0n * w + y01) > n);
-                    Debug.Assert(m0d * m1n - m0n * m1d == 1);
+                    Debug.Assert((b2 - b1 * h + x0) * (+a1 * h - a2 + y0) > n);
+                    Debug.Assert((b2 * w - b1 + x0) * (a1 - a2 * w + y0) > n);
+                    Debug.Assert(b2 * a1 - a2 * b1 == 1);
 
-                    // Find the pair of points (u2a, v2a) and (u2b, v2b) below H(u,v) where:
-                    // -dv/du at u=u2a >= 1
-                    // -dv/du at u=u2b <= 1
-                    // u2b = u2a + 1
+                    // Find the pair of points (u3, v3) and (u4, v4) below H(u,v) where:
+                    // -dv/du at u=u3 >= 1
+                    // -dv/du at u=u4 <= 1
+                    // u4 = u3 + 1
                     // Specifically, solve:
-                    // (x01 - m1d*v + m0d*u)*(y01 + m1n*v - m0n*u) = n at dv/du = -1
+                    // (x0 - b1*v + b2*u)*(y0 + a1*v - a2*u) = n at dv/du = -1
                     // and solve for the line tan = u + v tangent passing through that point.
-                    // Then u2a = floor(u) and u2b = u2a + 1.
-                    // Finally compute v2a and v2b from u2a and u2b using the tangent line
+                    // Then u3 = floor(u) and u4 = u3 + 1.
+                    // Finally compute v3 and v4 from u3 and u4 using the tangent line
                     // which may result in a value too small by at most one.
                     // Note that there are two solutions, one negative and one positive.
                     // We take the positive solution.
@@ -308,67 +310,68 @@ namespace Decompose.Numerics
                     // to enable using integer arithmetic.
 
                     // Formulas:
-                    // m2nd = m2d*m2n, mxy1 = m1d*y01+m1n*x01, mxy2 = m2d*y01+m2n*x01
-                    // u = floor((2*m1d*m2n+1)*sqrt(m2nd*n)/m2nd-mxy1)
+                    // m2nd = m2d*m2n, mxy1 = b1*y0+a1*x0, mxy2 = m2d*y0+m2n*x0
+                    // u = floor((2*b1*m2n+1)*sqrt(m2nd*n)/m2nd-mxy1)
                     // v = floor(-u+2*sqrt(m2nd*n)-mxy2)
-                    var m2n = m0n + m1n;
-                    var m2d = m0d + m1d;
-                    var m2nd = m2n * m2d;
-                    var mxy1 = m1n * x01 + m1d * y01;
-                    var mxy2 = m2n * x01 + m2d * y01;
-                    var sqrtcoef = 2 * m1d * m2n + 1;
-                    var tan = IntegerMath.FloorSquareRoot(2 * 2 * m2nd * n) - mxy2;
-                    var u2a = IntegerMath.FloorSquareRoot(sqrtcoef * sqrtcoef * n / m2nd) - mxy1;
-                    var v2a = u2a != 0 ? tan - u2a : h;
-                    var u2b = u2a < w ? u2a + 1 : w;
-                    var v2b = tan - u2b;
+                    var c1 = a1 * x0 + b1 * y0;
+                    var c2 = a2 * x0 + b2 * y0;
+                    var a3 = a1 + a2;
+                    var b3 = b1 + b2;
+                    var c3 = c1 + c2;
+                    var ab3 = a3 * b3;
+                    var sqrtcoef = 2 * b1 * a3 + 1;
+                    var tan = IntegerMath.FloorSquareRoot(2 * 2 * ab3 * n) - c3;
+                    var u3 = IntegerMath.FloorSquareRoot(sqrtcoef * sqrtcoef * n / ab3) - c1;
+                    var v3 = u3 != 0 ? tan - u3 : h;
+                    var u4 = u3 < w ? u3 + 1 : w;
+                    var v4 = tan - u4;
 
-                    // Check for under-estimate of v2a and/or v2b.
-                    if (u2a != 0)
+                    // Check for under-estimate of v3 and/or v4.
+                    if (u3 != 0)
                     {
-                        var v2aplus = v2a + 1;
-                        if ((m0d * u2a - m1d * v2aplus + x01) * (m1n * v2aplus - m0n * u2a + y01) <= n)
-                        ++v2a;
+                        var v3plus = v3 + 1;
+                        if ((b2 * u3 - b1 * v3plus + x0) * (a1 * v3plus - a2 * u3 + y0) <= n)
+                            ++v3;
                     }
-                    var v2bplus = v2b + 1;
-                    if ((m0d * u2b - m1d * v2bplus + x01) * (m1n * v2bplus - m0n * u2b + y01) <= n)
-                        ++v2b;
+                    var v4plus = v4 + 1;
+                    if ((b2 * u4 - b1 * v4plus + x0) * (a1 * v4plus - a2 * u4 + y0) <= n)
+                        ++v4;
 
-                    // Compute the V intercept of L2a and L2b.  Since the lines are diagonal the intercept
-                    // is the same on both U and V axes and v12a = u02a and v12b = u02b.
-                    var v12a = u2a + v2a;
-                    var v12b = u2b + v2b;
-                    Debug.Assert(IntegerMath.Abs(v12a - v12b) >= 0 && IntegerMath.Abs(v12a - v12b) <= 1);
+                    // Compute the V intercept of L3 and L4.  Since the lines are diagonal the intercept
+                    // is the same on both U and V axes and v13 = u03 and v14 = u04.
+                    var r3 = u3 + v3;
+                    var r4 = u4 + v4;
+                    Debug.Assert(IntegerMath.Abs(r3 - r4) >= 0 && IntegerMath.Abs(r3 - r4) <= 1);
 
                     // Count points horizontally or vertically if one axis collapses (or is below our cutoff)
                     // or if the triangle exceeds the bounds of the rectangle.
-                    if (u2a <= smallRegionCutoff || v2b <= smallRegionCutoff || v12a > w || v12b > h)
+                    if (u3 <= smallRegionCutoff || v4 <= smallRegionCutoff || r3 > w || r4 > h)
                     {
                         if (h > w)
-                            sum += CountPoints(true, w, m0n, m0d, m1n, m1d, x01, y01);
+                            sum += CountPoints(true, w, a1, b1, c1, a2, b2, c2);
                         else
-                            sum += CountPoints(false, h, m1n, m1d, m0n, m0d, x01, y01);
+                            sum += CountPoints(false, h, a2, b2, c2, a1, b1, c1);
                         break;
                     }
 
-                    // Add the triangle defined L0, L1, and smaller of L2a and L2b.
-                    var v12 = IntegerMath.Min(v12a, v12b);
-                    sum += v12 * (v12 - 1) / 2;
+                    // Add the triangle defined L2, L1, and smaller of L3 and L4.
+                    var size = IntegerMath.Min(r3, r4);
+                    sum += size * (size - 1) / 2;
 
-                    // Adjust for the difference (if any) between L2a and L2b.
-                    if (v12a != v12b)
-                        sum += v12a > v12b ? u2a : v2b;
+                    // Adjust for the difference (if any) between L3 and L4.
+                    if (r3 != r4)
+                        sum += r3 > r4 ? u3 : v4;
 
                     // Push left region onto the stack.
-                    stack.Push(new Region(u2a, h - v12a, m1n, m1d, m2n, m2d, x01 - m1d * v12a, y01 + m1n * v12a));
+                    stack.Push(new Region(u3, h - r3, a1, b1, a3, b3, x0 - b1 * r3, y0 + a1 * r3));
 
-                    // Process right region iteratively (no change to m0n and m0d).
-                    w -= v12b;
-                    h = v2b;
-                    m1n = m2n;
-                    m1d = m2d;
-                    x01 = x01 + m0d * v12b;
-                    y01 = y01 - m0n * v12b;
+                    // Process right region iteratively (no change to a2 and b2).
+                    w -= r4;
+                    h = v4;
+                    a1 = a3;
+                    b1 = b3;
+                    x0 = x0 + b2 * r4;
+                    y0 = y0 - a2 * r4;
                 }
 
                 // Any more regions to process?
@@ -379,22 +382,22 @@ namespace Decompose.Numerics
                 var region = stack.Pop();
                 w = region.w;
                 h = region.h;
-                m1n = region.m1n;
-                m1d = region.m1d;
-                m0n = region.m0n;
-                m0d = region.m0d;
-                x01 = region.x01;
-                y01 = region.y01;
+                a1 = region.a1;
+                b1 = region.b1;
+                a2 = region.a2;
+                b2 = region.b2;
+                x0 = region.x0;
+                y0 = region.y0;
             }
 
             // Return the sum of lattice points in this region.
             return sum;
         }
 
-        private Integer CountPoints(bool horizontal, Integer max, Integer m0n, Integer m0d, Integer m1n, Integer m1d, Integer x01, Integer y01)
+        private Integer CountPoints(bool horizontal, Integer max, Integer a1, Integer b1, Integer c1, Integer a2, Integer b2, Integer c2)
         {
             // Count points under the hyperbola:
-            // (x01 - m1d*v + m0d*u)*(y01 + m1n*v - m0n*u) = n
+            // (x0 - b1*v + b2*u)*(y0 + a1*v - a2*u) = n
             // Horizontal: For u = 1 to max calculate v in terms of u.
             // vertical: For v = 1 to max calculate u in terms of v.
             // Note that there are two positive solutions and we
@@ -407,29 +410,26 @@ namespace Decompose.Numerics
             // to enable using integer arithmetic.
 
             // Formulas:
-            // m0nd = m0d*m0n, m1nd = m1d*m1n, 
-            // m01s = m0d*m1n+m0n*m1d, mxy0d = m0d*y01-m0n*x01,
-            // mxy1d = m1n*x01-m1d*y01,
-            // mxy0 = m0d*y01+m0n*x01, mxy1 = m1d*y01+m1n*x01
+            // m0nd = b2*a2, m1nd = b1*a1, 
+            // m01s = b2*a1+a2*b1, mxy0d = b2*y0-a2*x0,
+            // mxy1d = a1*x0-b1*y0,
+            // mxy0 = b2*y0+a2*x0, mxy1 = b1*y0+a1*x0
             // v = floor((-sqrt((u+mxy1)^2-4*m1nd*n)+m01s*u+mxy1d)/(2*m1nd))
             // u = floor((-sqrt((v+mxy0)^2-4*m0nd*n)+m01s*v+mxy0d)/(2*m0nd))
             var sum = (Integer)0;
-            var mx1 = m1n * x01;
-            var my1 = m1d * y01;
-            var mxy1 = mx1 + my1;
-            var m01s = m0d * m1n + m0n * m1d;
-            var denom = 2 * m1n * m1d;
-            var a = mxy1 * mxy1 - 2 * denom * n;
-            var b = horizontal ? mx1 - my1 : my1 - mx1;
-            var da = 2 * mxy1 - 1;
+            var coef = a1 * b2 + b1 * a2;
+            var denom = 2 * a1 * b1;
+            var a = c1 * c1 - 2 * denom * n;
+            var b = c1 * coef;
+            var da = 2 * c1 - 1;
             for (var i = (Integer)1; i <= max; i++)
             {
                 da += 2;
                 a += da;
-                b += m01s;
+                b += coef;
                 sum += (b - IntegerMath.CeilingSquareRoot(a)) / denom;
             }
-            return sum;
+            return sum - max * c2;
         }
 
     }
