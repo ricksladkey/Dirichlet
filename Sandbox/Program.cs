@@ -194,9 +194,14 @@ namespace Sandbox
             var diag = false;
             var algorithm = new DivisorSummatoryFunction();
             var algorithm2 = new DivisorSummatoryFunction2(diag);
-            var n = (BigInteger)1 << 60;
+            var n = (BigInteger)1 << 50;
+            var timer = new Stopwatch();
+            timer.Restart();
             var sum = algorithm.Evaluate(n);
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            timer.Restart();
             var sum2 = algorithm2.Evaluate(n);
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             Console.WriteLine("sum = {0}, sum2 = {1}", sum, sum2);
 #endif
 
