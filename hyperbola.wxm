@@ -9,7 +9,7 @@ load("format")$
 /* [wxMaxima: input   start ] */
 swapsides(eqs) := map(lambda([u],rhs(u)=lhs(u)), eqs)$
 backsubst(eqs,expr) := subst(swapsides(eqs),subst(swapsides(-eqs),expr))$
-ratbacksubst(eqs,expr) := lratsubst(swapsides(eqs),expr)$
+backratsubst(eqs,expr) := lratsubst(swapsides(eqs),expr)$
 print1d(expr) := block([display2d], display2d: false, print(expr))$
 /* [wxMaxima: input   end   ] */
 
@@ -64,7 +64,7 @@ xy: [x=x[0]-b[1]*v+b[2]*u,y=y[0]+a[1]*v-a[2]*u];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-uv: ratbacksubst(cdefs,subst(detdef,ratsimp(solve(xy,[u,v])[1])));
+uv: backratsubst(cdefs,subst(detdef,ratsimp(solve(xy,[u,v])[1])));
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -120,8 +120,8 @@ vdiag6: format(vdiag5,%rhs,%frac,%poly(x[0],y[0]),%factor);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-udiag7: ratbacksubst(cdefs,subst(detdef,subst(swapsides(p3defs),udiag6)));
-vdiag7: ratbacksubst(cdefs,subst(detdef,subst(swapsides(p3defs),vdiag6)));
+udiag7: backratsubst(cdefs,subst(detdef,subst(swapsides(p3defs),udiag6)));
+vdiag7: backratsubst(cdefs,subst(detdef,subst(swapsides(p3defs),vdiag6)));
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -160,7 +160,7 @@ vdiag10: subst([vdiag9part=isqrt(vdiag9part^2)],vdiag9);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-tangent1: ratbacksubst(cdefs,subst([detdef],ratsimp(udiag5+vdiag5)));
+tangent1: backratsubst(cdefs,subst([detdef],ratsimp(udiag5+vdiag5)));
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -168,11 +168,11 @@ tangent1part: part(tangent1,2,1,2,1);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-tangent2: subst([tangent1part=ratbacksubst(p3defs,factor(tangent1part))],tangent1);
+tangent2: subst([tangent1part=backratsubst(p3defs,factor(tangent1part))],tangent1);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-tangent3: solve(ratbacksubst(p3defs,tangent2),v)[1];
+tangent3: solve(backratsubst(p3defs,tangent2),v)[1];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -194,8 +194,8 @@ v2u1part: part(v2u1,2,1,1,1,1);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-u2v2: format(subst([u2v1part=format(ratbacksubst(cdefs,format(subst([detdef],format(u2v1part,%p(u),%f)))),%f-4*a[1]*b[1]*n)],u2v1),%rhs,%frac);
-v2u2: format(subst([v2u1part=format(ratbacksubst(cdefs,format(subst([detdef],format(v2u1part,%p(v),%f)))),%f-4*a[2]*b[2]*n)],v2u1),%rhs,%frac);
+u2v2: format(subst([u2v1part=format(backratsubst(cdefs,format(subst([detdef],format(u2v1part,%p(u),%f)))),%f-4*a[1]*b[1]*n)],u2v1),%rhs,%frac);
+v2u2: format(subst([v2u1part=format(backratsubst(cdefs,format(subst([detdef],format(v2u1part,%p(v),%f)))),%f-4*a[2]*b[2]*n)],v2u1),%rhs,%frac);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -222,7 +222,7 @@ expand(subst(solve(detdef,a[1]),subst(cdefs,ratsimp(v2u2-v2u3))));
 cdefs;
 p3defs;
 c4def: c[4] = (x[0] - b[1]*r[3])*a[3] + (y[0] + a[1]*r[3])*b[3];
-ratbacksubst(p3defs,solve(subst(detdef,factor(expand(subst(p3defs,c4def-cdefs[1]-cdefs[2])))),c[4])[1]);
+backratsubst(p3defs,solve(subst(detdef,factor(expand(subst(p3defs,c4def-cdefs[1]-cdefs[2])))),c[4])[1]);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -247,11 +247,52 @@ vv2uu1: subst(uuvvdefs,format(subst(expand(detdef^2),solve(huuvv,uu)[1]),%rhs,%f
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
+format(expand(diff(huuvv,uu)),%lhs,%p(diff(vv,uu)));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
 dvvduu: solve(diff(huuvv,uu),diff(vv,uu))[1];
 uudiag: subst(detdef,ratsimp(solve(subst(ratsimp(solve(subst([diff(vv,uu)=-1],dvvduu),vv)[1]),huuvv),uu)[2]))$
 vvdiag: subst(detdef,ratsimp(solve(subst(ratsimp(solve(subst([diff(vv,uu)=-1],dvvduu),uu)[1]),huuvv),vv)[2]))$
-subst(uuvvdefs,backsubst(p3defs,factor(uudiag)))-c[1];
-subst(uuvvdefs,backsubst(p3defs,factor(vvdiag)))-c[2];
+uudiag2: subst(uuvvdefs,backsubst(p3defs,factor(uudiag)))-c[1];
+vvdiag2: subst(uuvvdefs,backsubst(p3defs,factor(vvdiag)))-c[2];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+print1d(subst(vardefs,uudiag2))$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+subst(append(cdefs,p3defs,checkvalues),[uudiag2,vvdiag2]),numer;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Try solving for x and y first and then converting to u and v.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+depends(y,x)$
+depends(x,y)$
+xdiag1: radcan(solve(subst([diff(y,x)=-a[3]/b[3]],diff(solve(hxy,y)[1],x)),x)[2]);
+ydiag1: radcan(solve(subst(xdiag1,hxy),y)[1]);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+uxydiag1: subst(detdef,format(solve(subst(append(xy0defs,[xdiag1,ydiag1]),xy),[u,v])[1][1],%rhs,%frac,%p(sqrt(n)),%f));
+vxydiag1: subst(detdef,format(solve(subst(append(xy0defs,[xdiag1,ydiag1]),xy),[u,v])[1][2],%rhs,%frac,%p(sqrt(n)),%f));
+subst(append(cdefs,p3defs,checkvalues),[uxydiag1,vxydiag1]),numer;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+dvduc: solve(diff(huvc2,u),diff(v,u))[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+dfdefs: [d[1]=2*a[1]*b[1],d[2]=2*a[2]*b[2],f[1,2]=a[1]*b[2]+b[1]*a[2]];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+backratsubst(dfdefs,dvduc);
 /* [wxMaxima: input   end   ] */
 
 /* Maxima can't load/batch files which end with a comment! */
