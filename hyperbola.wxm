@@ -76,6 +76,10 @@ huv: subst(xy,hxy);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
+xy;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
 huvc: format(subst(xy0defs,huv),%lhs,%prod,%p(a[1],a[2],b[1],b[2]));
 /* [wxMaxima: input   end   ] */
 
@@ -90,6 +94,10 @@ huvc2: subst(uuvvdefs,backsubst(uuvvdefs,huvc));
 /* [wxMaxima: input   start ] */
 print1d(subst(vardefs,huv))$
 print1d(subst(vardefs,huvc2))$
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+xyc: subst(uuvvdefs,backsubst(uuvvdefs,format(subst(xy0defs,xy),%list,%rhs,%prod,%p(a[1],a[2],b[1],b[2]))));
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -284,15 +292,55 @@ subst(append(cdefs,p3defs,checkvalues),[uxydiag1,vxydiag1]),numer;
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-dvduc: solve(diff(huvc2,u),diff(v,u))[1];
+dvduc: subst(uuvvdefs,format(expand(subst([diff(vv,uu)=-1],diff(backsubst(uuvvdefs,huvc2),uu))),%lhs,%p(uu,vv)));
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-dfdefs: [d[1]=2*a[1]*b[1],d[2]=2*a[2]*b[2],f[1,2]=a[1]*b[2]+b[1]*a[2]];
+dvduc2: factor(ratsimp(dvduc-part(dvduc,1,2)));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+dfdefs: [d[1]=a[1]*b[1],d[2]=a[2]*b[2],d[3]=a[3]*b[3],f[1,2]=a[1]*b[2]+b[1]*a[2]];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
 backratsubst(dfdefs,dvduc);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+backratsubst(dfdefs,uudiag2);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+format(subst(uuvvdefs,backratsubst(dfdefs,backsubst(uuvvdefs,uu2vv1+c[2]))),%rhs,%frac)-c[2];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+dvduc3: factor(backratsubst(dfdefs,dvduc2));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+solve(subst([diff(y,x)=a[1]],diff(solve(hxy,y)[1],x)),x)[2];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+lines: [a[1]*x+b[1]*y=c[1],a[2]*x+b[2]*y=c[2]];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+subst([x=x[2],y=y[2]],lines[2]);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+subst([x=x[4],y=y[4]],lines[1]);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+subst([x=x[2],y=y[2]],uv[1]);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+subst([x=x[4],y=y[4]],uv[2]);
 /* [wxMaxima: input   end   ] */
 
 /* Maxima can't load/batch files which end with a comment! */
