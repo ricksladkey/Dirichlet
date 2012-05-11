@@ -150,7 +150,7 @@ y2b: P2b[2];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-makelist
+makelist;
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */

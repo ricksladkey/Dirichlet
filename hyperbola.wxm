@@ -320,7 +320,7 @@ dvduc3: factor(backratsubst(dfdefs,dvduc2));
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-solve(subst([diff(y,x)=a[1]],diff(solve(hxy,y)[1],x)),x)[2];
+xdiag1: solve(subst([diff(y,x)=-a[1]],diff(solve(hxy,y)[1],x)),x)[2];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -332,7 +332,7 @@ subst([x=x[2],y=y[2]],lines[2]);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-subst([x=x[4],y=y[4]],lines[1]);
+subst([x=x[5],y=y[5]],lines[1]);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -340,7 +340,53 @@ subst([x=x[2],y=y[2]],uv[1]);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-subst([x=x[4],y=y[4]],uv[2]);
+subst([x=x[5],y=y[5]],uv[2]);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+solve(subst([diff(y,x,2)=1],diff(solve(hxy,y)[1],x,2)),x)[3];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+2^(1/3),numer;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+solve(w=(B/A)^E,E)[1];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+x2a: a=-diff(rhs(solve(hxy,y)[1]),x);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+a2x: solve(x2a,x)[2];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+a2dx: -radcan(diff(rhs(a2x),a));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+amin: [a=1];
+amax: [subst([x=(2*n)^(1/3)],x2a)];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Check a(delta x) agrees with direct calculation.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+subst([a=1.5],a2dx),numer;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+radcan(rhs(subst([a[1]=1],xdiag1))-rhs(subst([a[1]=2],xdiag1))),numer;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+a2rindef: integrate(a2dx^(2/3),a);
+a2r: subst(amax,a2rindef)-subst(amin,a2rindef);
 /* [wxMaxima: input   end   ] */
 
 /* Maxima can't load/batch files which end with a comment! */

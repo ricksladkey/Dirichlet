@@ -51,14 +51,17 @@
     T<around*|(|n|)>=<big|sum><rsup|n><rsub|x=1><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>
   </equation>
 
-  By using the symmetry of the hyperbola (and taking care to avoid double
-  counting) we can do this even more efficiently:
+  which gives an <math|O<around*|(|n|)>> algorithm. \ By using the symmetry
+  of the hyperbola (and taking care to avoid double counting) we can do this
+  even more efficiently:
 
   <\equation>
     T<around*|(|n|)>=2<big|sum><rsup|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>><rsub|x=1><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>-<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>><rsup|2>
   </equation>
 
-  \ It will be convenient to parameterize this sum as:
+  \ which gives an <math|O<around*|(|n<rsup|1/2>|)>> algorithm and is the
+  usual method by which the divisor summatory function is computed. \ It will
+  be convenient to parameterize this sum as:
 
   <\equation>
     S<around*|(|i,j|)>=<big|sum><rsup|j><rsub|x=i+1><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>
@@ -79,8 +82,19 @@
   simple polygon and can conceptually be calculated directly by decomposing
   the area into triangles. \ The region itself is crescent shaped with a
   corner, similar to the six pieces left over when subtracting an inscribed
-  circle from a hexagon. \ We will now go about counting the lattice points
-  in such a region.
+  circle from a hexagon.
+
+  We will now go about counting the lattice points in such a region. We will
+  do this by transforming the region into a new coordinate system and the
+  following figures depict the untransformed and transfomed region.
+
+  This figure depicts the region in the <math|x y> coordinate system:
+
+  <with|gr-mode|<tuple|edit|math-at>|gr-frame|<tuple|scale|1cm|<tuple|0.5gw|0.5gh>>|gr-geometry|<tuple|geometry|1par|0.6par>|gr-grid|<tuple|cartesian|<point|-100|-100>|2>|gr-grid-old|<tuple|cartesian|<point|-100|-100>|2>|gr-edit-grid-aspect|<tuple|<tuple|axes|none>|<tuple|1|none>|<tuple|10|none>>|gr-edit-grid|<tuple|cartesian|<point|-100|-100>|2>|gr-edit-grid-old|<tuple|cartesian|<point|-100|-100>|2>|gr-auto-crop|true|<graphics||<line|<point|-2|0>|<point|2.0|-4.0>>|<line|<point|-2|0>|<point|-4.0|4.0>>|<spline|<point|2.28704699048648|-4.19999999999999>|<point|-0.200000000000003|-1.40000000000001>|<point|-3.0|2.40000000000001>|<point|-4.2|4.59999999999999>>|<math-at|P<rsub|0>|<point|-2.59999999999999|-0.400000000000006>>|<math-at|P<rsub|1>|<point|-4.4|3.4>>|<point|-4|4>|<point|-2|0>|<point|2|-4>|<math-at|P<rsub|2>|<point|1.2|-4>>|<math-at|-m<rsub|1>=<frac|a<rsub|1>|b<rsub|1>>|<point|-4.63591866219594|1.80000000000001>>|<math-at|H<around*|(|x,y|)>=n|<point|-1.4|0.8>>|<math-at|-m<rsub|2>=<frac|a<rsub|2>|b<rsub|2>>|<point|-1.59999999999999|-2.2>>>>
+
+  This figure depicts the region in the <math|u v> coordinate system:
+
+  <with|gr-mode|<tuple|edit|point>|gr-frame|<tuple|scale|1.18926cm|<tuple|0.5gw|0.5gh>>|gr-geometry|<tuple|geometry|1par|0.733333par|center>|gr-grid|<tuple|cartesian|<point|0|0>|5>|gr-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-aspect|<tuple|<tuple|axes|none>|<tuple|1|none>|<tuple|10|none>>|gr-edit-grid|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-auto-crop|true|magnify|1.18920711391541|<graphics||<point|0|0>|<point|0.0|3.5>|<point|1.5|1.0>|<line|<point|1.5|1>|<point|2.5|0.0>>|<point|2.5|0>|<point|3.5|0.0>|<math-at|P<rsub|2>|<point|3.5|-0.315875450190698>>|<math-at|P<rsub|5>|<point|1.0|0.691569794964324>>|<line|<point|0|3.5>|<point|3.5|3.5>|<point|3.5|0.0>>|<math-at|w|<point|1.67812|3.7323>>|<math-at|h|<point|3.71164|2>>|<math-at|u|<point|4.22327127104857|-0.250914248369648>>|<spline|<point|4.5|0.262528795121958>|<point|3.0|0.5>|<point|0.701313192297385|2.5>|<point|0.270375393271184|4.0>>|<line|<point|1.0|2.0>|<point|0.0|3.0>>|<point|0.0|3.0>|<point|1.25659730989343|1.69647908332071>|<math-at|P<rsub|6>|<point|-0.5|2.68372631475282>>|<point|1.0|2.0>|<math-at|P<rsub|4>|<point|0.5|1.69113478621578>>|<math-at|P<rsub|3>|<point|1.5|1.76202136806692>>|<math-at|P<rsub|7>|<point|2.5|0.185032086664982>>|<math-at|H<around*|(|u,v|)>=n|<point|0.823796876955379|2.69183920352629>>|<math-at|<around*|(|0,0|)>|<point|-0.831444581948635|-0.315057635885813>>|<math-at||<point|1.5|1>>|<math-at|v|<point|-0.411937664151288|4.0>>|<math-at|P<rsub|1>|<point|-0.5|3.34795412488904>>>>
 
   Define two lines whose slopes when negated have positive integral
   numerators and denominators:\ 
@@ -149,7 +163,8 @@
   given by:
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|x>|<cell|=>|<cell|-b<rsub|1>*<space|0.25spc>v+b<rsub|2>*<space|0.25spc>u+x<rsub|0><eq-number>>>|<row|<cell|y>|<cell|=>|<cell|a<rsub|1>*<space|0.25spc>v-a<rsub|2>*<space|0.25spc>u+y<rsub|0><eq-number>>>>>
+    <tformat|<table|<row|<cell|x>|<cell|=>|<cell|x<rsub|0>+b<rsub|2>*<space|0.25spc>u-b<rsub|1>*<space|0.25spc>v<eq-number>>>|<row|<cell|y>|<cell|=>|<cell|y<rsub|0>-a<rsub|2>*<space|0.25spc>u
+    +a<rsub|1>*<space|0.25spc>v<eq-number>>>>>
   </eqnarray*>
 
   Substituting for <math|x<rsub|0>> and <math|y<rsub|0>>:
@@ -158,9 +173,9 @@
     <tformat|<table|<row|<cell|x>|<cell|=>|<cell|b<rsub|2>*<space|0.25spc><around*|(|u+c<rsub|1>|)>-b<rsub|1>*<space|0.25spc><around*|(|v+c<rsub|2>|)><eq-number>>>|<row|<cell|y>|<cell|=>|<cell|a<rsub|1>*<space|0.25spc><around*|(|v+c<rsub|2>|)>-a<rsub|2>*<space|0.25spc><around*|(|u+c<rsub|1>|)><eq-number>>>>>
   </eqnarray*>
 
-  Solving these equations for <math|u> and <math|v> and substituting the
-  determinant provides the conversion from <math|x y> coordinates to <math|u
-  v> coordinates:
+  Solving these equations for <math|u> and <math|v> and substituting unity
+  for the determinant provides the conversion from <math|x y> coordinates to
+  <math|u v> coordinates:
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|u>|<cell|=>|<cell|a<rsub|1>*<space|0.25spc>x+b<rsub|1>*<space|0.25spc>y-c<rsub|1><eq-number>>>|<row|<cell|v>|<cell|=>|<cell|a<rsub|2>*<space|0.25spc>x+b<rsub|2>*<space|0.25spc>y-c<rsub|2><eq-number>>>>>
@@ -486,61 +501,193 @@
   <section|Time and Space Complexity>
 
   Now we present a heuristic argument for the runtime behavior of the
-  algorithm. \ Because we can use an explicit summation, the number of
-  operations needed to count the number of lattice points in region <math|R>
-  is at most:
+  algorithm.
+
+  First we realize that because <math|x<rsub|min>=O<around*|(|n<rsup|1/3>|)>>
+  and we process the values of <math|1\<leqslant\>x\<less\>x<rsub|min>>
+  manually, the algorithm is at best <math|O<around*|(|n<rsup|1/3>|)>>. \ In
+  this section we desire to show that the rest of the computation is at worst
+  <math|O<around*|(|n<rsup|1/3>|)>> so that this lower bound holds for the
+  entire computation.
+
+  In order to determine the number of regions encountered in the course of
+  processing a region with width <math|w> and <math|h>, we need to analyze
+  the recursion depth. \ We will define the size of the region to be the
+  number of operations needed to count lattice points using a direct
+  summation in <math|u v> coordinates. \ Since we can choose either axis,
+  this will be the minimum off the two values:
 
   <\equation>
     A=<math-up|min><around*|(|w,h|)>
   </equation>
 
-  Likewise, the number of operations needed to count the number of lattice
-  points in region <math|R<rprime|'>> is at most:
+  Similarly, the size of sub-region <math|R<rprime|'>> is then:
 
   <\equation>
     B=<math-up|min><around*|(|u<rsub|4>,h-v<rsub|6>|)>
   </equation>
 
-  If <math|w\<approx\>h> and we can approximate the hyperbolic segment by a
-  circular arc, then:
+  Then the reduction factor is the ratio:
+
+  <\equation*>
+    F=<frac|A|B>
+  </equation*>
+
+  If we recurse into <math|R<rprime|'>>, we will reduce <math|B> by a factor
+  of <math|F> again, and so forth, until the size is less than one and so:
+
+  <\equation*>
+    A=F<rsup|E>
+  </equation*>
+
+  and thus the recursion depth is:
+
+  <\equation*>
+    E=<frac|<math-up|log><rsub|2>A|<math-up|log><rsub|2>F>
+  </equation*>
+
+  and the number of regions is <math|1+2+4+\<ldots\>.+2<rsup|E>=2<rsup|E+1>-1*=O<around*|(|2<rsup|E>|)>>
+  but:
+
+  <\equation*>
+    2<rsup|E>=A<rsup|1/<math-up|log><rsub|2>F>
+  </equation*>
+
+  so the number of regions is:
+
+  <\equation>
+    N<rsub|><around*|(|A|)>=O<around*|(|A<rsup|1/<math-up|log><rsub|2>F>|)>
+  </equation>
+
+  For example, if <math|F=2>, then <math|N<rsub|><around*|(|A|)>=O<around*|(|A|)>>
+  and if <math|F=4>, then <math|N<rsub|><around*|(|A|)>=O<around*|(|A<rsup|1/2>|)>>.
+
+  Now if <math|w\<approx\>h> and we can approximate the hyperbolic segment by
+  a circular arc, then:
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|A>|<cell|\<approx\>>|<cell|w>>|<row|<cell|u<rsub|4>>|<cell|\<approx\>>|<cell|w*<around*|(|1-<frac|1|<sqrt|2>>|)>>>|<row|<cell|h-v<rsub|6>>|<cell|\<approx\>>|<cell|w*<around*|(|<sqrt|2>-1|)>>>|<row|<cell|B>|<cell|\<approx\>>|<cell|w*<around*|(|1-<frac|1|<sqrt|2>>|)>>>|<row|<cell|A/B>|<cell|\<approx\>>|<cell|2+<sqrt|2><eq-number>>>>>
+    <tformat|<table|<row|<cell|A>|<cell|\<approx\>>|<cell|w>>|<row|<cell|u<rsub|4>>|<cell|\<approx\>>|<cell|w*<around*|(|1-<frac|1|<sqrt|2>>|)>>>|<row|<cell|h-v<rsub|6>>|<cell|\<approx\>>|<cell|w*<around*|(|<sqrt|2>-1|)>>>|<row|<cell|B>|<cell|\<approx\>>|<cell|w*<around*|(|1-<frac|1|<sqrt|2>>|)>>>|<row|<cell|F<rsub|est>>|<cell|\<approx\>>|<cell|2+<sqrt|2><eq-number>>>>>
   </eqnarray*>
 
-  which would result in a recursion depth of approximately:
+  or approximately:
 
   <\equation>
-    E=<frac|<math-up|log><rsub|2> w|<math-up|log><rsub|2><around*|(|2+<sqrt|2>|)>>
+    N<rsub|R>=O<around*|(|w<rsup|1/log<rsub|2><around*|(|2+<sqrt|2>|)>>|)>
   </equation>
 
-  levels or approximately:
+  regions total while processing region <math|R>.
+
+  Now we need to count and size all the top-level regions. \ We process one
+  top level region for each integral slope <math|-a> from <math|-1 >to the
+  slope at <math|x<rsub|min>>. \ The value for <math|a> at each value of
+  <math|x> is given by:
 
   <\equation>
-    N<rsub|R>=2<rsup|E>=O<around*|(|w<rsup|1/log<rsub|2><around*|(|2+<sqrt|2>|)>>|)>
+    a<rsub|>=-<frac|d |d x>Y<around*|(|x<rsub|>|)>=<frac|n|x<rsup|2>>
   </equation>
 
-  regions total in the course of processing region <math|R> with width
-  <math|w>. \ Because the sum of widths of all regions is of size
-  <math|O<around*|(|<sqrt|n>|)>>, the total number of regions for the whole
-  hyperbola is:
+  and:
+
+  <\equation>
+    X<around*|(|a|)>=<sqrt|<frac|n|a>>
+  </equation>
+
+  \ Choosing <math|C=1> so that <math|x<rsub|min>=<sqrt|2*n|3>>, then the
+  highest value of <math|a> processed is:
+
+  <\equation>
+    a<rsub|max>=<frac|n|x<rsub|min><rsup|2>>=<frac|n<rsup|1/3>|2<rsup|2/3>>
+  </equation>
+
+  so there are <math|O<around*|(|n<rsup|1/3>|)>> top level regions.
+
+  How big is each top level region? The change in <math|x> per unit change in
+  <math|a> is <math|d x/d a> and so:
+
+  <\equation>
+    \<Delta\> x=-<frac|d|d a>X<around*|(|a|)>=<frac|n<rsup|1/2>|2*a<rsup|3/2>>
+  </equation>
+
+  Now we integrate the number of sub-regions processed for each top level
+  region:
+
+  <\equation>
+    N<rsub|total>=<big|int><rsup|a<rsub|max>><rsub|1>N<around*|(|\<Delta\>
+    x|)> d a=O<around*|(|<big|int><rsub|1><rsup|a<rsub|max>><around*|(|<frac|n<rsup|1/2>|2*a<rsup|3/2>>|)><rsup|1/<math-up|log><rsub|2>F>d
+    a|)>
+  </equation>
 
   \;
 
-  <\equation>
-    N<rsub|>=O<around*|(|<sqrt|n><rsup|1/log<rsub|2><around*|(|2+<sqrt|2>|)>>|)>\<approx\>O<around*|(|n<rsup|0.282>|)>\<ll\>O<around*|(|n<rsup|<rsup|1/3>>|)>
-  </equation>
+  We can classify three cases depending on the value of:
 
-  \;
+  <\equation*>
+    G=1/log<rsub|2>F
+  </equation*>
+
+  because the outcome of the integration depends on the final exponent of
+  <math|a>:
+
+  <\equation*>
+    N<rsub|total>=<choice|<tformat|<table|<row|<cell|O<around*|(|n<rsup|1/3>|)>>|<cell|if
+    G \<less\>2/3>>|<row|<cell|O<around*|(|n<rsup|1/3>*log n|)>>|<cell|if
+    G=2/3>>|<row|<cell|O<around*|(|n<rsup|G/2>|)>>|<cell|if G \<gtr\>
+    2/3>>>>>
+  </equation*>
+
+  So if we can show that the average value of <math|G\<leqslant\>2/3>, then
+  the algorithm overall will have a time complexity of
+  <math|O<around*|(|n<rsup|1/3+\<epsilon\>>|)>>.
+
+  Since <math|G\<leqslant\>2/3> when:
+
+  <\equation*>
+    F\<geqslant\>2<rsup|3/2>
+  </equation*>
+
+  and since we estimated earlier that:
+
+  <\equation*>
+    F<rsub|est>=2+<sqrt|2>\<gg\>2<rsup|3/2>
+  </equation*>
+
+  the evidence for our conjecture is complete.
 </body>
 
 <\references>
   <\collection>
     <associate|abc|<tuple|6|?>>
-    <associate|auto-1|<tuple|1|?>>
-    <associate|auto-2|<tuple|2|?>>
-    <associate|auto-3|<tuple|3|?>>
-    <associate|auto-4|<tuple|4|?>>
-    <associate|auto-5|<tuple|5|?>>
+    <associate|auto-1|<tuple|1|1>>
+    <associate|auto-2|<tuple|2|2>>
+    <associate|auto-3|<tuple|3|6>>
+    <associate|auto-4|<tuple|4|8>>
+    <associate|auto-5|<tuple|5|8>>
+    <associate|auto-6|<tuple|5|?>>
   </collection>
 </references>
+
+<\auxiliary>
+  <\collection>
+    <\associate|toc>
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|Introduction>
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-1><vspace|0.5fn>
+
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|Region
+      Processing> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-2><vspace|0.5fn>
+
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|Top
+      Level Region Processing> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-3><vspace|0.5fn>
+
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|Algorithm>
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-4><vspace|0.5fn>
+
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|Time
+      and Space Complexity> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-5><vspace|0.5fn>
+    </associate>
+  </collection>
+</auxiliary>
