@@ -120,20 +120,17 @@
   unity:
 
   <\equation>
-    <det|<tformat|<table|<row|<cell|a<rsub|1>>|<cell|a<rsub|2>>>|<row|<cell|b<rsub|1>>|<cell|b<rsub|2>>>>>>=a<rsub|1>*<space|0.25spc>b<rsub|2>-b<rsub|1>*<space|0.25spc>a<rsub|2>=1
+    <det|<tformat|<table|<row|<cell|a<rsub|1>>|<cell|b<rsub|1>>>|<row|<cell|a<rsub|2>>|<cell|b<rsub|2>>>>>>=a<rsub|1>*<space|0.25spc>b<rsub|2>-b<rsub|1>*<space|0.25spc>a<rsub|2>=1<label|eq:det>
   </equation>
 
   and the slopes are rational numbers which we require to be in lowest terms
-  and so we can assume:
-
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|gcd<around*|(|a<rsub|1>,b<rsub|1>|)>>|<cell|=>|<cell|1<eq-number>>>|<row|<cell|gcd<around*|(|a<rsub|2>,b<rsub|2>|)>>|<cell|=>|<cell|1<eq-number>>>>>
-  </eqnarray*>
+  and so we can assume <math|gcd<around*|(|a<rsub|1>,b<rsub|1>|)> =
+  gcd<around*|(|a<rsub|2>,b<rsub|2>|)> = 1>.
 
   Assume further that the lines intersect at point <math|P<rsub|0>>:
 
   <\equation>
-    <around*|(|x<rsub|0>,y<rsub|0>|)>
+    <around*|(|x<rsub|0>,y<rsub|0>|)><label|eq:xy0>
   </equation>
 
   with <math|x<rsub|0>> and <math|y<rsub|0>> positive integers.
@@ -146,7 +143,7 @@
   Then lines <math|L<rsub|1>> and <math|L<rsub|2>> in point-slope form are:
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|<frac|y-y<rsub|0>|x-x<rsub|0>>>|<cell|=>|<cell|-<frac|a<rsub|1>|b<rsub|1>><eq-number>>>|<row|<cell|<frac|y-y<rsub|0>|x-x<rsub|0>>>|<cell|=>|<cell|-<frac|a<rsub|2>|b<rsub|2>><eq-number>>>>>
+    <tformat|<table|<row|<cell|<frac|y-y<rsub|0>|x-x<rsub|0>>>|<cell|=>|<cell|-<frac|a<rsub|1>|b<rsub|1>><eq-number><label|eq:ps1>>>|<row|<cell|<frac|y-y<rsub|0>|x-x<rsub|0>>>|<cell|=>|<cell|-<frac|a<rsub|2>|b<rsub|2>><eq-number><label|eq:ps2>>>>>
   </eqnarray*>
 
   and converting to standard form:
@@ -181,14 +178,14 @@
   coordinates to <math|x y> coordinates is given by:
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|x>|<cell|=>|<cell|x<rsub|0>+b<rsub|2>*<space|0.25spc>u-b<rsub|1>*<space|0.25spc>v<eq-number>>>|<row|<cell|y>|<cell|=>|<cell|y<rsub|0>-a<rsub|2>*<space|0.25spc>u
-    +a<rsub|1>*<space|0.25spc>v<eq-number>>>>>
+    <tformat|<table|<row|<cell|x>|<cell|=>|<cell|x<rsub|0>+b<rsub|2>*<space|0.25spc>u-b<rsub|1>*<space|0.25spc>v<eq-number><label|eq:uv2xy1>>>|<row|<cell|y>|<cell|=>|<cell|y<rsub|0>-a<rsub|2>*<space|0.25spc>u
+    +a<rsub|1>*<space|0.25spc>v<eq-number><label|eq:uv2xy2>>>>>
   </eqnarray*>
 
   Substituting for <math|x<rsub|0>> and <math|y<rsub|0>>:
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|x>|<cell|=>|<cell|b<rsub|2>*<space|0.25spc><around*|(|u+c<rsub|1>|)>-b<rsub|1>*<space|0.25spc><around*|(|v+c<rsub|2>|)><eq-number>>>|<row|<cell|y>|<cell|=>|<cell|a<rsub|1>*<space|0.25spc><around*|(|v+c<rsub|2>|)>-a<rsub|2>*<space|0.25spc><around*|(|u+c<rsub|1>|)><eq-number>>>>>
+    <tformat|<table|<row|<cell|x>|<cell|=>|<cell|b<rsub|2>*<space|0.25spc><around*|(|u+c<rsub|1>|)>-b<rsub|1>*<space|0.25spc><around*|(|v+c<rsub|2>|)><eq-number><label|eq:uv2xy3>>>|<row|<cell|y>|<cell|=>|<cell|a<rsub|1>*<space|0.25spc><around*|(|v+c<rsub|2>|)>-a<rsub|2>*<space|0.25spc><around*|(|u+c<rsub|1>|)><eq-number><label|eq:uv2xy4>>>>>
   </eqnarray*>
 
   Solving these equations for <math|u> and <math|v> and substituting unity
@@ -232,8 +229,7 @@
 
   This figure depicts a region in the <math|u v> coordinate system:
 
-  <with|gr-mode|<tuple|edit|point>|gr-frame|<tuple|scale|1.18926cm|<tuple|0.5gw|0.5gh>>|gr-geometry|<tuple|geometry|1par|0.733333par|center>|gr-grid|<tuple|cartesian|<point|0|0>|5>|gr-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-aspect|<tuple|<tuple|axes|none>|<tuple|1|none>|<tuple|10|none>>|gr-edit-grid|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-auto-crop|true|magnify|1.18920711391541|gr-magnify|1.18920711391541|<graphics||<point|0|0>|<point|0.0|3.5>|<point|3.5|0.0>|<math-at|P<rsub|2>|<point|3.5|-0.315875450190698>>|<with|color|dark
-  grey|<line|<point|0|3.5>|<point|3.5|3.5>|<point|3.5|0.0>>>|<math-at|w|<point|1.67812|3.7323>>|<math-at|h|<point|3.71164|2>>|<math-at|u|<point|4.22327127104857|-0.250914248369648>>|<spline|<point|4.5|0.262528795121958>|<point|3.0|0.5>|<point|0.701313192297385|2.5>|<point|0.270375393271184|4.0>>|<math-at|H<around*|(|u,v|)>=n|<point|0.823796876955379|2.69183920352629>>|<math-at|v|<point|-0.411937664151288|4.0>>|<math-at|P<rsub|1>|<point|-0.5|3.34795412488904>>|<math-at|P<rsub|0>|<point|-0.5|-0.324619072766175>>>>
+  <with|gr-mode|<tuple|group-edit|props>|gr-frame|<tuple|scale|1.18926cm|<tuple|0.5gw|0.5gh>>|gr-geometry|<tuple|geometry|1par|0.733333par|center>|gr-grid|<tuple|cartesian|<point|0|0>|5>|gr-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-aspect|<tuple|<tuple|axes|none>|<tuple|1|none>|<tuple|10|none>>|gr-edit-grid|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-auto-crop|true|magnify|1.18920711391541|gr-magnify|1.18920711391541|gr-color|#969696|gr-dash-style|10|<graphics||<point|0|0>|<point|0.0|3.5>|<point|3.5|0.0>|<math-at|P<rsub|2>|<point|3.5|-0.315875450190698>>|<with|color|#969696|dash-style|10|magnify|1.18920711391541|<line|<point|0|3.5>|<point|3.5|3.5>|<point|3.5|0.0>>>|<math-at|w|<point|1.67812|3.7323>>|<math-at|h|<point|3.71164|2>>|<math-at|u|<point|4.22327127104857|-0.250914248369648>>|<spline|<point|4.5|0.262528795121958>|<point|3.0|0.5>|<point|0.701313192297385|2.5>|<point|0.270375393271184|4.0>>|<math-at|H<around*|(|u,v|)>=n|<point|0.823796876955379|2.69183920352629>>|<math-at|v|<point|-0.411937664151288|4.0>>|<math-at|P<rsub|1>|<point|-0.5|3.34795412488904>>|<math-at|P<rsub|0>|<point|-0.5|-0.324619072766175>>>>
 
   We can now reformulate the number of lattice points in this region
   <math|R<rsub|> >as a function of the eight values that define it:
@@ -307,8 +303,7 @@
 
   This figure shows the right triangle and the two sub-regions:
 
-  <with|gr-mode|<tuple|edit|math-at>|gr-frame|<tuple|scale|1cm|<tuple|0.370012gw|0.270022gh>>|gr-geometry|<tuple|geometry|1par|100|center>|gr-grid|<tuple|cartesian|<point|0|0>|2>|gr-grid-old|<tuple|cartesian|<point|0|0>|2>|gr-edit-grid-aspect|<tuple|<tuple|axes|none>|<tuple|1|none>|<tuple|10|none>>|gr-edit-grid|<tuple|cartesian|<point|0|0>|2>|gr-edit-grid-old|<tuple|cartesian|<point|0|0>|2>|gr-auto-crop|true|<graphics||<with|color|dark
-  grey|<line|<point|0|4.4>|<point|4.8|4.4>|<point|4.8|0.0>>>|<point|0|4.4>|<point|0|0>|<point|4.8|0>|<line|<point|0|2.6>|<point|2.4|0.0>>|<spline|<point|0.2|4.6>|<point|0.4|2.8>|<point|2.6|0.6>|<point|5.0|0.2>>|<math-at|R<rprime|''>|<point|2.4|0.2>>|<math-at|R<rprime|'>|<point|0.0|2.6>>|<math-at|P<rsub|0>|<point|-0.6|-0.4>>|<math-at|P<rsub|1>|<point|-0.6|4.2>>|<math-at|P<rsub|2>|<point|4.6|-0.4>>|<math-at|u|<point|5.4|0.2>>|<math-at|v|<point|-0.337032014816775|4.9255853948935>>|<math-at|h|<point|5|2.4>>|<math-at|w|<point|2.4|4.6>>|<math-at|u<rprime|'>|<point|0.2|1.8>>|<math-at|u<rprime|''>|<point|3.4|-0.4>>|<math-at|v<rprime|''>|<point|1.4|0.4>>|<math-at|v<rprime|'>|<point|-0.4|3.4>>|<math-at|R|<point|1.8|2.0>>>>
+  <with|gr-mode|<tuple|edit|math-at>|gr-frame|<tuple|scale|1cm|<tuple|0.370012gw|0.270022gh>>|gr-geometry|<tuple|geometry|1par|100|center>|gr-grid|<tuple|cartesian|<point|0|0>|2>|gr-grid-old|<tuple|cartesian|<point|0|0>|2>|gr-edit-grid-aspect|<tuple|<tuple|axes|none>|<tuple|1|none>|<tuple|10|none>>|gr-edit-grid|<tuple|cartesian|<point|0|0>|2>|gr-edit-grid-old|<tuple|cartesian|<point|0|0>|2>|gr-auto-crop|true|gr-dash-style|10|<graphics||<with|color|#969696|dash-style|10|<line|<point|0|4.4>|<point|4.8|4.4>|<point|4.8|0.0>>>|<point|0|4.4>|<point|0|0>|<point|4.8|0>|<line|<point|0|2.6>|<point|2.4|0.0>>|<math-at|P<rsub|0>|<point|-0.6|-0.4>>|<math-at|P<rsub|1>|<point|-0.6|4.2>>|<math-at|P<rsub|2>|<point|4.6|-0.4>>|<math-at|u|<point|5.4|0.2>>|<math-at|v|<point|-0.337032014816775|4.9255853948935>>|<math-at|h|<point|5|2.4>>|<math-at|w|<point|2.4|4.6>>|<math-at|u<rprime|'>|<point|0.2|1.8>>|<math-at|u<rprime|''>|<point|3.4|-0.4>>|<math-at|v<rprime|''>|<point|1.4|0.4>>|<math-at|v<rprime|'>|<point|-0.4|3.4>>|<with|color|#969696|dash-style|10|<line|<point|1.29231|1.2>|<point|3.6|1.2>|<point|4.8|0.0>>>|<with|color|#969696|dash-style|10|<line|<point|1.2|1.3>|<point|1.2|3.4>|<point|0.0|4.4>>>|<math-at|R|<point|2.6|2.8>>|<math-at|R<rprime|''>|<point|3.0|0.6>>|<math-at|R<rprime|'>|<point|0.4|3.2>>|<spline|<point|0.2|4.6>|<point|0.6|2.6>|<point|2.88244146051065|0.48245468977378>|<point|5.0|0.2>>|<point|1.31142|1.4>|<math-at|P<rsub|tan>|<point|1.4|1.6>>>>
 
   A diagonal with slope -1 in the UV coordinate system has a slope in the XY
   coordinate system that is the mediant of the slopes of lines
@@ -332,16 +327,15 @@
   </equation>
 
   and the intersection of this line with <math|H<around*|(|u,v|)>=n> gives
-  the point on the hyperbola where the slope is equal to -1:
+  the point <math|P<rsub|tan>> on the hyperbola where the slope is equal to
+  -1:
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|u<rsub|3>>|<cell|=>|<cell|<around*|(|a<rsub|1>*<space|0.25spc>b<rsub|2>+b<rsub|1>*<space|0.25spc>a<rsub|2>+2*<space|0.25spc>a<rsub|1>*<space|0.25spc>b<rsub|1>|)>*<space|0.25spc><sqrt|<frac|n|a<rsub|3>*<space|0.25spc>b<rsub|3>>>-c<rsub|1><eq-number>>>|<row|<cell|v<rsub|3>>|<cell|=>|<cell|<around*|(|a<rsub|1>*<space|0.25spc>b<rsub|2>+b<rsub|1>*<space|0.25spc>a<rsub|2>+2*<space|0.25spc>a<rsub|2>*<space|0.25spc>b<rsub|2>|)>*<space|0.25spc><sqrt|<frac|n|a<rsub|3>*<space|0.25spc>b<rsub|3>>>-c<rsub|2><eq-number>>>>>
+    <tformat|<table|<row|<cell|u<rsub|tan>>|<cell|=>|<cell|<around*|(|a<rsub|1>*<space|0.25spc>b<rsub|2>+b<rsub|1>*<space|0.25spc>a<rsub|2>+2*<space|0.25spc>a<rsub|1>*<space|0.25spc>b<rsub|1>|)>*<space|0.25spc><sqrt|<frac|n|a<rsub|3>*<space|0.25spc>b<rsub|3>>>-c<rsub|1><eq-number>>>|<row|<cell|v<rsub|tan>>|<cell|=>|<cell|<around*|(|a<rsub|1>*<space|0.25spc>b<rsub|2>+b<rsub|1>*<space|0.25spc>a<rsub|2>+2*<space|0.25spc>a<rsub|2>*<space|0.25spc>b<rsub|2>|)>*<space|0.25spc><sqrt|<frac|n|a<rsub|3>*<space|0.25spc>b<rsub|3>>>-c<rsub|2><eq-number>>>>>
   </eqnarray*>
 
-  (Note that <math|u<rsub|3>> and <math|v<rsub|3>> are real-valued.)
-
   The equation of a line through this intersection and tangent to the
-  hyperbola is then <math|u+v=u<rsub|3>+v<rsub|3>> which simplifies to:
+  hyperbola is then <math|u+v=u<rsub|tan>+v<rsub|tan>> which simplifies to:
 
   <\equation>
     u+v=2*<space|0.25spc><sqrt|a<rsub|3>*<space|0.25spc>b<rsub|3>*<space|0.25spc>n>-c<rsub|1>-c<rsub|2>
@@ -360,7 +354,7 @@
   The derivative conditions ensure that the diagonal rays with slope
   <math|-1> pointing outward from <math|P<rsub|4>> and <math|P<rsub|5>> do
   not intersect the hyperbola. \ Setting <math|u<rsub|4> =
-  <around*|\<lfloor\>|u<rsub|3>|\<rfloor\>>> will satisfy the conditions as
+  <around*|\<lfloor\>|u<rsub|tan>|\<rfloor\>>> will satisfy the conditions as
   long as <math|u<rsub|4>\<neq\>0>.
 
   Let the point at which the ray from <math|P<rsub|4>> intersects the
@@ -374,9 +368,7 @@
 
   A diagram of all the points defined so far:
 
-  <with|gr-mode|<tuple|group-edit|props>|gr-frame|<tuple|scale|1.18926cm|<tuple|0.5gw|0.5gh>>|gr-geometry|<tuple|geometry|1par|0.733333par|center>|gr-grid|<tuple|cartesian|<point|0|0>|5>|gr-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-aspect|<tuple|<tuple|axes|none>|<tuple|1|none>|<tuple|10|none>>|gr-edit-grid|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-auto-crop|true|magnify|1.18920711391541|gr-color|dark
-  grey|<graphics||<point|0|0>|<point|0.0|3.5>|<point|1.5|1.0>|<line|<point|1.5|1>|<point|2.5|0.0>>|<point|2.5|0>|<point|3.5|0.0>|<math-at|P<rsub|2>|<point|3.5|-0.315875450190698>>|<math-at|P<rsub|5>|<point|1.0|0.691569794964324>>|<with|color|dark
-  grey|<line|<point|0|3.5>|<point|3.5|3.5>|<point|3.5|0.0>>>|<math-at|w|<point|1.67812|3.7323>>|<math-at|h|<point|3.71164|2>>|<math-at|u|<point|4.22327127104857|-0.250914248369648>>|<spline|<point|4.5|0.262528795121958>|<point|3.0|0.5>|<point|0.701313192297385|2.5>|<point|0.270375393271184|4.0>>|<line|<point|1.0|2.0>|<point|0.0|3.0>>|<point|0.0|3.0>|<point|1.25659730989343|1.69647908332071>|<math-at|P<rsub|6>|<point|-0.5|2.68372631475282>>|<point|1.0|2.0>|<math-at|P<rsub|4>|<point|0.5|1.69113478621578>>|<math-at|P<rsub|3>|<point|1.5|1.76202136806692>>|<math-at|P<rsub|7>|<point|2.5|0.185032086664982>>|<math-at|H<around*|(|u,v|)>=n|<point|0.823796876955379|2.69183920352629>>|<math-at|v|<point|-0.411937664151288|4.0>>|<math-at|P<rsub|1>|<point|-0.5|3.34795412488904>>|<math-at|P<rsub|0>|<point|-0.5|-0.324619072766175>>|<math-at||<point|2|3.5>>>>
+  <with|gr-mode|<tuple|group-edit|props>|gr-frame|<tuple|scale|1.18926cm|<tuple|0.5gw|0.5gh>>|gr-geometry|<tuple|geometry|1par|0.733333par|center>|gr-grid|<tuple|cartesian|<point|0|0>|5>|gr-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-aspect|<tuple|<tuple|axes|none>|<tuple|1|none>|<tuple|10|none>>|gr-edit-grid|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-auto-crop|true|magnify|1.18920711391541|gr-color|#969696|gr-dash-style|10|<graphics||<point|0|0>|<point|0.0|3.5>|<point|1.5|1.0>|<line|<point|1.5|1>|<point|2.5|0.0>>|<point|2.5|0>|<point|3.5|0.0>|<math-at|P<rsub|2>|<point|3.5|-0.315875450190698>>|<math-at|P<rsub|5>|<point|1.0|0.691569794964324>>|<with|color|#969696|dash-style|10|<line|<point|0|3.5>|<point|3.5|3.5>|<point|3.5|0.0>>>|<math-at|w|<point|1.67812|3.7323>>|<math-at|h|<point|3.71164|2>>|<math-at|u|<point|4.22327127104857|-0.250914248369648>>|<spline|<point|4.5|0.262528795121958>|<point|3.0|0.5>|<point|0.701313192297385|2.5>|<point|0.270375393271184|4.0>>|<line|<point|1.0|2.0>|<point|0.0|3.0>>|<point|0.0|3.0>|<point|1.25659730989343|1.69647908332071>|<math-at|P<rsub|6>|<point|-0.5|2.68372631475282>>|<point|1.0|2.0>|<math-at|P<rsub|4>|<point|0.5|1.69113478621578>>|<math-at|P<rsub|tan>|<point|1.5|1.76202136806692>>|<math-at|P<rsub|7>|<point|2.5|0.185032086664982>>|<math-at|H<around*|(|u,v|)>=n|<point|0.823796876955379|2.69183920352629>>|<math-at|v|<point|-0.411937664151288|4.0>>|<math-at|P<rsub|1>|<point|-0.5|3.34795412488904>>|<math-at|P<rsub|0>|<point|-0.5|-0.324619072766175>>|<math-at||<point|2|3.5>>>>
 
   Then the number of lattice points above the axes and inside the polygon
   defined by <math|P<rsub|0>,P<rsub|6>,P<rsub|4>,P<rsub|5>,P<rsub|7>> is:
@@ -395,7 +387,7 @@
   Now observe that:
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|<det|<tformat|<table|<row|<cell|a<rsub|1>>|<cell|a<rsub|3>>>|<row|<cell|b<rsub|1>>|<cell|b<rsub|3>>>>>>>|<cell|=>|<cell|a<rsub|1>*<around*|(|b<rsub|1>+b<rsub|2>|)><rsub|>-b<rsub|1>*<around*|(|a<rsub|1>+a<rsub|2>|)>=a<rsub|1>*b<rsub|2>-b<rsub|1>*a<rsub|2>=<det|<tformat|<table|<row|<cell|a<rsub|1>>|<cell|a<rsub|2>>>|<row|<cell|b<rsub|1>>|<cell|b<rsub|2>>>>>>=1>>|<row|<cell|<det|<tformat|<table|<row|<cell|a<rsub|3>>|<cell|a<rsub|2>>>|<row|<cell|b<rsub|3>>|<cell|b<rsub|2>>>>>>>|<cell|=>|<cell|*<around*|(|a<rsub|1>+a<rsub|2>|)><rsub|>*b<rsub|2>-*<around*|(|b<rsub|1>+b<rsub|2>|)>*a<rsub|2>=a<rsub|1>*b<rsub|2>-b<rsub|1>*a<rsub|2>=<det|<tformat|<table|<row|<cell|a<rsub|1>>|<cell|a<rsub|2>>>|<row|<cell|b<rsub|1>>|<cell|b<rsub|2>>>>>>=1>>>>
+    <tformat|<table|<row|<cell|<det|<tformat|<table|<row|<cell|a<rsub|1>>|<cell|b<rsub|1>>>|<row|<cell|a<rsub|3>>|<cell|b<rsub|3>>>>>>>|<cell|=>|<cell|a<rsub|1>*<around*|(|b<rsub|1>+b<rsub|2>|)><rsub|>-b<rsub|1>*<around*|(|a<rsub|1>+a<rsub|2>|)>=a<rsub|1>*b<rsub|2>-b<rsub|1>*a<rsub|2>=<det|<tformat|<table|<row|<cell|a<rsub|1>>|<cell|b<rsub|1>>>|<row|<cell|a<rsub|2>>|<cell|b<rsub|2>>>>>>=1>>|<row|<cell|<det|<tformat|<table|<row|<cell|a<rsub|3>>|<cell|b<rsub|3>>>|<row|<cell|a<rsub|2>>|<cell|b<rsub|2>>>>>>>|<cell|=>|<cell|*<around*|(|a<rsub|1>+a<rsub|2>|)><rsub|>*b<rsub|2>-*<around*|(|b<rsub|1>+b<rsub|2>|)>*a<rsub|2>=a<rsub|1>*b<rsub|2>-b<rsub|1>*a<rsub|2>=<det|<tformat|<table|<row|<cell|a<rsub|1>>|<cell|b<rsub|1>>>|<row|<cell|a<rsub|2>>|<cell|b<rsub|2>>>>>>=1>>>>
   </eqnarray*>
 
   so that <math|m<rsub|1>> and <math|m<rsub|3>> are also Farey neighbors and
@@ -471,7 +463,7 @@
   where <math|C\<geqslant\>1> is a constant to be chosen later.
 
   Next we need to account for the all the points on or below the first line
-  which is:
+  which is a rectangle and a triangle:
 
   <\equation*>
     S<rsub|B>=<around*|(|x<rsub|max>-x<rsub|min>+1|)>*y<rsub|min>+\<Delta\><around*|(|x<rsub|max>-x<rsub|min>|)>
@@ -486,7 +478,7 @@
 
   Assume that we have point <math|P<rsub|2>\<nocomma\>> and value
   <math|a<rsub|2>> from the previous iteration. \ For the first iteration we
-  have:
+  will have:
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|x<rsub|2>>|<cell|=>|<cell|x<rsub|max>>>|<row|<cell|y<rsub|2>>|<cell|=>|<cell|y<rsub|min>>>|<row|<cell|a<rsub|2>>|<cell|=>|<cell|1>>>>
@@ -504,10 +496,8 @@
   x=m<rsub|1>>, and then solving for <math|x>:
 
   <\equation>
-    x<rsub|3>=<sqrt|<frac|n|a<rsub|1>>>
+    x<rsub|tan>=<sqrt|<frac|n|a<rsub|1>>>
   </equation>
-
-  (Note that <math|x<rsub|3>> is real-valued.)
 
   Similar to processing a region (but now in <math|x y> coordinates), we now
   need two lattice points <math|P<rsub|4> <around*|(|x<rsub|4,>y<rsub|4>|)>>
@@ -519,7 +509,7 @@
     y /d x<around*|(|x<rsub|5>|)>>|<cell|\<less\>>|<cell|a<rsub|1>>>|<row|<cell|y<rsub|4>>|<cell|=>|<cell|<around*|\<lfloor\>|Y<around*|(|x<rsub|4>|)>|\<rfloor\>>>>|<row|<cell|y<rsub|5>>|<cell|=>|<cell|<around*|\<lfloor\>|Y<around*|(|x<rsub|5>|)>|\<rfloor\>>>>>>
   </eqnarray*>
 
-  To meet these conditions we can set <math|x<rsub|4>=<around*|\<lfloor\>|x<rsub|3>|\<rfloor\>>>
+  To meet these conditions we can set <math|x<rsub|4>=<around*|\<lfloor\>|x<rsub|tan>|\<rfloor\>>>
   unless <math|x<rsub|4>\<leqslant\>x<rsub|min>> in which case we can
   manually count the lattice columns between <math|x<rsub|min>> and
   <math|x<rsub|2>> and cease iterating. \ If so, the remaining columns can be
@@ -535,15 +525,16 @@
   Now take lines <math|L<rsub|4>> and <math|L<rsub|5>> with slopes
   <math|-a<rsub|1>> and passing through <math|P<rsub|4>> and <math|P<rsub|5>>
   and then find the point <math|P<rsub|6>> where <math|L<rsub|4>> intersects
-  <math|x=x<rsub|min>> and the point <math|P<rsub|7>> where <math|L<rsub|5>>
-  intersects <math|x=x<rsub|min>>.
+  <math|x=x<rsub|min>> and the point <math|P<rsub|0>> where <math|L<rsub|5>>
+  intersects <math|L<rsub|2>> and the point <math|P<rsub|7>> where
+  <math|L<rsub|2>> intersects <math|x=x<rsub|min>>.
 
   <with|gr-mode|<tuple|edit|arc>|gr-frame|<tuple|scale|1cm|<tuple|0.5gw|0.5gh>>|gr-geometry|<tuple|geometry|1par|0.6par>|gr-grid|<tuple|cartesian|<point|0|0>|5>|gr-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-aspect|<tuple|<tuple|axes|none>|<tuple|1|none>|<tuple|10|none>>|gr-edit-grid|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-auto-crop|true|<graphics||<line|<point|-3.0|-1.0>|<point|-4.0|1.0>>|<point|-4|1>|<point|-3|-1>|<line|<point|-6.0|2.0>|<point|-1.0|-3.0>>|<line|<point|-4.5|1.5>|<point|-6.0|4.5>>|<point|-4.5|1.5>|<spline|<point|-5.5|4.33826814463599>|<point|-4.5|2.0>|<point|-2.5|-1.0>|<point|-1.0|-2.73817405755366>>|<math-at|P<rsub|0>|<point|-3.5|-1.25312>>|<math-at|L<rsub|2>|<point|-2.76973250390689|-2.0>>|<point|-1|-3>|<math-at|P<rsub|2>|<point|-1.5|-3.22179084540838>>|<with|color|dark
   grey|<line|<point|-6|4.5>|<point|-6.0|-0.5>>>|<math-at|x<rsub|min>|<point|-6.23638|-1>>|<math-at|R|<point|-2.30258|-0.5>>|<math-at|H<around*|(|x,y|)>=n|<point|-4.5|3>>|<point|-4.24680283911887|1.5>|<math-at|P<rsub|5>|<point|-4.5|0.682911411193787>>|<math-at|P<rsub|4>|<point|-5.09461430341988|1.5>>|<math-at|P<rsub|3>|<point|-4.0|1.5>>|<point|-6|4.5>|<point|-6|2>|<math-at|P<rsub|6>|<point|-6.5|4.0>>|<math-at|P<rsub|7>|<point|-6.5|2>>>>
 
   \;
 
-  Next add up the lattice points in the polygon
+  Now add up the lattice points in the polygon
   <math|P<rsub|0>,P<rsub|7>,P<rsub|6>,P<rsub|4>,P<rsub|5>> but above
   <math|L<rsub|2>>:
 
@@ -617,86 +608,18 @@
 
   <section|Time and Space Complexity>
 
-  Now we present a heuristic argument for the runtime behavior of the
-  algorithm.
+  Now we present an analysis of the runtime behavior of the algorithm.
 
-  First we realize that because <math|x<rsub|min>=O<around*|(|n<rsup|1/3>|)>>
-  and we process the values of <math|1\<leqslant\>x\<less\>x<rsub|min>>
-  manually, the algorithm is at best <math|O<around*|(|n<rsup|1/3>|)>>. \ In
-  this section we desire to show that the rest of the computation is at worst
-  <math|O<around*|(|n<rsup|1/3>|)>> so that this lower bound holds for the
-  entire computation.
+  Before we start, we realize that because
+  <math|x<rsub|min>=O<around*|(|n<rsup|1/3>|)>> and we process the values of
+  <math|1\<leqslant\>x\<less\>x<rsub|min>> manually, the algorithm is at best
+  <math|O<around*|(|n<rsup|1/3>|)>>. \ In this section we desire to show that
+  the rest of the computation is at worst <math|O<around*|(|n<rsup|1/3>|)>>
+  so that this lower bound holds for the entire computation.
 
-  In order to determine the number of regions encountered in the course of
-  processing a region with width <math|w> and <math|h>, we need to analyze
-  the recursion depth. \ We will define the size of the region to be the
-  number of operations needed to count lattice points using a direct
-  summation in <math|u v> coordinates. \ Since we can choose either axis,
-  this will be the minimum off the two values:
-
-  <\equation>
-    A=<math-up|min><around*|(|w,h|)>
-  </equation>
-
-  Similarly, the size of sub-region <math|R<rprime|'>> is then:
-
-  <\equation>
-    B=<math-up|min><around*|(|u<rsub|4>,h-v<rsub|6>|)>
-  </equation>
-
-  Then the reduction factor is the ratio:
-
-  <\equation*>
-    F=<frac|A|B>
-  </equation*>
-
-  If we recurse into <math|R<rprime|'>>, we will reduce <math|B> by a factor
-  of <math|F> again, and so forth, until the size is less than one and so:
-
-  <\equation*>
-    A=F<rsup|E>
-  </equation*>
-
-  and thus the recursion depth is:
-
-  <\equation*>
-    E=<frac|<math-up|log><rsub|2>A|<math-up|log><rsub|2>F>
-  </equation*>
-
-  and the number of regions is <math|1+2+4+\<ldots\>.+2<rsup|E>=2<rsup|E+1>-1*=O<around*|(|2<rsup|E>|)>>
-  but:
-
-  <\equation*>
-    2<rsup|E>=A<rsup|1/<math-up|log><rsub|2>F>
-  </equation*>
-
-  so the number of regions is:
-
-  <\equation>
-    N<rsub|><around*|(|A|)>=O<around*|(|A<rsup|1/<math-up|log><rsub|2>F>|)>
-  </equation>
-
-  For example, if <math|F=2>, then <math|N<rsub|><around*|(|A|)>=O<around*|(|A|)>>
-  and if <math|F=4>, then <math|N<rsub|><around*|(|A|)>=O<around*|(|A<rsup|1/2>|)>>.
-
-  Now if <math|w\<approx\>h> and we can approximate the hyperbolic segment by
-  a circular arc, then:
-
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|A>|<cell|\<approx\>>|<cell|w>>|<row|<cell|u<rsub|4>>|<cell|\<approx\>>|<cell|w*<around*|(|1-<frac|1|<sqrt|2>>|)>>>|<row|<cell|h-v<rsub|6>>|<cell|\<approx\>>|<cell|w*<around*|(|<sqrt|2>-1|)>>>|<row|<cell|B>|<cell|\<approx\>>|<cell|w*<around*|(|1-<frac|1|<sqrt|2>>|)>>>|<row|<cell|F<rsub|est>>|<cell|\<approx\>>|<cell|2+<sqrt|2><eq-number>>>>>
-  </eqnarray*>
-
-  or approximately:
-
-  <\equation>
-    N<rsub|R>=O<around*|(|w<rsup|1/log<rsub|2><around*|(|2+<sqrt|2>|)>>|)>
-  </equation>
-
-  regions total while processing region <math|R>.
-
-  Now we need to count and size all the top-level regions. \ We process one
-  top level region for each integral slope <math|-a> from <math|-1 >to the
-  slope at <math|x<rsub|min>>. \ The value for <math|a> at each value of
+  Our first task is to count and size all the top-level regions. \ We process
+  one top level region for each integral slope <math|-a> from <math|-1 >to
+  the slope at <math|x<rsub|min>>. \ The value for <math|a> at each value of
   <math|x> is given by:
 
   <\equation>
@@ -722,28 +645,29 @@
   <math|a> is <math|d x/d a> and so:
 
   <\equation>
-    \<Delta\> x=-<frac|d|d a>X<around*|(|a|)>=<frac|n<rsup|1/2>|2*a<rsup|3/2>>
+    A=-<frac|d|d a>X<around*|(|a|)>=<frac|n<rsup|1/2>|2*a<rsup|3/2>>
   </equation>
+
+  Assume for the moment that the number of total regions processed while
+  processing a region of size <math|A> is:
+
+  <\equation*>
+    N<around*|(|A|)>=O<around*|(|A<rsup|G>|)>
+  </equation*>
 
   Now we integrate the number of sub-regions processed for each top level
   region:
 
   <\equation>
-    N<rsub|total>=<big|int><rsup|a<rsub|max>><rsub|1>N<around*|(|\<Delta\>
-    x|)> d a=O<around*|(|<big|int><rsub|1><rsup|a<rsub|max>><around*|(|<frac|n<rsup|1/2>|2*a<rsup|3/2>>|)><rsup|1/<math-up|log><rsub|2>F>d
+    N<rsub|total>=<big|int><rsup|a<rsub|max>><rsub|1>N<around*|(|A|)> d
+    a=O<around*|(|<big|int><rsub|1><rsup|a<rsub|max>><around*|(|<frac|n<rsup|1/2>|2*a<rsup|3/2>>|)><rsup|G>d
     a|)>
   </equation>
 
   \;
 
-  We can classify three cases depending on the value of:
-
-  <\equation*>
-    G=1/log<rsub|2>F
-  </equation*>
-
-  because the outcome of the integration depends on the final exponent of
-  <math|a>:
+  We can classify three cases depending on the value of <math|G> because the
+  outcome of the integration depends on the final exponent of <math|a>:
 
   <\equation*>
     N<rsub|total>=<choice|<tformat|<table|<row|<cell|O<around*|(|n<rsup|1/3>|)>>|<cell|if
@@ -756,23 +680,81 @@
   <math|G=0> because we have at least <math|a<rsub|min>=O<around*|(|n<rsup|1/3>|)>>
   top level regions.)
 
-  So if we can show that the value of <math|G\<leqslant\>2/3>, then the
-  algorithm overall will have a time complexity of
-  <math|O<around*|(|n<rsup|1/3+\<epsilon\>>|)>>.
+  Now let us analyze the exponent in <math|N<around*|(|A|)>>. In order to
+  determine the number of regions encountered in the course of processing a
+  region of size <math|A>, we need to analyze the recursion depth. \ The
+  recursion will terminate when the <math|w> and <math|h> are unity because
+  by our conditions it is then impossible for the region to contain any more
+  lattice points. \ Our next goal is to measure the size of such a region and
+  so we need to know how many <math|x> columns that terminal region
+  represents.
 
-  Since <math|G\<leqslant\>2/3> when:
+  We can use the transformation between <math|u v> and <math|x y> coordinates
+  given by (<reference|eq:uv2xy1>) and (<reference|eq:uv2xy2>) to compute the
+  difference between the <math|x> coordinates of <math|P<rsub|2>> at
+  <math|<around*|(|1,0|)>> and <math|P<rsub|1>> at <math|<around*|(|0,1|)>>:
+
+  <\equation>
+    \<Delta\>x=<around*|(|x<rsub|0>+1\<cdot\>b<rsub|2>-0\<cdot\>b<rsub|1>|)>-<around*|(|x<rsub|0>+0\<cdot\>b<rsub|2>-1\<cdot\>b<rsub|1>|)>=b<rsub|1>+b<rsub|2>
+  </equation>
+
+  so the size of a terminal region is the sum of the denominators of the
+  slopes of the two lines that define it.
+
+  Each time we recurse into two new regions we add a new Farey fraction that
+  is the mediant of the two slopes for the outer region. \ As a result, we
+  perform a partial traversal of a Stern-Brocot tree, doubling the number of
+  nodes at each level. \ However, for our current purposes we can ignore the
+  numerators because we are interested in the sum of denominators. \ Because
+  regions cannot overlap, this means that the sum of the denominators at the
+  deepest level of the tree cannot exceed the size of the first region and
+  only denominators affect the recursion depth.
+
+  Next we need to derive a formula for the sum of the denominators of a
+  partial Stern-Brocot tree of depth <math|D>. \ For example, if the first
+  node is <around*|(|<math|2/1,1/1>|)>, the next two nodes are
+  <math|<around*|(|2/1,3/2|)>\<nocomma\>> and <math|<around*|(|3/2,1/1|)>>.
+  \ Ignoring numerators we have the following
+  <math|<around*|(|b<rsub|1>,b<rsub|2>|)>> tree:
+
+  <with|gr-mode|<tuple|edit|line>|gr-frame|<tuple|scale|1cm|<tuple|0.5gw|0.5gh>>|gr-geometry|<tuple|geometry|1par|0.6par>|gr-grid|<tuple|empty>|gr-grid-old|<tuple|cartesian|<point|0|0>|1>|gr-edit-grid-aspect|<tuple|<tuple|axes|none>|<tuple|1|none>|<tuple|10|none>>|gr-edit-grid|<tuple|empty>|gr-edit-grid-old|<tuple|cartesian|<point|0|0>|1>|gr-auto-crop|true|<graphics||<math-at|<around*|(|2,3|)>|<point|-3.0|1.0>>|<math-at|<around*|(|3,1|)>|<point|-2.0|1.0>>|<math-at|<around*|(|3,2|)>|<point|-4.0|1.0>>|<math-at|<around*|(|1,3|)>|<point|-5.0|1.0>>|<math-at|<around*|(|2,1|)>|<point|-2.4|2.0>>|<math-at|<around*|(|1,2|)>|<point|-4.3|2.0>>|<line|<point|-3.2|2.79425>|<point|-3.6|2.4>>|<line|<point|-2.90807|2.79425>|<point|-2.2|2.38212726551131>>|<line|<point|-4.2|1.79425>|<point|-4.60806654319354|1.38212726551131>>|<line|<point|-3.90807|1.79425>|<point|-3.60806654319354|1.38212726551131>>|<line|<point|-1.8|1.79425>|<point|-1.60806654319354|1.38212726551131>>|<math-at|<around*|(|1,1|)>|<point|-3.4|3.0>>|<line|<point|-2.2|1.79425188517>|<point|-2.60806654319354|1.38212726551131>>|<line|<point|-4.84481|0.794252>|<point|-5.33303016271994|0.122502976584204>>|<line|<point|-4|0.2>|<point|-3.60806654319354|0.794251885169996>>|<line|<point|-3.4|0.2>|<point|-3.60806654319354|0.794251885169996>>|<line|<point|-3|0.3>|<point|-2.60806654319354|0.794251885169996>>|<line|<point|-2.4|0.2>|<point|-2.60806654319354|0.794251885169996>>|<line|<point|-2|0.3>|<point|-1.60806654319354|0.794251885169996>>|<line|<point|-1.3|0.3>|<point|-1.60806654319354|0.794251885169996>>|<line|<point|-4.5|0.2>|<point|-4.84481008345725|0.794251885169996>>>>
+
+  At each new level we have twice as many nodes and half of the numbers are
+  duplicated from the previous level and the other half of the numbers are
+  the sum of numbers of their parent node. \ Since each parent's sum
+  contributes to exactly two numbers in the children, the sum of the
+  denominators at each level is triple the sum of the previous level. \ So
+  staring with <math|2> the series is <math|2,6,18,54,\<ldots\>>, and
+  denoting by <math|\<Omega\>> the set of terminal regions, the sum at depth
+  <math|D> is therefore:
 
   <\equation*>
-    F\<geqslant\>2<rsup|3/2>
+    A=<big|sum><rsub|R:R\<in\>\<Omega\>><rsub|>b<rsub|1>+b<rsub|2>=2*3<rsup|D>
   </equation*>
 
-  and since we estimated earlier that:
+  Because the number of terminal regions is:
 
   <\equation*>
-    F<rsub|est>=2+<sqrt|2>\<gtr\>2<rsup|3/2>
+    <around*|\||\<Omega\>|\|>=2<rsup|D>
   </equation*>
 
-  the evidence for our time complexity conjecture is complete.
+  we can now measure <math|<around*|\||\<Omega\>|\|>> in terms of <math|A>:
+
+  <\equation*>
+    <around*|\||\<Omega\>|\|>=<around*|\<lceil\>|<frac|A|2><rsup|1/log<rsub|2>3>|\<rceil\>>
+  </equation*>
+
+  Finally, since the total number of regions is
+  <math|1+2+4+\<ldots\>+<around*|\||\<Omega\>|\|>>, the number of regions as
+  a function of the size <math|A> is:
+
+  <\equation>
+    N<around*|(|A|)>=2*<around*|\||\<Omega\>|\|><rsub|>-1=O<around*|(|A<rsup|1/log<rsub|2>3>|)>
+  </equation>
+
+  and therefore <math|G=1/log<rsub|2>3.> \ Since
+  <math|1/log<rsub|2>3\<approx\>0.63>, <math|1/log<rsub|2>3\<less\>2/3> and
+  the proof is complete.
 
   The space complexity is simply our recursion depth which can be at most
   <math|O<around*|(|log n|)>>.
@@ -784,11 +766,24 @@
   <\collection>
     <associate|abc|<tuple|6|?>>
     <associate|auto-1|<tuple|1|1>>
-    <associate|auto-2|<tuple|2|2>>
-    <associate|auto-3|<tuple|3|6>>
+    <associate|auto-2|<tuple|2|1>>
+    <associate|auto-3|<tuple|3|2>>
     <associate|auto-4|<tuple|4|8>>
-    <associate|auto-5|<tuple|5|8>>
-    <associate|auto-6|<tuple|6|?>>
+    <associate|auto-5|<tuple|5|11>>
+    <associate|auto-6|<tuple|6|11>>
+    <associate|eq:det|<tuple|10|?>>
+    <associate|eq:gcd1|<tuple|10|?>>
+    <associate|eq:ps1|<tuple|12|?>>
+    <associate|eq:ps2|<tuple|13|?>>
+    <associate|eq:uv2xy1|<tuple|21|4>>
+    <associate|eq:uv2xy2|<tuple|22|4>>
+    <associate|eq:uv2xy3|<tuple|23|4>>
+    <associate|eq:uv2xy4|<tuple|24|4>>
+    <associate|eq:xy0|<tuple|11|?>>
+    <associate|uv2xy1|<tuple|22|?>>
+    <associate|uv2xy2|<tuple|23|?>>
+    <associate|uv2xy3|<tuple|24|?>>
+    <associate|uv2xy4|<tuple|25|?>>
   </collection>
 </references>
 

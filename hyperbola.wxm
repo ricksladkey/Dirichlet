@@ -11,6 +11,10 @@ swapsides(eqs) := map(lambda([u],rhs(u)=lhs(u)), eqs)$
 backsubst(eqs,expr) := subst(swapsides(eqs),subst(swapsides(-eqs),expr))$
 backratsubst(eqs,expr) := lratsubst(swapsides(eqs),expr)$
 print1d(expr) := block([display2d], display2d: false, print(expr))$
+actonpart(expr,parts,action) := block([part],
+    part: apply('part,append([expr],parts)),
+    subst([part=action(part)],expr)
+)$
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -264,6 +268,58 @@ uudiag: subst(detdef,ratsimp(solve(subst(ratsimp(solve(subst([diff(vv,uu)=-1],dv
 vvdiag: subst(detdef,ratsimp(solve(subst(ratsimp(solve(subst([diff(vv,uu)=-1],dvvduu),uu)[1]),huuvv),vv)[2]))$
 uudiag2: subst(uuvvdefs,backsubst(p3defs,factor(uudiag)))-c[1];
 vvdiag2: subst(uuvvdefs,backsubst(p3defs,factor(vvdiag)))-c[2];
+uvdiag2: backsubst(p3defs,format(expand(uudiag2+vvdiag2),%f-c[2]-c[1]));
+uvdiag3: actonpart(uvdiag2,[2,1],lambda([expr],sqrt(expr^2)));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+uutl: subst(detdef,ratsimp(solve(subst(ratsimp(solve(subst([diff(vv,uu)=-2],dvvduu),vv)[1]),huuvv),uu)[2]))$
+vvtl: subst(detdef,ratsimp(solve(subst(ratsimp(solve(subst([diff(vv,uu)=-2],dvvduu),uu)[1]),huuvv),vv)[2]))$
+uutl2: subst(uuvvdefs,backsubst(p3defs,factor(uutl)))-c[1];
+vvtl2: subst(uuvvdefs,backsubst(p3defs,factor(vvtl)))-c[2];
+uvtl2: format(backsubst(p3defs,format(expand(2*uutl2+vvtl2))),%f-c[2]-2*c[1]);
+uvtl3: actonpart(uvtl2,[2,1],lambda([expr],sqrt(expr^2)));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+uubr: subst(detdef,ratsimp(solve(subst(ratsimp(solve(subst([diff(vv,uu)=-1/2],dvvduu),vv)[1]),huuvv),uu)[2]))$
+vvbr: subst(detdef,ratsimp(solve(subst(ratsimp(solve(subst([diff(vv,uu)=-1/2],dvvduu),uu)[1]),huuvv),vv)[2]))$
+uubr2: subst(uuvvdefs,backsubst(p3defs,factor(uubr)))-c[1];
+vvbr2: subst(uuvvdefs,backsubst(p3defs,factor(vvbr)))-c[2];
+uvbr2: format(backsubst(p3defs,format(expand(uubr2+2*vvbr2))),%f-2*c[2]-c[1]);
+uvbr3: actonpart(uvbr2,[2,1],lambda([expr],sqrt(expr^2)));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+ratio3: rhs(factor(expand(uvtl3+uvbr3-2*uvdiag3)))/rhs(uvdiag3);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+checkratio: subst(append(cdefs,p3defs,checkvalues),ratio3);
+checkratio,numer;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+diff(huuvv;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+p4defs: [a[3]+a[1]=2*a[1]+a[2],b[3]+b[1]=2*b[1]+b[2]];
+uvtl4: backsubst(p4defs,uvtl3);
+uvtldiff: format(rhs(uvtl4-uvdiag3),%p(sqrt(n))-c[1]);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+ratio1: rhs(uvdiag3)/uvtldiff;
+ratio2: expand(radcan(num(ratio1)/sqrt(n*a[3]*b[3])))/expand(radcan(denom(ratio1)/sqrt(n*a[3]*b[3])));
+part(ratio2,2,2)^2;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+expand(part(uvtl2,2,1,2,1,2));
+part(uvtl2,2,1,1);
+part(uvtl2,2,1,1)-expand(part(uvtl2,2,1,2,1,2));
+part(uvtl2,2,1,1)-expand((2*a[1]+a[2])*(2*b[1]+b[2]));
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -352,7 +408,7 @@ solve(subst([diff(y,x,2)=1],diff(solve(hxy,y)[1],x,2)),x)[3];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-solve(w=(B/A)^E,E)[1];
+solve(A=(F)^E,E)[1];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -387,6 +443,158 @@ radcan(rhs(subst([a[1]=1],xdiag1))-rhs(subst([a[1]=2],xdiag1))),numer;
 /* [wxMaxima: input   start ] */
 a2rindef: integrate(a2dx^(2/3),a);
 a2r: subst(amax,a2rindef)-subst(amin,a2rindef);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+ratsimp(%e^(log(a)/log(b)));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+diff(Y(x),x);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+fg: solve(1/(log(F)/log(2))=2/3);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+fg,numer;
+2^(3/2)/2,numer;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+det13: a[1]*b[3]-b[1]*a[3];
+subst(detdef,expand(subst(p3defs,det13)));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: comment start ]
+Intersection of the hyperbola with diagnoal u=v.
+   [wxMaxima: comment end   ] */
+
+/* [wxMaxima: input   start ] */
+distance1: solve(subst([v=u],huv),u)[2];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+distancepart: part(distance1,2,1,1,1);
+distancepart2: format(expand(distancepart),%p(x[0],y[0]),%f);
+p4defs: [a[4]=a[2]-a[1],b[4]=b[2]-b[1]];
+distance2: subst([distancepart=format(distancepart3: backsubst(p4defs, distancepart2),%f-4*a[4]*b[4]*n)],distance1);
+distance3: actonpart(distance2,[2,2],lambda([expr],backsubst(p4defs,factor(expand(expr)))));
+distance4: backsubst(p4defs,distance3);
+distancepart3: part(distance4,2,1);
+distance5: subst([distancepart3=backsubst(p4defs,format(distancepart3-part(distance4,2,1,1),%p(x[0],y[0]),%f))+part(distance4,2,1,1)],distance4);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+l1: a[1]*(x-x[1])+b[1]*(y-y[1])=0;
+l2: a[2]*(x-x[2])+b[2]*(y-y[2])=0;
+xab: solve(subst([diff(y,x)=-a/b],diff(solve(hxy,y)[1],x)),x)[2];
+yab: actonpart(radcan(solve(subst([xab],hxy),y)[1]),[2],lambda([expr],sqrt(expr^2)));
+xyab: [xab, yab];
+l1a: expand(subst(subst([x=x[1],y=y[1],a=a[1],b=b[1]],xyab),l1));
+l2a: expand(subst(subst([x=x[2],y=y[2],a=a[2],b=b[2]],xyab),l2));
+xy0: subst([x=x[0],y=y[0]],radcan(solve([l1a,l2a],[x,y])[1]));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+xy0part: part(xy0,1,2,2,1)-part(xy0,1,2,2,2);
+subst(detdef,expand(map('denom,map('rhs,xy0))*xy0part));
+xy0part2: radcan(map('num,map('rhs,xy0))*xy0part);
+xy1: [x[0]=xy0part2[1],y[0]=xy0part2[2]];
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+distance6: subst(xy1,distance5);
+distance7: ratsimp(subst(p4defs,distance6));
+distance8: actonpart(distance7,[2,1,1,1,2],lambda([e],subst(detdef,factor(e))));
+e: part(distance8,2,1,1,1,1);
+e2: subst(detdef,factor(expand(e/(n*4))+expand((a[2]-a[1])*(b[2]-b[1]))))-expand((a[2]-a[1])*(b[2]-b[1]));
+distance9: subst([e=e2*4*n],distance8);
+distance10: actonpart(distance9,[2,2],lambda([e],factor(e)));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+distance10part1: part(distance10,2,1)-part(distance10,2,1,1);
+distance10part2: distance10part1/(2*sqrt(n));
+tempdefs: [s[1]=sqrt(a[1])*sqrt(b[1]),s[2]=sqrt(a[2])*sqrt(b[2])];
+distance10part3: expand(backratsubst(tempdefs,distance10part2));
+format(distance10part3,%p(s[1],s[2]));
+distance10part4: (a[1]*b[2]+b[1]*a[2])*(s[1]+s[2])-2*(a[1]*b[1]*s[2]+a[2]*b[2]*s[1]);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+uvdiag3;
+xy1;
+cdefs;
+distance11: subst(p3defs,lratsubst(detdef,radcan(expand(rhs(subst(expand(subst(xy1,cdefs)),uvdiag3))/(2*sqrt(n))))));
+distance12: sqrt(part(distance11,1)^2)-sqrt(part(distance11,2)^2)-sqrt(part(distance11,3)^2);
+distance13: distance12*(2*sqrt(n));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+topdist: expand(subst([b[1]=1,b[2]=1,a[1]=a[2]+1],distance12)/sqrt(a[2]));
+sqrt(expand(part(topdist,1,1)^2/part(topdist,1,2)^2))-sqrt(expand(part(topdist,2,1,1)^2/part(topdist,2,1,2)^2));
+solve(topdist=1,a[2]);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+hxy;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+hy: rhs(solve(hxy,y)[1]);
+yp: diff(hy,x);
+ypp: diff(hy,x,2);
+ky: ypp/(1+yp^2)^(3/2);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+a2x;
+kyest: radcan(subst([a2x],ypp/(yp^2)^(3/2)));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+tan(t)*cot(t)=1;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+hxyt: solve([x/sqrt(n)=tan(t),y/sqrt(n)=cot(t)],[x,y])[1];
+uvt: subst(hxyt,uv);
+up: diff(rhs(uvt[1]),t);
+vp: diff(rhs(uvt[2]),t);
+upp: diff(rhs(uvt[1]),t,2);
+vpp: diff(rhs(uvt[2]),t,2);
+kt: (up*vpp-vp*upp)/(up^2+vp^2)^(3/2);
+kt2: factor(subst(detdef,factor(trigsimp(kt))));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+kt2part1: part(kt2,1,2,1);
+trigsimp(kt2part1);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+part1: ((a[1]*sin(t)^2)-(b[1]*cos(t)^2))^2;
+part2: ((a[2]*sin(t)^2)-(b[2]*cos(t)^2))^2;
+expand(part1+part2)-kt2part1;
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+l1: m[1]*(x-x[1])+(y-y[1])=0;
+l2: m[2]*(x-x[2])+(y-y[2])=0;
+xab: solve(subst([diff(y,x)=-m],diff(solve(hxy,y)[1],x)),x)[2];
+yab: actonpart(radcan(solve(subst([xab],hxy),y)[1]),[2],lambda([expr],sqrt(expr^2)));
+xyab: [xab, yab];
+l1a: expand(subst(subst([x=x[1],y=y[1],m=m[1]],xyab),l1));
+l2a: expand(subst(subst([x=x[2],y=y[2],m=m[2]],xyab),l2));
+xy0: subst([x=x[0],y=y[0]],radcan(solve([l1a,l2a],[x,y])[1]));
+subst([x=x[3],y=y[3],m=m[3]],xyab);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+dxwh: rhs(subst([u=w,v=0],xy[1]))-rhs(subst([u=0,v=h],xy[1]));
+dx11: backsubst(p3defs,subst([w=1,h=1],dxwh));
 /* [wxMaxima: input   end   ] */
 
 /* Maxima can't load/batch files which end with a comment! */
