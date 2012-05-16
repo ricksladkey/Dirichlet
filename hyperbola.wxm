@@ -593,8 +593,19 @@ subst([x=x[3],y=y[3],m=m[3]],xyab);
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
+xy;
+subst([u=1,v=0],xy[1]);
 dxwh: rhs(subst([u=w,v=0],xy[1]))-rhs(subst([u=0,v=h],xy[1]));
 dx11: backsubst(p3defs,subst([w=1,h=1],dxwh));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+solve([A=2*3^D],[D]);
+subst(solve([A=2*3^D],[D]),omega=2^D);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+1/(log(3)/log(2)),numer;
 /* [wxMaxima: input   end   ] */
 
 /* Maxima can't load/batch files which end with a comment! */
