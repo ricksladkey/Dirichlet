@@ -231,8 +231,8 @@
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|H<around*|(|u<rsub|h>,h|)>>|<cell|=>|<cell|n>>|<row|<cell|H<around*|(|w,v<rsub|w>|)>>|<cell|=>|<cell|n>>|<row|<cell|0\<leqslant\>u<rsub|h>>|<cell|\<less\>>|<cell|1>>|<row|<cell|0\<leqslant\>v<rsub|w>>|<cell|\<less\>>|<cell|1>>|<row|<cell|-d
-    v/d u<around*|(|u<rsub|h>|)>>|<cell|\<geqslant\>>|<cell|0>>|<row|<cell|-d
-    u/d v<around*|(|v<rsub|w>|)>>|<cell|\<geqslant\>>|<cell|0>>>>
+    v/d u<around*|(|u<rsub|h>|)>>|<cell|\<geq\>>|<cell|0>>|<row|<cell|-d u/d
+    v<around*|(|v<rsub|w>|)>>|<cell|\<geq\>>|<cell|0>>>>
   </eqnarray*>
 
   or equivalently that the hyperbola is less than one unit away from the
@@ -248,21 +248,21 @@
   <with|gr-mode|<tuple|edit|point>|gr-frame|<tuple|scale|1.18926cm|<tuple|0.5gw|0.5gh>>|gr-geometry|<tuple|geometry|1par|0.733333par|center>|gr-grid|<tuple|cartesian|<point|0|0>|5>|gr-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-aspect|<tuple|<tuple|axes|none>|<tuple|1|none>|<tuple|10|none>>|gr-edit-grid|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-auto-crop|true|magnify|1.18920711391541|gr-magnify|1.18920711391541|gr-color|#969696|gr-dash-style|10|<graphics||<point|0|0>|<point|0.0|3.5>|<point|3.5|0.0>|<math-at|P<rsub|2>|<point|3.5|-0.315875450190698>>|<with|color|#969696|dash-style|10|magnify|1.18920711391541|<line|<point|0|3.5>|<point|3.5|3.5>|<point|3.5|0.0>>>|<math-at|w|<point|1.67812|3.7323>>|<math-at|h|<point|3.71164|2>>|<math-at|u|<point|4.22327127104857|-0.250914248369648>>|<spline|<point|4.5|0.262528795121958>|<point|3.0|0.5>|<point|0.701313192297385|2.5>|<point|0.270375393271184|4.0>>|<math-at|H<around*|(|u,v|)>=n|<point|0.823796876955379|2.69183920352629>>|<math-at|v|<point|-0.411937664151288|4.0>>|<math-at|P<rsub|1>|<point|-0.5|3.34795412488904>>|<math-at|P<rsub|0>|<point|-0.5|-0.324619072766175>>|<with|color|#969696|magnify|1.18920711391541|<point|0.5|3.5>>|<with|color|#969696|magnify|1.18920711391541|<point|3.5|0.5>>>>
 
   We can now reformulate the number of lattice points in this region
-  <math|R<rsub|> >as a function of the eight values that define it:
+  <math|R<rsub|> > as a function of the eight values that define it:
 
   <\equation>
     S<rsub|<rsub|R>>=S<rsub|R><around*|(|w,h,a<rsub|1>,b<rsub|1>,c<rsub|1>,a<rsub|2>,b<rsub|2>,c<rsub|2>|)>
   </equation>
 
-  If <math|H<around*|(|w,1|)>\<leqslant\>n>, then
-  <math|v<rsub|w>\<geqslant\>1> and we can remove the first lattice row:
+  If <math|H<around*|(|w,1|)>\<leq\>n>, then <math|v<rsub|w>\<geq\>1> and we
+  can remove the first lattice row:
 
   <\equation>
     S<rsub|R>=S<rsub|R><around*|(|w,h-1,a<rsub|1>,b<rsub|1>,c<rsub|1>,a<rsub|2>,b<rsub|2>,c<rsub|2>+1|)>+w
   </equation>
 
-  and if <math|H<around*|(|1,h|)>\<leqslant\>n>, then
-  <math|u<rsub|h>\<geqslant\>1> and we can remove the first lattice column:
+  and if <math|H<around*|(|1,h|)>\<leq\>n>, then <math|u<rsub|h>\<geq\>1> and
+  we can remove the first lattice column:
 
   <\equation>
     S<rsub|R>=S<rsub|R><around*|(|w-1,h,a<rsub|1>,b<rsub|1>,c<rsub|1>+1,a<rsub|2>,b<rsub|2>,c<rsub|2>|)>+h
@@ -287,8 +287,8 @@
   using whichever axis has fewer points, keeping in mind that it could be
   assymmetric. \ (Note that these summations are certain not to overcount
   because by our conditions <math|V<around*|(|u|)>\<less\>h> for
-  <math|0\<less\>u\<leqslant\>w> and <math|U<around*|(|v|)>\<less\>w> for
-  <math|0\<less\>v\<leqslant\>h>.
+  <math|0\<less\>u\<leq\>w> and <math|U<around*|(|v|)>\<less\>w> for
+  <math|0\<less\>v\<leqslant\>h>.)
 
   And so:
 
@@ -321,8 +321,8 @@
 
   <with|gr-mode|<tuple|edit|math-at>|gr-frame|<tuple|scale|1cm|<tuple|0.370012gw|0.270022gh>>|gr-geometry|<tuple|geometry|1par|100|center>|gr-grid|<tuple|cartesian|<point|0|0>|2>|gr-grid-old|<tuple|cartesian|<point|0|0>|2>|gr-edit-grid-aspect|<tuple|<tuple|axes|none>|<tuple|1|none>|<tuple|10|none>>|gr-edit-grid|<tuple|cartesian|<point|0|0>|2>|gr-edit-grid-old|<tuple|cartesian|<point|0|0>|2>|gr-auto-crop|true|gr-dash-style|10|<graphics||<with|color|#969696|dash-style|10|<line|<point|0|4.4>|<point|4.8|4.4>|<point|4.8|0.0>>>|<point|0|4.4>|<point|0|0>|<point|4.8|0>|<line|<point|0|2.6>|<point|2.4|0.0>>|<math-at|P<rsub|0>|<point|-0.6|-0.4>>|<math-at|P<rsub|1>|<point|-0.6|4.2>>|<math-at|P<rsub|2>|<point|4.6|-0.4>>|<math-at|u|<point|5.4|0.2>>|<math-at|v|<point|-0.337032014816775|4.9255853948935>>|<math-at|h|<point|5|2.4>>|<math-at|w|<point|2.4|4.6>>|<math-at|u<rprime|'>|<point|0.2|1.8>>|<math-at|u<rprime|''>|<point|3.4|-0.4>>|<math-at|v<rprime|''>|<point|1.4|0.4>>|<math-at|v<rprime|'>|<point|-0.4|3.4>>|<with|color|#969696|dash-style|10|<line|<point|1.29231|1.2>|<point|3.6|1.2>|<point|4.8|0.0>>>|<with|color|#969696|dash-style|10|<line|<point|1.2|1.3>|<point|1.2|3.4>|<point|0.0|4.4>>>|<math-at|R|<point|2.6|2.8>>|<math-at|R<rprime|''>|<point|3.0|0.6>>|<math-at|R<rprime|'>|<point|0.4|3.2>>|<spline|<point|0.2|4.6>|<point|0.6|2.6>|<point|2.88244146051065|0.48245468977378>|<point|5.0|0.2>>|<point|1.31142|1.4>|<math-at|P<rsub|tan>|<point|1.4|1.6>>>>
 
-  A diagonal with slope -1 in the UV coordinate system has a slope in the XY
-  coordinate system that is the mediant of the slopes of lines
+  A diagonal with slope -1 in the <math|u v> coordinate system has a slope in
+  the <math|x y> coordinate system that is the mediant of the slopes of lines
   <math|L<rsub|1>> and <math|L<rsub|2>>:
 
   <\eqnarray*>
@@ -363,8 +363,8 @@
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|u<rsub|4>>|<cell|\<gtr\>>|<cell|0>>|<row|<cell|u<rsub|5>>|<cell|=>|<cell|u<rsub|4>+1>>|<row|<cell|-d
-    v/d u<around*|(|u<rsub|4>|)>>|<cell|\<geqslant\>>|<cell|1>>|<row|<cell|-d
-    v/d u<around*|(|u<rsub|5>|)>>|<cell|\<less\>>|<cell|1>>|<row|<cell|v<rsub|4>>|<cell|=>|<cell|<around*|\<lfloor\>|V<around*|(|u<rsub|4>|)>|\<rfloor\>>>>|<row|<cell|v<rsub|5>>|<cell|=>|<cell|<around*|\<lfloor\>|V<around*|(|u<rsub|5>|)>|\<rfloor\>>>>>>
+    v/d u<around*|(|u<rsub|4>|)>>|<cell|\<geq\>>|<cell|1>>|<row|<cell|-d v/d
+    u<around*|(|u<rsub|5>|)>>|<cell|\<less\>>|<cell|1>>|<row|<cell|v<rsub|4>>|<cell|=>|<cell|<around*|\<lfloor\>|V<around*|(|u<rsub|4>|)>|\<rfloor\>>>>|<row|<cell|v<rsub|5>>|<cell|=>|<cell|<around*|\<lfloor\>|V<around*|(|u<rsub|5>|)>|\<rfloor\>>>>>>
   </eqnarray*>
 
   The derivative conditions ensure that the diagonal rays with slope
@@ -388,7 +388,13 @@
 
   Then the number of lattice points above the axes and inside the polygon
   <math|N> defined by points <math|P<rsub|0>,P<rsub|6>,P<rsub|4>,P<rsub|5>,P<rsub|7>>
-  is:
+  is
+
+  <\equation*>
+    S<rsub|N>=\<Delta\><around*|(|v<rsub|6>|)>-\<Delta\><around*|(|v<rsub|6>-u<rsub|5>|)>+\<Delta\><around*|(|u<rsub|7>-u<rsub|5>|)>
+  </equation*>
+
+  or
 
   <\equation>
     S<rsub|N>=<choice|<tformat|<table|<row|<cell|\<Delta\><around*|(|v<rsub|6>-1|)>+u<rsub|4>>|<cell|if
@@ -410,28 +416,15 @@
   so that <math|m<rsub|1>> and <math|m<rsub|3>> are also Farey neighbors and
   likewise for <math|m<rsub|3>> and <math|m<rsub|2>>.
 
-  So we can define region <math|R<rprime|'>> to be the sub-region with:
+  So we can define region <math|R<rprime|'>> to be the sub-region with
+  <math|P<rprime|'><rsub|1>=P<rsub|1>,P<rprime|'><rsub|0>=P<rsub|6>,P<rprime|'><rsub|2>=P<rsub|4>>
+  and the region <math|R<rprime|''>> to be the sub-region with
+  <math|P<rprime|''><rsub|1>=P<rsub|5>,P<rprime|''><rsub|0>=P<rsub|7>,P<rsub|2><rprime|''>=P<rsub|2>>
+  then the number of lattice points in the entire region is
+  <math|S<rsub|R>=S<rsub|N>+S<rsub|R<rprime|'>>+S<rsub|R<rprime|''>>> or
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|P<rprime|'><rsub|1>>|<cell|=>|<cell|P<rsub|1>>>|<row|<cell|P<rprime|'><rsub|0>>|<cell|=>|<cell|P<rsub|4>>>|<row|<cell|P<rprime|'><rsub|2>>|<cell|=>|<cell|P<rsub|6>>>>>
-  </eqnarray*>
-
-  and the region <math|R<rprime|''>> to be the sub-region with:
-
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|P<rprime|''><rsub|1>>|<cell|=>|<cell|P<rsub|5>>>|<row|<cell|P<rprime|''><rsub|0>>|<cell|=>|<cell|P<rsub|7>>>|<row|<cell|P<rprime|''><rsub|2>>|<cell|=>|<cell|P<rsub|2>>>>>
-  </eqnarray*>
-
-  Then the number of lattice points in the entire region is:
-
-  <\equation>
-    S<rsub|R>=S<rsub|N>+S<rsub|R<rprime|'>>+S<rsub|R<rprime|''>>
-  </equation>
-
-  or:
-
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|S<rsub|R><around*|(|w,h,a<rsub|1>,b<rsub|1>,c<rsub|1>,a<rsub|2>,b<rsub|2>,c<rsub|2>|)>>|<cell|=>|<cell|S<rsub|N><eq-number>>>|<row|<cell|>|<cell|+>|<cell|S<rsub|R><around*|(|u<rsub|4>,h-v<rsub|6>,a<rsub|1>,b<rsub|1>,c<rsub|1>,a<rsub|3>,b<rsub|3>,c<rsub|1>+c<rsub|2>+v<rsub|6>|)>>>|<row|<cell|>|<cell|+>|<cell|S<rsub|R><around*|(|w-u<rsub|7>,v<rsub|5>,a<rsub|3>,b<rsub|3>,c<rsub|1>+c<rsub|2>+u<rsub|7>,a<rsub|2>,b<rsub|2>,c<rsub|2>|)>>>>>
+    <tformat|<table|<row|<cell|S<rsub|R><around*|(|w,h,a<rsub|1>,b<rsub|1>,c<rsub|1>,a<rsub|2>,b<rsub|2>,c<rsub|2>|)>>|<cell|=>|<cell|S<rsub|N><eq-number>>>|<row|<cell|>|<cell|+>|<cell|S<rsub|R><around*|(|u<rsub|4>,h-v<rsub|6>,a<rsub|1>,b<rsub|1>,c<rsub|1>,a<rsub|3>,b<rsub|3>,c<rsub|1>+c<rsub|2>+v<rsub|6>|)>>>|<row|<cell|>|<cell|+>|<cell|S<rsub|R><around*|(|w-u<rsub|7>,v<rsub|5>,a<rsub|3>,b<rsub|3>,c<rsub|1>+c<rsub|2>+u<rsub|7>,a<rsub|2>,b<rsub|2>,c<rsub|2>|)>.>>>>
   </eqnarray*>
 
   This recursive formula for the sum of the lattice points in a region in
@@ -539,15 +532,17 @@
   which is the number of lattice points below the hyperbola and above line
   <math|L<rsub|2>> over the interval <math|<around*|[|x<rsub|min>,x<rsub|2>|)>>.
 
-  Now take lines <math|L<rsub|4>> and <math|L<rsub|5>> with slopes
+  Now take line <math|L<rsub|2>> with slope <math|-a<rsub|2>> passing through
+  <math|P<rsub|2>>, lines <math|L<rsub|4>> and <math|L<rsub|5>> with slopes
   <math|-a<rsub|1>> and passing through <math|P<rsub|4>> and <math|P<rsub|5>>
   and then find the point <math|P<rsub|6>> where <math|L<rsub|4>> intersects
   <math|x=x<rsub|min>> and the point <math|P<rsub|0>> where <math|L<rsub|5>>
   intersects <math|L<rsub|2>> and the point <math|P<rsub|7>> where
-  <math|L<rsub|2>> intersects <math|x=x<rsub|min>>.
+  <math|L<rsub|2>> intersects <math|x=x<rsub|min>> and denote by
+  <math|c<rsub|i>> the <math|y> intercept of line <math|L<rsub|i>>.
 
-  <with|gr-mode|<tuple|edit|line>|gr-frame|<tuple|scale|1cm|<tuple|0.5gw|0.5gh>>|gr-geometry|<tuple|geometry|1par|0.6par>|gr-grid|<tuple|cartesian|<point|0|0>|5>|gr-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-aspect|<tuple|<tuple|axes|none>|<tuple|1|none>|<tuple|10|none>>|gr-edit-grid|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-auto-crop|true|gr-dash-style|10|<graphics||<line|<point|-3.0|-1.0>|<point|-4.0|1.0>>|<point|-4|1>|<point|-3|-1>|<line|<point|-6.0|2.0>|<point|-1.0|-3.0>>|<line|<point|-4.5|1.5>|<point|-6.0|4.5>>|<point|-4.5|1.5>|<spline|<point|-5.5|4.33826814463599>|<point|-4.5|2.0>|<point|-2.5|-1.0>|<point|-1.0|-2.73817405755366>>|<math-at|P<rsub|0>|<point|-3.5|-1.25312>>|<math-at|L<rsub|2>|<point|-2.76973250390689|-2.0>>|<point|-1|-3>|<math-at|P<rsub|2>|<point|-1.5|-3.22179084540838>>|<with|color|dark
-  grey|<line|<point|-6|4.5>|<point|-6.0|-0.5>>>|<math-at|x<rsub|min>|<point|-6.23638|-1>>|<math-at|R|<point|-2.30258|-0.5>>|<math-at|H<around*|(|x,y|)>=n|<point|-4.5|3>>|<point|-4.24680283911887|1.5>|<math-at|P<rsub|5>|<point|-4.5|0.682911411193787>>|<math-at|P<rsub|4>|<point|-5.09461430341988|1.5>>|<math-at|P<rsub|tan>|<point|-4.0|1.5>>|<point|-6|4.5>|<point|-6|2>|<math-at|P<rsub|6>|<point|-6.5|4.0>>|<math-at|P<rsub|7>|<point|-6.5|2>>|<with|dash-style|10|<line|<point|-4.5|1.5>|<point|-4.01534594523085|1.04152334964942>>>|<math-at|M|<point|-5.69093125733293|2.5>>>>
+  <with|gr-mode|<tuple|edit|math-at>|gr-frame|<tuple|scale|1cm|<tuple|0.5gw|0.5gh>>|gr-geometry|<tuple|geometry|1par|0.6par>|gr-grid|<tuple|cartesian|<point|0|0>|5>|gr-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-aspect|<tuple|<tuple|axes|none>|<tuple|1|none>|<tuple|10|none>>|gr-edit-grid|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-auto-crop|true|gr-dash-style|10|<graphics||<line|<point|-3.0|-1.0>|<point|-4.0|1.0>>|<point|-4|1>|<point|-3|-1>|<line|<point|-6.0|2.0>|<point|-1.0|-3.0>>|<line|<point|-4.5|1.5>|<point|-6.0|4.5>>|<point|-4.5|1.5>|<spline|<point|-5.5|4.33826814463599>|<point|-4.5|2.0>|<point|-2.5|-1.0>|<point|-1.0|-2.73817405755366>>|<math-at|P<rsub|0>|<point|-3.5|-1.25312>>|<math-at|L<rsub|2>|<point|-2.76973250390689|-2.0>>|<point|-1|-3>|<math-at|P<rsub|2>|<point|-1.5|-3.22179084540838>>|<with|color|dark
+  grey|<line|<point|-6|4.5>|<point|-6.0|-0.5>>>|<math-at|x<rsub|min>|<point|-6.23638|-1>>|<math-at|R|<point|-2.30258|-0.5>>|<math-at|H<around*|(|x,y|)>=n|<point|-4.5|3>>|<math-at|P<rsub|5>|<point|-4.5|0.682911411193787>>|<math-at|P<rsub|4>|<point|-5.09461430341988|1.5>>|<math-at|P<rsub|tan>|<point|-4.0|1.5>>|<point|-6|4.5>|<point|-6|2>|<math-at|P<rsub|6>|<point|-6.5|4.0>>|<math-at|P<rsub|7>|<point|-6.5|2>>|<with|dash-style|10|<line|<point|-4.5|1.5>|<point|-4.01534594523085|1.04152334964942>>>|<math-at|M|<point|-5.69093125733293|2.5>>|<point|-4.11755853948935|1.33183952903823>|<math-at|d|<point|-6.5|3.0>>>>
 
   \;
 
@@ -559,24 +554,18 @@
   <math|L<rsub|5>> stating at <math|P<rsub|5>>:
 
   <\equation>
-    S<rsub|M>=\<Delta\><around*|(|y<rsub|6>-y<rsub|7>|)>-\<Delta\><around*|(|y<rsub|6>-y<rsub|7>-<around*|(|x<rsub|4>-x<rsub|min>|)>|)>+\<Delta\><around*|(|x<rsub|0>-x<rsub|5>|)>
+    S<rsub|M>=\<Delta\><around*|(|c<rsub|4>-c<rsub|2>-x<rsub|min>|)>-\<Delta\><around*|(|c<rsub|4>-c<rsub|2>-x<rsub|5>|)>+\<Delta\><around*|(|c<rsub|5>-c<rsub|2>-x<rsub|5>|)>
   </equation>
 
   where if <math|L<rsub|4>> is coincident with <math|L<rsub|5>>, the second
   two terms cancel each other out.
 
   Then choosing <math|P<rsub|1>=P<rsub|5>> (together with <math|P<rsub|0>>
-  and <math|P<rsub|2>>) and calculating the necessary quantities:
-
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|c<rsub|1>>|<cell|=>|<cell|a<rsub|1*>x<rsub|5>+y<rsub|5>>>|<row|<cell|c<rsub|2>>|<cell|=>|<cell|a<rsub|2>*x<rsub|2>+y<rsub|2>>>|<row|<cell|w>|<cell|=>|<cell|a<rsub|1>*x<rsub|2>+y<rsub|2>-c<rsub|1>>>|<row|<cell|h>|<cell|=>|<cell|a<rsub|2>*x<rsub|5>+y<rsub|5>-c<rsub|2>>>>>
-  </eqnarray*>
-
-  we have a region <math|R> and can now count lattice points using region
-  processing:\ 
+  and <math|P<rsub|2>>) and calculating the necessary quantities we have a
+  region <math|R> and can now count lattice points using region processing:\ 
 
   <\equation>
-    S<rsub|R>=S<rsub|R><around*|(|w,h,a<rsub|1>,b<rsub|1>,c<rsub|1>,a<rsub|2>,b<rsub|2>,c<rsub|2>|)>
+    S<rsub|R>=S<rsub|R><around*|(|a<rsub|1>*x<rsub|2>+y<rsub|2>-c<rsub|1>,a<rsub|2>*x<rsub|5>+y<rsub|5>-c<rsub|2>,a<rsub|1>,b<rsub|1>,c<rsub|1>,a<rsub|2>,b<rsub|2>,c<rsub|2>|)>
   </equation>
 
   so the total sum for this iteration is:
@@ -607,26 +596,108 @@
 
   <section|Algorithm>
 
-  Introducing intermediate quantities and functions in support of integer
-  arithmetic:
+  <\algorithm>
+    <math|S<rsub|1><around*|(||)>:<big|sum><rsub|x=1><rsup|x\<less\>x<rsub|min>><around*|\<lfloor\>|n/x|\<rfloor\>>>
 
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|d<rsub|i>>|<cell|=>|<cell|a<rsub|i>*<space|0.25spc>b<rsub|i><eq-number>>>|<row|<cell|f<rsub|i,j>>|<cell|=>|<cell|a<rsub|i>*<space|0.25spc>b<rsub|j>+b<rsub|i>*<space|0.25spc>a<rsub|j><eq-number>>>|<row|<cell|g<rsub|i,j><around*|(|w|)>>|<cell|=>|<cell|<around*|\<lfloor\>|<frac|f<rsub|i,j>*<space|0.25spc><around*|(|w+c<rsub|i>|)>-<around*|\<lceil\>|<sqrt|<around*|(|w+c<rsub|i>|)><rsup|2>-4*<space|0.25spc>d<rsub|i>*<space|0.25spc>n>|\<rceil\>>|2*<space|0.25spc>d<rsub|i>>|\<rfloor\>>-c<rsub|j><eq-number>>>>>
-  </eqnarray*>
+    <math|S<rsub|2><around*|(||)>:<around*|(|x<rsub|max>-x<rsub|min>+1|)>*y<rsub|max>+\<Delta\><around*|(|x<rsub|max>-x<rsub|min>|)>>
 
-  \;
+    <math|S<rsub|3><around*|(||)>:<big|sum><rsub|x=x<rsub|min><rsup|>><rsup|x\<less\>x<rsub|2>><around*|\<lfloor\>|n/x|\<rfloor\>>-<around*|(|a<rsub|2>*<around*|(|x<rsub|2>-x|)>+y<rsub|2>|)>>
 
-  Formulas for horizontal and vertical summation:
+    <math|S<rsub|M><around*|(||)>:\<Delta\><around*|(|c<rsub|4>-c<rsub|2>-x<rsub|min>|)>-\<Delta\><around*|(|c<rsub|4>-c<rsub|2>-x<rsub|5>|)>+\<Delta\><around*|(|c<rsub|5>-c<rsub|2>-x<rsub|5>|)>>
 
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|S<rsub|w>>|<cell|=>|<cell|<big|sum><rsub|u=1><rsup|w>g<rsub|1,2><around*|(|u<rsub|>|)><eq-number>>>|<row|<cell|S<rsub|h>>|<cell|=>|<cell|<big|sum><rsub|v=1><rsup|h>g<rsub|2,1><around*|(|v<rsub|>|)><eq-number>>>>>
-  </eqnarray*>
+    <\math>
+      x<rsub|max>=<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>,y<rsub|min>=<around*|\<lfloor\>|n/x<rsub|max>|\<rfloor\>>,x<rsub|min>\<leftarrow\>min<around*|(|C*<around*|\<lceil\>|<sqrt|2*n|3>|\<rceil\>>,x<rsub|max>|)><with|font-series|bold|>
+    </math>
 
-  Formulas for <math|P<rsub|4>> and <math|P<rsub|5>>:
+    <math|s\<leftarrow\>0,a<rsub|2>\<leftarrow\>1,x<rsub|2>=x<rsub|max>,y<rsub|2>=y<rsub|min>,c<rsub|2>\<leftarrow\>a<rsub|2>*x<rsub|2>+y<rsub|2>>
 
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|u<rsub|4>>|<cell|=>|<cell|<around*|\<lfloor\>|<space|0.25spc><sqrt|<around*|\<lfloor\>|<frac|<around*|(|f<rsub|1,2>+2*<space|0.25spc>d<rsub|1>|)><rsup|2>n|d<rsub|3>>|\<rfloor\>>>|\<rfloor\>>-c<rsub|1><eq-number>>>|<row|<cell|v<rsub|4>>|<cell|=>|<cell|g<rsub|1,2><around*|(|u<rsub|4>|)><eq-number>>>|<row|<cell|u<rsub|5>>|<cell|=>|<cell|u<rsub|4>+1<eq-number>>>|<row|<cell|v<rsub|5>>|<cell|=>|<cell|g<rsub|1,2><around*|(|u<rsub|5>|)><eq-number>>>>>
-  </eqnarray*>
+    <with|font-series|bold|loop>
+
+    <\indent>
+      <\math>
+        a<rsub|1>\<leftarrow\>a<rsub|2>+1
+      </math>
+
+      <math| x<rsub|4>=<around*|\<lfloor\>|<sqrt|<around*|\<lfloor\>|n/a<rsub|1>|\<rfloor\>>>|\<rfloor\>>,y<rsub|4>=<around*|\<lfloor\>|n/x<rsub|4>|\<rfloor\>>,c<rsub|4>=a<rsub|1>*x<rsub|4>+y<rsub|4>>
+
+      <with|font-series|bold|if> <math|x<rsub|4>\<less\>x<rsub|min>>
+      <with|font-series|bold|then> <with|font-series|bold|exit>
+      <with|font-series|bold|loop> <with|font-series|bold|end>
+      <with|font-series|bold|if>
+
+      <math|x<rsub|5>=x<rsub|4>+1,y<rsub|5>=<around*|\<lfloor\>|n/x<rsub|5>|\<rfloor\>>,c<rsub|5>=a<rsub|1>*x<rsub|5>+y<rsub|5>>
+
+      <math|s\<leftarrow\>s+S<rsub|M><around*|(||)>+S<rsub|R><around*|(|a<rsub|1>*x<rsub|2>+y<rsub|2>-c<rsub|4>,a<rsub|2>*x<rsub|5>+y<rsub|5>-c<rsub|2>,a<rsub|1>,1,c<rsub|5>,a<rsub|2>,1,c<rsub|2>|)>>
+
+      <math|a<rsub|2>\<leftarrow\>a<rsub|1>,x<rsub|2>\<leftarrow\>x<rsub|4>,y<rsub|2>\<leftarrow\>y<rsub|4>,c<rsub|2>=c<rsub|4>>
+    </indent>
+
+    <with|font-series|bold|end> <with|font-series|bold|loop>
+
+    <math|s\<leftarrow\>s+S<rsub|1><around*|(||)>+S<rsub|2><around*|(||)>+S<rsub|3><around*|(||)>>
+
+    <with|font-series|bold|return> <math|2*s-x<rsub|max><rsup|2>>
+
+    \;
+
+    <with|font-series|bold|function> <math|S<rsub|R><around*|(|w,h,a<rsub|1>,b<rsub|1>,c<rsub|1>,a<rsub|2>,b<rsub|2>,c<rsub|2>|)>>
+
+    <\indent>
+      <math|H<around*|(|u,v|)>:<around*|(|b<rsub|2>*<space|0.25spc><around*|(|u+c<rsub|1>|)>-b<rsub|1>*<space|0.25spc><around*|(|v+c<rsub|2>|)>|)>*<around*|(|a<rsub|1>*<space|0.25spc><around*|(|v+c<rsub|2>|)>-a<rsub|2>*<space|0.25spc><around*|(|u+c<rsub|1>|)>|)>>
+
+      <math|U<rsub|tan><around*|(||)>:<around*|\<lfloor\>|<sqrt|<around*|\<lfloor\>|<around*|(|a<rsub|1>*<space|0.25spc>b<rsub|2>+b<rsub|1>*<space|0.25spc>a<rsub|2>+2*<space|0.25spc>a<rsub|1>*<space|0.25spc>b<rsub|1>|)><rsup|2>*n/<around*|(|a<rsub|3>*<space|0.25spc>b<rsub|3>|)>|\<rfloor\>>>|\<rfloor\>>-c<rsub|1>>
+
+      <math|V<rsub|floor><around*|(|u|)>:<around*|\<lfloor\>|<around*|(|<around*|(|a<rsub|1>*<space|0.25spc>b<rsub|2>+b<rsub|1>*<space|0.25spc>a<rsub|2>|)>*<space|0.25spc><around*|(|u+c<rsub|1>|)>-<around*|\<lceil\>|<sqrt|<around*|(|u+c<rsub|1>|)><rsup|2>-4*<space|0.25spc>a<rsub|1>*<space|0.25spc>b<rsub|1>*<space|0.25spc>n>|\<rceil\>>|)>/<around*|(|2*a<rsub|1*>b<rsub|1>|)>|\<rfloor\>>-c<rsub|2>>
+
+      <math|S<rsub|N><around*|(||)>:\<Delta\><around*|(|v<rsub|6>|)>-\<Delta\><around*|(|v<rsub|6>-u<rsub|5>|)>+\<Delta\><around*|(|u<rsub|7>-u<rsub|5>|)>>
+
+      <math|s\<leftarrow\>0,a<rsub|3>\<leftarrow\>a<rsub|1>+a<rsub|2>,b<rsub|3>\<leftarrow\>b<rsub|1>+b<rsub|2>>
+
+      <with|font-series|bold|if> <math|w\<leqslant\>1\<vee\>h\<leqslant\>1>
+      <with|font-series|bold|then> <with|font-series|bold|return> s
+      <with|font-series|bold|end> <with|font-series|bold|if>
+
+      <with|font-series|bold|if> <math|H<around*|(|w,1|)>\<leqslant\>n> then
+
+      <\indent>
+        <math|s\<leftarrow\>s+w,c<rsub|2>\<leftarrow\>c<rsub|2>+1,h\<leftarrow\>h-1>
+
+        <with|font-series|bold|if> <math|h=1> then
+        <with|font-series|bold|return> s <with|font-series|bold|end>
+        <with|font-series|bold|if>
+      </indent>
+
+      <with|font-series|bold|end> <with|font-series|bold|if>
+
+      <with|font-series|bold|if> <math|H<around*|(|1,h|)>\<leqslant\>n> then
+
+      <\indent>
+        <math|s\<leftarrow\>s+h,c<rsub|1>\<leftarrow\>c<rsub|1>+1,w\<leftarrow\>w-1>
+
+        <with|font-series|bold|if> <math|w=1> then
+        <with|font-series|bold|return> s <with|font-series|bold|end>
+        <with|font-series|bold|if>
+      </indent>
+
+      <with|font-series|bold|end> <with|font-series|bold|if>
+
+      <math|u<rsub|4>=U<rsub|tan><around*|(||)>,v<rsub|4>=V<rsub|floor><around*|(|u<rsub|4>|)>,u<rsub|5>=u<rsub|4>+1,v<rsub|5>=V<rsub|floor><around*|(|u<rsub|5>|)>>
+
+      <\math>
+        u<rsub|6>=u<rsub|4>+v<rsub|4>,v<rsub|7>=u<rsub|6>+v<rsub|6>
+      </math>
+
+      <math|s\<leftarrow\>s+S<rsub|N><around*|(||)>>
+
+      <math|s\<leftarrow\>s+><math|S<rsub|R><around*|(|u<rsub|4>,h-v<rsub|6>,a<rsub|1>,b<rsub|1>,c<rsub|1>,a<rsub|3>,b<rsub|3>,c<rsub|1>+c<rsub|2>+v<rsub|6>|)>>
+
+      <math|s\<leftarrow\>s+><math|S<rsub|R><around*|(|w-u<rsub|7>,v<rsub|5>,a<rsub|3>,b<rsub|3>,c<rsub|1>+c<rsub|2>+u<rsub|7>,a<rsub|2>,b<rsub|2>,c<rsub|2>|)>>
+
+      <with|font-series|bold|return> s
+    </indent>
+
+    <with|font-series|bold|end> <with|font-series|bold|function>
+  </algorithm>
 
   \;
 
@@ -708,23 +779,24 @@
   Now let us analyze the exponent in <math|N<around*|(|A|)>>. In order to
   determine the number of regions encountered in the course of processing a
   region of size <math|A>, we need to analyze the recursion depth. \ The
-  recursion will terminate when the <math|w> and <math|h> are unity because
-  by our conditions it is then impossible for the region to contain any more
-  lattice points. \ Our next task is to measure the size of such a region and
-  so we need to know how many <math|x> lattice columns that terminal region
+  recursion will terminate when <math|w> or <math|h> is unity because by our
+  conditions it is then impossible for the region to contain any more lattice
+  points. \ Our next task is to measure the size of such a region and so we
+  need to know how many <math|x> lattice columns that terminal region
   represents.
 
   We can use the transformation between <math|u v> and <math|x y> coordinates
-  given by (<reference|eq:uv2xy1>) and to compute the difference between the
+  given by (<reference|eq:uv2xy1>) to compute the difference between the
   <math|x> coordinates of <math|P<rsub|2>> at <math|<around*|(|1,0|)>> and
-  <math|P<rsub|1>> at <math|<around*|(|0,1|)>>:
+  <math|P<rsub|1>> at <math|<around*|(|0,1|)>>, assuming the smallest case
+  with <math|w=h=1>:
 
   <\equation>
-    \<Delta\>x=<around*|(|x<rsub|0>+1\<cdot\>b<rsub|2>-0\<cdot\>b<rsub|1>|)>-<around*|(|x<rsub|0>+0\<cdot\>b<rsub|2>-1\<cdot\>b<rsub|1>|)>=b<rsub|1>+b<rsub|2>
+    \<Delta\>x=x<rsub|2>-x<rsub|1>+1\<geqslant\><around*|(|x<rsub|0>+1\<cdot\>b<rsub|2>-0\<cdot\>b<rsub|1>|)>-<around*|(|x<rsub|0>+0\<cdot\>b<rsub|2>-1\<cdot\>b<rsub|1>|)>+1=b<rsub|1>+b<rsub|2>+1\<gtr\>b<rsub|1>+b<rsub|2>
   </equation>
 
-  so the size of a terminal region is the sum of the denominators of the
-  slopes of the two lines that define it.
+  so the size of a terminal region is greater than the sum of the
+  denominators of the slopes of the two lines that define it.
 
   Each time we recurse into two new regions we add a new Farey fraction that
   is the mediant of the two slopes for the outer region. \ As a result, we
@@ -789,6 +861,31 @@
   The space complexity is simply our recursion depth which can be at most
   <math|O<around*|(|log n|)>>.
 
+  <section|Implementation>
+
+  Introducing intermediate quantities and functions in support of integer
+  arithmetic:
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|d<rsub|i>>|<cell|=>|<cell|a<rsub|i>*<space|0.25spc>b<rsub|i><eq-number>>>|<row|<cell|f<rsub|i,j>>|<cell|=>|<cell|a<rsub|i>*<space|0.25spc>b<rsub|j>+b<rsub|i>*<space|0.25spc>a<rsub|j><eq-number>>>|<row|<cell|g<rsub|i,j><around*|(|w|)>>|<cell|=>|<cell|<around*|\<lfloor\>|<frac|f<rsub|i,j>*<space|0.25spc><around*|(|w+c<rsub|i>|)>-<around*|\<lceil\>|<sqrt|<around*|(|w+c<rsub|i>|)><rsup|2>-4*<space|0.25spc>d<rsub|i>*<space|0.25spc>n>|\<rceil\>>|2*<space|0.25spc>d<rsub|i>>|\<rfloor\>>-c<rsub|j><eq-number>>>>>
+  </eqnarray*>
+
+  \;
+
+  Formulas for horizontal and vertical summation:
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|S<rsub|w>>|<cell|=>|<cell|<big|sum><rsub|u=1><rsup|w>g<rsub|1,2><around*|(|u<rsub|>|)><eq-number>>>|<row|<cell|S<rsub|h>>|<cell|=>|<cell|<big|sum><rsub|v=1><rsup|h>g<rsub|2,1><around*|(|v<rsub|>|)><eq-number>>>>>
+  </eqnarray*>
+
+  Formulas for <math|P<rsub|4>> and <math|P<rsub|5>>:
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|u<rsub|4>>|<cell|=>|<cell|<around*|\<lfloor\>|<space|0.25spc><sqrt|<around*|\<lfloor\>|<frac|<around*|(|f<rsub|1,2>+2*<space|0.25spc>d<rsub|1>|)><rsup|2>n|d<rsub|3>>|\<rfloor\>>>|\<rfloor\>>-c<rsub|1><eq-number>>>|<row|<cell|v<rsub|4>>|<cell|=>|<cell|g<rsub|1,2><around*|(|u<rsub|4>|)><eq-number>>>|<row|<cell|u<rsub|5>>|<cell|=>|<cell|u<rsub|4>+1<eq-number>>>|<row|<cell|v<rsub|5>>|<cell|=>|<cell|g<rsub|1,2><around*|(|u<rsub|5>|)><eq-number>>>>>
+  </eqnarray*>
+
+  \;
+
   \;
 </body>
 
@@ -798,15 +895,17 @@
     <associate|auto-1|<tuple|1|1>>
     <associate|auto-2|<tuple|2|1>>
     <associate|auto-3|<tuple|3|2>>
-    <associate|auto-4|<tuple|4|8>>
-    <associate|auto-5|<tuple|5|11>>
-    <associate|auto-6|<tuple|6|11>>
+    <associate|auto-4|<tuple|4|7>>
+    <associate|auto-5|<tuple|5|9>>
+    <associate|auto-6|<tuple|6|10>>
+    <associate|auto-7|<tuple|7|12>>
+    <associate|auto-8|<tuple|7|?>>
     <associate|eq:det|<tuple|10|3>>
     <associate|eq:gcd1|<tuple|10|?>>
     <associate|eq:ps1|<tuple|12|3>>
     <associate|eq:ps2|<tuple|13|3>>
-    <associate|eq:uv2xy1|<tuple|21|4>>
-    <associate|eq:uv2xy2|<tuple|22|4>>
+    <associate|eq:uv2xy1|<tuple|21|3>>
+    <associate|eq:uv2xy2|<tuple|22|3>>
     <associate|eq:uv2xy3|<tuple|23|4>>
     <associate|eq:uv2xy4|<tuple|24|4>>
     <associate|eq:xy0|<tuple|11|3>>
@@ -845,6 +944,10 @@
       <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|6<space|2spc>Time
       and Space Complexity> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-6><vspace|0.5fn>
+
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|7<space|2spc>Implementation>
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-7><vspace|0.5fn>
     </associate>
   </collection>
 </auxiliary>
