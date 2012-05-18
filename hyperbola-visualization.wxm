@@ -6,13 +6,13 @@ Hyperbola visualization.
    [wxMaxima: comment end   ] */
 
 /* [wxMaxima: input   start ] */
-n: 1325$
+n: 1394$
 m0: 1$
 m1: 2$
-x0: 36$
-y0: 36$
+x0: 37$
+y0: 37$
 x1: 27$
-y1: 49$
+y1: 51$
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
@@ -150,7 +150,9 @@ y2b: P2b[2];
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
-makelist;
+umin: -1$ umax: u0+3$ vmin: -1$ vmax: v1+3$
+ugrid: map(lambda([ui],implicit(u=ui,u,0,u0+1,v,0,v1)),makelist(i,i,1,u0))$
+vgrid: map(lambda([vi],implicit(v=vi,u,0,u0,v,0,v1+1)),makelist(i,i,1,v1))$
 /* [wxMaxima: input   end   ] */
 
 /* [wxMaxima: input   start ] */
