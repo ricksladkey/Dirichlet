@@ -10,10 +10,11 @@
   </doc-author-data>>
 
   <\abstract>
-    An algorithm is presented to compute the divisor summatory function in
-    <math|O<around*|(|n<rsup|1/3>|)>>time and <math|O<around*|(|log n|)>>
-    space. \ The algorithm is elementary and uses a geometric approach of
-    successive approximation combined with coordinate transformation.
+    An algorithm is presented to compute isolated values of the divisor
+    summatory function in <math|O<around*|(|n<rsup|1/3>|)>>time and
+    <math|O<around*|(|log n|)>> space. \ The algorithm is elementary and uses
+    a geometric approach of successive approximation combined with coordinate
+    transformation.
   </abstract>
 
   <section|Introduction>
@@ -59,7 +60,8 @@
   </equation>
 
   \ which gives an <math|O<around*|(|n<rsup|1/2>|)>> algorithm and is in fact
-  the usual method by which the divisor summatory function is computed.
+  the usual method by which the divisor summatory function is computed. \ Our
+  goal is to break this square-root barrier.
 
   <section|Preliminaries>
 
@@ -303,7 +305,7 @@
   of <math|v> are:
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|V<around*|(|u|)>>|<cell|=>|<cell|<frac|<around*|(|a<rsub|1>*<space|0.25spc>b<rsub|2>+b<rsub|1>*<space|0.25spc>a<rsub|2>|)>*<space|0.25spc><around*|(|u+c<rsub|1>|)>-<sqrt|<around*|(|u+c<rsub|1>|)><rsup|2>-4*<space|0.25spc>a<rsub|1>*<space|0.25spc>b<rsub|1>*<space|0.25spc>n>|2*<space|0.25spc>a<rsub|1>*<space|0.25spc>b<rsub|1>>-c<rsub|2><eq-number>>>|<row|<cell|U<around*|(|v|)>>|<cell|=>|<cell|<frac|<around*|(|a<rsub|1>*<space|0.25spc>b<rsub|2>+b<rsub|1>*<space|0.25spc>a<rsub|2>|)>*<space|0.25spc><around*|(|v+c<rsub|2>|)>-<sqrt|<around*|(|v+c<rsub|2>|)><rsup|2>-4*<space|0.25spc>a<rsub|2>*<space|0.25spc>b<rsub|2>*<space|0.25spc>n>|2*<space|0.25spc>a<rsub|2>*<space|0.25spc>b<rsub|2>>-c<rsub|1><eq-number>>>>>
+    <tformat|<table|<row|<cell|V<around*|(|u|)>>|<cell|=>|<cell|<frac|<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>|)>*<space|0.25spc><around*|(|u+c<rsub|1>|)>-<sqrt|<around*|(|u+c<rsub|1>|)><rsup|2>-4*<space|0.25spc>a<rsub|1>*b<rsub|1>*n>|2*<space|0.25spc>a<rsub|1>*b<rsub|1>>-c<rsub|2><eq-number>>>|<row|<cell|U<around*|(|v|)>>|<cell|=>|<cell|<frac|<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>|)>*<space|0.25spc><around*|(|v+c<rsub|2>|)>-<sqrt|<around*|(|v+c<rsub|2>|)><rsup|2>-4*<space|0.25spc>a<rsub|2>*b<rsub|2>*n>|2*<space|0.25spc>a<rsub|2>*b<rsub|2>>-c<rsub|1><eq-number>>>>>
   </eqnarray*>
 
   (Note exchanging <math|u> for <math|v> results in the same formula with
@@ -420,7 +422,7 @@
   <math|P<rprime|'><rsub|1>=P<rsub|1>,P<rprime|'><rsub|0>=P<rsub|6>,P<rprime|'><rsub|2>=P<rsub|4>>
   and the region <math|R<rprime|''>> to be the sub-region with
   <math|P<rprime|''><rsub|1>=P<rsub|5>,P<rprime|''><rsub|0>=P<rsub|7>,P<rsub|2><rprime|''>=P<rsub|2>>
-  then the number of lattice points in the entire region is
+  and then the number of lattice points in the entire region is
   <math|S<rsub|R>=S<rsub|N>+S<rsub|R<rprime|'>>+S<rsub|R<rprime|''>>> or
 
   <\eqnarray*>
@@ -466,10 +468,10 @@
   simple method to sum the lattice columns less than <math|x<rsub|min>>:
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|x<rsub|min>>|<cell|=>|<cell|<around*|\<lfloor\>|C*<sqrt|2*n|3>|\<rfloor\>><eq-number>>>|<row|<cell|x<rsub|max>>|<cell|=>|<cell|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>>>|<row|<cell|y<rsub|min>>|<cell|=>|<cell|<around*|\<lfloor\>|Y<around*|(|x<rsub|max>|)>|\<rfloor\>>>>|<row|<cell|S<rsub|1>>|<cell|=>|<cell|S<around*|(|x<rsub|min>-1|)>>>>>
+    <tformat|<table|<row|<cell|x<rsub|min>>|<cell|=>|<cell|<around*|\<lfloor\>|C<rsub|1>*<sqrt|2*n|3>|\<rfloor\>><eq-number>>>|<row|<cell|x<rsub|max>>|<cell|=>|<cell|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>>>|<row|<cell|y<rsub|min>>|<cell|=>|<cell|<around*|\<lfloor\>|Y<around*|(|x<rsub|max>|)>|\<rfloor\>>>>|<row|<cell|S<rsub|1>>|<cell|=>|<cell|S<around*|(|x<rsub|min>-1|)>>>>>
   </eqnarray*>
 
-  where <math|C\<geq\>1> is a constant to be chosen later.
+  where <math|C<rsub|1>\<geq\>1> is a constant to be chosen later.
 
   Next we need to account for the all the points on or below the first line
   which is a rectangle and a triangle:
@@ -594,7 +596,23 @@
 
   <section|Algorithm>
 
+  In this section we present a formalization of the steps of the algorithm.
+  \ A literal implementation based on this description will offer many
+  opportunities for optimization. \ The short-hand notation
+  <math|F<around*|(|x|)>:expression> signifies a functional value that
+  remains unevaluated until referenced. \ Formulas from previous sections
+  have been slightly modified so that the entire algorithm can be implemented
+  using only unsigned multi-precision integer arithmetic. \ The operations
+  required are addition, subtraction, multiplication, floor division, floor
+  square root, ceiling square root, and ceiling cube root.
+
   <\algorithm>
+    Inputs: <math|n\<geq\>0,C<rsub|1>\<approx\>2,C<rsub|2>\<approx\>10>
+
+    \;
+
+    <math|\<Delta\><around*|(|i|)>:i*<around*|(|i+1|)>/2>
+
     <math|S<rsub|1><around*|(||)>:<big|sum><rsub|x=1><rsup|x\<less\>x<rsub|min>><around*|\<lfloor\>|n/x|\<rfloor\>>>
 
     <math|S<rsub|2><around*|(||)>:<around*|(|x<rsub|max>-x<rsub|min>+1|)>*y<rsub|min>+\<Delta\><around*|(|x<rsub|max>-x<rsub|min>|)>>
@@ -603,11 +621,13 @@
 
     <math|S<rsub|M><around*|(||)>:\<Delta\><around*|(|c<rsub|4>-c<rsub|2>-x<rsub|min>|)>-\<Delta\><around*|(|c<rsub|4>-c<rsub|2>-x<rsub|5>|)>+\<Delta\><around*|(|c<rsub|5>-c<rsub|2>-x<rsub|5>|)>>
 
+    \;
+
     <\math>
-      x<rsub|max>=<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>,y<rsub|min>=<around*|\<lfloor\>|n/x<rsub|max>|\<rfloor\>>,x<rsub|min>\<leftarrow\>min<around*|(|C*<around*|\<lceil\>|<sqrt|2*n|3>|\<rceil\>>,x<rsub|max>|)><with|font-series|bold|>
+      x<rsub|max>\<leftarrow\><around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>,y<rsub|min>\<leftarrow\><around*|\<lfloor\>|n/x<rsub|max>|\<rfloor\>>,x<rsub|min>\<leftarrow\>min<around*|(|C<rsub|1>*<around*|\<lceil\>|<sqrt|2*n|3>|\<rceil\>>,x<rsub|max>|)><with|font-series|bold|>
     </math>
 
-    <math|s\<leftarrow\>0,a<rsub|2>\<leftarrow\>1,x<rsub|2>=x<rsub|max>,y<rsub|2>=y<rsub|min>,c<rsub|2>\<leftarrow\>a<rsub|2>*x<rsub|2>+y<rsub|2>>
+    <math|s\<leftarrow\>0,a<rsub|2>\<leftarrow\>1,x<rsub|2>\<leftarrow\>x<rsub|max>,y<rsub|2>\<leftarrow\>y<rsub|min>,c<rsub|2>\<leftarrow\>a<rsub|2>*x<rsub|2>+y<rsub|2>>
 
     <with|font-series|bold|loop>
 
@@ -616,18 +636,18 @@
         a<rsub|1>\<leftarrow\>a<rsub|2>+1
       </math>
 
-      <math| x<rsub|4>=<around*|\<lfloor\>|<sqrt|<around*|\<lfloor\>|n/a<rsub|1>|\<rfloor\>>>|\<rfloor\>>,y<rsub|4>=<around*|\<lfloor\>|n/x<rsub|4>|\<rfloor\>>,c<rsub|4>=a<rsub|1>*x<rsub|4>+y<rsub|4>>
+      <math| x<rsub|4>\<leftarrow\><around*|\<lfloor\>|<sqrt|<around*|\<lfloor\>|n/a<rsub|1>|\<rfloor\>>>|\<rfloor\>>,y<rsub|4>\<leftarrow\><around*|\<lfloor\>|n/x<rsub|4>|\<rfloor\>>,c<rsub|4>\<leftarrow\>a<rsub|1>*x<rsub|4>+y<rsub|4>>
+
+      <math|x<rsub|5>\<leftarrow\>x<rsub|4>+1,y<rsub|5>\<leftarrow\><around*|\<lfloor\>|n/x<rsub|5>|\<rfloor\>>,c<rsub|5>\<leftarrow\>a<rsub|1>*x<rsub|5>+y<rsub|5>>
 
       <with|font-series|bold|if> <math|x<rsub|4>\<less\>x<rsub|min>>
       <with|font-series|bold|then> <with|font-series|bold|exit>
       <with|font-series|bold|loop> <with|font-series|bold|end>
       <with|font-series|bold|if>
 
-      <math|x<rsub|5>=x<rsub|4>+1,y<rsub|5>=<around*|\<lfloor\>|n/x<rsub|5>|\<rfloor\>>,c<rsub|5>=a<rsub|1>*x<rsub|5>+y<rsub|5>>
-
       <math|s\<leftarrow\>s+S<rsub|M><around*|(||)>+S<rsub|R><around*|(|a<rsub|1>*x<rsub|2>+y<rsub|2>-c<rsub|5>,a<rsub|2>*x<rsub|5>+y<rsub|5>-c<rsub|2>,a<rsub|1>,1,c<rsub|5>,a<rsub|2>,1,c<rsub|2>|)>>
 
-      <math|a<rsub|2>\<leftarrow\>a<rsub|1>,x<rsub|2>\<leftarrow\>x<rsub|4>,y<rsub|2>\<leftarrow\>y<rsub|4>,c<rsub|2>=c<rsub|4>>
+      <math|a<rsub|2>\<leftarrow\>a<rsub|1>,x<rsub|2>\<leftarrow\>x<rsub|4>,y<rsub|2>\<leftarrow\>y<rsub|4>,c<rsub|2>\<leftarrow\>c<rsub|4>>
     </indent>
 
     <with|font-series|bold|end> <with|font-series|bold|loop>
@@ -641,48 +661,48 @@
     <with|font-series|bold|function> <math|S<rsub|R><around*|(|w,h,a<rsub|1>,b<rsub|1>,c<rsub|1>,a<rsub|2>,b<rsub|2>,c<rsub|2>|)>>
 
     <\indent>
+      <math|\<Delta\><around*|(|i|)>:i*<around*|(|i+1|)>/2>
+
       <math|H<around*|(|u,v|)>:<around*|(|b<rsub|2>*<space|0.25spc><around*|(|u+c<rsub|1>|)>-b<rsub|1>*<space|0.25spc><around*|(|v+c<rsub|2>|)>|)>*<around*|(|a<rsub|1>*<space|0.25spc><around*|(|v+c<rsub|2>|)>-a<rsub|2>*<space|0.25spc><around*|(|u+c<rsub|1>|)>|)>>
 
       <math|U<rsub|tan><around*|(||)>:<around*|\<lfloor\>|<sqrt|<around*|\<lfloor\>|<around*|(|a<rsub|1>*<space|0.25spc>b<rsub|2>+b<rsub|1>*<space|0.25spc>a<rsub|2>+2*<space|0.25spc>a<rsub|1>*<space|0.25spc>b<rsub|1>|)><rsup|2>*n/<around*|(|a<rsub|3>*<space|0.25spc>b<rsub|3>|)>|\<rfloor\>>>|\<rfloor\>>-c<rsub|1>>
 
-      <math|V<rsub|floor><around*|(|u|)>:<around*|\<lfloor\>|<around*|(|<around*|(|a<rsub|1>*<space|0.25spc>b<rsub|2>+b<rsub|1>*<space|0.25spc>a<rsub|2>|)>*<space|0.25spc><around*|(|u+c<rsub|1>|)>-<around*|\<lceil\>|<sqrt|<around*|(|u+c<rsub|1>|)><rsup|2>-4*<space|0.25spc>a<rsub|1>*<space|0.25spc>b<rsub|1>*<space|0.25spc>n>|\<rceil\>>|)>/<around*|(|2*a<rsub|1*>b<rsub|1>|)>|\<rfloor\>>-c<rsub|2>>
+      <math|V<rsub|floor><around*|(|u|)>:<around*|\<lfloor\>|<around*|(|<around*|(|a<rsub|1>*<space|0.25spc>b<rsub|2>+b<rsub|1>*<space|0.25spc>a<rsub|2>|)>*<space|0.25spc><around*|(|u+c<rsub|1>|)>-<around*|\<lceil\>|<sqrt|<around*|(|u+c<rsub|1>|)><rsup|2>-4*<space|0.25spc>a<rsub|1>*<space|0.25spc>b<rsub|1>*<space|0.25spc>n>|\<rceil\>>|)>/<around*|(|2*a<rsub|1*>*b<rsub|1>|)>|\<rfloor\>>-c<rsub|2>>
+
+      <math|U<rsub|floor><around*|(|v|)>:<around*|\<lfloor\>|<around*|(|<around*|(|a<rsub|1>*<space|0.25spc>b<rsub|2>+b<rsub|1>*<space|0.25spc>a<rsub|2>|)>*<space|0.25spc><around*|(|v+c<rsub|2>|)>-<around*|\<lceil\>|<sqrt|<around*|(|v+c<rsub|2>|)><rsup|2>-4*<space|0.25spc>a<rsub|2>*<space|0.25spc>b<rsub|2>*<space|0.25spc>n>|\<rceil\>>|)>/<around*|(|2*a<rsub|2*>*b<rsub|2>|)>|\<rfloor\>>-c<rsub|2>>
+
+      <math|S<rsub|W><around*|(||)>:<big|sum><rsub|u=1><rsup|u\<less\>w>V<rsub|floor><around*|(|u|)>>
+
+      <math|S<rsub|H><around*|(||)>:<big|sum><rsub|v=1><rsup|v\<less\>h>U<rsub|floor><around*|(|v|)>>
 
       <math|S<rsub|N><around*|(||)>:\<Delta\><around*|(|v<rsub|6>-1|)>-\<Delta\><around*|(|v<rsub|6>-u<rsub|5>|)>+\<Delta\><around*|(|u<rsub|7>-u<rsub|5>|)>>
 
+      \;
+
       <math|s\<leftarrow\>0,a<rsub|3>\<leftarrow\>a<rsub|1>+a<rsub|2>,b<rsub|3>\<leftarrow\>b<rsub|1>+b<rsub|2>>
 
-      <with|font-series|bold|if> <math|w\<leq\>1\<vee\>h\<leq\>1>
-      <with|font-series|bold|then> <with|font-series|bold|return> s
-      <with|font-series|bold|end> <with|font-series|bold|if>
+      <with|font-series|bold|if> <math|h\<gtr\>0\<wedge\>H<around*|(|w,1|)>\<leq\>n>
+      <with|font-series|bold|then> <math|s\<leftarrow\>s+w,c<rsub|2>\<leftarrow\>c<rsub|2>+1,h\<leftarrow\>h-1>
+      <with|font-series|bold|end> i<with|font-series|bold|f>
 
-      <with|font-series|bold|if> <math|H<around*|(|w,1|)>\<leq\>n> then
+      <with|font-series|bold|if> <math|w\<gtr\>0\<wedge\>H<around*|(|1,h|)>\<leq\>n>
+      <with|font-series|bold|then> <math|s\<leftarrow\>s+h,c<rsub|1>\<leftarrow\>c<rsub|1>+1,w\<leftarrow\>w-1>
+      <with|font-series|bold|end> i<with|font-series|bold|f>
 
-      <\indent>
-        <math|s\<leftarrow\>s+w,c<rsub|2>\<leftarrow\>c<rsub|2>+1,h\<leftarrow\>h-1>
+      <with|font-series|bold|if> <math|w\<leq\>C<rsub|2>>
+      <with|font-series|bold|then> <with|font-series|bold|return>
+      <math|s+S<rsub|W><around*|(||)>> <with|font-series|bold|end>
+      <with|font-series|bold|if>
 
-        <with|font-series|bold|if> <math|h=1> then
-        <with|font-series|bold|return> s <with|font-series|bold|end>
-        <with|font-series|bold|if>
-      </indent>
+      <with|font-series|bold|if> <math|h\<leq\>C<rsub|2>>
+      <with|font-series|bold|then> <with|font-series|bold|return>
+      <math|s+S<rsub|H><around*|(||)>> <with|font-series|bold|end>
+      <with|font-series|bold|if>
 
-      <with|font-series|bold|end> <with|font-series|bold|if>
-
-      <with|font-series|bold|if> <math|H<around*|(|1,h|)>\<leq\>n> then
-
-      <\indent>
-        <math|s\<leftarrow\>s+h,c<rsub|1>\<leftarrow\>c<rsub|1>+1,w\<leftarrow\>w-1>
-
-        <with|font-series|bold|if> <math|w=1> then
-        <with|font-series|bold|return> s <with|font-series|bold|end>
-        <with|font-series|bold|if>
-      </indent>
-
-      <with|font-series|bold|end> <with|font-series|bold|if>
-
-      <math|u<rsub|4>=U<rsub|tan><around*|(||)>,v<rsub|4>=V<rsub|floor><around*|(|u<rsub|4>|)>,u<rsub|5>=u<rsub|4>+1,v<rsub|5>=V<rsub|floor><around*|(|u<rsub|5>|)>>
+      <math|u<rsub|4>\<leftarrow\>U<rsub|tan><around*|(||)>,v<rsub|4>\<leftarrow\>V<rsub|floor><around*|(|u<rsub|4>|)>,u<rsub|5>\<leftarrow\>u<rsub|4>+1,v<rsub|5>\<leftarrow\>V<rsub|floor><around*|(|u<rsub|5>|)>>
 
       <\math>
-        u<rsub|6>=u<rsub|4>+v<rsub|4>,v<rsub|7>=u<rsub|6>+v<rsub|6>
+        v<rsub|6>\<leftarrow\>u<rsub|4>+v<rsub|4>,u<rsub|7>\<leftarrow\>u<rsub|6>+v<rsub|6>
       </math>
 
       <math|s\<leftarrow\>s+S<rsub|N><around*|(||)>>
@@ -725,8 +745,8 @@
     X<around*|(|a|)>=<sqrt|<frac|n|a>>
   </equation>
 
-  \ Choosing <math|C=1> so that <math|x<rsub|min>=<sqrt|2*n|3>>, then the
-  highest value of <math|a> processed is:
+  \ Choosing <math|C<rsub|1>=1> so that <math|x<rsub|min>=<sqrt|2*n|3>>, then
+  the highest value of <math|a> processed is:
 
   <\equation>
     a<rsub|max>=<frac|n|x<rsub|min><rsup|2>>=<frac|n<rsup|1/3>|2<rsup|2/3>>
