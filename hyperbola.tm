@@ -288,7 +288,7 @@
   assymmetric. \ (Note that these summations are certain not to overcount
   because by our conditions <math|V<around*|(|u|)>\<less\>h> for
   <math|0\<less\>u\<leq\>w> and <math|U<around*|(|v|)>\<less\>w> for
-  <math|0\<less\>v\<leqslant\>h>.)
+  <math|0\<less\>v\<leq\>h>.)
 
   And so:
 
@@ -391,7 +391,7 @@
   is
 
   <\equation*>
-    S<rsub|N>=\<Delta\><around*|(|v<rsub|6>|)>-\<Delta\><around*|(|v<rsub|6>-u<rsub|5>|)>+\<Delta\><around*|(|u<rsub|7>-u<rsub|5>|)>
+    S<rsub|N>=\<Delta\><around*|(|v<rsub|6>-1|)>-\<Delta\><around*|(|v<rsub|6>-u<rsub|5>|)>+\<Delta\><around*|(|u<rsub|7>-u<rsub|5>|)>
   </equation*>
 
   or
@@ -452,11 +452,10 @@
 
   However, we cannot use the region method for the whole hyperbola because
   regions become smaller and smaller and eventually a region has a size
-  <math|w+h \<leqslant\>1>. \ We can find the point where this occurs by
-  taking the second derivative of <math|Y<around*|(|x|)>> with respect to
-  <math|x> and setting it to unity. \ In other words, the point on the
-  hyperbola where the rate of change in the slope exceeds one per lattice
-  column, which is:
+  <math|w+h \<leq\>1>. \ We can find the point where this occurs by taking
+  the second derivative of <math|Y<around*|(|x|)>> with respect to <math|x>
+  and setting it to unity. \ In other words, the point on the hyperbola where
+  the rate of change in the slope exceeds one per lattice column, which is:
 
   <\equation>
     x=<sqrt|2*n|3>= 2<rsup|1/3>*n<rsup|1/3>\<approx\>1.26*n<rsup|1/3>
@@ -470,7 +469,7 @@
     <tformat|<table|<row|<cell|x<rsub|min>>|<cell|=>|<cell|<around*|\<lfloor\>|C*<sqrt|2*n|3>|\<rfloor\>><eq-number>>>|<row|<cell|x<rsub|max>>|<cell|=>|<cell|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>>>|<row|<cell|y<rsub|min>>|<cell|=>|<cell|<around*|\<lfloor\>|Y<around*|(|x<rsub|max>|)>|\<rfloor\>>>>|<row|<cell|S<rsub|1>>|<cell|=>|<cell|S<around*|(|x<rsub|min>-1|)>>>>>
   </eqnarray*>
 
-  where <math|C\<geqslant\>1> is a constant to be chosen later.
+  where <math|C\<geq\>1> is a constant to be chosen later.
 
   Next we need to account for the all the points on or below the first line
   which is a rectangle and a triangle:
@@ -515,15 +514,14 @@
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|x<rsub|4>>|<cell|\<gtr\>>|<cell|x<rsub|min>>>|<row|<cell|x<rsub|5>>|<cell|=>|<cell|x<rsub|4>+1>>|<row|<cell|-d
-    y/d x<around*|(|x<rsub|4>|)>>|<cell|\<geqslant\>>|<cell|a<rsub|1>>>|<row|<cell|-d
+    y/d x<around*|(|x<rsub|4>|)>>|<cell|\<geq\>>|<cell|a<rsub|1>>>|<row|<cell|-d
     y /d x<around*|(|x<rsub|5>|)>>|<cell|\<less\>>|<cell|a<rsub|1>>>|<row|<cell|y<rsub|4>>|<cell|=>|<cell|<around*|\<lfloor\>|Y<around*|(|x<rsub|4>|)>|\<rfloor\>>>>|<row|<cell|y<rsub|5>>|<cell|=>|<cell|<around*|\<lfloor\>|Y<around*|(|x<rsub|5>|)>|\<rfloor\>>>>>>
   </eqnarray*>
 
   To meet these conditions we can set <math|x<rsub|4>=<around*|\<lfloor\>|x<rsub|tan>|\<rfloor\>>>
-  unless <math|x<rsub|4>\<leqslant\>x<rsub|min>> in which case we can
-  manually count the lattice columns between <math|x<rsub|min>> and
-  <math|x<rsub|2>> and cease iterating. \ If so, the remaining columns can be
-  computed as:
+  unless <math|x<rsub|4>\<leq\>x<rsub|min>> in which case we can manually
+  count the lattice columns between <math|x<rsub|min>> and <math|x<rsub|2>>
+  and cease iterating. \ If so, the remaining columns can be computed as:
 
   <\equation*>
     S<rsub|3>=<big|sum><rsup|x<rsub|2-1>><rsub|x=x<rsub|min>><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>-<around*|(|a<rsub|2>*<around*|(|x<rsub|2>-x|)>+y<rsub|2>|)>
@@ -542,7 +540,7 @@
   <math|c<rsub|i>> the <math|y> intercept of line <math|L<rsub|i>>.
 
   <with|gr-mode|<tuple|edit|math-at>|gr-frame|<tuple|scale|1cm|<tuple|0.5gw|0.5gh>>|gr-geometry|<tuple|geometry|1par|0.6par>|gr-grid|<tuple|cartesian|<point|0|0>|5>|gr-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-aspect|<tuple|<tuple|axes|none>|<tuple|1|none>|<tuple|10|none>>|gr-edit-grid|<tuple|cartesian|<point|0|0>|5>|gr-edit-grid-old|<tuple|cartesian|<point|0|0>|5>|gr-auto-crop|true|gr-dash-style|10|<graphics||<line|<point|-3.0|-1.0>|<point|-4.0|1.0>>|<point|-4|1>|<point|-3|-1>|<line|<point|-6.0|2.0>|<point|-1.0|-3.0>>|<line|<point|-4.5|1.5>|<point|-6.0|4.5>>|<point|-4.5|1.5>|<spline|<point|-5.5|4.33826814463599>|<point|-4.5|2.0>|<point|-2.5|-1.0>|<point|-1.0|-2.73817405755366>>|<math-at|P<rsub|0>|<point|-3.5|-1.25312>>|<math-at|L<rsub|2>|<point|-2.76973250390689|-2.0>>|<point|-1|-3>|<math-at|P<rsub|2>|<point|-1.5|-3.22179084540838>>|<with|color|dark
-  grey|<line|<point|-6|4.5>|<point|-6.0|-0.5>>>|<math-at|x<rsub|min>|<point|-6.23638|-1>>|<math-at|R|<point|-2.30258|-0.5>>|<math-at|H<around*|(|x,y|)>=n|<point|-4.5|3>>|<math-at|P<rsub|5>|<point|-4.5|0.682911411193787>>|<math-at|P<rsub|4>|<point|-5.09461430341988|1.5>>|<math-at|P<rsub|tan>|<point|-4.0|1.5>>|<point|-6|4.5>|<point|-6|2>|<math-at|P<rsub|6>|<point|-6.5|4.0>>|<math-at|P<rsub|7>|<point|-6.5|2>>|<with|dash-style|10|<line|<point|-4.5|1.5>|<point|-4.01534594523085|1.04152334964942>>>|<math-at|M|<point|-5.69093125733293|2.5>>|<point|-4.11755853948935|1.33183952903823>|<math-at|d|<point|-6.5|3.0>>>>
+  grey|<line|<point|-6|4.5>|<point|-6.0|-0.5>>>|<math-at|x<rsub|min>|<point|-6.23638|-1>>|<math-at|R|<point|-2.30258|-0.5>>|<math-at|H<around*|(|x,y|)>=n|<point|-4.5|3>>|<math-at|P<rsub|5>|<point|-4.5|0.682911411193787>>|<math-at|P<rsub|4>|<point|-5.09461430341988|1.5>>|<math-at|P<rsub|tan>|<point|-4.0|1.5>>|<point|-6|4.5>|<point|-6|2>|<math-at|P<rsub|6>|<point|-6.5|4.0>>|<math-at|P<rsub|7>|<point|-6.5|2>>|<with|dash-style|10|<line|<point|-4.5|1.5>|<point|-4.01534594523085|1.04152334964942>>>|<math-at|M|<point|-5.69093125733293|2.5>>|<point|-4.11755853948935|1.33183952903823>>>
 
   \;
 
@@ -565,7 +563,7 @@
   region <math|R> and can now count lattice points using region processing:\ 
 
   <\equation>
-    S<rsub|R>=S<rsub|R><around*|(|a<rsub|1>*x<rsub|2>+y<rsub|2>-c<rsub|1>,a<rsub|2>*x<rsub|5>+y<rsub|5>-c<rsub|2>,a<rsub|1>,b<rsub|1>,c<rsub|1>,a<rsub|2>,b<rsub|2>,c<rsub|2>|)>
+    S<rsub|R>=S<rsub|R><around*|(|a<rsub|1>*x<rsub|2>+y<rsub|2>-c<rsub|5>,a<rsub|2>*x<rsub|5>+y<rsub|5>-c<rsub|2>,a<rsub|1>,1,c<rsub|5>,a<rsub|2>,1,c<rsub|2>|)>
   </equation>
 
   so the total sum for this iteration is:
@@ -599,7 +597,7 @@
   <\algorithm>
     <math|S<rsub|1><around*|(||)>:<big|sum><rsub|x=1><rsup|x\<less\>x<rsub|min>><around*|\<lfloor\>|n/x|\<rfloor\>>>
 
-    <math|S<rsub|2><around*|(||)>:<around*|(|x<rsub|max>-x<rsub|min>+1|)>*y<rsub|max>+\<Delta\><around*|(|x<rsub|max>-x<rsub|min>|)>>
+    <math|S<rsub|2><around*|(||)>:<around*|(|x<rsub|max>-x<rsub|min>+1|)>*y<rsub|min>+\<Delta\><around*|(|x<rsub|max>-x<rsub|min>|)>>
 
     <math|S<rsub|3><around*|(||)>:<big|sum><rsub|x=x<rsub|min><rsup|>><rsup|x\<less\>x<rsub|2>><around*|\<lfloor\>|n/x|\<rfloor\>>-<around*|(|a<rsub|2>*<around*|(|x<rsub|2>-x|)>+y<rsub|2>|)>>
 
@@ -627,7 +625,7 @@
 
       <math|x<rsub|5>=x<rsub|4>+1,y<rsub|5>=<around*|\<lfloor\>|n/x<rsub|5>|\<rfloor\>>,c<rsub|5>=a<rsub|1>*x<rsub|5>+y<rsub|5>>
 
-      <math|s\<leftarrow\>s+S<rsub|M><around*|(||)>+S<rsub|R><around*|(|a<rsub|1>*x<rsub|2>+y<rsub|2>-c<rsub|4>,a<rsub|2>*x<rsub|5>+y<rsub|5>-c<rsub|2>,a<rsub|1>,1,c<rsub|5>,a<rsub|2>,1,c<rsub|2>|)>>
+      <math|s\<leftarrow\>s+S<rsub|M><around*|(||)>+S<rsub|R><around*|(|a<rsub|1>*x<rsub|2>+y<rsub|2>-c<rsub|5>,a<rsub|2>*x<rsub|5>+y<rsub|5>-c<rsub|2>,a<rsub|1>,1,c<rsub|5>,a<rsub|2>,1,c<rsub|2>|)>>
 
       <math|a<rsub|2>\<leftarrow\>a<rsub|1>,x<rsub|2>\<leftarrow\>x<rsub|4>,y<rsub|2>\<leftarrow\>y<rsub|4>,c<rsub|2>=c<rsub|4>>
     </indent>
@@ -649,15 +647,15 @@
 
       <math|V<rsub|floor><around*|(|u|)>:<around*|\<lfloor\>|<around*|(|<around*|(|a<rsub|1>*<space|0.25spc>b<rsub|2>+b<rsub|1>*<space|0.25spc>a<rsub|2>|)>*<space|0.25spc><around*|(|u+c<rsub|1>|)>-<around*|\<lceil\>|<sqrt|<around*|(|u+c<rsub|1>|)><rsup|2>-4*<space|0.25spc>a<rsub|1>*<space|0.25spc>b<rsub|1>*<space|0.25spc>n>|\<rceil\>>|)>/<around*|(|2*a<rsub|1*>b<rsub|1>|)>|\<rfloor\>>-c<rsub|2>>
 
-      <math|S<rsub|N><around*|(||)>:\<Delta\><around*|(|v<rsub|6>|)>-\<Delta\><around*|(|v<rsub|6>-u<rsub|5>|)>+\<Delta\><around*|(|u<rsub|7>-u<rsub|5>|)>>
+      <math|S<rsub|N><around*|(||)>:\<Delta\><around*|(|v<rsub|6>-1|)>-\<Delta\><around*|(|v<rsub|6>-u<rsub|5>|)>+\<Delta\><around*|(|u<rsub|7>-u<rsub|5>|)>>
 
       <math|s\<leftarrow\>0,a<rsub|3>\<leftarrow\>a<rsub|1>+a<rsub|2>,b<rsub|3>\<leftarrow\>b<rsub|1>+b<rsub|2>>
 
-      <with|font-series|bold|if> <math|w\<leqslant\>1\<vee\>h\<leqslant\>1>
+      <with|font-series|bold|if> <math|w\<leq\>1\<vee\>h\<leq\>1>
       <with|font-series|bold|then> <with|font-series|bold|return> s
       <with|font-series|bold|end> <with|font-series|bold|if>
 
-      <with|font-series|bold|if> <math|H<around*|(|w,1|)>\<leqslant\>n> then
+      <with|font-series|bold|if> <math|H<around*|(|w,1|)>\<leq\>n> then
 
       <\indent>
         <math|s\<leftarrow\>s+w,c<rsub|2>\<leftarrow\>c<rsub|2>+1,h\<leftarrow\>h-1>
@@ -669,7 +667,7 @@
 
       <with|font-series|bold|end> <with|font-series|bold|if>
 
-      <with|font-series|bold|if> <math|H<around*|(|1,h|)>\<leqslant\>n> then
+      <with|font-series|bold|if> <math|H<around*|(|1,h|)>\<leq\>n> then
 
       <\indent>
         <math|s\<leftarrow\>s+h,c<rsub|1>\<leftarrow\>c<rsub|1>+1,w\<leftarrow\>w-1>
@@ -707,7 +705,7 @@
 
   Before we start, we realize that because
   <math|x<rsub|min>=O<around*|(|n<rsup|1/3>|)>> and we handle the values of
-  <math|1\<leqslant\>x\<less\>x<rsub|min>> manually, the algorithm is at best
+  <math|1\<leq\>x\<less\>x<rsub|min>> manually, the algorithm is at best
   <math|O<around*|(|n<rsup|1/3>|)>>. \ In this section we desire to show that
   the rest of the computation is at worst <math|O<around*|(|n<rsup|1/3>|)>>
   so that this lower bound holds for the entire computation.
@@ -767,9 +765,9 @@
 
   <\equation*>
     N<rsub|total>=<choice|<tformat|<table|<row|<cell|O<around*|(|n<rsup|1/3>|)>>|<cell|if
-    G \<less\>2/3>>|<row|<cell|O<around*|(|n<rsup|1/3>*log n|)>>|<cell|if
-    G=2/3>>|<row|<cell|O<around*|(|n<rsup|G/2>|)>>|<cell|if G \<gtr\>
-    2/3>>>>>
+    G \<less\>2/3;>>|<row|<cell|O<around*|(|n<rsup|1/3>*log n|)>>|<cell|if
+    G=2/3;>>|<row|<cell|O<around*|(|n<rsup|G/2>|)>>|<cell|if G \<gtr\>
+    2/3.>>>>>
   </equation*>
 
   (Note that we cannot get below <math|O<around*|(|n<rsup|1/3>|)>> even if
@@ -792,7 +790,7 @@
   with <math|w=h=1>:
 
   <\equation>
-    \<Delta\>x=x<rsub|2>-x<rsub|1>+1\<geqslant\><around*|(|x<rsub|0>+1\<cdot\>b<rsub|2>-0\<cdot\>b<rsub|1>|)>-<around*|(|x<rsub|0>+0\<cdot\>b<rsub|2>-1\<cdot\>b<rsub|1>|)>+1=b<rsub|1>+b<rsub|2>+1\<gtr\>b<rsub|1>+b<rsub|2>
+    \<Delta\>x=x<rsub|2>-x<rsub|1>+1\<geq\><around*|(|x<rsub|0>+1\<cdot\>b<rsub|2>-0\<cdot\>b<rsub|1>|)>-<around*|(|x<rsub|0>+0\<cdot\>b<rsub|2>-1\<cdot\>b<rsub|1>|)>+1=b<rsub|1>+b<rsub|2>+1\<gtr\>b<rsub|1>+b<rsub|2>
   </equation>
 
   so the size of a terminal region is greater than the sum of the
@@ -824,35 +822,31 @@
   denominators at each level is triple the sum of the previous level. \ So
   staring with <math|1+1=2> leads to the sequence <math|2,6,18,54,\<ldots\>>,
   and denoting by <math|\<Omega\>> the set of terminal regions, the sum at
-  depth <math|D> is therefore:
+  depth <math|D> is therefore
 
   <\equation*>
-    A\<geqslant\><big|sum><rsub|R:R\<in\>\<Omega\>><rsub|>b<rsub|1>+b<rsub|2>=2*3<rsup|D>
+    A\<gtr\><big|sum><rsub|R:R\<in\>\<Omega\>><rsub|>b<rsub|1>+b<rsub|2>=2*3<rsup|D>.
   </equation*>
 
-  Because the number of terminal regions is:
+  Because the number of terminal regions is
+  <math|<around*|\||\<Omega\>|\|>=2<rsup|D>>, we can now place a bound on
+  <math|<around*|\||\<Omega\>|\|>> in terms of <math|A>:
 
   <\equation*>
-    <around*|\||\<Omega\>|\|>=2<rsup|D>
-  </equation*>
-
-  we can now measure <math|<around*|\||\<Omega\>|\|>> in terms of <math|A>:
-
-  <\equation*>
-    <around*|\||\<Omega\>|\|>\<leqslant\><around*|(|<frac|A|2>|)><rsup|1/log<rsub|2>
-    3>
+    <around*|\||\<Omega\>|\|>\<less\><around*|(|<frac|A|2>|)><rsup|1/log<rsub|2>
+    3>.
   </equation*>
 
   Finally, since the total number of regions is
   <math|1+2+4+\<ldots\>+<around*|\||\<Omega\>|\|>=<big|sum><rsup|D><rsub|i=1>2<rsup|i>>,
-  the number of regions as a function of the size <math|A> is:
+  the number of regions as a function of the size <math|A> is
 
   <\equation>
     N<around*|(|A|)>=2*<around*|\||\<Omega\>|\|><rsub|>-1=O<around*|(|A<rsup|1/log<rsub|2>
     3>|)>
   </equation>
 
-  and therefore <math|G=1/log<rsub|2> 3>
+  and therefore <math|G=1/log<rsub|2> 3>.
 
   Since <math|1/log<rsub|2> 3\<approx\>0.63>, this means that
   <math|G\<less\>2/3> and the proof that the overall time complexity of the
@@ -860,31 +854,6 @@
 
   The space complexity is simply our recursion depth which can be at most
   <math|O<around*|(|log n|)>>.
-
-  <section|Implementation>
-
-  Introducing intermediate quantities and functions in support of integer
-  arithmetic:
-
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|d<rsub|i>>|<cell|=>|<cell|a<rsub|i>*<space|0.25spc>b<rsub|i><eq-number>>>|<row|<cell|f<rsub|i,j>>|<cell|=>|<cell|a<rsub|i>*<space|0.25spc>b<rsub|j>+b<rsub|i>*<space|0.25spc>a<rsub|j><eq-number>>>|<row|<cell|g<rsub|i,j><around*|(|w|)>>|<cell|=>|<cell|<around*|\<lfloor\>|<frac|f<rsub|i,j>*<space|0.25spc><around*|(|w+c<rsub|i>|)>-<around*|\<lceil\>|<sqrt|<around*|(|w+c<rsub|i>|)><rsup|2>-4*<space|0.25spc>d<rsub|i>*<space|0.25spc>n>|\<rceil\>>|2*<space|0.25spc>d<rsub|i>>|\<rfloor\>>-c<rsub|j><eq-number>>>>>
-  </eqnarray*>
-
-  \;
-
-  Formulas for horizontal and vertical summation:
-
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|S<rsub|w>>|<cell|=>|<cell|<big|sum><rsub|u=1><rsup|w>g<rsub|1,2><around*|(|u<rsub|>|)><eq-number>>>|<row|<cell|S<rsub|h>>|<cell|=>|<cell|<big|sum><rsub|v=1><rsup|h>g<rsub|2,1><around*|(|v<rsub|>|)><eq-number>>>>>
-  </eqnarray*>
-
-  Formulas for <math|P<rsub|4>> and <math|P<rsub|5>>:
-
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|u<rsub|4>>|<cell|=>|<cell|<around*|\<lfloor\>|<space|0.25spc><sqrt|<around*|\<lfloor\>|<frac|<around*|(|f<rsub|1,2>+2*<space|0.25spc>d<rsub|1>|)><rsup|2>n|d<rsub|3>>|\<rfloor\>>>|\<rfloor\>>-c<rsub|1><eq-number>>>|<row|<cell|v<rsub|4>>|<cell|=>|<cell|g<rsub|1,2><around*|(|u<rsub|4>|)><eq-number>>>|<row|<cell|u<rsub|5>>|<cell|=>|<cell|u<rsub|4>+1<eq-number>>>|<row|<cell|v<rsub|5>>|<cell|=>|<cell|g<rsub|1,2><around*|(|u<rsub|5>|)><eq-number>>>>>
-  </eqnarray*>
-
-  \;
 
   \;
 </body>

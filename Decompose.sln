@@ -13,7 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		hyperbola-formulas.wxm = hyperbola-formulas.wxm
 		hyperbola-visualization.wxm = hyperbola-visualization.wxm
 		hyperbola.tm = hyperbola.tm
-		hyperbola.wxm = hyperbola.wxm
 		Local.testsettings = Local.testsettings
 		notes.txt = notes.txt
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
