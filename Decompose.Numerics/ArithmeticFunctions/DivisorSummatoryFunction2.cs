@@ -414,14 +414,14 @@ namespace Decompose.Numerics
             var a = c1 * c1 - 2 * denom * n;
             var b = c1 * coef;
             var da = 2 * c1 - 1;
-            for (var i = (Integer)1; i <= max; i++)
+            for (var i = (Integer)1; i < max; i++)
             {
                 da += 2;
                 a += da;
                 b += coef;
                 sum += (b - IntegerMath.CeilingSquareRoot(a)) / denom;
             }
-            return sum - max * c2;
+            return sum - (max - 1) * c2;
         }
     }
 }

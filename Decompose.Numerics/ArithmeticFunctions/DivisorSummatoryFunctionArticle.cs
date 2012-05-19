@@ -33,11 +33,11 @@ namespace Decompose.Numerics
                 var x4 = FloorSquareRoot(n / a1);
                 var y4 = n / x4;
                 var c4 = a1 * x4 + y4;
-                if (x4 < xmin)
-                    break;
                 var x5 = x4 + 1;
                 var y5 = n / x5;
                 var c5 = a1 * x5 + y5;
+                if (x4 < xmin)
+                    break;
                 s += Triangle(c4 - c2 - xmin) - Triangle(c4 - c2 - x5) + Triangle(c5 - c2 - x5);
                 s += ProcessRegion(a1 * x2 + y2 - c5, a2 * x5 + y5 - c2, a1, 1, c5, a2, 1, c2);
                 a2 = a1;
