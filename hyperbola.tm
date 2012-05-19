@@ -433,7 +433,7 @@
   terms of the lattice points in its sub-regions allows us to use a divide
   and conquer approach to counting lattice points under the hyperbola.
 
-  <section|Top Level Region Processing>
+  <section|Top Level Processing>
 
   Now let us return to the hyperbola as a whole. \ It should be clear that it
   is easy in <math|x y> coordinates to calculate <math|y> in terms of
@@ -468,7 +468,7 @@
   simple method to sum the lattice columns less than <math|x<rsub|min>>:
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|x<rsub|min>>|<cell|=>|<cell|<around*|\<lfloor\>|C<rsub|1>*<sqrt|2*n|3>|\<rfloor\>><eq-number>>>|<row|<cell|x<rsub|max>>|<cell|=>|<cell|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>>>|<row|<cell|y<rsub|min>>|<cell|=>|<cell|<around*|\<lfloor\>|Y<around*|(|x<rsub|max>|)>|\<rfloor\>>>>|<row|<cell|S<rsub|1>>|<cell|=>|<cell|S<around*|(|x<rsub|min>-1|)>>>>>
+    <tformat|<table|<row|<cell|x<rsub|min>>|<cell|=>|<cell|C<rsub|1>**<around*|\<lceil\>|<sqrt|2*n|3>|\<rceil\>><eq-number>>>|<row|<cell|x<rsub|max>>|<cell|=>|<cell|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>>>|<row|<cell|y<rsub|min>>|<cell|=>|<cell|<around*|\<lfloor\>|Y<around*|(|x<rsub|max>|)>|\<rfloor\>>>>|<row|<cell|S<rsub|1>>|<cell|=>|<cell|S<around*|(|x<rsub|min>-1|)>>>>>
   </eqnarray*>
 
   where <math|C<rsub|1>\<geq\>1> is a constant to be chosen later.
@@ -594,6 +594,48 @@
     T<around*|(|n|)>=2*S<rsub|T>-<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>><rsup|2>
   </equation*>
 
+  <section|Division-Free Counting>
+
+  Since we calculate <math|S<rsub|1>> using the traditional method and since
+  the computation will consist entirely of <math|S<rsub|1>> when
+  <math|n\<less\>4*C<rsub|1><rsup|6>>, it is beneficial to have a faster
+  method of performing this step. \ Denote by
+  <math|l=<around*|\<lceil\>|log<rsub|2><around*|(|n|)>|\<rceil\>>> the
+  number of bits needed to represent <math|n>. \ We can avoid an <math|l>-bit
+  division in each iteration by using a Bresenham-style calculation and
+  working backwards and computing an estimate of the result of the division
+  based on the previous iteration. \ Define
+  <math|\<beta\><around*|(|x|)>=<around*|\<lfloor\>|Y<around*|(|x|)>|\<rfloor\>>>
+  and the finite difference <math|\<delta\><rsub|1><rsub|><around*|(|x|)>
+  =\<beta\><around*|(|x|)>-\<beta\><around*|(|x+1|)>>. Because the
+  second-order difference <math|\<delta\><rsub|2><around*|(|x|)>=\<delta\><rsub|1><around*|(|x|)>-\<delta\><rsub|1><around*|(|x+1|)>\<in\><around*|{|-1,0,1|}>>
+  for <math|x\<gtr\><sqrt|2n|3>>, we can get to within unity of the correct
+  value of <math|\<beta\><around*|(|x|)>> by using
+  <math|\<beta\><around*|(|x+1|)>+\<delta\><rsub|1><rsub|><around*|(|x+1|)>>.
+  \ To know if we are right we need to keep track of the error as well. \ So
+  defining the error <math|\<varepsilon\><around*|(|x|)>=n-x*\<beta\><around*|(|x|)>=n-x*<around*|\<lfloor\>|n/x|\<rfloor\>>=n
+  mod x> gives
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|\<varepsilon\><around*|(|x|)>-\<varepsilon\><around*|(|x+1|)>>|<cell|=>|<cell|<around*|(|x+1|)>*\<beta\><around*|(|x+1|)>-x*\<beta\><around*|(|x|)>>>|<row|<cell|>|<cell|=>|<cell|<around*|(|x+1|)>*\<beta\><around*|(|x+1|)>-x*<around*|(|\<beta\><around*|(|x+1|)>+\<delta\><rsub|1><around*|(|x+1|)>-\<delta\><rsub|2><around*|(|x|)>|)>>>|<row|<cell|>|<cell|=>|<cell|\<beta\><around*|(|x+1|)>-x*\<delta\><around*|(|x+1|)>-x*\<delta\><rsub|2><around*|(|x|)>>>>>
+  </eqnarray*>
+
+  Introducing <math|\<gamma\><around*|(|x|)>=<around*|(|x-1|)>*\<delta\><around*|(|x|)>>
+  and <math|<wide|\<varepsilon\>|^><around*|(|x|)>> as the estimate of the
+  error assuming <math|\<delta\><rsub|2><around*|(|x|)>>=0 then
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<wide|\<varepsilon\>|^><around*|(|x|)>>|<cell|=>|<cell|\<varepsilon\><around*|(|x+1|)>+\<beta\><around*|(|x+1|)>-\<gamma\><around*|(|x+1|)>>>|<row|<cell|\<delta\><rsub|2><around*|(|x|)>>|<cell|=>|<cell|<choice|<tformat|<cwith|1|-1|1|1|cell-halign|r>|<table|<row|<cell|1>|<cell|if
+    <wide|\<varepsilon\>|^><around*|(|x|)>\<geq\>x;>>|<row|<cell|-1>|<cell|if
+    <wide|\<varepsilon\>|^><around*|(|x|)>\<less\>0;>>|<row|<cell|0>|<cell|otherwise;>>>>>>>|<row|<cell|\<delta\><rsub|><around*|(|x|)>>|<cell|=>|<cell|\<delta\><around*|(|x+1|)>+\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<varepsilon\><around*|(|x|)>>|<cell|=>|<cell|<wide|\<varepsilon\>|^><around*|(|x|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<gamma\><around*|(|x|)>>|<cell|=>|<cell|\<gamma\><around*|(|x+1|)>-\<delta\><around*|(|x|)>+x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<beta\><around*|(|x|)>>|<cell|=>|<cell|\<beta\><around*|(|x+1|)>+\<delta\><around*|(|x|)>>>>>
+  </eqnarray*>
+
+  and thus <math|\<beta\><around*|(|x|)>,\<gamma\><around*|(|x|)>,\<delta\><around*|(|x|)>,\<varepsilon\><around*|(|x|)>>
+  can be computed from <math|\<beta\><around*|(|x+1|)>,\<gamma\><around*|(|x+1|)>,\<delta\><around*|(|x+1|)>,\<varepsilon\><around*|(|x+1|)>>
+  using only addition and subtraction of <math|<frac|2|3>*l>-bit quantities.
+  Note that if <math|<wide|\<varepsilon\>|^><around*|(|x|)>\<geq\>2*x>, it
+  means that <math|x\<less\><sqrt|2*n|3>.>
+
   <section|Algorithm>
 
   In this section we present a formalization of the steps of the algorithm.
@@ -604,10 +646,12 @@
   have been slightly modified so that the entire algorithm can be implemented
   using only unsigned multi-precision integer arithmetic. \ The operations
   required are addition, subtraction, multiplication, floor division, floor
-  square root, ceiling square root, and ceiling cube root.
+  square root, ceiling square root, and ceiling cube root. \ If any of the
+  root operations are not available they may be implemented using Newton's
+  method.
 
   <\algorithm>
-    Inputs: <math|n\<geq\>0,C<rsub|1>\<approx\>2,C<rsub|2>\<approx\>10>
+    Inputs: <math|n\<geq\>0,C<rsub|1>\<approx\>10,C<rsub|2>\<approx\>10>
 
     \;
 
@@ -624,7 +668,7 @@
     \;
 
     <\math>
-      x<rsub|max>\<leftarrow\><around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>,y<rsub|min>\<leftarrow\><around*|\<lfloor\>|n/x<rsub|max>|\<rfloor\>>,x<rsub|min>\<leftarrow\>min<around*|(|C<rsub|1>*<around*|\<lceil\>|<sqrt|2*n|3>|\<rceil\>>,x<rsub|max>|)><with|font-series|bold|>
+      x<rsub|max>\<leftarrow\><around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>,y<rsub|min>\<leftarrow\><around*|\<lfloor\>|n/x<rsub|max>|\<rfloor\>>,x<rsub|min>\<leftarrow\>min<around*|(|*<around*|\<lceil\>|C<rsub|1>*<sqrt|2*n|3>|\<rceil\>>,x<rsub|max>|)><with|font-series|bold|>
     </math>
 
     <math|s\<leftarrow\>0,a<rsub|2>\<leftarrow\>1,x<rsub|2>\<leftarrow\>x<rsub|max>,y<rsub|2>\<leftarrow\>y<rsub|min>,c<rsub|2>\<leftarrow\>a<rsub|2>*x<rsub|2>+y<rsub|2>>
@@ -717,11 +761,52 @@
     <with|font-series|bold|end> <with|font-series|bold|function>
   </algorithm>
 
-  \;
+  The next algorithm gives a flavor for the optimizations that are available.
+  \ It computes the manual summation of a small region using a handful of
+  additions, one square root and one division per lattice column. \ A similar
+  technique can be used to compute <math|V<rsub|floor>> for the adjacent
+  values <math|u<rsub|4>> and <math|u<rsub|5>>. \ Making this portion of the
+  computation faster favors larger values of <math|C<rsub|2>>, the cutoff for
+  small regions. An analogy is that this step is faster for small regions in
+  the same way that an insertion sort is faster than a quicksort for small
+  arrays and the break even point can be determined experimentally.
+
+  <\algorithm>
+    <\math>
+      S<rsub|W><around*|(||)>:S<rsub|I><around*|(|w,c<rsub|1>,c<rsub|2>,a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>,2*a<rsub|1>*b<rsub|1>|)>
+
+      S<rsub|H><around*|(||)>:S<rsub|I><around*|(|h,c<rsub|2>,c<rsub|1>,a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2,>2*a<rsub|2>*b<rsub|2>|)>
+    </math>
+
+    \;
+
+    <with|font-series|bold|function> <math|S<rsub|I><around*|(|i<rsub|max>,p<rsub|1>,p<rsub|2>,q,r|)>>
+
+    <\indent>
+      <math|s\<leftarrow\>0,A\<leftarrow\>p<rsub|1><rsup|2>-2*r*n,B\<leftarrow\>p<rsub|1>*q,C\<leftarrow\>2*p<rsub|1>-1>
+
+      <with|font-series|bold|for> <math|i=1,\<ldots\>,i<rsub|max>-1>
+      <with|font-series|bold|do>
+
+      <\indent>
+        <math|C\<leftarrow\>C+2,A\<leftarrow\>A+C,B\<leftarrow\>B+q>
+      </indent>
+
+      <\indent>
+        <math|s\<leftarrow\>s+<around*|\<lfloor\>|<around*|(|B-<around*|\<lceil\>|<sqrt|A>|\<rceil\>>|)>/r|\<rfloor\>>>
+      </indent>
+
+      <with|font-series|bold|end> <with|font-series|bold|for>
+
+      <with|font-series|bold|return> <math|s-<around*|(|i<rsub|max>-1|)>*p<rsub|2>>
+    </indent>
+
+    <with|font-series|bold|end> <with|font-series|bold|function>
+  </algorithm>
 
   <section|Time and Space Complexity>
 
-  Now we present an analysis of the runtime behavior of the algorithm.
+  Now we present an analysis of the runtime behavior of algorithm.
 
   Before we start, we realize that because
   <math|x<rsub|min>=O<around*|(|n<rsup|1/3>|)>> and we handle the values of
@@ -816,14 +901,14 @@
   so the size of a terminal region is greater than the sum of the
   denominators of the slopes of the two lines that define it.
 
-  Each time we recurse into two new regions we add a new Farey fraction that
-  is the mediant of the two slopes for the outer region. \ As a result, we
-  perform a partial traversal of a Stern-Brocot tree, doubling the number of
-  nodes at each level. \ However, for our current purposes we can ignore the
-  numerators because we are interested in the sum of denominators. \ Because
-  regions cannot overlap, this means that the sum of the denominators at the
-  deepest level of the tree cannot exceed the size of the first region and
-  that only denominators affect the recursion depth.
+  Each time we recurse into two new regions we add a new extended Farey
+  fraction that is the mediant of the two slopes for the outer region. \ As a
+  result, we perform a partial traversal of a Stern-Brocot tree, doubling the
+  number of nodes at each level. \ However, for our current purposes we can
+  ignore the numerators because we are interested in the sum of denominators.
+  \ Because regions cannot overlap, this means that the sum of the
+  denominators at the deepest level of the tree cannot exceed the size of the
+  first region and that only denominators affect the recursion depth.
 
   Next we need to derive a formula for the sum of the denominators of a
   partial Stern-Brocot tree of depth <math|D>. \ For example, if the first
