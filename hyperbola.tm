@@ -63,6 +63,15 @@
   the usual method by which the divisor summatory function is computed. \ Our
   goal is to break this square-root barrier.
 
+  In 1903, Voronoï in [<reference|bib:Vor03>] made the first significant
+  advance since Dirichlet on the bound on error term for the divisor problem
+  by decomposing the hyperbola into a series of non-overlapping triangles
+  corresponding to tangent lines whose slopes are extended Farey neighbors.
+  We will use a similar approach but where Voronoï produced an exact
+  expression for the error term and estimated its magnitude, we will produce
+  an algorithm to determine a precise lattice count for an isolated value of
+  <math|n> instead.
+
   <section|Preliminaries>
 
   It will be convenient to parameterize sum in <math|T<around*|(|n|)>> as:
@@ -602,9 +611,9 @@
   method of performing this step. \ Denote by
   <math|l=<around*|\<lceil\>|log<rsub|2><around*|(|n|)>|\<rceil\>>> the
   number of bits needed to represent <math|n>. \ We can avoid an <math|l>-bit
-  division in each iteration by using a Bresenham-style calculation and
-  working backwards and computing an estimate of the result of the division
-  based on the previous iteration. \ Define
+  division in each iteration by using a Bresenham-style calculation (see
+  [<reference|bib:Bres77>]) and working backwards and computing an estimate
+  of the result of the division based on the previous iteration. \ Define
   <math|\<beta\><around*|(|x|)>=<around*|\<lfloor\>|Y<around*|(|x|)>|\<rfloor\>>>
   and the finite difference <math|\<delta\><rsub|1><rsub|><around*|(|x|)>
   =\<beta\><around*|(|x|)>-\<beta\><around*|(|x+1|)>>. Because the
@@ -960,7 +969,54 @@
   The space complexity is simply our recursion depth which can be at most
   <math|O<around*|(|log n|)>>.
 
+  <section|Remarks>
+
+  It would be possible to simplify the algorithm somewhat by removing the
+  distinction between top level regions and region processing itself by
+  starting with the region defined by <math|<around*|(|1/0,1/1|)>>. The
+  reason for the current assymetry is to capitalize on the simpler <math|x y>
+  coordinate system where possible.
+
   \;
+
+  In [<reference|bib:Gal00>], Galway presents an improved sieving algorithm
+  that also features region decomposition based on extended Farey fractions
+  as well as coordinate transformation. In [<reference|bib:Tao11>],
+  applications for the divisor summatory are presented including computing
+  the parity of <math|\<pi\><around*|(|x|)>>, the prime counting function, as
+  well as a sketch for a different <math|O<around*|(|n<rsup|1/3>|)>>
+  algorithm. In [<reference|bib:Sil12>], the parity of the prime counting
+  function is studied more closely and several related algorithms are
+  developed.
+
+  <\bibliography|bib|tm-plain|hyperbola.bib>
+    \;
+
+    <\bib-list|>
+      <bibitem|Vor03><label|bib:Vor03>Georges Voronoï,
+      <with|font-shape|italic|Sur un problème du calcul des fonctions
+      asymptotiques>, J. Reine Angew. Math. <with|font-series|bold|126>
+      (1903), 241-282.
+
+      <bibitem|Bres77><label|bib:Bres77>Jack Bresenham,
+      <with|font-shape|italic|A linear algorithm for incremental digital
+      display of circular arcs>, Communications of the ACM
+      <with|font-series|bold|20> (1977), 100-106.
+
+      <bibitem|Gal00><label|bib:Gal00>William F. Galway,
+      <with|font-shape|italic|Dissecting a Sieve to Cut Its Need for Space>,
+      In Proceedings of ANTS. (2000), 297-312.
+
+      <bibitem|Tao11><label|bib:Tao11>Terence Tao, Ernest Croot III, and
+      Harald Helfgott. <with|font-shape|italic|Deterministic methods to find
+      primes>. Mathematics of Computation, 2011. Published electronically on
+      August 23, 2011.
+
+      <bibitem|Sil12><label|bib:Sil12>Tomás Oliveira e Silva,
+      <with|font-shape|italic|Efficient Computation of the Parity of the
+      Prime Counting Function>, in preparation.
+    </bib-list>
+  </bibliography>
 </body>
 
 <\references>
@@ -973,7 +1029,42 @@
     <associate|auto-5|<tuple|5|9>>
     <associate|auto-6|<tuple|6|10>>
     <associate|auto-7|<tuple|7|12>>
-    <associate|auto-8|<tuple|7|?>>
+    <associate|auto-8|<tuple|8|?>>
+    <associate|auto-9|<tuple|8|?>>
+    <associate|bib-|<tuple||?>>
+    <associate|bib-A|<tuple|A|?>>
+    <associate|bib-B|<tuple|B|?>>
+    <associate|bib-Br|<tuple|Br|?>>
+    <associate|bib-Bre|<tuple|Bre|?>>
+    <associate|bib-Bres|<tuple|Bres|?>>
+    <associate|bib-Bres7|<tuple|Bres7|?>>
+    <associate|bib-Bres77|<tuple|Bres77|?>>
+    <associate|bib-G|<tuple|G|?>>
+    <associate|bib-Ga|<tuple|Ga|?>>
+    <associate|bib-Gal|<tuple|Gal|?>>
+    <associate|bib-Gal0|<tuple|Gal0|?>>
+    <associate|bib-Gal00|<tuple|Gal00|?>>
+    <associate|bib-S|<tuple|S|?>>
+    <associate|bib-Si|<tuple|Si|?>>
+    <associate|bib-Sil|<tuple|Sil|?>>
+    <associate|bib-Sil1|<tuple|Sil1|?>>
+    <associate|bib-Sil12|<tuple|Sil12|?>>
+    <associate|bib-T|<tuple|T|?>>
+    <associate|bib-Ta|<tuple|Ta|?>>
+    <associate|bib-Tao|<tuple|Tao|?>>
+    <associate|bib-Tao1|<tuple|Tao1|?>>
+    <associate|bib-Tao11|<tuple|Tao11|?>>
+    <associate|bib-V|<tuple|V|?>>
+    <associate|bib-Vo|<tuple|Vo|?>>
+    <associate|bib-Vor|<tuple|Vor|?>>
+    <associate|bib-Vor0|<tuple|Vor0|?>>
+    <associate|bib-Vor03|<tuple|Vor03|?>>
+    <associate|bib-[|<tuple|[|?>>
+    <associate|bib:Bres77|<tuple|Bres77|?>>
+    <associate|bib:Gal00|<tuple|Gal00|?>>
+    <associate|bib:Sil12|<tuple|Sil12|?>>
+    <associate|bib:Tao11|<tuple|Tao11|?>>
+    <associate|bib:Vor03|<tuple|Vor03|?>>
     <associate|eq:det|<tuple|10|3>>
     <associate|eq:gcd1|<tuple|10|?>>
     <associate|eq:ps1|<tuple|12|3>>
