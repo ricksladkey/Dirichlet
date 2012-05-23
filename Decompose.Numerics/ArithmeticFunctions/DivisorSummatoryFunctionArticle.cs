@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Numerics;
+using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
@@ -157,6 +158,77 @@ namespace Decompose.Numerics
         public static BigInteger CeilingCubeRoot(BigInteger a)
         {
             return (BigInteger)Math.Ceiling(Math.Pow((double)a, (double)1 / 3));
+        }
+
+        public BigInteger S1(BigInteger n, BigInteger x1, BigInteger x2)
+        {
+            var s = (BigInteger)0;
+            var x = x2;
+            var beta = n / (x + 1);
+            var eps = n - (x + 1) * beta;
+            var delta = n / x - beta;
+            var gamma = beta - x * delta;
+            while (x >= x1)
+            {
+                eps += gamma;
+                if (eps >= x)
+                {
+                    ++delta;
+                    gamma -= x;
+                    eps -= x;
+                    if (eps >= x)
+                    {
+                        ++delta;
+                        gamma -= x;
+                        eps -= x;
+                        if (eps >= x)
+                            break;
+                    }
+                }
+                else if (eps < 0)
+                {
+                    --delta;
+                    gamma += x;
+                    eps += x;
+                }
+                gamma += 2 * delta;
+                beta += delta;
+
+                Debug.Assert(eps == n % x);
+                Debug.Assert(beta == n / x);
+                Debug.Assert(delta == beta - n / (x + 1));
+                Debug.Assert(gamma == beta - (x - 1) * delta);
+
+                s += beta;
+                --x;
+            }
+            eps = n - (x + 1) * beta;
+            delta = n / x - beta;
+            gamma = beta - x * delta;
+            while (x >= x1)
+            {
+                eps += gamma;
+                var delta2 = eps >= 0 ? eps / x : (eps - x + 1) / x;
+                delta += delta2;
+                var a = x * delta2;
+                eps -= a;
+                gamma += 2 * delta - a;
+                beta += delta;
+
+                Debug.Assert(eps == n % x);
+                Debug.Assert(beta == n / x);
+                Debug.Assert(delta == beta - n / (x + 1));
+                Debug.Assert(gamma == beta - (x - 1) * delta);
+
+                s += beta;
+                --x;
+            }
+            while (x >= x1)
+            {
+                s += n / x;
+                --x;
+            }
+            return s;
         }
     }
 }

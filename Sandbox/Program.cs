@@ -190,6 +190,39 @@ namespace Sandbox
 
         static void ParityTest()
         {
+#if true
+            for (int i = 1; i <= 1; i++)
+            {
+                var n = (BigInteger)1 << 50;
+                var algorithm1 = new PrimeCounting(0);
+                var algorithm2 = new DivisionFreeDivisorSummatoryFunction();
+                var xmax = IntegerMath.FloorRoot(n, 2);
+                var timer = new Stopwatch();
+                timer.Restart();
+                ulong sqrt = 0;
+                var sum1 = algorithm1.TauSumInnerLarge((UInt128)n, out sqrt);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                timer.Restart();
+                var sum2 = algorithm2.Evaluate(n);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                timer.Restart();
+                var sum3 = (UInt128)0;
+                var nRep = (UInt128)n;
+                for (var x = (ulong)1; x <= sqrt; x++)
+                    sum3 += nRep / x;
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                Console.WriteLine("n = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}", n, sum1, sum2, sum3);
+            }
+#endif
+
+#if false
+            var algorithm = new DivisorSummatoryFunctionArticle();
+            var n = 1 << 30;
+            var xmax = IntegerMath.FloorRoot(n, 2);
+            var sum = algorithm.S1(n, 1, xmax);
+            Console.WriteLine("n = {0}, sum = {1}", n, sum);
+#endif
+
 #if false
 #if true
             var algorithm = new DivisorSummatoryFunctionArticle();
@@ -224,7 +257,7 @@ namespace Sandbox
 #endif
 #endif
 
-#if true
+#if false
             var diag = false;
             var algorithm = new DivisorSummatoryFunction();
             var algorithm2 = new DivisorSummatoryFunction2(diag);

@@ -70,13 +70,32 @@ namespace Decompose.Numerics
             return r0.GetBitCount() + r1.GetBitCount() + r2.GetBitCount() + r3.GetBitCount();
         }
 
+        public static explicit operator UInt128(int a)
+        {
+            if (a < 0)
+                throw new InvalidCastException();
+            var c = default(UInt128);
+            c.r0 = (uint)a;
+            return c;
+        }
+
         public static implicit operator UInt128(uint a)
         {
             var c = default(UInt128);
             c.r0 = a;
             return c;
         }
-        
+
+        public static explicit operator UInt128(long a)
+        {
+            if (a < 0)
+                throw new InvalidCastException();
+            var c = default(UInt128);
+            c.r0 = (uint)a;
+            c.r1 = (uint)(a >> 32);
+            return c;
+        }
+
         public static implicit operator UInt128(ulong a)
         {
             var c = default(UInt128);

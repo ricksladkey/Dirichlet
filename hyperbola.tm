@@ -12,8 +12,8 @@
   <\abstract>
     An algorithm is presented to compute isolated values of the divisor
     summatory function in <math|O<around*|(|n<rsup|1/3>|)>>time and
-    <math|O<around*|(|log n|)>> space. \ The algorithm is elementary and uses
-    a geometric approach of successive approximation combined with coordinate
+    <math|O<around*|(|log n|)>> space. The algorithm is elementary and uses a
+    geometric approach of successive approximation combined with coordinate
     transformation.
   </abstract>
 
@@ -23,7 +23,7 @@
   coordinate system:
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|H<around*|(|x,y|)>>|<cell|=>|<cell|x*<space|0.25spc>y<eq-number>>>|<row|<cell|>|<cell|=>|<cell|n>>>>
+    <tformat|<table|<row|<cell|H<around*|(|x,y|)>>|<cell|=>|<cell|x*<space|0.25spc>y>>|<row|<cell|>|<cell|=>|<cell|n>>>>
   </eqnarray*>
 
   The number of lattice points under the hyperbola can be thought of as the
@@ -51,8 +51,8 @@
     T<around*|(|n|)>=<big|sum><rsup|n><rsub|x=1><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>
   </equation>
 
-  which gives an <math|O<around*|(|n|)>> algorithm. \ By using the symmetry
-  of the hyperbola (and taking care to avoid double counting) we can do this
+  which gives an <math|O<around*|(|n|)>> algorithm. By using the symmetry of
+  the hyperbola (and taking care to avoid double counting) we can do this
   even more efficiently:
 
   <\equation>
@@ -60,7 +60,7 @@
   </equation>
 
   \ which gives an <math|O<around*|(|n<rsup|1/2>|)>> algorithm and is in fact
-  the usual method by which the divisor summatory function is computed. \ Our
+  the usual method by which the divisor summatory function is computed. Our
   goal is to break this square-root barrier.
 
   In 1903, Voronoï in [<reference|bib:Vor03>] made the first significant
@@ -99,8 +99,8 @@
 
   This formula is also applicable to triangles of the form
   <math|<around*|(|0,0|)>,<around*|(|i,a*i|)>,<around*|(|i,<around*|(|a-1|)>*i|)>>,
-  <math|a> a positive integer. \ If we desire to to omit the lattice points
-  on two sides, we can use <math|\<Delta\><around*|(|i-1|)>> instead of
+  <math|a> a positive integer. If we desire to to omit the lattice points on
+  two sides, we can use <math|\<Delta\><around*|(|i-1|)>> instead of
   <math|\<Delta\><around*|(|i|)>>.
 
   <section|Region Processing>
@@ -110,19 +110,19 @@
   triangular region bounded by two tangent lines and a segment of the
   hyperbola. If we can approximate the hyperbola by a series of tangent
   lines, then the area below the lines is a simple polygon and can be
-  calculated directly by decomposing the area into triangles. \ On the other
+  calculated directly by decomposing the area into triangles. On the other
   hand, the region above the two lines can be handled by chopping off another
   triangle with a third tangent line which creates two smaller curvilinear
   triangular regions.
 
   We will now go about counting the lattice points in such region. We will do
-  this by first transforming the region into a new coordinate system. \ This
-  is very simple conceptually but there are a number of details to take care
-  of in order to count lattice points accurately and efficiently. \ First,
-  the tangent lines are not true tangent lines but are actually shifted to
-  pass through the nearest lattice points. \ Because of this, tangent lines
-  need to be ``broken'' on either side of the true tangent point in order to
-  keep them under but close to the hyperbola. \ Second, the coordinate
+  this by first transforming the region into a new coordinate system. This is
+  very simple conceptually but there are a number of details to take care of
+  in order to count lattice points accurately and efficiently. First, the
+  tangent lines are not true tangent lines but are actually shifted to pass
+  through the nearest lattice points. Because of this, tangent lines need to
+  be ``broken'' on either side of the true tangent point in order to keep
+  them under but close to the hyperbola. Second, the coordinate
   transformation turns our simple <math|x*y=n> hyperbola into a general
   quadratic in two variables. Nevertheless, the recipe at a high level is
   simply ``tangent, tangent, chop, recurse.''
@@ -225,8 +225,8 @@
   Because all quantities are integers, equations (<reference|eq:uv2xy3>),
   (<reference|eq:uv2xy4>), (<reference|eq:xy2uv1>), (<reference|eq:xy2uv2>)
   mean that each <math|x y> lattice point corresponds to a <math|u v> lattice
-  point and vice versa. \ As a result, we can choose to count lattice points
-  in either <math|x y> coordinates or <math|u v> coordinates.
+  point and vice versa. As a result, we can choose to count lattice points in
+  either <math|x y> coordinates or <math|u v> coordinates.
 
   Now we are ready to transform the hyperbola into the <math|u v> coordinate
   system by substituting for <math|x> and <math|y> in
@@ -296,7 +296,7 @@
   </eqnarray*>
 
   using whichever axis has fewer points, keeping in mind that it could be
-  assymmetric. \ (Note that these summations are certain not to overcount
+  assymmetric. (Note that these summations are certain not to overcount
   because by our conditions <math|V<around*|(|u|)>\<less\>h> for
   <math|0\<less\>u\<leq\>w> and <math|U<around*|(|v|)>\<less\>w> for
   <math|0\<less\>v\<leq\>h>.)
@@ -322,9 +322,9 @@
 
   As a result we can compute the number of lattice points within the region
   using a method similar to the method usually used for the hyperbola as a
-  whole. \ Our goal, however, it to subdivide the region into two smaller
+  whole. Our goal, however, it to subdivide the region into two smaller
   regions and process them recursively, only using manual counting at our
-  discretion. \ To do so we need to remove an isosceles right triangle in the
+  discretion. To do so we need to remove an isosceles right triangle in the
   lower-left corner and what will be left are two sub-regions in the
   upper-left and lower-right.
 
@@ -380,14 +380,14 @@
 
   The derivative conditions ensure that the diagonal rays with slope
   <math|-1> pointing outward from <math|P<rsub|4>> and <math|P<rsub|5>> do
-  not intersect the hyperbola. \ Setting <math|u<rsub|4> =
+  not intersect the hyperbola. Setting <math|u<rsub|4> =
   <around*|\<lfloor\>|u<rsub|tan>|\<rfloor\>>> will satisfy the conditions as
   long as <math|u<rsub|4>\<neq\>0>.
 
   Let the point at which the ray from <math|P<rsub|4>> intersects the
   <math|v> axis be <math|P<rsub|6 ><around*|(|0,v<rsub|6>|)>> and the point
   at which the ray from <math|P<rsub|5>> intersects the <math|u> axis be
-  <math|P<rsub|7 ><around*|(|u<rsub|7>,0|)>>. \ Then:
+  <math|P<rsub|7 ><around*|(|u<rsub|7>,0|)>>. Then:
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|v<rsub|6>>|<cell|=>|<cell|u<rsub|4>+v<rsub|4><eq-number>>>|<row|<cell|u<rsub|7>>|<cell|=>|<cell|u<rsub|5>+v<rsub|5><eq-number>>>>>
@@ -444,7 +444,7 @@
 
   <section|Top Level Processing>
 
-  Now let us return to the hyperbola as a whole. \ It should be clear that it
+  Now let us return to the hyperbola as a whole. It should be clear that it
   is easy in <math|x y> coordinates to calculate <math|y> in terms of
   <math|x> by solving <math|H<around*|(|x,y|)>=n> for <math|y>:
 
@@ -453,20 +453,19 @@
   </equation>
 
   We know that we only need to sum lattice points under the hyperbola up to
-  <math|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>>. \ The point
-  <math|<sqrt|n>> is in fact at the <math|x=y> axis of symmetry and so the
-  slope at that point is exactly <math|-1>. \ The next integral slope occurs
-  at <math|-2>, so our first (and largest) region occurs between slopes
-  <math|-m<rsub|1>=2> and <math|-m<rsub|2>=1>. By processing adjacent
-  integral slopes we will start in the middle and work our way back towards
-  the origin.
+  <math|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>>. The point <math|<sqrt|n>>
+  is in fact at the <math|x=y> axis of symmetry and so the slope at that
+  point is exactly <math|-1>. The next integral slope occurs at <math|-2>, so
+  our first (and largest) region occurs between slopes <math|-m<rsub|1>=2>
+  and <math|-m<rsub|2>=1>. By processing adjacent integral slopes we will
+  start in the middle and work our way back towards the origin.
 
   However, we cannot use the region method for the whole hyperbola because
   regions become smaller and smaller and eventually a region has a size
-  <math|w+h \<leq\>1>. \ We can find the point where this occurs by taking
-  the second derivative of <math|Y<around*|(|x|)>> with respect to <math|x>
-  and setting it to unity. \ In other words, the point on the hyperbola where
-  the rate of change in the slope exceeds one per lattice column, which is:
+  <math|w+h \<leq\>1>. We can find the point where this occurs by taking the
+  second derivative of <math|Y<around*|(|x|)>> with respect to <math|x> and
+  setting it to unity. In other words, the point on the hyperbola where the
+  rate of change in the slope exceeds one per lattice column, which is:
 
   <\equation>
     x=<sqrt|2*n|3>= 2<rsup|1/3>*n<rsup|1/3>\<approx\>1.26*n<rsup|1/3>
@@ -497,7 +496,7 @@
   </eqnarray*>
 
   Assume that we have point <math|P<rsub|2>\<nocomma\>> and value
-  <math|a<rsub|2>> from the previous iteration. \ For the first iteration we
+  <math|a<rsub|2>> from the previous iteration. For the first iteration we
   will have:
 
   <\eqnarray*>
@@ -532,7 +531,7 @@
   To meet these conditions we can set <math|x<rsub|4>=<around*|\<lfloor\>|x<rsub|tan>|\<rfloor\>>>
   unless <math|x<rsub|4>\<leq\>x<rsub|min>> in which case we can manually
   count the lattice columns between <math|x<rsub|min>> and <math|x<rsub|2>>
-  and cease iterating. \ If so, the remaining columns can be computed as:
+  and cease iterating. If so, the remaining columns can be computed as:
 
   <\equation*>
     S<rsub|3>=<big|sum><rsup|x<rsub|2-1>><rsub|x=x<rsub|min>><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>-<around*|(|a<rsub|2>*<around*|(|x<rsub|2>-x|)>+y<rsub|2>|)>
@@ -589,74 +588,103 @@
     <tformat|<table|<row|<cell|x<rprime|'><rsub|2>>|<cell|=>|<cell|x<rsub|4>>>|<row|<cell|y<rprime|'><rsub|2>>|<cell|=>|<cell|y<rsub|4>>>|<row|<cell|a<rprime|'><rsub|2>>|<cell|=>|<cell|a<rsub|1>>>>>
   </eqnarray*>
 
+  Summing all interations gives
+
+  <\equation*>
+    S<rsub|4>=<big|sum><rsup|a<rsub|max>><rsub|a=2>S<rsub|A><around*|(|a|)>.
+  </equation*>
+
   Finally, the total number of lattice points under the hyperbola from
-  <math|1> to <math|x<rsub|max>> is:
+  <math|1> to <math|x<rsub|max>> is
 
   <\equation>
-    S<rsub|T>=S<around*|(|x<rsub|max>|)>=S<rsub|1>+S<rsub|2>+S<rsub|3>+<big|sum><rsup|a<rsub|max>><rsub|a=2>S<rsub|A><around*|(|a|)>
+    S<rsub|T>=S<around*|(|x<rsub|max>|)>=S<rsub|1>+S<rsub|2>+S<rsub|3>+S<rsub|4>
   </equation>
 
   and therefore the final computation of the divisor summatory function is
-  given by:
+  given by
 
-  <\equation*>
-    T<around*|(|n|)>=2*S<rsub|T>-<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>><rsup|2>
-  </equation*>
+  <\equation>
+    T<around*|(|n|)>=2*S<rsub|T>-<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>.<rsup|2>
+  </equation>
 
   <section|Division-Free Counting>
 
   Since we calculate <math|S<rsub|1>> using the traditional method and since
   the computation will consist entirely of <math|S<rsub|1>> when
   <math|n\<less\>4*C<rsub|1><rsup|6>>, it is beneficial to have a faster
-  method of performing this step. \ Denote by
+  method of performing this step, albeit by a constant factor. Denote by
   <math|l=<around*|\<lceil\>|log<rsub|2><around*|(|n|)>|\<rceil\>>> the
-  number of bits needed to represent <math|n>. \ We can avoid an <math|l>-bit
-  division in each iteration by using a Bresenham-style calculation (see
-  [<reference|bib:Bres77>]) and working backwards and computing an estimate
-  of the result of the division based on the previous iteration. \ Define
-  <math|\<beta\><around*|(|x|)>=<around*|\<lfloor\>|Y<around*|(|x|)>|\<rfloor\>>>
-  and the finite difference <math|\<delta\><rsub|1><rsub|><around*|(|x|)>
-  =\<beta\><around*|(|x|)>-\<beta\><around*|(|x+1|)>>. Because the
-  second-order difference <math|\<delta\><rsub|2><around*|(|x|)>=\<delta\><rsub|1><around*|(|x|)>-\<delta\><rsub|1><around*|(|x+1|)>\<in\><around*|{|-1,0,1|}>>
-  for <math|x\<gtr\><sqrt|2n|3>>, we can get to within unity of the correct
-  value of <math|\<beta\><around*|(|x|)>> by using
-  <math|\<beta\><around*|(|x+1|)>+\<delta\><rsub|1><rsub|><around*|(|x+1|)>>.
-  \ To know if we are right we need to keep track of the error as well. \ So
-  defining the error <math|\<varepsilon\><around*|(|x|)>=n-x*\<beta\><around*|(|x|)>=n-x*<around*|\<lfloor\>|n/x|\<rfloor\>>=n
+  number of bits needed to represent <math|n>. We can avoid an <math|l>-bit
+  division in most iterations by using a Bresenham-style calculation (see
+  [<reference|bib:Bres77>]) and working backwards while computing an estimate
+  of the result of the division based on the previous iteration.
+
+  Define <math|\<beta\><around*|(|x|)>=<around*|\<lfloor\>|Y<around*|(|x|)>|\<rfloor\>>>,
+  the finite difference <math|\<delta\><rsub|1><rsub|><around*|(|x|)>
+  =\<beta\><around*|(|x|)>-\<beta\><around*|(|x+1|)>>, and the second-order
+  finite difference <math|\<delta\><rsub|2><around*|(|x|)>=\<delta\><rsub|1><around*|(|x|)>-\<delta\><rsub|1><around*|(|x+1|)>>.
+  To check whether the value is correct we can also keep track of the error.
+  So defining the error <math|\<varepsilon\><around*|(|x|)>=n-x*\<beta\><around*|(|x|)>=n-x*<around*|\<lfloor\>|n/x|\<rfloor\>>=n
   mod x> gives
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|\<varepsilon\><around*|(|x|)>-\<varepsilon\><around*|(|x+1|)>>|<cell|=>|<cell|<around*|(|x+1|)>*\<beta\><around*|(|x+1|)>-x*\<beta\><around*|(|x|)>>>|<row|<cell|>|<cell|=>|<cell|<around*|(|x+1|)>*\<beta\><around*|(|x+1|)>-x*<around*|(|\<beta\><around*|(|x+1|)>+\<delta\><rsub|1><around*|(|x+1|)>-\<delta\><rsub|2><around*|(|x|)>|)>>>|<row|<cell|>|<cell|=>|<cell|\<beta\><around*|(|x+1|)>-x*\<delta\><around*|(|x+1|)>-x*\<delta\><rsub|2><around*|(|x|)>>>>>
+    <tformat|<table|<row|<cell|\<varepsilon\><around*|(|x|)>-\<varepsilon\><around*|(|x+1|)>>|<cell|=>|<cell|<around*|(|x+a|)>\<beta\><around*|(|x+1|)>-x*\<beta\><around*|(|x|)>>>|<row|<cell|>|<cell|=>|<cell|<around*|(|x+1|)>*\<beta\><around*|(|x+1|)>-x*<around*|(|\<beta\><around*|(|x+1|)>+\<delta\><rsub|1><around*|(|x+1|)>+\<delta\><rsub|2><around*|(|x|)>|)>>>|<row|<cell|>|<cell|=>|<cell|\<beta\><around*|(|x+1|)>-x*\<delta\><rsub|1><around*|(|x+1|)>-x*\<delta\><rsub|2><around*|(|x|)>>>>>
   </eqnarray*>
 
-  Introducing <math|\<gamma\><around*|(|x|)>=<around*|(|x-1|)>*\<delta\><around*|(|x|)>>
+  Introducing the intermediate quantity <math|\<gamma\><around*|(|x|)>=\<beta\><around*|(|x|)>-<around*|(|x-1|)>*\<delta\><rsub|1><around*|(|x|)>>
   and <math|<wide|\<varepsilon\>|^><around*|(|x|)>> as the estimate of the
   error assuming <math|\<delta\><rsub|2><around*|(|x|)>>=0 then
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|<wide|\<varepsilon\>|^><around*|(|x|)>>|<cell|=>|<cell|\<varepsilon\><around*|(|x+1|)>+\<beta\><around*|(|x+1|)>-\<gamma\><around*|(|x+1|)>>>|<row|<cell|\<delta\><rsub|2><around*|(|x|)>>|<cell|=>|<cell|<choice|<tformat|<cwith|1|-1|1|1|cell-halign|r>|<table|<row|<cell|1>|<cell|if
-    <wide|\<varepsilon\>|^><around*|(|x|)>\<geq\>x;>>|<row|<cell|-1>|<cell|if
-    <wide|\<varepsilon\>|^><around*|(|x|)>\<less\>0;>>|<row|<cell|0>|<cell|otherwise;>>>>>>>|<row|<cell|\<delta\><rsub|><around*|(|x|)>>|<cell|=>|<cell|\<delta\><around*|(|x+1|)>+\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<varepsilon\><around*|(|x|)>>|<cell|=>|<cell|<wide|\<varepsilon\>|^><around*|(|x|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<gamma\><around*|(|x|)>>|<cell|=>|<cell|\<gamma\><around*|(|x+1|)>-\<delta\><around*|(|x|)>+x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<beta\><around*|(|x|)>>|<cell|=>|<cell|\<beta\><around*|(|x+1|)>+\<delta\><around*|(|x|)>>>>>
+    <tformat|<table|<row|<cell|<wide|\<varepsilon\>|^><around*|(|x|)>>|<cell|=>|<cell|\<varepsilon\><around*|(|x+1|)>+\<gamma\><around*|(|x+1|)>>>|<row|<cell|\<delta\><rsub|2><around*|(|x|)>>|<cell|=>|<cell|<around*|\<lfloor\>|<frac|<wide|\<varepsilon\>|^><around*|(|x|)>|x>|\<rfloor\>>>>|<row|<cell|\<delta\><rsub|1><around*|(|x|)>>|<cell|=>|<cell|\<delta\><rsub|1><around*|(|x+1|)>+\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<varepsilon\><around*|(|x|)>>|<cell|=>|<cell|<wide|\<varepsilon\>|^><around*|(|x|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<gamma\><around*|(|x|)>>|<cell|=>|<cell|\<gamma\><around*|(|x+1|)>+2*\<delta\><rsub|1><around*|(|x|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<beta\><around*|(|x|)>>|<cell|=>|<cell|\<beta\><around*|(|x+1|)>+\<delta\><rsub|1><around*|(|x|)>.>>>>
   </eqnarray*>
 
-  and thus <math|\<beta\><around*|(|x|)>,\<gamma\><around*|(|x|)>,\<delta\><around*|(|x|)>,\<varepsilon\><around*|(|x|)>>
-  can be computed from <math|\<beta\><around*|(|x+1|)>,\<gamma\><around*|(|x+1|)>,\<delta\><around*|(|x+1|)>,\<varepsilon\><around*|(|x+1|)>>
-  using only addition and subtraction of <math|<frac|2|3>*l>-bit quantities.
-  Note that if <math|<wide|\<varepsilon\>|^><around*|(|x|)>\<geq\>2*x>, it
-  means that <math|x\<less\><sqrt|2*n|3>.>
+  Over the range <math|x<rsub|1>\<leq\>x\<leq\>x<rsub|2>> these integer
+  quantites are bounded in size by <math|x,\<varepsilon\><around*|(|x|)>,<around*|\||<wide|\<varepsilon\>|^><around*|(|x|)>|\|>\<leq\>x<rsub|2>,<around*|\||\<gamma\><around*|(|x|)>|\|>\<leq\>max<around*|(|2*n/<around*|(|x<rsub|1><rsup|2>+x<rsub|1>|)>,x<rsub|2>|)>>,
+  <math|\<beta\><around*|(|x|)>\<leq\>n/x<rsub|1>>,
+  <math|\<delta\><rsub|1><around*|(|x|)>\<leq\>n/x<rsub|1><rsup|2>>+1,<math|<around*|\||\<delta\><rsub|2><around*|(|x|)>|\|>\<leq\>2*n/x<rsub|1><rsup|3>+2>.
 
-  <section|Algorithm>
+  For <math|<sqrt|2n|3>\<less\>x\<leq\><sqrt|n>>,
+  <math|\<delta\><rsub|2><around*|(|x|)>\<in\><around*|{|-1,0,1,2|}>> and so
 
-  In this section we present a formalization of the steps of the algorithm.
-  \ A literal implementation based on this description will offer many
-  opportunities for optimization. \ The short-hand notation
-  <math|F<around*|(|x|)>:expression> signifies a functional value that
-  remains unevaluated until referenced. \ Formulas from previous sections
-  have been slightly modified so that the entire algorithm can be implemented
-  using only unsigned multi-precision integer arithmetic. \ The operations
-  required are addition, subtraction, multiplication, floor division, floor
-  square root, ceiling square root, and ceiling cube root. \ If any of the
-  root operations are not available they may be implemented using Newton's
+  <\equation*>
+    <around*|\<lfloor\>|<frac|<wide|\<varepsilon\>|^><around*|(|x|)>|x>|\<rfloor\>>=<choice|<tformat|<cwith|1|-1|1|1|cell-halign|r>|<table|<row|<cell|2>|<cell|if
+    <wide|\<varepsilon\>|^><around*|(|x|)>\<geq\>2*x;>>|<row|<cell|1>|<cell|if
+    x\<leq\><wide|\<varepsilon\>|^><around*|(|x|)>\<less\>2*x;>>|<row|<cell|-1>|<cell|if
+    <wide|\<varepsilon\>|^><around*|(|x|)>\<less\>0;>>|<row|<cell|0>|<cell|otherwise;>>>>>
+  </equation*>
+
+  and thus <math|\<beta\><around*|(|x|)>,\<gamma\><around*|(|x|)>,\<delta\><rsub|1><around*|(|x|)>,\<varepsilon\><around*|(|x|)>>
+  can be computed from <math|\<beta\><around*|(|x+1|)>,\<gamma\><around*|(|x+1|)>,\<delta\><rsub|1><around*|(|x+1|)>,\<varepsilon\><around*|(|x+1|)>>
+  using only addition and subtraction of <math|<frac|1|2>*l>-bit quantities
+  except <math|\<beta\><around*|(|x|)>> which is <math|<frac|2|3>*l> bits.
+  Note that <math|<wide|\<varepsilon\>|^><around*|(|x|)>\<geq\>2*x> is very
+  rare over this range and if <math|<wide|\<varepsilon\>|^><around*|(|x|)>\<geq\>3*x>,
+  it means that <math|x\<less\><sqrt|2n|3>.> For
+  <math|n<rsup|1/6>\<leq\>x\<leq\><sqrt|2n|3>> we can add the modest division
+  <math|<around*|\<lfloor\>|<wide|\<varepsilon\>|^><around*|(|x|)>/x|\<rfloor\>>>
+  between two <math|<frac|1|3>*l>-bit values, <math|\<gamma\><around*|(|x|)>>
+  and <math|\<delta\><rsub|1><around*|(|x|)>> grow to <math|<frac|2|3>*l>
+  bits and <math|\<beta\><around*|(|x|)>> grows to <math|<frac|5|6>*l> bits.
+  \ For <math|x\<less\>n<rsup|1/6>> we can sum using ordinary division.
+
+  <section|Algorithms>
+
+  In this section we present a series of algorithms based on the previous
+  sections. \ The short-hand notation <math|F<around*|(|x|)>:expression>
+  signifies a functional value that remains unevaluated until referenced.
+
+  \;
+
+  The first algorithm is a straightforward version of the basic successive
+  approximation method. A literal implementation based on this description
+  will offer many opportunities for optimization. Various formulas have been
+  slightly modified so that the entire algorithm can be implemented using
+  only unsigned multi-precision integer arithmetic. The operations required
+  are addition, subtraction, multiplication, floor division, floor square
+  root, ceiling square root, and ceiling cube root. If any of the root
+  operations are not available, they may be implemented using Newton's
   method.
 
   <\algorithm>
@@ -770,15 +798,18 @@
     <with|font-series|bold|end> <with|font-series|bold|function>
   </algorithm>
 
+  <label|algorithm1>
+
   The next algorithm gives a flavor for the optimizations that are available.
-  \ It computes the manual summation of a small region using a handful of
-  additions, one square root and one division per lattice column. \ A similar
-  technique can be used to compute <math|V<rsub|floor>> for the adjacent
-  values <math|u<rsub|4>> and <math|u<rsub|5>>. \ Making this portion of the
-  computation faster favors larger values of <math|C<rsub|2>>, the cutoff for
-  small regions. An analogy is that this step is faster for small regions in
-  the same way that an insertion sort is faster than a quicksort for small
-  arrays and the break even point can be determined experimentally.
+  \ It computes the manual summation of a small region over <math|u> or
+  <math|v> using a handful of additions, one square root and one division per
+  lattice column. A similar technique can be used to compute
+  <math|V<rsub|floor>> for the adjacent values <math|u<rsub|4>> and
+  <math|u<rsub|5>>. Making this portion of the computation faster favors
+  larger values of <math|C<rsub|2>>, the cutoff for small regions. An analogy
+  is that this step is faster for small regions in the same way that an
+  insertion sort is faster than a quicksort for small arrays and the break
+  even point can be determined experimentally.
 
   <\algorithm>
     <\math>
@@ -813,20 +844,120 @@
     <with|font-series|bold|end> <with|font-series|bold|function>
   </algorithm>
 
+  The next algorithm formalizes the steps of the division-free counting
+  method which can be used for the summation <math|S<rsub|1>>. \ Whether this
+  is actually faster depends on many things but for example if
+  <math|n\<less\>2<rsup|94>>, then <math|\<beta\>,\<delta\>,<around*|\||\<gamma\>|\|>,<around*|\||\<varepsilon\>|\|>\<less\>2<rsup|63>>
+  for <math|2<rsup|32>\<less\>x\<less\>2<rsup|47>> and if signed 64-bit
+  addition is a single-cycle operation, then a computation of <math|\<beta\>>
+  using this method is about ten cycles vs. hundreds of cycles for a single
+  multi-precision division.
+
+  <\algorithm>
+    <with|font-series|bold|function> <math|S<rsub|1><around*|(|x<rsub|1>,x<rsub|2>|)>>
+
+    <\indent>
+      <math|s\<leftarrow\>0,x\<leftarrow\>x<rsub|2>,\<beta\>\<leftarrow\><around*|\<lfloor\>|n/<around*|(|x<rsub|>+1|)>|\<rfloor\>>,\<varepsilon\>\<leftarrow\>n-<with|font-series|bold|<around*|(|x<rsub|>+1|)>*>\<beta\>,\<delta\>\<leftarrow\><around*|\<lfloor\>|n/x<rsub|>|\<rfloor\>>-\<beta\>,\<gamma\>\<leftarrow\>\<beta\>-x<rsub|>*\<delta\>>
+
+      <with|font-series|bold|while> <math|x\<geq\>x<rsub|1>>
+      <with|font-series|bold|do>
+
+      <\indent>
+        <\math>
+          \<varepsilon\>\<leftarrow\>\<varepsilon\>+\<gamma\>
+        </math>
+
+        <with|font-series|bold|if> <math|\<varepsilon\>\<geq\>x>
+        <with|font-series|bold|then>
+
+        <\indent>
+          <math|\<delta\>\<leftarrow\>\<delta\>+1,\<gamma\>\<leftarrow\>\<gamma\>-x,\<varepsilon\>\<leftarrow\>\<varepsilon\>-x>
+
+          <with|font-series|bold|if> <math|\<varepsilon\>\<geq\>x>
+          <with|font-series|bold|then>
+
+          <\indent>
+            <math|\<delta\>\<leftarrow\>\<delta\>+1,\<gamma\>\<leftarrow\>\<gamma\>-x,\<varepsilon\>\<leftarrow\>\<varepsilon\>-x>
+          </indent>
+
+          <\indent>
+            <with|font-series|bold|if> <math|\<varepsilon\>\<geq\>x>
+            <with|font-series|bold|then> <with|font-series|bold|exit>
+            <with|font-series|bold|while> <with|font-series|bold|end>
+            <with|font-series|bold|if>
+          </indent>
+
+          <with|font-series|bold|end> <with|font-series|bold|if>
+        </indent>
+
+        <with|font-series|bold|else> <with|font-series|bold|if>
+        <math|\<varepsilon\>\<less\>0> <with|font-series|bold|then>
+
+        <\indent>
+          <\math>
+            \<delta\>\<leftarrow\>\<delta\>-1,\<gamma\>\<leftarrow\>\<gamma\>+x,\<varepsilon\>\<leftarrow\>\<varepsilon\>+x
+          </math>
+        </indent>
+
+        <with|font-series|bold|end> <with|font-series|bold|if>
+
+        <math|\<gamma\>\<leftarrow\>\<gamma\>+2*\<delta\>,\<beta\>\<leftarrow\>\<beta\>+\<delta\>,s\<leftarrow\>s+\<beta\>,x\<leftarrow\>x-1>
+      </indent>
+
+      <with|font-series|bold|end> <with|font-series|bold|while>
+
+      <\math>
+        \<varepsilon\>\<leftarrow\>n-<with|font-series|bold|<around*|(|x<rsub|>+1|)>*>\<beta\>,\<delta\>\<leftarrow\><around*|\<lfloor\>|n/x<rsub|>|\<rfloor\>>-\<beta\>,\<gamma\>\<leftarrow\>\<beta\>-x<rsub|>*\<delta\>
+      </math>
+
+      <with|font-series|bold|while> <math|x\<geq\>x<rsub|1>>
+      <with|font-series|bold|do>
+
+      <\indent>
+        <\math>
+          \<varepsilon\>\<leftarrow\>\<varepsilon\>+\<gamma\>,\<delta\><rsub|2>\<leftarrow\><around*|\<lfloor\>|\<varepsilon\>/x|\<rfloor\>>,\<delta\>\<leftarrow\>\<delta\>+\<delta\><rsub|2>,\<varepsilon\>\<leftarrow\>\<varepsilon\>-x*\<delta\><rsub|2>
+        </math>
+
+        <math|\<gamma\>\<leftarrow\>\<gamma\>+2*\<delta\>-x*\<delta\><rsub|2>,\<beta\>\<leftarrow\>\<beta\>+\<delta\>,s\<leftarrow\>s+\<beta\>,x\<leftarrow\>x-1>
+      </indent>
+
+      <with|font-series|bold|end> <with|font-series|bold|while>
+
+      <with|font-series|bold|while> <math|x\<geq\>x<rsub|1>>
+      <with|font-series|bold|do>
+
+      <\indent>
+        <math|s\<leftarrow\>s+<around*|\<lfloor\>|n/x|\<rfloor\>>,x\<leftarrow\>x-1>
+      </indent>
+
+      <with|font-series|bold|end> <with|font-series|bold|while>
+
+      <with|font-series|bold|return> s
+    </indent>
+
+    <with|font-series|bold|end> <with|font-series|bold|function>
+  </algorithm>
+
   <section|Time and Space Complexity>
 
   Now we present an analysis of the runtime behavior of algorithm.
 
+  <\theorem>
+    The time complexity of algorithm [<reference|algorithm1>] is
+    <math|O<around*|(|n<rsup|1/3>|)>> and the space complexity is
+    <math|O<around*|(|log n|)>>.
+  </theorem>
+
   Before we start, we realize that because
   <math|x<rsub|min>=O<around*|(|n<rsup|1/3>|)>> and we handle the values of
   <math|1\<leq\>x\<less\>x<rsub|min>> manually, the algorithm is at best
-  <math|O<around*|(|n<rsup|1/3>|)>>. \ In this section we desire to show that
+  <math|O<around*|(|n<rsup|1/3>|)>>. In this section we desire to show that
   the rest of the computation is at worst <math|O<around*|(|n<rsup|1/3>|)>>
   so that this lower bound holds for the entire computation.
 
-  Our first task is to count and size all the top-level regions. \ We process
+  Our first task is to count and size all the top-level regions. We process
   one top level region for each integral slope <math|-a> from <math|-1 > to
-  the slope at <math|x<rsub|min>>. \ The value for <math|a> at each value of
+  the slope at <math|x<rsub|min>>. The value for <math|a> at each value of
   <math|x> is given by:
 
   <\equation>
@@ -890,10 +1021,10 @@
 
   Now let us analyze the exponent in <math|N<around*|(|A|)>>. In order to
   determine the number of regions encountered in the course of processing a
-  region of size <math|A>, we need to analyze the recursion depth. \ The
+  region of size <math|A>, we need to analyze the recursion depth. The
   recursion will terminate when <math|w> or <math|h> is unity because by our
   conditions it is then impossible for the region to contain any more lattice
-  points. \ Our next task is to measure the size of such a region and so we
+  points. Our next task is to measure the size of such a region and so we
   need to know how many <math|x> lattice columns that terminal region
   represents.
 
@@ -911,19 +1042,19 @@
   denominators of the slopes of the two lines that define it.
 
   Each time we recurse into two new regions we add a new extended Farey
-  fraction that is the mediant of the two slopes for the outer region. \ As a
+  fraction that is the mediant of the two slopes for the outer region. As a
   result, we perform a partial traversal of a Stern-Brocot tree, doubling the
-  number of nodes at each level. \ However, for our current purposes we can
+  number of nodes at each level. However, for our current purposes we can
   ignore the numerators because we are interested in the sum of denominators.
   \ Because regions cannot overlap, this means that the sum of the
   denominators at the deepest level of the tree cannot exceed the size of the
   first region and that only denominators affect the recursion depth.
 
   Next we need to derive a formula for the sum of the denominators of a
-  partial Stern-Brocot tree of depth <math|D>. \ For example, if the first
-  node <math|<around*|(|a<rsub|1>/b<rsub|1>,a<rsub|2>/b<rsub|2>|)>> is
+  partial Stern-Brocot tree of depth <math|D>. For example, if the first node
+  <math|<around*|(|a<rsub|1>/b<rsub|1>,a<rsub|2>/b<rsub|2>|)>> is
   <math|<around*|(|2/1,1/1|)>>, the next two nodes are
-  <math|<around*|(|2/1,3/2|)>> and <math|<around*|(|3/2,1/1|)>>. \ Continuing
+  <math|<around*|(|2/1,3/2|)>> and <math|<around*|(|3/2,1/1|)>>. Continuing
   and ignoring numerators we have the following
   <math|<around*|(|b<rsub|1>,b<rsub|2>|)>> tree:
 
@@ -931,9 +1062,9 @@
 
   At each new level we have twice as many nodes and half of the numbers are
   duplicated from the previous level and the other half of the numbers are
-  the sum of numbers of their parent node. \ Since each parent's sum
+  the sum of numbers of their parent node. Since each parent's sum
   contributes to exactly two numbers in the children, the sum of the
-  denominators at each level is triple the sum of the previous level. \ So
+  denominators at each level is triple the sum of the previous level. So
   staring with <math|1+1=2> leads to the sequence <math|2,6,18,54,\<ldots\>>,
   and denoting by <math|\<Omega\>> the set of terminal regions, the sum at
   depth <math|D> is therefore
@@ -977,7 +1108,17 @@
   reason for the current assymetry is to capitalize on the simpler <math|x y>
   coordinate system where possible.
 
-  \;
+  The two major sections of the algorithm, <math|S<rsub|1>> and
+  <math|S<rsub|4>>, are easily parallelizable. The section <math|S<rsub|1>>
+  can divide summation batches to different processors. Note however that if
+  the division-free algorithm is used that the first <math|<sqrt|2*n|3>>
+  values should use smaller batches than the rest of the range. The section
+  <math|S<rsub|4>> can be revised to use a work queue of regions instead of
+  recursion. During region processing, one region can be enqueued and the
+  other processed iteratively. Available processors can dequeue regions that
+  need to be processed.
+
+  <section|Related Work>
 
   In [<reference|bib:Gal00>], Galway presents an improved sieving algorithm
   that also features region decomposition based on extended Farey fractions
@@ -1022,15 +1163,17 @@
 <\references>
   <\collection>
     <associate|abc|<tuple|6|?>>
+    <associate|algorithm1|<tuple|1|11>>
     <associate|auto-1|<tuple|1|1>>
+    <associate|auto-10|<tuple|9|14>>
     <associate|auto-2|<tuple|2|1>>
     <associate|auto-3|<tuple|3|2>>
     <associate|auto-4|<tuple|4|7>>
     <associate|auto-5|<tuple|5|9>>
     <associate|auto-6|<tuple|6|10>>
     <associate|auto-7|<tuple|7|12>>
-    <associate|auto-8|<tuple|8|?>>
-    <associate|auto-9|<tuple|8|?>>
+    <associate|auto-8|<tuple|8|14>>
+    <associate|auto-9|<tuple|9|14>>
     <associate|bib-|<tuple||?>>
     <associate|bib-A|<tuple|A|?>>
     <associate|bib-B|<tuple|B|?>>
@@ -1038,44 +1181,44 @@
     <associate|bib-Bre|<tuple|Bre|?>>
     <associate|bib-Bres|<tuple|Bres|?>>
     <associate|bib-Bres7|<tuple|Bres7|?>>
-    <associate|bib-Bres77|<tuple|Bres77|?>>
+    <associate|bib-Bres77|<tuple|Bres77|14>>
     <associate|bib-G|<tuple|G|?>>
     <associate|bib-Ga|<tuple|Ga|?>>
     <associate|bib-Gal|<tuple|Gal|?>>
     <associate|bib-Gal0|<tuple|Gal0|?>>
-    <associate|bib-Gal00|<tuple|Gal00|?>>
+    <associate|bib-Gal00|<tuple|Gal00|14>>
     <associate|bib-S|<tuple|S|?>>
     <associate|bib-Si|<tuple|Si|?>>
     <associate|bib-Sil|<tuple|Sil|?>>
     <associate|bib-Sil1|<tuple|Sil1|?>>
-    <associate|bib-Sil12|<tuple|Sil12|?>>
+    <associate|bib-Sil12|<tuple|Sil12|14>>
     <associate|bib-T|<tuple|T|?>>
     <associate|bib-Ta|<tuple|Ta|?>>
     <associate|bib-Tao|<tuple|Tao|?>>
     <associate|bib-Tao1|<tuple|Tao1|?>>
-    <associate|bib-Tao11|<tuple|Tao11|?>>
+    <associate|bib-Tao11|<tuple|Tao11|14>>
     <associate|bib-V|<tuple|V|?>>
     <associate|bib-Vo|<tuple|Vo|?>>
     <associate|bib-Vor|<tuple|Vor|?>>
     <associate|bib-Vor0|<tuple|Vor0|?>>
-    <associate|bib-Vor03|<tuple|Vor03|?>>
+    <associate|bib-Vor03|<tuple|Vor03|14>>
     <associate|bib-[|<tuple|[|?>>
-    <associate|bib:Bres77|<tuple|Bres77|?>>
-    <associate|bib:Gal00|<tuple|Gal00|?>>
-    <associate|bib:Sil12|<tuple|Sil12|?>>
-    <associate|bib:Tao11|<tuple|Tao11|?>>
-    <associate|bib:Vor03|<tuple|Vor03|?>>
-    <associate|eq:det|<tuple|10|3>>
+    <associate|bib:Bres77|<tuple|Bres77|14>>
+    <associate|bib:Gal00|<tuple|Gal00|14>>
+    <associate|bib:Sil12|<tuple|Sil12|14>>
+    <associate|bib:Tao11|<tuple|Tao11|14>>
+    <associate|bib:Vor03|<tuple|Vor03|14>>
+    <associate|eq:det|<tuple|9|3>>
     <associate|eq:gcd1|<tuple|10|?>>
-    <associate|eq:ps1|<tuple|12|3>>
-    <associate|eq:ps2|<tuple|13|3>>
-    <associate|eq:uv2xy1|<tuple|21|3>>
-    <associate|eq:uv2xy2|<tuple|22|3>>
-    <associate|eq:uv2xy3|<tuple|23|4>>
-    <associate|eq:uv2xy4|<tuple|24|4>>
-    <associate|eq:xy0|<tuple|11|3>>
-    <associate|eq:xy2uv1|<tuple|25|4>>
-    <associate|eq:xy2uv2|<tuple|26|4>>
+    <associate|eq:ps1|<tuple|11|3>>
+    <associate|eq:ps2|<tuple|12|3>>
+    <associate|eq:uv2xy1|<tuple|20|4>>
+    <associate|eq:uv2xy2|<tuple|21|4>>
+    <associate|eq:uv2xy3|<tuple|22|4>>
+    <associate|eq:uv2xy4|<tuple|23|4>>
+    <associate|eq:xy0|<tuple|10|3>>
+    <associate|eq:xy2uv1|<tuple|24|4>>
+    <associate|eq:xy2uv2|<tuple|25|4>>
     <associate|uv2xy1|<tuple|22|?>>
     <associate|uv2xy2|<tuple|23|?>>
     <associate|uv2xy3|<tuple|24|?>>
@@ -1099,20 +1242,32 @@
       <no-break><pageref|auto-3><vspace|0.5fn>
 
       <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|4<space|2spc>Top
-      Level Region Processing> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      Level Processing> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-4><vspace|0.5fn>
 
-      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|5<space|2spc>Algorithm>
-      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|5<space|2spc>Division-Free
+      Counting> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-5><vspace|0.5fn>
 
-      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|6<space|2spc>Time
-      and Space Complexity> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|6<space|2spc>Algorithms>
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-6><vspace|0.5fn>
 
-      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|7<space|2spc>Implementation>
-      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|7<space|2spc>Time
+      and Space Complexity> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-7><vspace|0.5fn>
+
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|8<space|2spc>Remarks>
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-8><vspace|0.5fn>
+
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|9<space|2spc>Related
+      Work> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-9><vspace|0.5fn>
+
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|Bibliography>
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-10><vspace|0.5fn>
     </associate>
   </collection>
 </auxiliary>
