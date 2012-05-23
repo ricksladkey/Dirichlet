@@ -191,27 +191,66 @@ namespace Sandbox
         static void ParityTest()
         {
 #if true
+            var threads = 8;
+            var n = (BigInteger)1 << 70;
+            var algorithm1 = new PrimeCounting(0);
+            var algorithm2 = new DivisionFreeDivisorSummatoryFunction(threads);
+            var xmax = IntegerMath.FloorRoot(n, 2);
+            var timer = new Stopwatch();
             for (int i = 1; i <= 1; i++)
             {
-                var n = (BigInteger)1 << 50;
-                var algorithm1 = new PrimeCounting(0);
-                var algorithm2 = new DivisionFreeDivisorSummatoryFunction();
-                var xmax = IntegerMath.FloorRoot(n, 2);
-                var timer = new Stopwatch();
                 timer.Restart();
-                ulong sqrt = 0;
-                var sum1 = algorithm1.TauSumInnerLarge((UInt128)n, out sqrt);
+                var sum1 = 0;
+#if false
+                {
+                    ulong sqrt = 0;
+                    sum1 = algorithm1.TauSumInnerLarge((UInt128)n, out sqrt);
+                }
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
+                var sum2 = (BigInteger)0;
+#if true
                 timer.Restart();
-                var sum2 = algorithm2.Evaluate(n);
+                sum2 = algorithm2.Evaluate(n);
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-                timer.Restart();
+#endif
                 var sum3 = (UInt128)0;
-                var nRep = (UInt128)n;
-                for (var x = (ulong)1; x <= sqrt; x++)
-                    sum3 += nRep / x;
+#if false
+                timer.Restart();
+                {
+                    var nRep = (UInt128)n;
+                    for (var x = (ulong)1; x <= xmax; x++)
+                        sum3 += nRep / x;
+                }
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-                Console.WriteLine("n = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}", n, sum1, sum2, sum3);
+#endif
+                var sum4 = (BigInteger)0;
+#if false
+                timer.Restart();
+                {
+                    for (var x = (ulong)1; x <= xmax; x++)
+                        sum4 += n / x;
+                }
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
+                var sum5 = (MutableInteger)0;
+#if false
+                timer.Restart();
+                {
+                    var store = new MutableIntegerStore(4);
+                    var reg1 = store.Allocate();
+                    var reg2 = store.Allocate();
+                    var reg3 = store.Allocate();
+                    var nRep = store.Allocate().Set(n);
+                    for (var x = (ulong)1; x <= xmax; x++)
+                    {
+                        reg1.Set(nRep).ModuloWithQuotient(reg2.Set(x), reg3);
+                        sum5.Add(reg3);
+                    }
+                }
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
+                Console.WriteLine("n = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}, sum4 = {4}, sum5 = {5}", n, sum1, sum2, sum3, sum4, sum5);
             }
 #endif
 
