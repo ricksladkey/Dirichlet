@@ -682,6 +682,16 @@ namespace Decompose.Numerics
             return new MutableInteger(a.last + b.last + 1).SetRemainder(a, b);
         }
 
+        public static MutableInteger operator <<(MutableInteger a, int b)
+        {
+            return a.Copy().LeftShift(b);
+        }
+
+        public static MutableInteger operator >>(MutableInteger a, int b)
+        {
+            return a.Copy().RightShift(b);
+        }
+
         public override int GetHashCode()
         {
             if (IsZero)

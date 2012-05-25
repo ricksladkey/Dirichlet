@@ -15,17 +15,19 @@ namespace Decompose.Numerics
             public long Max;
         }
 
-        private const ulong smax = (ulong)1 << 62;
+        private const ulong tmax = (ulong)1 << 62;
         private const long maximumBatchSize = (long)1 << 28;
 
         private int threads;
+        private bool simple;
         private BigInteger n;
         private long root6;
         private UInt128 sum;
 
-        public DivisionFreeDivisorSummatoryFunction(int threads)
+        public DivisionFreeDivisorSummatoryFunction(int threads, bool simple)
         {
             this.threads = threads;
+            this.simple = simple;
         }
 
         public BigInteger Evaluate(BigInteger n)
@@ -38,14 +40,17 @@ namespace Decompose.Numerics
                 Evaluate(1, xmax);
             else
                 EvaluateParallel(1, xmax);
-            return sum;
+            return 2 * (BigInteger)sum - (BigInteger)xmax * xmax;
         }
 
         private void Evaluate(long x1, long x2)
         {
             var x = x2;
-            x = S1(x1, x);
-            //x = S2(x1, x);
+            if (!simple)
+            {
+                x = S1(x1, x);
+                //x = S2(x1, x);
+            }
             x = S3(x1, x);
         }
 
@@ -58,11 +63,11 @@ namespace Decompose.Numerics
             for (var consumer = 0; consumer < consumers; consumer++)
             {
                 var thread = consumer;
-                tasks[consumer] = Task.Factory.StartNew(() => ConsumeItems(thread, queue, n));
+                tasks[consumer] = Task.Factory.StartNew(() => ConsumeItems(thread, queue));
             }
 
             // Produce work items.
-            ProduceItems(queue, 1, xmax);
+            ProduceItems(queue, xmin, xmax);
 
             // Wait for completion.
             queue.CompleteAdding();
@@ -71,12 +76,12 @@ namespace Decompose.Numerics
 
         private void ProduceItems(BlockingCollection<WorkItem> queue, long imin, long imax)
         {
-            var batchSize = Math.Min(maximumBatchSize, (imax - imin + threads - 1) / threads);
-            for (var i = imin; i < imax; i += batchSize)
+            var batchSize = Math.Min(maximumBatchSize, (imax - imin + 1 + threads - 1) / threads);
+            for (var i = imin; i <= imax; i += batchSize)
                 queue.Add(new WorkItem { Min = i, Max = Math.Min(i + batchSize - 1, imax) });
         }
 
-        private void ConsumeItems(int thread, BlockingCollection<WorkItem> queue, BigInteger n)
+        private void ConsumeItems(int thread, BlockingCollection<WorkItem> queue)
         {
             var item = default(WorkItem);
             while (queue.TryTake(out item, Timeout.Infinite))
@@ -86,7 +91,7 @@ namespace Decompose.Numerics
         private long S1(long x1, long x2)
         {
             var s = (UInt128)0;
-            var s2 = (ulong)0;
+            var t = (ulong)0;
             var x = x2;
             var beta = (ulong)(n / (x + 1));
             var eps = (long)(n % (x + 1));
@@ -123,15 +128,15 @@ namespace Decompose.Numerics
                 Debug.Assert(delta == beta - n / (x + 1));
                 Debug.Assert(gamma == beta - (BigInteger)(x - 1) * delta);
 
-                s2 += beta;
-                if (s2 > smax)
+                t += beta;
+                if (t > tmax)
                 {
-                    s += s2;
-                    s2 = 0;
+                    s += t;
+                    t = 0;
                 }
                 --x;
             }
-            s += s2;
+            s += t;
             AddToSum(ref s);
             return x;
         }
@@ -139,7 +144,7 @@ namespace Decompose.Numerics
         private long S2(long x1, long x2)
         {
             var s = (UInt128)0;
-            var s2 = (ulong)0;
+            var t = (ulong)0;
             var x = x2;
             var beta = (ulong)(n / (x + 1));
             var eps = (long)(n % (x + 1));
@@ -165,14 +170,14 @@ namespace Decompose.Numerics
                 Debug.Assert(delta == (alpha + beta) - n / (x + 1));
                 Debug.Assert(gamma == (BigInteger)(alpha + beta) - ((x - 1) * delta));
 
-                s2 += beta;
-                if (s2 > smax)
+                t += beta;
+                if (t > tmax)
                 {
-                    s += s2;
-                    s2 = 0;
+                    s += t;
+                    t = 0;
                 }
 
-                if (beta > smax)
+                if (beta > tmax)
                 {
                     s += count * alpha;
                     alpha += beta;
@@ -182,7 +187,7 @@ namespace Decompose.Numerics
 
                 --x;
             }
-            s += s2 + count * alpha;
+            s += t + count * alpha;
             AddToSum(ref s);
             return x;
         }

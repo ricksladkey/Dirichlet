@@ -31,7 +31,7 @@
   their product is less than or equal to <math|n>:
 
   <\equation>
-    T<around*|(|n|)>=<big|sum><rsub|x,y:xy\<leqslant\>n>1
+    T<around*|(|n|)>=<big|sum><rsub|x,y:x*y\<leq\>n>1
   </equation>
 
   \;
@@ -74,16 +74,17 @@
 
   <section|Preliminaries>
 
-  It will be convenient to parameterize sum in <math|T<around*|(|n|)>> as:
+  It will be convenient to parameterize the sum in <math|T<around*|(|n|)>>
+  as:
 
   <\equation>
-    S<around*|(|i|)>=<big|sum><rsup|i><rsub|x=1><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>
+    S<around*|(|n,x<rsub|1,>x<rsub|2>|)>=<big|sum><rsup|x<rsub|2>><rsub|x=x<rsub|1>><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>
   </equation>
 
   so that:
 
   <\equation>
-    T<around*|(|n|)>=S<around*|(|n|)>=2*S<around*|(|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>|)>-<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>><rsup|2>
+    T<around*|(|n|)>=S<around*|(|n,1,n|)>=2*S<around*|(|n,1,<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>|)>-<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>><rsup|2>
   </equation>
 
   We will also need to count lattice points in triangles. Consider an
@@ -476,7 +477,7 @@
   simple method to sum the lattice columns less than <math|x<rsub|min>>:
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|x<rsub|min>>|<cell|=>|<cell|C<rsub|1>**<around*|\<lceil\>|<sqrt|2*n|3>|\<rceil\>><eq-number>>>|<row|<cell|x<rsub|max>>|<cell|=>|<cell|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>>>|<row|<cell|y<rsub|min>>|<cell|=>|<cell|<around*|\<lfloor\>|Y<around*|(|x<rsub|max>|)>|\<rfloor\>>>>|<row|<cell|S<rsub|1>>|<cell|=>|<cell|S<around*|(|x<rsub|min>-1|)>>>>>
+    <tformat|<table|<row|<cell|x<rsub|min>>|<cell|=>|<cell|C<rsub|1>**<around*|\<lceil\>|<sqrt|2*n|3>|\<rceil\>><eq-number>>>|<row|<cell|x<rsub|max>>|<cell|=>|<cell|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>>>|<row|<cell|y<rsub|min>>|<cell|=>|<cell|<around*|\<lfloor\>|Y<around*|(|x<rsub|max>|)>|\<rfloor\>>>>|<row|<cell|S<rsub|1>>|<cell|=>|<cell|S<around*|(|n,1,x<rsub|min>-1|)>>>>>
   </eqnarray*>
 
   where <math|C<rsub|1>\<geq\>1> is a constant to be chosen later.
@@ -598,7 +599,7 @@
   <math|1> to <math|x<rsub|max>> is
 
   <\equation>
-    S<rsub|T>=S<around*|(|x<rsub|max>|)>=S<rsub|1>+S<rsub|2>+S<rsub|3>+S<rsub|4>
+    S<rsub|T>=S<around*|(|1,x<rsub|max>|)>=S<rsub|1>+S<rsub|2>+S<rsub|3>+S<rsub|4>
   </equation>
 
   and therefore the final computation of the divisor summatory function is
@@ -850,14 +851,19 @@
   <math|n\<less\>2<rsup|94>>, then <math|\<beta\>,\<delta\>,<around*|\||\<gamma\>|\|>,<around*|\||\<varepsilon\>|\|>\<less\>2<rsup|63>>
   for <math|2<rsup|32>\<less\>x\<less\>2<rsup|47>> and if signed 64-bit
   addition is a single-cycle operation, then a computation of <math|\<beta\>>
-  using this method is about ten cycles vs. hundreds of cycles for a single
+  using this method is about ten cycles vs. s a hundred \ cycles for a single
   multi-precision division.
 
   <\algorithm>
-    <with|font-series|bold|function> <math|S<rsub|1><around*|(|x<rsub|1>,x<rsub|2>|)>>
+    <math|S<rsub|1><around*|(||)>:S<rsub|Q><around*|(|1,x<rsub|min>-1|)>>
+
+    \;
+
+    <with|font-series|bold|function> <math|S<rsub|Q><rsub|><around*|(|x<rsub|1>,x<rsub|2>|)>>
 
     <\indent>
-      <math|s\<leftarrow\>0,x\<leftarrow\>x<rsub|2>,\<beta\>\<leftarrow\><around*|\<lfloor\>|n/<around*|(|x<rsub|>+1|)>|\<rfloor\>>,\<varepsilon\>\<leftarrow\>n-<with|font-series|bold|<around*|(|x<rsub|>+1|)>*>\<beta\>,\<delta\>\<leftarrow\><around*|\<lfloor\>|n/x<rsub|>|\<rfloor\>>-\<beta\>,\<gamma\>\<leftarrow\>\<beta\>-x<rsub|>*\<delta\>>
+      <math|s\<leftarrow\>0,x\<leftarrow\>x<rsub|2>,\<beta\>\<leftarrow\><around*|\<lfloor\>|n/<around*|(|x<rsub|>+1|)>|\<rfloor\>>,\<varepsilon\>\<leftarrow\>n
+      <with|font-series|bold|mod <around*|(|x<rsub|>+1|)>>,\<delta\>\<leftarrow\><around*|\<lfloor\>|n/x<rsub|>|\<rfloor\>>-\<beta\>,\<gamma\>\<leftarrow\>\<beta\>-x<rsub|>*\<delta\>>
 
       <with|font-series|bold|while> <math|x\<geq\>x<rsub|1>>
       <with|font-series|bold|do>
@@ -907,7 +913,7 @@
       <with|font-series|bold|end> <with|font-series|bold|while>
 
       <\math>
-        \<varepsilon\>\<leftarrow\>n-<with|font-series|bold|<around*|(|x<rsub|>+1|)>*>\<beta\>,\<delta\>\<leftarrow\><around*|\<lfloor\>|n/x<rsub|>|\<rfloor\>>-\<beta\>,\<gamma\>\<leftarrow\>\<beta\>-x<rsub|>*\<delta\>
+        \<varepsilon\>\<leftarrow\>n mod <with|font-series|bold|<around*|(|x<rsub|>+1|)>*>,\<delta\>\<leftarrow\><around*|\<lfloor\>|n/x<rsub|>|\<rfloor\>>-\<beta\>,\<gamma\>\<leftarrow\>\<beta\>-x<rsub|>*\<delta\>
       </math>
 
       <with|font-series|bold|while> <math|x\<geq\>x<rsub|1>>
@@ -943,9 +949,9 @@
   Now we present an analysis of the runtime behavior of algorithm.
 
   <\theorem>
-    The time complexity of algorithm [<reference|algorithm1>] is
-    <math|O<around*|(|n<rsup|1/3>|)>> and the space complexity is
-    <math|O<around*|(|log n|)>>.
+    The time complexity of algorithm [<reference|algorithm1>] when computing
+    <math|T<around*|(|n|)>> is <math|O<around*|(|n<rsup|1/3>|)>> and the
+    space complexity is <math|O<around*|(|log n|)>>.
   </theorem>
 
   Before we start, we realize that because
@@ -1100,6 +1106,39 @@
   The space complexity is simply our recursion depth which can be at most
   <math|O<around*|(|log n|)>>.
 
+  <section|Higher-Order Divisor Sums>
+
+  The second-order divisor sum <math|T<rsub|2><around*|(|n|)>>, the summatory
+  function for <math|\<tau\><rsub|2><around*|(|x|)>>, can also be computed
+  \ by summing under the three-dimensional hyperbola.
+
+  <\equation*>
+    T<rsub|2><around*|(|n|)>=<big|sum><rsub|x,y,z:x*y*z\<leq\>n>1=<big|sum><rsub|z=1><rsup|n><big|sum><rsub|x=1><rsup|n><around*|\<lfloor\>|<frac|n|x*z>|\<rfloor\>>=<big|sum><rsub|z=1><rsup|n>T<around*|(|<around*|\<lfloor\>|<frac|n|z>|\<rfloor\>>|)>.
+  </equation*>
+
+  Using the symmetry of the hyperbola we can restrict the outer summation to
+  <math|<sqrt|n|3>> by counting nested ``shells''.
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|T<rsub|2><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|z=1><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><around*|[|3*<around*|(|2*<big|sum><rsup|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>><rsub|x=z+1><around*|(|<around*|\<lfloor\>|<frac|n/z|x>|\<rfloor\>>-z|)>-<around*|(|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>-z|)><rsup|2>+<around*|(|<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>-z|)>|)>+1|]>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|z=1><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><around*|[|3*<around*|(|2*<big|sum><rsup|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>><rsub|x=z+1><around*|\<lfloor\>|<frac|n/z|x>|\<rfloor\>>-2*z*<around*|(|<sqrt|<frac|n|z>>-z|)>-<around*|(|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>><rsup|2>-2*z*<sqrt|<frac|n|z>>+z<rsup|2>|)>+<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>-z|)>+1|]>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|z=1><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><around*|[|3*<around*|(|2*S<around*|(|<around*|\<lfloor\>|<frac|n|z>|\<rfloor\>>,z+1,<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>|)>-<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>><rsup|2>+<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>+z<rsup|2>-z|)>+1|]>>>|<row|<cell|>|<cell|=>|<cell|3*<big|sum><rsub|z=1><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><around*|(|2*S<around*|(|<around*|\<lfloor\>|<frac|n|z>|\<rfloor\>>,z+1,<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>|)>-<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>><rsup|2>+<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>|)>+<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>><rsup|3>>>>>
+  </eqnarray*>
+
+  where in the last step we use the identity
+  <math|<big|sum><rsub|z=1><rsup|i>3*<around*|(|z<rsup|2>-z|)>+1=3*<around*|(|i*<around*|(|i+1|)>*<around*|(|2*i+1|)>/6-i*<around*|(|i+1|)>/2|)>+i=i<rsup|3>>.
+  Since <math|S<around*|(|n,x<rsub|1>,<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>|)>>
+  is a partial result in the calculation of <math|T<around*|(|n|)>>, it is
+  also has <math|O<around*|(|n<rsup|1/3>|)>> time complexity when using
+  Algorithm [<reference|algorithm1>]. \ As a result, we can calculate
+  <math|T<rsub|2><around*|(|n|)>> in
+
+  <\equation*>
+    <big|sum><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><rsub|z=1>O<around*|(|<around*|\<lfloor\>|<frac|n|z>|\<rfloor\>><rsup|1/3>|)>=O<around*|(|<big|int><rsub|1><rsup|n<rsup|1/3>><frac|n<rsup|1/3>|z<rsup|1/3>><rsup|>
+    d z|)>=O<around*|(|n<rsup|5/9>|)>,
+  </equation*>
+
+  a modest improvement over <math|O<around*|(|n<rsup|2/3>|)>> using a direct
+  summation.
+
   <section|Remarks>
 
   It would be possible to simplify the algorithm somewhat by removing the
@@ -1165,7 +1204,8 @@
     <associate|abc|<tuple|6|?>>
     <associate|algorithm1|<tuple|1|11>>
     <associate|auto-1|<tuple|1|1>>
-    <associate|auto-10|<tuple|9|14>>
+    <associate|auto-10|<tuple|10|14>>
+    <associate|auto-11|<tuple|10|?>>
     <associate|auto-2|<tuple|2|1>>
     <associate|auto-3|<tuple|3|2>>
     <associate|auto-4|<tuple|4|7>>
