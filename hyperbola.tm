@@ -1108,28 +1108,32 @@
 
   <section|Higher-Order Divisor Sums>
 
-  The second-order divisor sum <math|T<rsub|2><around*|(|n|)>>, the summatory
-  function for <math|\<tau\><rsub|2><around*|(|x|)>>, can also be computed
-  \ by summing under the three-dimensional hyperbola.
+  The two-dimensional hyperbola and the functions
+  <math|\<tau\><around*|(|n|)>> and <math|T<around*|(|n|)>> can be
+  generalized to higher dimensions. The divisor sum
+  <math|T<rsub|3><around*|(|n|)>>, the summatory function for
+  <math|\<tau\><rsub|3><around*|(|x|)>=<big|sum><rsub|a*b<around*|\||x|\<nobracket\>>>1>,
+  can be computed by summing under the three-dimensional hyperbola.
 
   <\equation*>
-    T<rsub|2><around*|(|n|)>=<big|sum><rsub|x,y,z:x*y*z\<leq\>n>1=<big|sum><rsub|z=1><rsup|n><big|sum><rsub|x=1><rsup|n><around*|\<lfloor\>|<frac|n|x*z>|\<rfloor\>>=<big|sum><rsub|z=1><rsup|n>T<around*|(|<around*|\<lfloor\>|<frac|n|z>|\<rfloor\>>|)>.
+    T<rsub|3><around*|(|n|)>=<big|sum><rsub|x,y,z:x*y*z\<leq\>n>1=<big|sum><rsub|z=1><rsup|n><big|sum><rsub|x=1><rsup|n><around*|\<lfloor\>|<frac|n|x*z>|\<rfloor\>>=<big|sum><rsub|z=1><rsup|n>T<around*|(|<around*|\<lfloor\>|<frac|n|z>|\<rfloor\>>|)>.
   </equation*>
 
-  Using the symmetry of the hyperbola we can restrict the outer summation to
-  <math|<sqrt|n|3>> by counting nested ``shells''.
+  Again using the symmetry of this hyperbola we can restrict the outer
+  summation to <math|<sqrt|n|3>> by counting nested ``shells'', and avoiding
+  double and triple counting, we get
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|T<rsub|2><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|z=1><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><around*|[|3*<around*|(|2*<big|sum><rsup|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>><rsub|x=z+1><around*|(|<around*|\<lfloor\>|<frac|n/z|x>|\<rfloor\>>-z|)>-<around*|(|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>-z|)><rsup|2>+<around*|(|<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>-z|)>|)>+1|]>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|z=1><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><around*|[|3*<around*|(|2*<big|sum><rsup|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>><rsub|x=z+1><around*|\<lfloor\>|<frac|n/z|x>|\<rfloor\>>-2*z*<around*|(|<sqrt|<frac|n|z>>-z|)>-<around*|(|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>><rsup|2>-2*z*<sqrt|<frac|n|z>>+z<rsup|2>|)>+<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>-z|)>+1|]>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|z=1><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><around*|[|3*<around*|(|2*S<around*|(|<around*|\<lfloor\>|<frac|n|z>|\<rfloor\>>,z+1,<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>|)>-<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>><rsup|2>+<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>+z<rsup|2>-z|)>+1|]>>>|<row|<cell|>|<cell|=>|<cell|3*<big|sum><rsub|z=1><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><around*|(|2*S<around*|(|<around*|\<lfloor\>|<frac|n|z>|\<rfloor\>>,z+1,<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>|)>-<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>><rsup|2>+<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>|)>+<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>><rsup|3>>>>>
+    <tformat|<table|<row|<cell|T<rsub|3><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|z=1><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><around*|[|3*<around*|(|2*<big|sum><rsup|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>><rsub|x=z+1><around*|(|<around*|\<lfloor\>|<frac|n/z|x>|\<rfloor\>>-z|)>-<around*|(|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>-z|)><rsup|2>+<around*|(|<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>-z|)>|)>+1|]>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|z=1><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><around*|[|3*<around*|(|2*<big|sum><rsup|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>><rsub|x=z+1><around*|\<lfloor\>|<frac|n/z|x>|\<rfloor\>>-2*z*<around*|(|<sqrt|<frac|n|z>>-z|)>-<around*|(|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>><rsup|2>-2*z*<sqrt|<frac|n|z>>+z<rsup|2>|)>+<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>-z|)>+1|]>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|z=1><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><around*|[|3*<around*|(|2*S<around*|(|<around*|\<lfloor\>|<frac|n|z>|\<rfloor\>>,z+1,<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>|)>-<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>><rsup|2>+<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>+z<rsup|2>-z|)>+1|]>>>|<row|<cell|>|<cell|=>|<cell|3*<big|sum><rsub|z=1><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><around*|(|2*S<around*|(|<around*|\<lfloor\>|<frac|n|z>|\<rfloor\>>,z+1,<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>|)>-<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>><rsup|2>+<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>|)>+<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>><rsup|3>>>>>
   </eqnarray*>
 
   where in the last step we use the identity
-  <math|<big|sum><rsub|z=1><rsup|i>3*<around*|(|z<rsup|2>-z|)>+1=3*<around*|(|i*<around*|(|i+1|)>*<around*|(|2*i+1|)>/6-i*<around*|(|i+1|)>/2|)>+i=i<rsup|3>>.
+  <math|<big|sum><rsub|z=1><rsup|k>3*<around*|(|z<rsup|2>-z|)>+1=3*<around*|(|k*<around*|(|k+1|)>*<around*|(|2*k+1|)>/6-k*<around*|(|k+1|)>/2|)>+k=k<rsup|3>>.
   Since <math|S<around*|(|n,x<rsub|1>,<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>|)>>
   is a partial result in the calculation of <math|T<around*|(|n|)>>, it is
   also has <math|O<around*|(|n<rsup|1/3>|)>> time complexity when using
   Algorithm [<reference|algorithm1>]. \ As a result, we can calculate
-  <math|T<rsub|2><around*|(|n|)>> in
+  <math|T<rsub|3><around*|(|n|)>> in
 
   <\equation*>
     <big|sum><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><rsub|z=1>O<around*|(|<around*|\<lfloor\>|<frac|n|z>|\<rfloor\>><rsup|1/3>|)>=O<around*|(|<big|int><rsub|1><rsup|n<rsup|1/3>><frac|n<rsup|1/3>|z<rsup|1/3>><rsup|>
@@ -1137,7 +1141,11 @@
   </equation*>
 
   a modest improvement over <math|O<around*|(|n<rsup|2/3>|)>> using a direct
-  summation.
+  double summation. \ Similar derivations give
+  <math|O<around*|(|n<rsup|2/3>|)>> for <math|T<rsub|4><around*|(|n|)>> and
+  <math|O<around*|(|n<rsup|11/15>|)>> for <math|T<rsub|5><around*|(|n|)>> or
+  <math|O<around*|(|n<rsup|1-4/<around*|(|3*k|)>>|)>> for
+  <math|T<rsub|k><around*|(|n|)>> in general.
 
   <section|Remarks>
 
@@ -1149,9 +1157,7 @@
 
   The two major sections of the algorithm, <math|S<rsub|1>> and
   <math|S<rsub|4>>, are easily parallelizable. The section <math|S<rsub|1>>
-  can divide summation batches to different processors. Note however that if
-  the division-free algorithm is used that the first <math|<sqrt|2*n|3>>
-  values should use smaller batches than the rest of the range. The section
+  can divide summation batches to different processors. The section
   <math|S<rsub|4>> can be revised to use a work queue of regions instead of
   recursion. During region processing, one region can be enqueued and the
   other processed iteratively. Available processors can dequeue regions that

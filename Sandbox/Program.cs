@@ -190,7 +190,40 @@ namespace Sandbox
 
         static void ParityTest()
         {
+#if false
+            var algorithm1 = new DivisionFreeDivisorSummatoryFunction(1, false);
+            var algorithm2 = new Divisors();
+            //var result = algorithm.primeCountingFunction(100);
+            var result1 = algorithm1.Evaluate(100);
+            var result2 = algorithm2.countprimes3(100);
+            Console.WriteLine("n = 100, result1 = {0}, result2 = {1}", result1, result2);
+#endif
+
+#if false
+            var algorithm1 = new DivisionFreeDivisorSummatoryFunction(0, false);
+            var algorithm2 = new Divisors();
+            var timer = new Stopwatch();
+
+            //algorithm.main();
+            for (int b = 9; b <= 10; b++)
+            {
+                var n = (BigInteger)1 << b;
+                Console.WriteLine();
+                timer.Restart();
+                var sum1 = algorithm1.Evaluate(n);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                Console.WriteLine("2^{0}: sum1 = {1}", b, sum1);
 #if true
+                timer.Restart();
+                var sum2 = algorithm2.Evaluate(n);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                Console.WriteLine("2^{0}: sum2 = {1}", b, sum2);
+#endif
+            }
+#endif
+
+#if true
+            // Experimental calculation of T3(n) by several methods: brute force, and hyperbola.
             var n = (BigInteger)1 << 20;
             {
                 var sum = (BigInteger)0;
@@ -200,7 +233,7 @@ namespace Sandbox
                     for (var x = (BigInteger)1; x <= nz; x++)
                         sum += nz / x;
                 }
-                Console.WriteLine("n = {0}, T2(n) = {1}", n, sum);
+                Console.WriteLine("n = {0}, T3(n) = {1}", n, sum);
             }
             {
                 var sum = (BigInteger)0;
@@ -215,7 +248,26 @@ namespace Sandbox
                     sum += 2 * t - sqrtnz * sqrtnz + nz / z;
                 }
                 sum = 3 * sum + root3 * root3 * root3;
-                Console.WriteLine("n = {0}, T2(n) = {1}", n, sum);
+                Console.WriteLine("n = {0}, T3(n) = {1}", n, sum);
+            }
+            {
+                var a = IntegerMath.FloorRoot(n, 3);
+                var i = 3;
+                var sum = (BigInteger)0;
+                for (var j = (BigInteger)1; j <= a; j++)
+                {
+                    sum += IntegerMath.NumberOfDivisors(j, i - 1) * (n / j);
+                    for (var l = 1; l < i - 1; l++)
+                    {
+                        var t = (BigInteger)0;
+                        for (var k = a / j + 1; k <= n / j; k++)
+                            t += IntegerMath.SumOfNumberOfDivisors(n / (j * k), i - l - 1); 
+                        sum += IntegerMath.NumberOfDivisors(j, l) * t;
+                    }
+                }
+                for (var j = a + 1; j <= n; j++)
+                    sum += IntegerMath.SumOfNumberOfDivisors(n / j, i - 1);
+                Console.WriteLine("n = {0}, T3(n) = {1}", n, sum);
             }
 #endif
 
