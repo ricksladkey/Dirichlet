@@ -35,8 +35,10 @@ namespace Decompose.Numerics
             values = new sbyte[size];
             if (primes.Length == 0)
             {
-                values[2] = -1;
-                values[3] = -1;
+                if (size > 2)
+                    values[2] = -1;
+                if (size > 3)
+                    values[3] = -1;
             }
             else
             {

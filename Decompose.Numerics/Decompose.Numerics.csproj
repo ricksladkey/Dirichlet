@@ -51,6 +51,7 @@
     <Compile Include="ArithmeticFunctions\MobiusCollection.cs" />
     <Compile Include="ArithmeticFunctions\MobiusRange.cs" />
     <Compile Include="ArithmeticFunctions\PrimeCollection.cs" />
+    <Compile Include="ArithmeticFunctions\PrimeCountingMod3.cs" />
     <Compile Include="ArithmeticFunctions\SimpleMobiusCollection.cs" />
     <Compile Include="Collections\BitMatrixHelper.cs" />
     <Compile Include="Collections\ByColSetBitMatrix.cs" />
@@ -60,6 +61,7 @@
     <Compile Include="Core\Rational.cs" />
     <Compile Include="IntegerMath\Binomial.cs" />
     <Compile Include="IntegerMath\Factorial.cs" />
+    <Compile Include="IntegerMath\Log.cs" />
     <Compile Include="IntegerMath\ModularQuotient.cs" />
     <Compile Include="IntegerMath\ModularRoot.cs" />
     <Compile Include="IntegerMath\Power.cs" />

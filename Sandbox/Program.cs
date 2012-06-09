@@ -191,6 +191,31 @@ namespace Sandbox
         static void ParityTest()
         {
 #if false
+            var p = 3;
+            var p2 = p * p;
+            var mu = new MobiusCollection(1000, 0);
+            for (int i = 1; i <= 40; i++)
+            {
+                var smt = IntegerMath.Binomial(i + p - 1, i);
+                if (i >= p)
+                    smt -= IntegerMath.Binomial(i - 1, i - p);
+                Console.WriteLine("i = {0}, smt(i) = {1}, smt(i)%{2} = {3}", i, smt, p2, smt / p % p);
+            }
+#endif
+
+#if true
+            var algorithm1 = new PrimeCounting(0);
+            var algorithm2 = new PrimeCountingMod3();
+            for (var i = 2; i <= 20; i++)
+            {
+                var n = (BigInteger)1 << i;
+                var p1 = algorithm1.Pi((int)n) % 3;
+                var p2 = algorithm2.Evaluate(n);
+                Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}", i, p1, p2);
+            }
+#endif
+
+#if false
             var algorithm1 = new DivisionFreeDivisorSummatoryFunction(1, false);
             var algorithm2 = new Divisors();
             //var result = algorithm.primeCountingFunction(100);
@@ -222,8 +247,8 @@ namespace Sandbox
             }
 #endif
 
-#if true
-            // Experimental calculation of T3(n) by several methods: brute force, and hyperbola.
+#if false
+            // Experimental calculation of T3(n) by several methods: brute force, hyperbola, 
             var n = (BigInteger)1 << 20;
             {
                 var sum = (BigInteger)0;
@@ -253,20 +278,22 @@ namespace Sandbox
             {
                 var a = IntegerMath.FloorRoot(n, 3);
                 var i = 3;
+                var i1 = i - 1;
                 var sum = (BigInteger)0;
                 for (var j = (BigInteger)1; j <= a; j++)
                 {
-                    sum += IntegerMath.NumberOfDivisors(j, i - 1) * (n / j);
-                    for (var l = 1; l < i - 1; l++)
+                    sum += IntegerMath.NumberOfDivisors(j, i1) * (n / j);
+                    for (var l = 1; l < i1; l++)
                     {
                         var t = (BigInteger)0;
-                        for (var k = a / j + 1; k <= n / j; k++)
-                            t += IntegerMath.SumOfNumberOfDivisors(n / (j * k), i - l - 1); 
+                        var nj = n / j;
+                        for (var k = a / j + 1; k <= nj; k++)
+                            t += IntegerMath.SumOfNumberOfDivisors(nj / k, i1 - l); 
                         sum += IntegerMath.NumberOfDivisors(j, l) * t;
                     }
                 }
                 for (var j = a + 1; j <= n; j++)
-                    sum += IntegerMath.SumOfNumberOfDivisors(n / j, i - 1);
+                    sum += IntegerMath.SumOfNumberOfDivisors(n / j, i1);
                 Console.WriteLine("n = {0}, T3(n) = {1}", n, sum);
             }
 #endif

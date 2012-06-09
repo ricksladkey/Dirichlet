@@ -41,7 +41,7 @@
   <math|n>:
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|\<tau\><around*|(|x|)>>|<cell|=>|<cell|<big|sum><rsub|d<around*|\||x|\<nobracket\>>>1<eq-number>>>|<row|<cell|T<around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|x=1><rsup|n>\<tau\><around*|(|x|)>>>>>
+    <tformat|<table|<row|<cell|\<tau\><around*|(|x|)>>|<cell|=>|<cell|<big|sum><rsub|d<around*|\||x|\<nobracket\>>>1=<big|sum><rsub|x,y:x*y=n>1<eq-number>>>|<row|<cell|T<around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|x=1><rsup|n>\<tau\><around*|(|x|)>>>>>
   </eqnarray*>
 
   One geometric algorithm is to sum columns of lattice points by choosing an
@@ -60,17 +60,17 @@
   </equation>
 
   \ which gives an <math|O<around*|(|n<rsup|1/2>|)>> algorithm and is in fact
-  the usual method by which the divisor summatory function is computed. Our
-  goal is to break this square-root barrier.
+  the standard method by which the divisor summatory function is computed.
+  Our goal is to break this square-root barrier.
 
   In 1903, Voronoï in [<reference|bib:Vor03>] made the first significant
   advance since Dirichlet on the bound on error term for the divisor problem
   by decomposing the hyperbola into a series of non-overlapping triangles
   corresponding to tangent lines whose slopes are extended Farey neighbors.
   We will use a similar approach but where Voronoï produced an exact
-  expression for the error term and estimated its magnitude, we will produce
-  an algorithm to determine a precise lattice count for an isolated value of
-  <math|n> instead.
+  expression for the error term and estimated its magnitude, we will instead
+  produce an algorithm to determine a precise lattice count for an isolated
+  value of <math|n>.
 
   <section|Preliminaries>
 
@@ -625,8 +625,8 @@
   the finite difference <math|\<delta\><rsub|1><rsub|><around*|(|x|)>
   =\<beta\><around*|(|x|)>-\<beta\><around*|(|x+1|)>>, and the second-order
   finite difference <math|\<delta\><rsub|2><around*|(|x|)>=\<delta\><rsub|1><around*|(|x|)>-\<delta\><rsub|1><around*|(|x+1|)>>.
-  To check whether the value is correct we can also keep track of the error.
-  So defining the error <math|\<varepsilon\><around*|(|x|)>=n-x*\<beta\><around*|(|x|)>=n-x*<around*|\<lfloor\>|n/x|\<rfloor\>>=n
+  To check whether the value is correct we also need to keep track of the
+  error. So defining the error <math|\<varepsilon\><around*|(|x|)>=n-x*\<beta\><around*|(|x|)>=n-x*<around*|\<lfloor\>|n/x|\<rfloor\>>=n
   mod x> gives
 
   <\eqnarray*>
@@ -851,8 +851,8 @@
   <math|n\<less\>2<rsup|94>>, then <math|\<beta\>,\<delta\>,<around*|\||\<gamma\>|\|>,<around*|\||\<varepsilon\>|\|>\<less\>2<rsup|63>>
   for <math|2<rsup|32>\<less\>x\<less\>2<rsup|47>> and if signed 64-bit
   addition is a single-cycle operation, then a computation of <math|\<beta\>>
-  using this method is about ten cycles vs. s a hundred \ cycles for a single
-  multi-precision division.
+  using this method is about ten cycles vs. say a hundred \ cycles for a
+  single multi-precision division.
 
   <\algorithm>
     <math|S<rsub|1><around*|(||)>:S<rsub|Q><around*|(|1,x<rsub|min>-1|)>>
@@ -1110,10 +1110,12 @@
 
   The two-dimensional hyperbola and the functions
   <math|\<tau\><around*|(|n|)>> and <math|T<around*|(|n|)>> can be
-  generalized to higher dimensions. The divisor sum
+  generalized to higher dimensions. Using this notation
+  <math|\<tau\><around*|(|n|)>=\<tau\><rsub|2><around*|(|n|)>> and
+  <math|T<around*|(|n|)>=T<rsub|2><around*|(|n|)>>. Then the divisor sum
   <math|T<rsub|3><around*|(|n|)>>, the summatory function for
-  <math|\<tau\><rsub|3><around*|(|x|)>=<big|sum><rsub|a*b<around*|\||x|\<nobracket\>>>1>,
-  can be computed by summing under the three-dimensional hyperbola.
+  <math|\<tau\><rsub|3><around*|(|x|)>=<big|sum><rsub|a*b*c=x>1>, can be
+  computed by summing under the three-dimensional hyperbola
 
   <\equation*>
     T<rsub|3><around*|(|n|)>=<big|sum><rsub|x,y,z:x*y*z\<leq\>n>1=<big|sum><rsub|z=1><rsup|n><big|sum><rsub|x=1><rsup|n><around*|\<lfloor\>|<frac|n|x*z>|\<rfloor\>>=<big|sum><rsub|z=1><rsup|n>T<around*|(|<around*|\<lfloor\>|<frac|n|z>|\<rfloor\>>|)>.
@@ -1147,13 +1149,16 @@
   <math|O<around*|(|n<rsup|1-4/<around*|(|3*k|)>>|)>> for
   <math|T<rsub|k><around*|(|n|)>> in general.
 
-  <section|Remarks>
+  <section|Remarks>.
 
   It would be possible to simplify the algorithm somewhat by removing the
   distinction between top level regions and region processing itself by
   starting with the region defined by <math|<around*|(|1/0,1/1|)>>. The
-  reason for the current assymetry is to capitalize on the simpler <math|x y>
-  coordinate system where possible.
+  reason for the current assymetry is two-fold. First, some of the solutions
+  to the equations are degenerate when <math|a<rsub|i>*b<rsub|i>=0> and would
+  require special handling anyway. Second, and perhaps more importantly, we
+  can also capitalize on the simpler <math|x y> coordinate system where
+  possible.
 
   The two major sections of the algorithm, <math|S<rsub|1>> and
   <math|S<rsub|4>>, are easily parallelizable. The section <math|S<rsub|1>>
@@ -1163,17 +1168,29 @@
   other processed iteratively. Available processors can dequeue regions that
   need to be processed.
 
+  In fact it turns out that the <math|S<around*|(|n/z,z+1<around*|\<lfloor\>|<sqrt|n/z>|\<rfloor\>>|)>>
+  terms in the <math|T<rsub|3><around*|(|n|)>> summation skip over the
+  problematic first <math|O<around*|(|<around*|(|n/z|)><rsup|1/3>|)>> columns
+  by the time <math|z> reaches <math|n<rsup|1/4>> and then start eroding away
+  the smallest regions as <math|z> approaches <math|n<rsup|1/3>>. \ Modifying
+  the method slightly and then computing the time complexity of these two
+  portions separately and allowing <math|a<rsub|max>> to decline
+  appropriately we would achieve <math|O<around*|(|n<rsup|1/2>*log n|)>> for
+  <math|T<rsub|3><around*|(|n|)>> if we could prove that <math|G=1/2>. \ In
+  any case, using <math|G=1/log<rsub|2>3> at least gives us
+  <math|O<around*|(|n<rsup|5/9-c+\<epsilon\>>|)>> for some <math|c\<gtr\>0>.
+
   <section|Related Work>
 
   In [<reference|bib:Gal00>], Galway presents an improved sieving algorithm
   that also features region decomposition based on extended Farey fractions
   as well as coordinate transformation. In [<reference|bib:Tao11>],
-  applications for the divisor summatory are presented including computing
-  the parity of <math|\<pi\><around*|(|x|)>>, the prime counting function, as
-  well as a sketch for a different <math|O<around*|(|n<rsup|1/3>|)>>
-  algorithm. In [<reference|bib:Sil12>], the parity of the prime counting
-  function is studied more closely and several related algorithms are
-  developed.
+  applications for the divisor summatory are function presented including
+  computing the parity of <math|\<pi\><around*|(|x|)>>, the prime counting
+  function, as well as a sketch for a different
+  <math|O<around*|(|n<rsup|1/3>|)>> algorithm. In [<reference|bib:Sil12>],
+  the parity of the prime counting function is studied more closely and
+  several related algorithms are developed.
 
   <\bibliography|bib|tm-plain|hyperbola.bib>
     \;
@@ -1303,17 +1320,21 @@
       and Space Complexity> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-7><vspace|0.5fn>
 
-      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|8<space|2spc>Remarks>
-      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|8<space|2spc>Higher-Order
+      Divisor Sums> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-8><vspace|0.5fn>
 
-      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|9<space|2spc>Related
-      Work> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|9<space|2spc>Remarks>
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-9><vspace|0.5fn>
+
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|10<space|2spc>Related
+      Work> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-10><vspace|0.5fn>
 
       <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|Bibliography>
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-10><vspace|0.5fn>
+      <no-break><pageref|auto-11><vspace|0.5fn>
     </associate>
   </collection>
 </auxiliary>

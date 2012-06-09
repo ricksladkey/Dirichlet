@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3794FEC8-C7AB-4784-AFA2-6A8EC5C74E10}"
 	ProjectSection(SolutionItems) = preProject
 		Decompose.vsmdi = Decompose.vsmdi
+		hyperbola-addendum.tm = hyperbola-addendum.tm
 		hyperbola-formulas.wxm = hyperbola-formulas.wxm
 		hyperbola-visualization.wxm = hyperbola-visualization.wxm
 		hyperbola.tm = hyperbola.tm

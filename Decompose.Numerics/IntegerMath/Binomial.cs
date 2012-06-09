@@ -7,13 +7,9 @@ namespace Decompose.Numerics
         public static int Binomial(int n, int k)
         {
             if (n < k)
-            {
                 return 0;
-            }
-            if (n == k)
-            {
+            if (k == 0 || n == k)
                 return 1;
-            }
 
             int delta;
             int max;
@@ -44,13 +40,9 @@ namespace Decompose.Numerics
         public static BigInteger Binomial(BigInteger n, BigInteger k)
         {
             if (n < k)
-            {
                 return 0;
-            }
-            if (n == k)
-            {
+            if (k == 0 || n == k)
                 return 1;
-            }
 
             var delta = (BigInteger)0;
             var max = (BigInteger)0;

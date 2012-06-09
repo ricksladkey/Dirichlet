@@ -254,8 +254,19 @@ namespace Decompose.Numerics
                 .Product();
         }
 
+        public static int NumberOfDivisors(BigInteger n)
+        {
+            if (n < int.MaxValue)
+                return NumberOfDivisors((int)n);
+            throw new NotImplementedException();
+        }
+
         public static int NumberOfDivisors(int n, int i)
         {
+            if (i == 0)
+                return 0;
+            if (i == 1)
+                return 1;
             return factorerInt.Factor(n)
                 .GroupBy(p => p)
                 .Select(grouping => grouping.Count())
