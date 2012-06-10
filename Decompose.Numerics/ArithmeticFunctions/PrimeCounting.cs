@@ -18,6 +18,86 @@ namespace Decompose.Numerics
         private int[] tauSumSmall;
         private int[] mobiusSmall;
 
+        private BigInteger[] piData =
+        {
+            BigInteger.Parse("0"),
+            BigInteger.Parse("1"),
+            BigInteger.Parse("2"),
+            BigInteger.Parse("4"),
+            BigInteger.Parse("6"),
+            BigInteger.Parse("11"),
+            BigInteger.Parse("18"),
+            BigInteger.Parse("31"),
+            BigInteger.Parse("54"),
+            BigInteger.Parse("97"),
+            BigInteger.Parse("172"),
+            BigInteger.Parse("309"),
+            BigInteger.Parse("564"),
+            BigInteger.Parse("1028"),
+            BigInteger.Parse("1900"),
+            BigInteger.Parse("3512"),
+            BigInteger.Parse("6542"),
+            BigInteger.Parse("12251"),
+            BigInteger.Parse("23000"),
+            BigInteger.Parse("43390"),
+            BigInteger.Parse("82025"),
+            BigInteger.Parse("155611"),
+            BigInteger.Parse("295947"),
+            BigInteger.Parse("564163"),
+            BigInteger.Parse("1077871"),
+            BigInteger.Parse("2063689"),
+            BigInteger.Parse("3957809"),
+            BigInteger.Parse("7603553"),
+            BigInteger.Parse("14630843"),
+            BigInteger.Parse("28192750"),
+            BigInteger.Parse("54400028"),
+            BigInteger.Parse("105097565"),
+            BigInteger.Parse("203280221"),
+            BigInteger.Parse("393615806"),
+            BigInteger.Parse("762939111"),
+            BigInteger.Parse("1480206279"),
+            BigInteger.Parse("2874398515"),
+            BigInteger.Parse("5586502348"),
+            BigInteger.Parse("10866266172"),
+            BigInteger.Parse("21151907950"),
+            BigInteger.Parse("41203088796"),
+            BigInteger.Parse("80316571436"),
+            BigInteger.Parse("156661034233"),
+            BigInteger.Parse("305761713237"),
+            BigInteger.Parse("597116381732"),
+            BigInteger.Parse("1166746786182"),
+            BigInteger.Parse("2280998753949"),
+            BigInteger.Parse("4461632979717"),
+            BigInteger.Parse("8731188863470"),
+            BigInteger.Parse("17094432576778"),
+            BigInteger.Parse("33483379603407"),
+            BigInteger.Parse("65612899915304"),
+            BigInteger.Parse("128625503610475"),
+            BigInteger.Parse("252252704148404"),
+            BigInteger.Parse("494890204904784"),
+            BigInteger.Parse("971269945245201"),
+            BigInteger.Parse("1906879381028850"),
+            BigInteger.Parse("3745011184713964"),
+            BigInteger.Parse("7357400267843990"),
+            BigInteger.Parse("14458792895301660"),
+            BigInteger.Parse("28423094496953330"),
+            BigInteger.Parse("55890484045084135"),
+            BigInteger.Parse("109932807585469973"),
+            BigInteger.Parse("216289611853439384"),
+            BigInteger.Parse("425656284035217743"),
+            BigInteger.Parse("837903145466607212"),
+            BigInteger.Parse("1649819700464785589"),
+            BigInteger.Parse("3249254387052557215"),
+            BigInteger.Parse("6400771597544937806"),
+            BigInteger.Parse("12611864618760352880"),
+            BigInteger.Parse("24855455363362685793"),
+            BigInteger.Parse("48995571600129458363"),
+            BigInteger.Parse("96601075195075186855"),
+            BigInteger.Parse("190499823401327905601"),
+            BigInteger.Parse("375744164937699609596"),
+            BigInteger.Parse("741263521140740113483"),
+        };
+
         public PrimeCounting(int threads)
         {
             this.threads = threads;
@@ -47,6 +127,11 @@ namespace Decompose.Numerics
             if (x < piSmall.Length)
                 return piSmall[x];
             return new PrimeCollection(x + 1, threads).Count;
+        }
+
+        public BigInteger PiPowerOfTwo(int k)
+        {
+            return piData[k];
         }
 
         public int PiWithPowers(int x)

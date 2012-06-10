@@ -191,6 +191,10 @@ namespace Sandbox
         static void ParityTest()
         {
 #if false
+            var algorithm = new PrimeCountingMod3();
+#endif
+
+#if false
             var p = 3;
             var p2 = p * p;
             var mu = new MobiusCollection(1000, 0);
@@ -205,13 +209,20 @@ namespace Sandbox
 
 #if true
             var algorithm1 = new PrimeCounting(0);
-            var algorithm2 = new PrimeCountingMod3();
-            for (var i = 2; i <= 20; i++)
+            var algorithm2 = new PrimeCountingMod3(8);
+            var timer = new Stopwatch();
+            for (var i = 50; i <= 50; i++)
             {
-                var n = (BigInteger)1 << i;
-                var p1 = algorithm1.Pi((int)n) % 3;
-                var p2 = algorithm2.Evaluate(n);
-                Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}", i, p1, p2);
+                timer.Restart();
+                for (var iterations = 0; iterations < 1; iterations++)
+                {
+                    var n = (BigInteger)1 << i;
+                    var p1 = algorithm1.PiPowerOfTwo(i) % 3;
+                    var p2 = algorithm2.Evaluate(n);
+                    if (iterations == 0)
+                        Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}", i, p1, p2);
+                }
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
 

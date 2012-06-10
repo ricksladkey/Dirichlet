@@ -1,27 +1,75 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Diagnostics;
 using System.Numerics;
+using System.Threading.Tasks;
 
 namespace Decompose.Numerics
 {
     public class PrimeCountingMod3
     {
+        private int threads;
         private MobiusCollection mobius;
+        private Dictionary<BigInteger, BigInteger> piMap;
+        private Dictionary<BigInteger, BigInteger> t3Map;
+        private DivisionFreeDivisorSummatoryFunction[] hyperbolicSum;
+
+        public PrimeCountingMod3(int threads)
+        {
+            this.threads = threads;
+            piMap = new Dictionary<BigInteger, BigInteger>();
+            t3Map = new Dictionary<BigInteger, BigInteger>();
+            var count = Math.Max(threads, 1);
+            hyperbolicSum = new DivisionFreeDivisorSummatoryFunction[count];
+            for (var i = 0; i < count; i++)
+                hyperbolicSum[i] = new DivisionFreeDivisorSummatoryFunction(0, false);
+        }
 
         public BigInteger Evaluate(BigInteger n)
         {
+            piMap.Clear();
+            t3Map.Clear();
             var jmax = IntegerMath.FloorLog(n, 2);
             var dmax = IntegerMath.FloorRoot(n, 3);
             mobius = new MobiusCollection((int)(IntegerMath.Max(jmax, dmax) + 1), 0);
-            var sum = SMT(n) / 3;
-            for (var j = 2; j <= jmax; j++)
-                sum -= (j % 3) * Evaluate(IntegerMath.FloorRoot(n, j));
+#if false
+            return Pi3Recursive(n);
+#else
+            return Pi3(n);
+#endif
+        }
+
+        public BigInteger Pi3(BigInteger n)
+        {
+            var kmax = IntegerMath.FloorLog(n, 2);
+            var sum = (BigInteger)0;
+            for (var k = 1; k <= kmax; k++)
+            {
+                if (k % 3 != 0 && mobius[k] != 0)
+                    sum += k * mobius[k] * F3(IntegerMath.FloorRoot(n, k));
+            }
             return sum % 3;
         }
 
-        public BigInteger SMT(BigInteger n)
+        public BigInteger Pi3Recursive(BigInteger n)
+        {
+            BigInteger value;
+            if (piMap.TryGetValue(n, out value))
+                return value;
+            return piMap[n] = Pi3RecursiveSlow(n);
+        }
+
+        public BigInteger Pi3RecursiveSlow(BigInteger n)
+        {
+            //Console.WriteLine("pi3({0})", n);
+            var kmax = IntegerMath.FloorLog(n, 2);
+            var sum = F3(n);
+            for (var k = 2; k <= kmax; k++)
+                sum -= (k % 3) * Pi3Recursive(IntegerMath.FloorRoot(n, k));
+            return sum % 3;
+        }
+
+        public BigInteger F3(BigInteger n)
         {
             var s = (BigInteger)0;
             var dmax = IntegerMath.FloorRoot(n, 3);
@@ -30,27 +78,90 @@ namespace Decompose.Numerics
                 var md = mobius[d];
                 if (md == 0)
                     continue;
-                var term = T3(n / IntegerMath.Power(d, 3));
+                var term = T3(n / IntegerMath.Power((BigInteger)d, 3));
                 s += md * term;
             }
-            return s;
+            Debug.Assert((s - 1) % 3 == 0);
+            return (s - 1) / 3;
         }
 
         public BigInteger T3(BigInteger n)
         {
+            BigInteger value;
+            if (t3Map.TryGetValue(n, out value))
+                return value;
+            return t3Map[n] = T3Slow(n);
+        }
+
+        public BigInteger T3Slow(BigInteger n)
+        {
+            //Console.WriteLine("T3({0})", n);
             var sum = (BigInteger)0;
             var root3 = IntegerMath.FloorRoot(n, 3);
-            for (var z = (BigInteger)1; z <= root3; z++)
+            if (threads <= 1)
             {
-                var nz = n / z;
-                var sqrtnz = IntegerMath.FloorSquareRoot(nz);
-                var t = (BigInteger)0;
-                for (var x = z + 1; x <= sqrtnz; x++)
-                    t += nz / x;
-                sum += 2 * t - sqrtnz * sqrtnz + nz / z;
+                for (var z = (BigInteger)1; z <= root3; z++)
+                {
+                    var nz = n / z;
+                    var sqrtnz = IntegerMath.FloorSquareRoot(nz);
+#if false
+                    var t = (BigInteger)0;
+                    for (var x = z + 1; x <= sqrtnz; x++)
+                        t += nz / x;
+#else
+                    var t = hyperbolicSum[0].Evaluate(nz, (long)z + 1, (long)sqrtnz);
+#endif
+                    sum += 2 * t - sqrtnz * sqrtnz + nz / z;
+                }
+            }
+            else
+            {
+                var tasks = new Task[threads];
+                for (var i = 0; i < threads; i++)
+                {
+                    var thread = i;
+                    tasks[i] = new Task(() =>
+                        {
+                            var s = (BigInteger)0;
+                            for (var z = (BigInteger)1 + thread; z <= root3; z += threads)
+                            {
+                                var nz = n / z;
+                                var sqrtnz = IntegerMath.FloorSquareRoot(nz);
+                                var t = hyperbolicSum[thread].Evaluate(nz, (long)z + 1, (long)sqrtnz);
+                                s += 2 * t - sqrtnz * sqrtnz + nz / z;
+                            }
+                            lock (this)
+                            {
+                                sum += s;
+                            }
+                        });
+                    tasks[i].Start();
+                }
+                Task.WaitAll(tasks);
             }
             sum = 3 * sum + root3 * root3 * root3;
             return sum;
         }
+
+#if false
+        public void Test1(int kmax)
+        {
+            var roots = new int[kmax+1];
+            AddRoots(kmax, roots, 1);
+            for (var j = 
+        }
+
+        public void AddRoot(int root, int[] roots, int factor)
+        {
+            roots[root] += factor;
+        }
+
+        public void AddRoots(int n, int skip, int[] roots, int factor)
+        {
+            AddRoot(1, roots, factor);
+            for (int j = 2; j <= kmax; j++)
+                AddRoots(j, roots, -factor);
+        }
+#endif
     }
 }

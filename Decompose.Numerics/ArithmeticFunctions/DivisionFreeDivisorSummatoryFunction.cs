@@ -43,6 +43,17 @@ namespace Decompose.Numerics
             return 2 * (BigInteger)sum - (BigInteger)xmax * xmax;
         }
 
+        public BigInteger Evaluate(BigInteger n, long x1, long x2)
+        {
+            this.n = n;
+            sum = 0;
+            if (threads <= 1 || x2 - x1 < ((long)1 << 10))
+                Evaluate(x1, x2);
+            else
+                EvaluateParallel(x1, x2);
+            return sum;
+        }
+
         private void Evaluate(long x1, long x2)
         {
             var x = x2;
@@ -194,6 +205,9 @@ namespace Decompose.Numerics
 
         private long S3(long x1, long x2)
         {
+            if (n < ulong.MaxValue)
+                return S3UInt64(x1, x2);
+
             var s = (UInt128)0;
             var nRep = (UInt128)n;
             var x = x2;
@@ -202,6 +216,27 @@ namespace Decompose.Numerics
                 s += nRep / (ulong)x;
                 --x;
             }
+            AddToSum(ref s);
+            return x;
+        }
+
+        private long S3UInt64(long x1, long x2)
+        {
+            var s = (UInt128)0;
+            var t = (ulong)0;
+            var nRep = (ulong)n;
+            var x = x2;
+            while (x >= x1)
+            {
+                t += nRep / (ulong)x;
+                if (t > tmax)
+                {
+                    s += t;
+                    t = 0;
+                }
+                --x;
+            }
+            s += t;
             AddToSum(ref s);
             return x;
         }

@@ -102,6 +102,28 @@
   <\equation*>
     <binom|n|k>=<frac|n!|k!*<around*|(|n-k|)>!>
   </equation*>
+
+  \;
+
+  <math|\<pi\><around*|(|n|)> mod 3>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|F<rsub|p><around*|(|x|)>>|<cell|=>|<cell|<around*|(|<big|sum><rsup|<around*|\<lfloor\>|x<rsup|1/p>|\<rfloor\>>><rsub|j=1>\<mu\><around*|(|j|)>*T<rsub|p><around*|(|<around*|\<lfloor\>|<frac|x<rsup|>|j<rsup|p>>|\<rfloor\>>|)>-1|)>/p>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|\<pi\><around*|(|n|)>>|<cell|\<equiv\>>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
+    n|\<rfloor\>>><rsub|k=1>\<mu\><around*|(|k|)>*F<rsub|2><around*|(|n<rsup|1/k>|)>
+    <around*|(|mod 2|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|\<pi\><around*|(|n|)>>|<cell|\<equiv\>>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
+    n|\<rfloor\>>><rsub|k=1>k*\<mu\><around*|(|k|)>*F<rsub|3><around*|(|n<rsup|1/k>|)>
+    <around*|(|mod 3|)>>>>>
+  </eqnarray*>
+
+  \;
 </body>
 
 <\initial>
