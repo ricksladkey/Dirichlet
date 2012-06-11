@@ -10,14 +10,12 @@ namespace Decompose.Numerics
     {
         private int threads;
         private MobiusCollection mobius;
-        private Dictionary<BigInteger, BigInteger> piMap;
         private Dictionary<BigInteger, BigInteger> t3Map;
         private DivisionFreeDivisorSummatoryFunction[] hyperbolicSum;
 
         public PrimeCountingMod3(int threads)
         {
             this.threads = threads;
-            piMap = new Dictionary<BigInteger, BigInteger>();
             t3Map = new Dictionary<BigInteger, BigInteger>();
             var count = Math.Max(threads, 1);
             hyperbolicSum = new DivisionFreeDivisorSummatoryFunction[count];
@@ -27,16 +25,12 @@ namespace Decompose.Numerics
 
         public BigInteger Evaluate(BigInteger n)
         {
-            piMap.Clear();
             t3Map.Clear();
             var jmax = IntegerMath.FloorLog(n, 2);
             var dmax = IntegerMath.FloorRoot(n, 3);
             mobius = new MobiusCollection((int)(IntegerMath.Max(jmax, dmax) + 1), 0);
-#if false
-            return Pi3Recursive(n);
-#else
+            //return Pi3Recursive(n);
             return Pi3(n);
-#endif
         }
 
         public BigInteger Pi3(BigInteger n)
@@ -53,14 +47,6 @@ namespace Decompose.Numerics
 
         public BigInteger Pi3Recursive(BigInteger n)
         {
-            BigInteger value;
-            if (piMap.TryGetValue(n, out value))
-                return value;
-            return piMap[n] = Pi3RecursiveSlow(n);
-        }
-
-        public BigInteger Pi3RecursiveSlow(BigInteger n)
-        {
             //Console.WriteLine("pi3({0})", n);
             var kmax = IntegerMath.FloorLog(n, 2);
             var sum = F3(n);
@@ -71,6 +57,7 @@ namespace Decompose.Numerics
 
         public BigInteger F3(BigInteger n)
         {
+            //Console.WriteLine("F3({0})", n);
             var s = (BigInteger)0;
             var dmax = IntegerMath.FloorRoot(n, 3);
             for (var d = 1; d <= dmax; d++)
@@ -98,19 +85,13 @@ namespace Decompose.Numerics
             //Console.WriteLine("T3({0})", n);
             var sum = (BigInteger)0;
             var root3 = IntegerMath.FloorRoot(n, 3);
-            if (threads <= 1)
+            if (threads == 0)
             {
                 for (var z = (BigInteger)1; z <= root3; z++)
                 {
                     var nz = n / z;
                     var sqrtnz = IntegerMath.FloorSquareRoot(nz);
-#if false
-                    var t = (BigInteger)0;
-                    for (var x = z + 1; x <= sqrtnz; x++)
-                        t += nz / x;
-#else
                     var t = hyperbolicSum[0].Evaluate(nz, (long)z + 1, (long)sqrtnz);
-#endif
                     sum += 2 * t - sqrtnz * sqrtnz + nz / z;
                 }
             }
@@ -142,26 +123,5 @@ namespace Decompose.Numerics
             sum = 3 * sum + root3 * root3 * root3;
             return sum;
         }
-
-#if false
-        public void Test1(int kmax)
-        {
-            var roots = new int[kmax+1];
-            AddRoots(kmax, roots, 1);
-            for (var j = 
-        }
-
-        public void AddRoot(int root, int[] roots, int factor)
-        {
-            roots[root] += factor;
-        }
-
-        public void AddRoots(int n, int skip, int[] roots, int factor)
-        {
-            AddRoot(1, roots, factor);
-            for (int j = 2; j <= kmax; j++)
-                AddRoots(j, roots, -factor);
-        }
-#endif
     }
 }

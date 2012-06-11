@@ -190,23 +190,6 @@ namespace Sandbox
 
         static void ParityTest()
         {
-#if false
-            var algorithm = new PrimeCountingMod3();
-#endif
-
-#if false
-            var p = 3;
-            var p2 = p * p;
-            var mu = new MobiusCollection(1000, 0);
-            for (int i = 1; i <= 40; i++)
-            {
-                var smt = IntegerMath.Binomial(i + p - 1, i);
-                if (i >= p)
-                    smt -= IntegerMath.Binomial(i - 1, i - p);
-                Console.WriteLine("i = {0}, smt(i) = {1}, smt(i)%{2} = {3}", i, smt, p2, smt / p % p);
-            }
-#endif
-
 #if true
             var algorithm1 = new PrimeCounting(0);
             var algorithm2 = new PrimeCountingMod3(8);
@@ -223,6 +206,42 @@ namespace Sandbox
                         Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}", i, p1, p2);
                 }
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
+#endif
+
+#if false
+            var mu = new MobiusCollection((1 << 20) + 1, 8);
+            var p = 5;
+#if true
+            for (int pow = 1; pow <= 50; pow++)
+            {
+                var n = (BigInteger)1 << pow;
+                var root = IntegerMath.FloorRoot(n, p);
+#else
+            for (var n = (BigInteger)1; n <= 1000; n++)
+            {
+                var root = n;
+#endif
+                var sum = (BigInteger)0;
+                for (int i = 1; i <= root; i++)
+                    sum += mu[i] * IntegerMath.Power(root / i, p);
+                //sum = (sum - 1) / p;
+                Debug.Assert((sum - 1) % (p * p) % p == 0);
+                sum = (sum - 1) % (p * p) / p;
+                Console.WriteLine("n = {0}, sum = {1}", n, sum);
+            }
+#endif
+
+#if false
+            var p = 3;
+            var p2 = p * p;
+            var mu = new MobiusCollection(1000, 0);
+            for (int i = 1; i <= 40; i++)
+            {
+                var smt = IntegerMath.Binomial(i + p - 1, i);
+                if (i >= p)
+                    smt -= IntegerMath.Binomial(i - 1, i - p);
+                Console.WriteLine("i = {0}, smt(i) = {1}, smt(i)%{2} = {3}", i, smt, p2, smt / p % p);
             }
 #endif
 

@@ -58,11 +58,7 @@
   </eqnarray*>
 
   <\equation*>
-    n=<big|prod><rsup|k><rsub|i=1>p<rsub|i><rsup|a<rsub|i>>,d<rsub|k><around*|(|n|)>=<big|sum><rsup|k><rsub|i=1><binom|a<rsub|i>+k-1|a<rsub|i>>
-  </equation*>
-
-  <\equation*>
-    <tabular|<tformat|<table|<row|<cell|b,>|<cell|a,>|<cell|c>>>>>
+    n=<big|prod><rsup|k><rsub|i=1>p<rsub|i><rsup|a<rsub|i>>,d<rsub|i><around*|(|n|)>=<big|prod><rsup|k><rsub|i=1><binom|a<rsub|i>+i-1|a<rsub|i>>
   </equation*>
 
   <\eqnarray*>
@@ -107,20 +103,92 @@
 
   <math|\<pi\><around*|(|n|)> mod 3>
 
+  Characterize
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|f<rsub|3><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|d:d<rsup|3><around*|\||n|\<nobracket\>>><rsub|>\<mu\><around*|(|d|)>*\<tau\><rsub|3><around*|(|<frac|n|d<rsup|3>>|)>>>>>
+  </eqnarray*>
+
+  For prime power <math|p<rsup|a>>
+
+  <\equation*>
+    \<tau\><rsub|3><around*|(|p<rsup|<rsup|a>>|)>=<binom|a+2|a>
+  </equation*>
+
+  For <math|1\<less\>a\<less\>3> the only cube <math|p<rsup|a>> is divisible
+  by is <math|1<rsup|3>>
+
+  <\equation*>
+    f<rsub|3><around*|(|p<rsup|a>|)>=\<mu\><around*|(|1|)>*\<tau\><rsub|3><around*|(|<frac|p<rsup|a>|1<rsup|3>>|)>=1\<cdot\>\<tau\><rsub|3><around*|(|p<rsup|a>|)>=<binom|a+2|a>,f<rsub|3><around*|(|p|)>=<binom|3|1>=3,f<rsub|3><around*|(|p<rsup|2>|)>=<binom|3|2>=6
+  </equation*>
+
+  and so
+
+  <\equation*>
+    f<rsub|3><around*|(|p<rsup|a>|)>=3*a\<nocomma\>,1\<less\>a\<less\>3
+  </equation*>
+
+  For <math|a\<geq\>3> <math|p<rsup|a>> is divisible by the cubes
+  <math|1<rsup|3>> and <math|p<rsup|3>>, noting
+  <math|\<mu\><around*|(|p|)>=-1>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|f<rsub|3><around*|(|p<rsup|a>|)>>|<cell|=>|<cell|\<mu\><around*|(|1|)>*\<tau\><rsub|3><around*|(|<frac|p<rsup|a>|1<rsup|3>>|)>+\<mu\><around*|(|p|)>*\<tau\><rsub|3><around*|(|<frac|p<rsup|a>|p<rsup|3>>|)>>>|<row|<cell|>|<cell|=>|<cell|1\<cdot\>\<tau\><rsub|3><around*|(|p<rsup|a>|)>-1\<cdot\>\<tau\><rsub|3><around*|(|p<rsup|a-3>|)>>>|<row|<cell|>|<cell|=>|<cell|<binom|a+2|a>-<binom|a-1|a-3>>>|<row|<cell|>|<cell|=>|<cell|3*a>>>>
+  </eqnarray*>
+
+  and so
+
+  <\equation*>
+    f<rsub|3><around*|(|p<rsup|a>|)>=3*a,a\<geq\>3
+  </equation*>
+
+  and combining
+
+  <\equation*>
+    f<rsub|3><around*|(|p<rsup|a>|)>=3*a,a\<gtr\>1
+  </equation*>
+
+  For composite <math|n>
+
+  <\equation*>
+    n=<big|prod><rsup|k><rsub|i=1>p<rsub|i><rsup|a<rsub|i>>,\<tau\><rsub|3><around*|(|n|)>=<big|prod><rsup|k><rsub|i=1><binom|a<rsub|i>+2|a<rsub|i>>
+  </equation*>
+
+  \;
+
   <\eqnarray*>
     <tformat|<table|<row|<cell|F<rsub|p><around*|(|x|)>>|<cell|=>|<cell|<around*|(|<big|sum><rsup|<around*|\<lfloor\>|x<rsup|1/p>|\<rfloor\>>><rsub|j=1>\<mu\><around*|(|j|)>*T<rsub|p><around*|(|<around*|\<lfloor\>|<frac|x<rsup|>|j<rsup|p>>|\<rfloor\>>|)>-1|)>/p>>>>
   </eqnarray*>
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|\<pi\><around*|(|n|)>>|<cell|\<equiv\>>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
-    n|\<rfloor\>>><rsub|k=1>\<mu\><around*|(|k|)>*F<rsub|2><around*|(|n<rsup|1/k>|)>
+    n|\<rfloor\>>><rsub|k=1>\<mu\><around*|(|k|)>*F<rsub|2><around*|(|<around*|\<lfloor\>|n<rsup|1/k>|\<rfloor\>>|)>
     <around*|(|mod 2|)>>>>>
   </eqnarray*>
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|\<pi\><around*|(|n|)>>|<cell|\<equiv\>>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
-    n|\<rfloor\>>><rsub|k=1>k*\<mu\><around*|(|k|)>*F<rsub|3><around*|(|n<rsup|1/k>|)>
+    n|\<rfloor\>>><rsub|k=1>k*\<mu\><around*|(|k|)>*F<rsub|3><around*|(|<around*|\<lfloor\>|n<rsup|1/k>|\<rfloor\>>|)>
     <around*|(|mod 3|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|i\<leq\><around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>>\<mu\><around*|(|i|)>*<around*|\<lfloor\>|<frac|<sqrt|n|3>|i>|\<rfloor\>><rsup|3>>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><rsub|i=1>i<rsup|3>*<big|sum><rsup|<frac|<around*|\<lfloor\>|<frac|<sqrt|n|3>|i>|\<rfloor\>>|>><rsub|j=<around*|\<lfloor\>|<frac|<sqrt|n|3>|i+1>|\<rfloor\>>+1>\<mu\><around*|(|j|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><rsub|i=1>i<rsup|3>*<around*|[|M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|i>|\<rfloor\>>|)>-M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|i+1>|\<rfloor\>>|)>|]>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|1*<around*|[|M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|1>|\<rfloor\>>|)>-M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|2>|\<rfloor\>>|)>|]>+>>|<row|<cell|>|<cell|>|<cell|-1*<around*|[|M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|2>|\<rfloor\>>|)>-M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|3>|\<rfloor\>>|)>|]>+>>|<row|<cell|>|<cell|>|<cell|1*<around*|[|M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|4>|\<rfloor\>>|)>-M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|5>|\<rfloor\>>|)>|]>+>>|<row|<cell|>|<cell|>|<cell|\<ldots\>
+    <around*|(|mod 9|)>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|1>|\<rfloor\>>|)>-2*M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|2>|\<rfloor\>>|)>+M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|3>|\<rfloor\>>|)>+>>|<row|<cell|>|<cell|>|<cell|M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|4>|\<rfloor\>>|)>-2*M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|5>|\<rfloor\>>|)>+M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|6>|\<rfloor\>>|)>+>>|<row|<cell|>|<cell|>|<cell|\<ldots\>
+    <around*|(|mod 9|)>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|<big|sum><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><rsub|i=1>M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|i>|\<rfloor\>>|)>-3*<big|sum><rsup|<around*|\<lfloor\>|<sqrt|n|3>/3|\<rfloor\>>><rsub|j=1>M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|3*j-1>|\<rfloor\>>|)>
+    <around*|(|mod 9|)>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|1-3*<big|sum><rsup|<around*|\<lfloor\>|<sqrt|n|3>/3|\<rfloor\>>><rsub|j=1>M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|3*j-1>|\<rfloor\>>|)>
+    <around*|(|mod 9|)>>>>>
+  </eqnarray*>
+
+  \;
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsup|<around*|\<lfloor\>|<sqrt|n|3>/3|\<rfloor\>>><rsub|j=1>M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|3*j-1>|\<rfloor\>>|)><rsup|>>|<cell|=>|<cell|M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|2>|\<rfloor\>>|)>+M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|5>|\<rfloor\>>|)>+M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|8>|\<rfloor\>>|)>+\<ldots\>>>|<row|<cell|>|<cell|=>|<cell|<around*|(|M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|2>|\<rfloor\>>|)>-M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|5>|\<rfloor\>>|)>|)>+2*<around*|(|M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|5>|\<rfloor\>>|)>-M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|8>|\<rfloor\>>|)>|)>+\<ldots\>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|i=<around*|\<lfloor\>|<sqrt|n|3>/5|\<rfloor\>>+1><rsup|<around*|\<lfloor\>|<sqrt|n|3>/2|\<rfloor\>>>\<mu\><around*|(|i|)>+2*<big|sum><rsub|i=<around*|\<lfloor\>|<sqrt|n|3>/8|\<rfloor\>>+1><rsup|<around*|\<lfloor\>|<sqrt|n|3>/5|\<rfloor\>>>\<mu\><around*|(|i|)>+\<ldots\>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|j=1><rsup|<around*|\<lfloor\>|<sqrt|n|3>/3|\<rfloor\>>-1>j*<big|sum><rsup|<around*|\<lfloor\>|<sqrt|n|3>/<around*|(|3*j-1|)>|\<rfloor\>>><rsub|i=<around*|\<lfloor\>|<sqrt|n|3>/<around*|(|3*j+2|)>|\<rfloor\>>>\<mu\><around*|(|i|)><rsup|>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|<big|sum><rsub|j=1><rsup|<around*|\<lfloor\>|<sqrt|n|3>/9|\<rfloor\>>-1><around*|(|*<big|sum><rsup|<around*|\<lfloor\>|<sqrt|n|3>/<around*|(|9*j-1|)>|\<rfloor\>>><rsub|i=<around*|\<lfloor\>|<sqrt|n|3>/<around*|(|9*j+2|)>|\<rfloor\>>>\<mu\><around*|(|i|)>-<big|sum><rsup|<around*|\<lfloor\>|<sqrt|n|3>/<around*|(|9*j+2|)>|\<rfloor\>>><rsub|i=<around*|\<lfloor\>|<sqrt|n|3>/<around*|(|9*j+5|)>|\<rfloor\>>>\<mu\><around*|(|i|)>|)><rsup|>
+    <around*|(|mod 3|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|F<rsub|3><around*|(|x|)>>|<cell|=>|<cell|<around*|(|<big|sum><rsup|<around*|\<lfloor\>|x<rsup|1/3>|\<rfloor\>>><rsub|j=1>\<mu\><around*|(|j|)>*T<rsub|3><around*|(|<around*|\<lfloor\>|<frac|x<rsup|>|j<rsup|3>>|\<rfloor\>>|)>-1|)>/3>>>>
   </eqnarray*>
 
   \;

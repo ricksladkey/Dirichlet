@@ -59,6 +59,7 @@
     <Compile Include="Collections\SetBitMatrix.cs" />
     <Compile Include="Collections\IntegerSet.cs" />
     <Compile Include="Core\Rational.cs" />
+    <Compile Include="IntegerMath\Arithmetic.cs" />
     <Compile Include="IntegerMath\Binomial.cs" />
     <Compile Include="IntegerMath\Factorial.cs" />
     <Compile Include="IntegerMath\Log.cs" />
