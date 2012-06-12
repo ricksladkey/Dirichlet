@@ -101,77 +101,6 @@
 
   \;
 
-  <math|\<pi\><around*|(|n|)> mod 3>
-
-  Characterize
-
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|f<rsub|3><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|d:d<rsup|3><around*|\||n|\<nobracket\>>><rsub|>\<mu\><around*|(|d|)>*\<tau\><rsub|3><around*|(|<frac|n|d<rsup|3>>|)>>>>>
-  </eqnarray*>
-
-  For prime power <math|p<rsup|a>>
-
-  <\equation*>
-    \<tau\><rsub|3><around*|(|p<rsup|<rsup|a>>|)>=<binom|a+2|a>
-  </equation*>
-
-  For <math|1\<less\>a\<less\>3> the only cube <math|p<rsup|a>> is divisible
-  by is <math|1<rsup|3>>
-
-  <\equation*>
-    f<rsub|3><around*|(|p<rsup|a>|)>=\<mu\><around*|(|1|)>*\<tau\><rsub|3><around*|(|<frac|p<rsup|a>|1<rsup|3>>|)>=1\<cdot\>\<tau\><rsub|3><around*|(|p<rsup|a>|)>=<binom|a+2|a>,f<rsub|3><around*|(|p|)>=<binom|3|1>=3,f<rsub|3><around*|(|p<rsup|2>|)>=<binom|3|2>=6
-  </equation*>
-
-  and so
-
-  <\equation*>
-    f<rsub|3><around*|(|p<rsup|a>|)>=3*a\<nocomma\>,1\<less\>a\<less\>3
-  </equation*>
-
-  For <math|a\<geq\>3> <math|p<rsup|a>> is divisible by the cubes
-  <math|1<rsup|3>> and <math|p<rsup|3>>, noting
-  <math|\<mu\><around*|(|p|)>=-1>
-
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|f<rsub|3><around*|(|p<rsup|a>|)>>|<cell|=>|<cell|\<mu\><around*|(|1|)>*\<tau\><rsub|3><around*|(|<frac|p<rsup|a>|1<rsup|3>>|)>+\<mu\><around*|(|p|)>*\<tau\><rsub|3><around*|(|<frac|p<rsup|a>|p<rsup|3>>|)>>>|<row|<cell|>|<cell|=>|<cell|1\<cdot\>\<tau\><rsub|3><around*|(|p<rsup|a>|)>-1\<cdot\>\<tau\><rsub|3><around*|(|p<rsup|a-3>|)>>>|<row|<cell|>|<cell|=>|<cell|<binom|a+2|a>-<binom|a-1|a-3>>>|<row|<cell|>|<cell|=>|<cell|3*a>>>>
-  </eqnarray*>
-
-  and so
-
-  <\equation*>
-    f<rsub|3><around*|(|p<rsup|a>|)>=3*a,a\<geq\>3
-  </equation*>
-
-  and combining
-
-  <\equation*>
-    f<rsub|3><around*|(|p<rsup|a>|)>=3*a,a\<gtr\>1
-  </equation*>
-
-  For composite <math|n>
-
-  <\equation*>
-    n=<big|prod><rsup|k><rsub|i=1>p<rsub|i><rsup|a<rsub|i>>,\<tau\><rsub|3><around*|(|n|)>=<big|prod><rsup|k><rsub|i=1><binom|a<rsub|i>+2|a<rsub|i>>
-  </equation*>
-
-  \;
-
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|F<rsub|p><around*|(|x|)>>|<cell|=>|<cell|<around*|(|<big|sum><rsup|<around*|\<lfloor\>|x<rsup|1/p>|\<rfloor\>>><rsub|j=1>\<mu\><around*|(|j|)>*T<rsub|p><around*|(|<around*|\<lfloor\>|<frac|x<rsup|>|j<rsup|p>>|\<rfloor\>>|)>-1|)>/p>>>>
-  </eqnarray*>
-
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|\<pi\><around*|(|n|)>>|<cell|\<equiv\>>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
-    n|\<rfloor\>>><rsub|k=1>\<mu\><around*|(|k|)>*F<rsub|2><around*|(|<around*|\<lfloor\>|n<rsup|1/k>|\<rfloor\>>|)>
-    <around*|(|mod 2|)>>>>>
-  </eqnarray*>
-
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|\<pi\><around*|(|n|)>>|<cell|\<equiv\>>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
-    n|\<rfloor\>>><rsub|k=1>k*\<mu\><around*|(|k|)>*F<rsub|3><around*|(|<around*|\<lfloor\>|n<rsup|1/k>|\<rfloor\>>|)>
-    <around*|(|mod 3|)>>>>>
-  </eqnarray*>
-
   <\eqnarray*>
     <tformat|<table|<row|<cell|<big|sum><rsub|i\<leq\><around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>>\<mu\><around*|(|i|)>*<around*|\<lfloor\>|<frac|<sqrt|n|3>|i>|\<rfloor\>><rsup|3>>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><rsub|i=1>i<rsup|3>*<big|sum><rsup|<frac|<around*|\<lfloor\>|<frac|<sqrt|n|3>|i>|\<rfloor\>>|>><rsub|j=<around*|\<lfloor\>|<frac|<sqrt|n|3>|i+1>|\<rfloor\>>+1>\<mu\><around*|(|j|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><rsub|i=1>i<rsup|3>*<around*|[|M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|i>|\<rfloor\>>|)>-M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|i+1>|\<rfloor\>>|)>|]>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|1*<around*|[|M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|1>|\<rfloor\>>|)>-M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|2>|\<rfloor\>>|)>|]>+>>|<row|<cell|>|<cell|>|<cell|-1*<around*|[|M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|2>|\<rfloor\>>|)>-M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|3>|\<rfloor\>>|)>|]>+>>|<row|<cell|>|<cell|>|<cell|1*<around*|[|M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|4>|\<rfloor\>>|)>-M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|5>|\<rfloor\>>|)>|]>+>>|<row|<cell|>|<cell|>|<cell|\<ldots\>
     <around*|(|mod 9|)>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|1>|\<rfloor\>>|)>-2*M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|2>|\<rfloor\>>|)>+M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|3>|\<rfloor\>>|)>+>>|<row|<cell|>|<cell|>|<cell|M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|4>|\<rfloor\>>|)>-2*M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|5>|\<rfloor\>>|)>+M<around*|(|<around*|\<lfloor\>|<frac|<sqrt|n|3>|6>|\<rfloor\>>|)>+>>|<row|<cell|>|<cell|>|<cell|\<ldots\>
@@ -190,6 +119,51 @@
   <\eqnarray*>
     <tformat|<table|<row|<cell|F<rsub|3><around*|(|x|)>>|<cell|=>|<cell|<around*|(|<big|sum><rsup|<around*|\<lfloor\>|x<rsup|1/3>|\<rfloor\>>><rsub|j=1>\<mu\><around*|(|j|)>*T<rsub|3><around*|(|<around*|\<lfloor\>|<frac|x<rsup|>|j<rsup|3>>|\<rfloor\>>|)>-1|)>/3>>>>
   </eqnarray*>
+
+  Recurrence approach to coefficients <math|c<around*|(|a|)>>
+
+  For <math|a> a square-free product of <math|\<omega\><around*|(|n|)>>
+  distinct primes
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|c<around*|(|a|)>>|<cell|=>|<cell|a*<around*|(|-<binom|\<omega\><around*|(|a|)>|\<omega\><around*|(|a|)>>+<binom|\<omega\><around*|(|a|)>|\<omega\><around*|(|a|)>-1>-<binom|\<omega\><around*|(|a|)>|\<omega\><around*|(|a|)>-2>+\<ldots\>\<pm\><binom|\<omega\><around*|(|a|)>|1>|\<nobracket\>>>>|<row|<cell|>|<cell|=>|<cell|a*<around*|(|-<big|sum><rsup|\<omega\><around*|(|a|)>><rsub|j=0><around*|(|-1|)><rsup|j>*<binom|\<omega\><around*|(|a|)>|\<omega\><around*|(|a|)>-j>+<around*|(|-1|)><rsup|\<omega\><around*|(|a|)>>*<binom|\<omega\><around*|(|a|)>|0>|)>>>|<row|<cell|>|<cell|=>|<cell|a*<around*|(|0+<around*|(|-1|)><rsup|\<omega\><around*|(|a|)>>\<cdot\>1|)>>>|<row|<cell|>|<cell|=>|<cell|a*<around*|(|-1|)><rsup|\<omega\><around*|(|a|)>>>>|<row|<cell|>|<cell|=>|<cell|a*\<mu\><around*|(|a|)>>>>>
+  </eqnarray*>
+
+  Seeing that <math|c<around*|(|1|)>=1>, we can then express
+  <math|c<around*|(|a|)>> for <math|a\<gtr\>1> as a recurrence relation
+
+  <\equation*>
+    c<around*|(|a|)>=-<big|sum><rsub|d\<gtr\>1,d<around*|\||a|\<nobracket\>>>d*c<around*|(|<frac|a|d>|)>
+  </equation*>
+
+  and substituting <math|c<around*|(|a|)>=1\<cdot\>c<around*|(|a/1|)>> and
+  rearranging yields
+
+  <\equation*>
+    <big|sum><rsup|><rsub|d<around*|\||a|\<nobracket\>>>d*c<around*|(|<frac|a|d>|)>=0
+  </equation*>
+
+  Noting that the left hand side is equal to unity if <math|a=1>, we obtain
+
+  <\equation*>
+    <big|sum><rsub|d<around*|\||a|\<nobracket\>>>d*c<around*|(|<frac|a|d>|)>=<choice|<tformat|<table|<row|<cell|1>|<cell|if
+    a=1>>|<row|<cell|0>|<cell|otherwise>>>>>=\<epsilon\><around*|(|a|)>
+  </equation*>
+
+  where <math|\<epsilon\><around*|(|a|)>> is the multiplicative identity.
+  \ If we select
+
+  <\equation*>
+    c<around*|(|n|)>=n*\<mu\><around*|(|n|)>
+  </equation*>
+
+  then substituting gives
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|d<around*|\||a|\<nobracket\>>>d*c<around*|(|<frac|a|d>|)>>|<cell|=>|<cell|<big|sum><rsub|d<around*|\||a|\<nobracket\>>>d*<around*|(|<frac|a|d>*\<mu\><around*|(|<frac|a|d>|)>|)>>>|<row|<cell|>|<cell|=>|<cell|a*<big|sum><rsub|d<around*|\||a|\<nobracket\>>>\<mu\><around*|(|<frac|a|d>|)>>>|<row|<cell|>|<cell|=>|<cell|a<big|sum><rsub|d<around*|\||a|\<nobracket\>>>\<mu\><around*|(|d|)>>>|<row|<cell|>|<cell|=>|<cell|a*\<epsilon\><around*|(|a|)>>>|<row|<cell|>|<cell|=>|<cell|\<epsilon\><around*|(|a|)>>>>>
+  </eqnarray*>
+
+  and thus our choice satisfies the recurrence relation.
 
   \;
 </body>
