@@ -18,7 +18,7 @@ namespace Decompose.Numerics
         private int[] tauSumSmall;
         private int[] mobiusSmall;
 
-        private BigInteger[] piData =
+        private BigInteger[] piData2 =
         {
             BigInteger.Parse("0"),
             BigInteger.Parse("1"),
@@ -98,6 +98,34 @@ namespace Decompose.Numerics
             BigInteger.Parse("741263521140740113483"),
         };
 
+        private BigInteger[] piData10 =
+        {
+            BigInteger.Parse("0"),
+            BigInteger.Parse("4"),
+            BigInteger.Parse("25"),
+            BigInteger.Parse("168"),
+            BigInteger.Parse("1229"),
+            BigInteger.Parse("9592"),
+            BigInteger.Parse("78498"),
+            BigInteger.Parse("664579"),
+            BigInteger.Parse("5761455"),
+            BigInteger.Parse("50847534"),
+            BigInteger.Parse("455052511"),
+            BigInteger.Parse("4118054813"),
+            BigInteger.Parse("37607912018"),
+            BigInteger.Parse("346065536839"),
+            BigInteger.Parse("3204941750802"),
+            BigInteger.Parse("29844570422669"),
+            BigInteger.Parse("279238341033925"),
+            BigInteger.Parse("2623557157654233"),
+            BigInteger.Parse("24739954287740860"),
+            BigInteger.Parse("234057667276344607"),
+            BigInteger.Parse("2220819602560918840"),
+            BigInteger.Parse("21127269486018731928"),
+            BigInteger.Parse("201467286689315906290"),
+            BigInteger.Parse("1925320391606803968923"),
+        };
+
         public PrimeCounting(int threads)
         {
             this.threads = threads;
@@ -131,7 +159,12 @@ namespace Decompose.Numerics
 
         public BigInteger PiPowerOfTwo(int k)
         {
-            return piData[k];
+            return piData2[k];
+        }
+
+        public BigInteger PiPowerOfTen(int k)
+        {
+            return piData10[k];
         }
 
         public int PiWithPowers(int x)

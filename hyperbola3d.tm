@@ -118,7 +118,7 @@
   as
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|<big|sum><rsub|m\<leq\>n>f<rsub|3><around*|(|m|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>n><big|sum><rsub|d:d<rsup|3><around*|\||m|\<nobracket\>>>\<mu\><around*|(|d|)>*\<tau\><rsub|3><around*|(|<frac|m|d<rsup|3>>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|d>\<mu\><around*|(|d|)><big|sum><rsub|m\<leq\>n/d<rsup|3>>\<tau\><rsub|3><around*|(|m|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|n<rsup|1/3>|\<rfloor\>>><rsub|d=1>\<mu\><around*|(|d|)>*T<rsub|3><around*|(|<around*|\<lfloor\>|<frac|n|d<rsup|3>>|\<rfloor\>>|)>>>>>
+    <tformat|<table|<row|<cell|<big|sum><rsup|n><rsub|m=1>f<rsub|3><around*|(|m|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>n><big|sum><rsub|d:d<rsup|3><around*|\||m|\<nobracket\>>>\<mu\><around*|(|d|)>*\<tau\><rsub|3><around*|(|<frac|m|d<rsup|3>>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|d>\<mu\><around*|(|d|)><big|sum><rsub|m\<leq\>n/d<rsup|3>>\<tau\><rsub|3><around*|(|m|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|n<rsup|1/3>|\<rfloor\>>><rsub|d=1>\<mu\><around*|(|d|)>*T<rsub|3><around*|(|<around*|\<lfloor\>|<frac|n|d<rsup|3>>|\<rfloor\>>|)>>>>>
   </eqnarray*>
 
   and so
@@ -151,7 +151,7 @@
   hand side we can turn this into an closed-form expression for
   <math|\<pi\><around*|(|n|)> mod 3> in terms of <math|F<rsub|3>>. \ All the
   terms in the expansion are expressions of the form
-  <math|c*F<rsub|3><around*|(|<around*|\<lfloor\>|n<rsup|1/a>|\<rfloor\>>|)>>
+  <math|C*F<rsub|3><around*|(|<around*|\<lfloor\>|n<rsup|1/a>|\<rfloor\>>|)>>
   (because <math|\<pi\><around*|(|n|)>> is eventually zero for <math|n> small
   enough) and so
 
@@ -160,6 +160,8 @@
     n|\<rfloor\>>><rsub|a=2>a*\<pi\><around*|(|<around*|\<lfloor\>|n<rsup|1/a>|\<rfloor\>>|)>>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
     n|\<rfloor\>>><rsub|a=1>c<around*|(|a|)>*F<rsub|3><around*|(|<around*|\<lfloor\>|n<rsup|1/a>|\<rfloor\>>|)>>>>>
   </eqnarray*>
+
+  for some coefficient function <math|c<around*|(|a|)>>.
 
   Expanding the first two summation levels we obtain
 
@@ -171,11 +173,11 @@
   <math|d<rsub|1*>*d<rsub|2>=a> to <math|c<around*|(|a|)>> for each distinct
   pair of divisors <math|d<rsub|1>,d<rsub|2>\<gtr\>1 >of <math|a>.
 
-  Continuing the process and summing by coefficient <math|c<around*|(|a|)>>
-  gives
+  Continuing the process and summing like terms by coefficient
+  <math|c<around*|(|a|)>> gives
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|c<around*|(|a|)>>|<cell|=>|<cell|-<big|sum><rsub|d<rsub|1>=a><rsup|d<rsub|i>\<gtr\>1>a+<big|sum><rsup|d<rsub|i>\<gtr\>1><rsub|d<rsub|1>*d<rsub|2>=a>a-<big|sum><rsup|d<rsub|i>\<gtr\>1><rsub|d<rsub|1>*d<rsub|2>*d<rsub|3>=a>a+\<ldots\>>>|<row|<cell|>|<cell|=>|<cell|a*<around*|(|-<big|sum><rsup|d<rsub|i>\<gtr\>1><rsub|d<rsub|1>=a>1+<big|sum><rsup|d<rsub|i>\<gtr\>1><rsub|d<rsub|1>*d<rsub|2>=a>1-<big|sum><rsup|d<rsub|i>\<gtr\>1><rsub|d<rsub|1>*d<rsub|2>*d<rsub|3>=a>1+\<ldots\>|)>>>>>
+    <tformat|<table|<row|<cell|c<around*|(|a|)>>|<cell|=>|<cell|<big|sum><rsub|1=a><rsup|d<rsub|i>\<gtr\>1>a-<big|sum><rsub|d<rsub|1>=a><rsup|d<rsub|i>\<gtr\>1>a+<big|sum><rsup|d<rsub|i>\<gtr\>1><rsub|d<rsub|1>*d<rsub|2>=a>a-<big|sum><rsup|d<rsub|i>\<gtr\>1><rsub|d<rsub|1>*d<rsub|2>*d<rsub|3>=a>a+\<ldots\>>>|<row|<cell|>|<cell|=>|<cell|a*<around*|(|<big|sum><rsub|1=a><rsup|d<rsub|i>\<gtr\>1>1-<big|sum><rsup|d<rsub|i>\<gtr\>1><rsub|d<rsub|1>=a>1+<big|sum><rsup|d<rsub|i>\<gtr\>1><rsub|d<rsub|1>*d<rsub|2>=a>1-<big|sum><rsup|d<rsub|i>\<gtr\>1><rsub|d<rsub|1>*d<rsub|2>*d<rsub|3>=a>1+\<ldots\>|)>>>>>
   </eqnarray*>
 
   Introducing the notation <math|t<rsub|j><around*|(|a|)>> for the number of
@@ -183,13 +185,13 @@
   than one (order being distinguished) and using the identity
 
   <\equation*>
-    \<mu\><around*|(|a|)>=<big|sum><rsup|\<infty\>><rsub|j=1><around*|(|-1|)><rsup|j>*t<rsub|j><around*|(|a|)>
+    \<mu\><around*|(|a|)>=<big|sum><rsup|\<infty\>><rsub|j=0><around*|(|-1|)><rsup|j>*t<rsub|j><around*|(|a|)>,a\<geq\>1
   </equation*>
 
   we obtain
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|c<around*|(|a|)>>|<cell|=>|<cell|a*<around*|(|-t<rsub|1><around*|(|a|)>+t<rsub|2><around*|(|a|)>-t<rsub|3><around*|(|a|)>+\<ldots\>|)>>>|<row|<cell|>|<cell|=>|<cell|a*<big|sum><rsup|\<infty\>><rsub|j=1><around*|(|-1|)><rsup|j>*t<rsub|j><around*|(|a|)>>>|<row|<cell|>|<cell|=>|<cell|a*\<mu\><around*|(|a|)>>>>>
+    <tformat|<table|<row|<cell|c<around*|(|a|)>>|<cell|=>|<cell|a*<around*|(|t<rsub|0><around*|(|a|)>-t<rsub|1><around*|(|a|)>+t<rsub|2><around*|(|a|)>-t<rsub|3><around*|(|a|)>+\<ldots\>|)>>>|<row|<cell|>|<cell|=>|<cell|a*<big|sum><rsup|\<infty\>><rsub|j=0><around*|(|-1|)><rsup|j>*t<rsub|j><around*|(|a|)>>>|<row|<cell|>|<cell|=>|<cell|a*\<mu\><around*|(|a|)>>>>>
   </eqnarray*>
 
   Then substituting for <math|c<around*|(|a|)>> in

@@ -706,7 +706,7 @@
     \;
 
     <\math>
-      x<rsub|max>\<leftarrow\><around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>,y<rsub|min>\<leftarrow\><around*|\<lfloor\>|n/x<rsub|max>|\<rfloor\>>,x<rsub|min>\<leftarrow\>min<around*|(|*<around*|\<lceil\>|C<rsub|1>*<sqrt|2*n|3>|\<rceil\>>,x<rsub|max>|)><with|font-series|bold|>
+      x<rsub|max>\<leftarrow\><around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>,y<rsub|min>\<leftarrow\><around*|\<lfloor\>|n/x<rsub|max>|\<rfloor\>>,x<rsub|min>\<leftarrow\>min<around*|(|*<around*|\<lceil\>|C<rsub|1>*<sqrt|2*n|3>|\<rceil\>>,x<rsub|max>|)>
     </math>
 
     <math|s\<leftarrow\>0,a<rsub|2>\<leftarrow\>1,x<rsub|2>\<leftarrow\>x<rsub|max>,y<rsub|2>\<leftarrow\>y<rsub|min>,c<rsub|2>\<leftarrow\>a<rsub|2>*x<rsub|2>+y<rsub|2>>
@@ -815,9 +815,9 @@
   <\algorithm>
     <\math>
       S<rsub|W><around*|(||)>:S<rsub|I><around*|(|w,c<rsub|1>,c<rsub|2>,a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>,2*a<rsub|1>*b<rsub|1>|)>
-
-      S<rsub|H><around*|(||)>:S<rsub|I><around*|(|h,c<rsub|2>,c<rsub|1>,a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2,>2*a<rsub|2>*b<rsub|2>|)>
     </math>
+
+    <math|S<rsub|H><around*|(||)>:S<rsub|I><around*|(|h,c<rsub|2>,c<rsub|1>,a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2,>2*a<rsub|2>*b<rsub|2>|)>>
 
     \;
 
@@ -863,7 +863,7 @@
 
     <\indent>
       <math|s\<leftarrow\>0,x\<leftarrow\>x<rsub|2>,\<beta\>\<leftarrow\><around*|\<lfloor\>|n/<around*|(|x<rsub|>+1|)>|\<rfloor\>>,\<varepsilon\>\<leftarrow\>n
-      <with|font-series|bold|mod <around*|(|x<rsub|>+1|)>>,\<delta\>\<leftarrow\><around*|\<lfloor\>|n/x<rsub|>|\<rfloor\>>-\<beta\>,\<gamma\>\<leftarrow\>\<beta\>-x<rsub|>*\<delta\>>
+      mod <around*|(|x+1|)>,\<delta\>\<leftarrow\><around*|\<lfloor\>|n/x<rsub|>|\<rfloor\>>-\<beta\>,\<gamma\>\<leftarrow\>\<beta\>-x<rsub|>*\<delta\>>
 
       <with|font-series|bold|while> <math|x\<geq\>x<rsub|1>>
       <with|font-series|bold|do>
@@ -913,7 +913,7 @@
       <with|font-series|bold|end> <with|font-series|bold|while>
 
       <\math>
-        \<varepsilon\>\<leftarrow\>n mod <with|font-series|bold|<around*|(|x<rsub|>+1|)>*>,\<delta\>\<leftarrow\><around*|\<lfloor\>|n/x<rsub|>|\<rfloor\>>-\<beta\>,\<gamma\>\<leftarrow\>\<beta\>-x<rsub|>*\<delta\>
+        \<varepsilon\>\<leftarrow\>n mod <around*|(|x+1|)>,\<delta\>\<leftarrow\><around*|\<lfloor\>|n/x<rsub|>|\<rfloor\>>-\<beta\>,\<gamma\>\<leftarrow\>\<beta\>-x<rsub|>*\<delta\>
       </math>
 
       <with|font-series|bold|while> <math|x\<geq\>x<rsub|1>>

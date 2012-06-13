@@ -194,19 +194,40 @@ namespace Sandbox
             var algorithm1 = new PrimeCounting(0);
             var algorithm2 = new PrimeCountingMod3(8);
             var timer = new Stopwatch();
-            for (var i = 50; i <= 50; i++)
+            for (var i = 10; i <= 20; i++)
             {
                 timer.Restart();
                 for (var iterations = 0; iterations < 1; iterations++)
                 {
-                    var n = (BigInteger)1 << i;
-                    var p1 = algorithm1.PiPowerOfTwo(i) % 3;
+                    var n = IntegerMath.Power((BigInteger)10, i);
+                    var p1 = algorithm1.PiPowerOfTen(i) % 3;
                     var p2 = algorithm2.Evaluate(n);
                     if (iterations == 0)
                         Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}", i, p1, p2);
                 }
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
+#endif
+
+#if false
+            // Test showing that n % 3 is optimized by the JIT compiler.
+            var d = new List<int> { 1, 2, 3 }.Count;
+            var timer = new Stopwatch();
+            timer.Restart();
+            var sum1 = (long)0;
+            for (var i = (long)1; i < 1000000000; i++)
+            {
+                sum1 += i % 3;
+            }
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            timer.Restart();
+            var sum2 = (long)0;
+            for (var i = (long)1; i < 1000000000; i++)
+            {
+                sum2 += i % d;
+            }
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);
 #endif
 
 #if false

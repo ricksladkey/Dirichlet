@@ -27,12 +27,7 @@ namespace Decompose.Numerics
 
             int result = delta + 1;
             for (int i = 2; i <= max; i++)
-            {
-                checked
-                {
-                    result = (result * (delta + i)) / i;
-                }
-            }
+                result = (result * (delta + i)) / i;
 
             return result;
         }

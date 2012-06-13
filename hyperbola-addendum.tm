@@ -120,14 +120,22 @@
     <tformat|<table|<row|<cell|F<rsub|3><around*|(|x|)>>|<cell|=>|<cell|<around*|(|<big|sum><rsup|<around*|\<lfloor\>|x<rsup|1/3>|\<rfloor\>>><rsub|j=1>\<mu\><around*|(|j|)>*T<rsub|3><around*|(|<around*|\<lfloor\>|<frac|x<rsup|>|j<rsup|3>>|\<rfloor\>>|)>-1|)>/3>>>>
   </eqnarray*>
 
-  Recurrence approach to coefficients <math|c<around*|(|a|)>>
+  Attempt at proof without Linnik's identity.
 
-  For <math|a> a square-free product of <math|\<omega\><around*|(|n|)>>
+  For <math|a> a square-free product of <math|\<omega\><around*|(|q|)>>
   distinct primes
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|c<around*|(|a|)>>|<cell|=>|<cell|a*<around*|(|-<binom|\<omega\><around*|(|a|)>|\<omega\><around*|(|a|)>>+<binom|\<omega\><around*|(|a|)>|\<omega\><around*|(|a|)>-1>-<binom|\<omega\><around*|(|a|)>|\<omega\><around*|(|a|)>-2>+\<ldots\>\<pm\><binom|\<omega\><around*|(|a|)>|1>|\<nobracket\>>>>|<row|<cell|>|<cell|=>|<cell|a*<around*|(|-<big|sum><rsup|\<omega\><around*|(|a|)>><rsub|j=0><around*|(|-1|)><rsup|j>*<binom|\<omega\><around*|(|a|)>|\<omega\><around*|(|a|)>-j>+<around*|(|-1|)><rsup|\<omega\><around*|(|a|)>>*<binom|\<omega\><around*|(|a|)>|0>|)>>>|<row|<cell|>|<cell|=>|<cell|a*<around*|(|0+<around*|(|-1|)><rsup|\<omega\><around*|(|a|)>>\<cdot\>1|)>>>|<row|<cell|>|<cell|=>|<cell|a*<around*|(|-1|)><rsup|\<omega\><around*|(|a|)>>>>|<row|<cell|>|<cell|=>|<cell|a*\<mu\><around*|(|a|)>>>>>
+    <tformat|<table|<row|<cell|c<around*|(|a|)>>|<cell|=>|<cell|a*<around*|(|-<binom|\<omega\><around*|(|a|)>|\<omega\><around*|(|a|)>>+<binom|\<omega\><around*|(|a|)>|\<omega\><around*|(|a|)>-1>-<binom|\<omega\><around*|(|a|)>|\<omega\><around*|(|a|)>-2>+\<ldots\>\<pm\><binom|\<omega\><around*|(|a|)>|1>|)>>>|<row|<cell|>|<cell|=>|<cell|a*<around*|(|-<big|sum><rsup|\<omega\><around*|(|a|)>><rsub|j=0><around*|(|-1|)><rsup|j>*<binom|\<omega\><around*|(|a|)>|\<omega\><around*|(|a|)>-j>+<around*|(|-1|)><rsup|\<omega\><around*|(|a|)>>*<binom|\<omega\><around*|(|a|)>|0>|)>>>|<row|<cell|>|<cell|=>|<cell|a*<around*|(|0+<around*|(|-1|)><rsup|\<omega\><around*|(|a|)>>\<cdot\>1|)>>>|<row|<cell|>|<cell|=>|<cell|a*<around*|(|-1|)><rsup|\<omega\><around*|(|a|)>>>>|<row|<cell|>|<cell|=>|<cell|a*\<mu\><around*|(|a|)>>>>>
   </eqnarray*>
+
+  for <math|a=p<rsup|b>> a prime power
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|c<around*|(|a|)>>|<cell|=>|<cell|a*<around*|(|-<binom|b|b>+<binom|b+1|b>-<binom|b+1|b>|)>>>>>
+  </eqnarray*>
+
+  Recurrence approach to coefficients <math|c<around*|(|a|)>>
 
   Seeing that <math|c<around*|(|1|)>=1>, we can then express
   <math|c<around*|(|a|)>> for <math|a\<gtr\>1> as a recurrence relation
@@ -165,7 +173,9 @@
 
   and thus our choice satisfies the recurrence relation.
 
-  \;
+  <\equation*>
+    <big|sum><rsub|m\<leq\>n,\<omega\><around*|(|m|)>=2>1=#<around*|{|m:m\<leq\>n,m=p<rsup|a>*q<rsup|b>|}>
+  </equation*>
 </body>
 
 <\initial>
