@@ -18,7 +18,7 @@ namespace Decompose.Numerics
         private int[] tauSumSmall;
         private int[] mobiusSmall;
 
-        private BigInteger[] piData2 =
+        private static BigInteger[] data2 =
         {
             BigInteger.Parse("0"),
             BigInteger.Parse("1"),
@@ -98,7 +98,7 @@ namespace Decompose.Numerics
             BigInteger.Parse("741263521140740113483"),
         };
 
-        private BigInteger[] piData10 =
+        private static BigInteger[] data10 =
         {
             BigInteger.Parse("0"),
             BigInteger.Parse("4"),
@@ -133,7 +133,7 @@ namespace Decompose.Numerics
             var i = 0;
             var count = 0;
             piSmall = new int[n];
-            foreach (var p in new SieveOfErostothones())
+            foreach (var p in new SieveOfEratosthenes())
             {
                 while (i < p && i < n)
                     piSmall[i++] = count;
@@ -157,14 +157,14 @@ namespace Decompose.Numerics
             return new PrimeCollection(x + 1, threads).Count;
         }
 
-        public BigInteger PiPowerOfTwo(int k)
+        public static BigInteger PiPowerOfTwo(int k)
         {
-            return piData2[k];
+            return data2[k];
         }
 
-        public BigInteger PiPowerOfTen(int k)
+        public static BigInteger PiPowerOfTen(int k)
         {
-            return piData10[k];
+            return data10[k];
         }
 
         public int PiWithPowers(int x)

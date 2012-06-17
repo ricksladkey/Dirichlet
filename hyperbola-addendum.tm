@@ -93,6 +93,23 @@
     D<rsub|k,s><around*|(|n|)>=<big|sum><rsup|n<rsup|1/k>><rsub|m=s><big|sum><rsup|k-1><rsub|j=0><binom|k|j>*D<rsub|j,m+1><around*|(|<around*|\<lfloor\>|<frac|n|m<rsup|k-j>>|\<rfloor\>>|)>
   </equation*>
 
+  Why a wheel is used with Linnik's identity.
+
+  <\equation*>
+    <big|sum><rsup|><rsub|k><frac|<around*|(|-1|)><rsup|k+1>|k>*t<rsub|k><around*|(|n|)>=<choice|<tformat|<table|<row|<cell|1/a>|<cell|if
+    p<rsup|a>>>|<row|<cell|0>|<cell|otherwise>>>>>
+  </equation*>
+
+  therefore in
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|\<Pi\><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|k><frac|<around*|(|-1|)><rsup|k+1>|k>*T<rsub|k><around*|(|n|)>>>>>
+  </eqnarray*>
+
+  the inclusion of any <math|t<rsub|k><around*|(|n|)>> contributions can be
+  omitted for <math|n> not a prime power as long as it is omitted for all
+  <math|T<rsub|k><around*|(|n|)>>.
+
   Other stuff:
 
   <\equation*>
@@ -122,7 +139,7 @@
 
   Attempt at proof without Linnik's identity.
 
-  For <math|a> a square-free product of <math|\<omega\><around*|(|q|)>>
+  For <math|a> a square-free product of <math|\<omega\><around*|(|a|)>>
   distinct primes
 
   <\eqnarray*>
@@ -132,7 +149,7 @@
   for <math|a=p<rsup|b>> a prime power
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|c<around*|(|a|)>>|<cell|=>|<cell|a*<around*|(|-<binom|b|b>+<binom|b+1|b>-<binom|b+1|b>|)>>>>>
+    <tformat|<table|<row|<cell|c<around*|(|a|)>>|<cell|=>|<cell|a*<around*|(|-<binom|b|b>+<binom|b+1|b>-<binom|b+2|b>|)>>>>>
   </eqnarray*>
 
   Recurrence approach to coefficients <math|c<around*|(|a|)>>
@@ -176,6 +193,103 @@
   <\equation*>
     <big|sum><rsub|m\<leq\>n,\<omega\><around*|(|m|)>=2>1=#<around*|{|m:m\<leq\>n,m=p<rsup|a>*q<rsup|b>|}>
   </equation*>
+
+  \;
+
+  <\equation*>
+    \;
+  </equation*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|p<rsub|1>*p<rsub|2>\<leq\>n>1>|<cell|=>|<cell|<big|sum><rsub|a\<leq\>n,\<omega\><around*|(|a|)>=2,a
+    squarefree>1>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|p<rsub|1>\<leq\>n>\<pi\><around*|(|<around*|\<lfloor\>|<frac|n|p<rsub|1>>|\<rfloor\>>|)>>>>>
+  </eqnarray*>
+
+  \;
+
+  <\equation*>
+    f<rsub|2,3><around*|(|n|)>=<big|sum><rsub|d<rsup|3><around*|\||n|\<nobracket\>>>\<mu\><around*|(|d|)>*\<tau\><rsub|2><around*|(|<frac|n|d<rsup|3>>|)>
+  </equation*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|f<rsub|2,3><around*|(|1|)>>|<cell|=>|<cell|1>>|<row|<cell|f<rsub|2,3><around*|(|p|)>>|<cell|=>|<cell|2>>|<row|<cell|f<rsub|2,3><around*|(|p<rsup|a>|)>>|<cell|=>|<cell|3,a\<gtr\>1>>|<row|<cell|f<rsub|2,3><around*|(|n|)>>|<cell|=>|<cell|2<rsup|\<omega\><around*|(|n|)>>,n
+    squarefree>>|<row|<cell|f<rsub|2,3><around*|(|n|)>>|<cell|=>|<cell|3*2<rsup|c<rsub|1>*>*3<rsup|c<rsub|2>>,n
+    not squarefree>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|m\<leq\>n>f<rsub|2,3><around*|(|m|)>>|<cell|=>|<cell|1+3*<around*|(|n-S<around*|(|n|)>|)>*C<rsub|1>+2*\<pi\><around*|(|n|)>+4*C<rsub|2>>>>>
+  </eqnarray*>
+
+  <\equation*>
+    \<pi\><around*|(|n|)>\<equiv\><around*|(|<big|sum><rsub|m\<leq\>n>f<rsub|2,3><around*|(|m|)>-1-3*<around*|(|n-S<around*|(|n|)>|)>*C<rsub|1>|)>/2
+    <around*|(|mod 2|)>
+  </equation*>
+
+  <\equation*>
+    f<rsub|2,4><around*|(|n|)>=<big|sum><rsub|d<rsup|4><around*|\||n|\<nobracket\>>>\<mu\><around*|(|d|)>*\<tau\><rsub|2><around*|(|<frac|n|d<rsup|4>>|)>
+  </equation*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|f<rsub|2,4><around*|(|1|)>>|<cell|=>|<cell|1>>|<row|<cell|f<rsub|2,4><around*|(|p|)>>|<cell|=>|<cell|2>>|<row|<cell|f<rsub|2,4><around*|(|p<rsup|2>|)>>|<cell|=>|<cell|3>>|<row|<cell|f<rsub|2,4><around*|(|p<rsup|3>|)>>|<cell|=>|<cell|4>>|<row|<cell|f<rsub|2,4><around*|(|p<rsup|a>|)>>|<cell|=>|<cell|4,a\<gtr\>3>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|T<rsub|2><around*|(|n|)>=<big|sum><rsup|n><rsub|i=1>\<tau\><rsub|2><around*|(|i|)>>|<cell|=>|<cell|2*\<pi\><around*|(|3|)>+<big|sum><rsup|n><rsub|i=5>\<tau\><rsub|1><around*|(|i|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|\<tau\><rsub|0><around*|(|n|)>>|<cell|=>|<cell|<choice|<tformat|<table|<row|<cell|1>|<cell|if
+    n=1>>|<row|<cell|0>|<cell|otherwise>>>>>=\<varepsilon\><around*|(|n|)>>>|<row|<cell|\<tau\><rsub|1><around*|(|n|)>>|<cell|=>|<cell|1=1<around*|(|n|)>>>|<row|<cell|\<tau\><rsub|2><around*|(|n|)>>|<cell|=>|<cell|<big|prod><rsup|\<omega\><around*|(|n|)>><rsub|k=1><around*|(|a<rsub|i>+1|)>=d<around*|(|n|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|\<tau\><rsub|k><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|d>\<tau\><rsub|k-1><around*|(|<frac|n|d>|)>=<around*|(|1
+    \<ast\> \<tau\><rsub|k-1>|)><around*|(|n|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|T<rsub|2><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|n><rsub|i=1>\<tau\><rsub|2><around*|(|i|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsup|n><rsub|i=1>\<tau\><rsub|1><around*|(|i|)>*T<rsub|1><around*|(|<around*|\<lfloor\>|<frac|n|i>|\<rfloor\>>|)>>>|<row|<cell|T<rsub|3><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|n><rsub|i=1>\<tau\><rsub|2><around*|(|i|)>*T<rsub|1><around*|(|<around*|\<lfloor\>|<frac|n|i>|\<rfloor\>>|)>>>>>
+  </eqnarray*>
+
+  Try omitting factors all numbers divisible by two.
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|x:x\<leq\>n,2\<nmid\>x>\<tau\><rsub|2><around*|(|x|)>>|<cell|=>|<cell|2*<big|sum><rsub|x:x\<leq\><sqrt|n>,2\<nmid\>x><around*|\<lceil\>|<frac|<around*|\<lfloor\>|n/x|\<rfloor\>>|2>|\<rceil\>>-<around*|(|<around*|\<lceil\>|<frac|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>|2>|\<rceil\>>|)><rsup|2>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<around*|\<lceil\>|<frac|<around*|\<lfloor\>|n/x|\<rfloor\>>|2>|\<rceil\>>>|<cell|=>|<cell|<frac|<around*|\<lfloor\>|n/x|\<rfloor\>>+1|2>>>|<row|<cell|>|<cell|=>|<cell|<around*|\<lfloor\>|<frac|n+x|2*x>|\<rfloor\>>>>|<row|<cell|>|<cell|=>|<cell|<around*|\<lfloor\>|<frac|n|2*x>|\<rfloor\>>+<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>
+    mod 2>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|T<rsup|><rsub|2,odd><around*|(|n|)>=<big|sum><rsub|x:x\<leq\>n,2\<nmid\>x>\<tau\><rsub|2><around*|(|x|)>>|<cell|=>|<cell|<big|sum><rsub|x:x\<leq\><sqrt|n>,2\<nmid\>x><around*|(|<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>+<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>
+    mod 2|)>-<around*|(|<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>+1|2>|\<rfloor\>>|)><rsup|2>>>>>
+  </eqnarray*>
+
+  Note that:
+
+  <\itemize-dot>
+    <item>The value of <math|T<rsub|2,even><around*|(|n|)>> can be computed
+    from <math|T<rsub|2><around*|(|n/2|)>> and so all terms smaller by a
+    power of <math|2> can be calculated together in the same total time as
+    for <math|T<rsub|2><around*|(|n|)>> alone.
+
+    <item>The included points form a double-size lattice, offset by one, that
+    would allow the successive approximation algorithm to be used for
+    <math|T<rsub|2,odd><around*|(|n|)>> with a simple modification.
+  </itemize-dot>
+
+  \;
+
+  Reorganize <math|T<rsub|3><around*|(|n|)>> by increasing factor of <math|2>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|T<rsub|3><around*|(|n|)>>|<cell|=>|<cell|T<rsub|2><around*|(|<frac|n|1>|)>+T<rsub|2><around*|(|<frac|n|2>|)>+T<rsub|2><around*|(|<frac|n|3>|)>+\<ldots\>+T<rsub|2><around*|(|<frac|n|n>|)>>>|<row|<cell|>|<cell|=>|<cell|T<rsub|2><around*|(|<frac|n|1>|)>+T<rsub|2><around*|(|<frac|n|2>|)>+T<rsub|2><around*|(|<frac|n|4>|)>+T<rsub|2><around*|(|<frac|n|8>|)>+\<ldots\>>>|<row|<cell|>|<cell|+>|<cell|T<rsub|2><around*|(|<frac|n|3>|)>+T<rsub|2><around*|(|<frac|n|6>|)>+T<rsub|2><around*|(|<frac|n|12>|)>+\<ldots\>>>|<row|<cell|>|<cell|+>|<cell|T<rsub|2><around*|(|<frac|n|5>|)>+T<rsub|2><around*|(|<frac|n|10>|)>+T<rsub|2><around*|(|<frac|n|20>|)>+\<ldots\>>>|<row|<cell|>|<cell|+>|<cell|>>>>
+  </eqnarray*>
+
+  \;
 </body>
 
 <\initial>

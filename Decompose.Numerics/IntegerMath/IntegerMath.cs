@@ -19,7 +19,7 @@ namespace Decompose.Numerics
 
         private static void CachePrimes()
         {
-            primes = new SieveOfErostothones()
+            primes = new SieveOfEratosthenes()
                 .TakeWhile(p => p < 1000000)
                 .ToArray();
         }

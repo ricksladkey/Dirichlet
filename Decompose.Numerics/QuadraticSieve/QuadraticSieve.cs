@@ -118,7 +118,7 @@ namespace Decompose.Numerics
             sieveTimeLimit = config.SieveTimeLimit;
             random = new MersenneTwister(0).Create<int>();
             smallIntegerFactorer = new TrialDivisionFactorization();
-            allPrimes = new SieveOfErostothones();
+            allPrimes = new SieveOfEratosthenes();
             solver = new Solver(config.Threads, config.MergeLimit, (diag & Diag.Solving) != 0);
             multiplierCandidates = Enumerable.Range(1, maximumMultiplier)
                 .Where(value => IntegerMath.IsSquareFree(smallIntegerFactorer.Factor(value))).ToArray();

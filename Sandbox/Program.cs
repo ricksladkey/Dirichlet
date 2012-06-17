@@ -191,6 +191,86 @@ namespace Sandbox
         static void ParityTest()
         {
 #if true
+            for (var n = 5; n <= 1000; n += 11)
+            {
+                var h = new string[n + 1, n + 1];
+                for (var i = 1; i <= n; i++)
+                {
+                    for (var j = 1; j <= n; j++)
+                        h[i, j] = i * j <= n ? (i % 2 != 0 && j % 2 != 0 ? "+" : "x") : " ";
+                }
+                var count = 0;
+                for (var i = n; i >= 1; i--)
+                {
+                    var s = "";
+                    for (var j = 1; j <= n; j++)
+                    {
+                        if (h[i, j] == "+")
+                            ++count;
+                        s += h[i, j];
+                    }
+                    //Console.WriteLine(s);
+                }
+                var sqrt = IntegerMath.FloorRoot(n, 2);
+                var sum1 = 0;
+                for (var i = 1; i <= sqrt; i += 2)
+                    sum1 += (n / i + 1) / 2;
+                sum1 = 2 * sum1 - IntegerMath.Power((sqrt + 1) / 2, 2);
+                var sum2 = 0;
+                for (var i = 1; i <= sqrt; i += 2)
+                {
+                    var ni = n / i;
+                    sum2 += ni + (ni & 1);
+                }
+                sum2 -= IntegerMath.Power((sqrt + 1) / 2, 2);
+                Console.WriteLine("count = {0}, sum1 = {1}, sum2 = {2}", count, sum1, sum2);
+            }
+#endif
+
+#if false
+            var algorithm = new DivisionFreeDivisorSummatoryFunction(0, false);
+            var timer = new Stopwatch();
+            for (var i = 5; i <= 20; i++)
+            {
+                timer.Restart();
+                for (var iterations = 0; iterations < 1; iterations++)
+                {
+                    var n = IntegerMath.Power((BigInteger)10, i);
+                    var p1 = PrimeCounting.PiPowerOfTen(i) % 2;
+                    var limit = (int)IntegerMath.FloorRoot(n, 3);
+                    var mu = new MobiusCollection((int)limit + 1, 0);
+                    var sum = (BigInteger)0;
+                    for (var j = 1; j <= limit; j++)
+                        sum += mu[j] * algorithm.Evaluate(n / IntegerMath.Power((BigInteger)j, 3));
+                    var t = sum - 1 - 3 * n + 3 * SquareFreeCounting.PowerOfTen(i);
+                    var p2 = t / 2 % 2;
+                    if (iterations == 0)
+                        Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}", i, p1, p2);
+                }
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
+#endif
+
+#if false
+            for (int j = 1; j <= 5; j++)
+            {
+                var timer = new Stopwatch();
+                timer.Restart();
+                var mu1 = SimplerMobiusCollection.GetMu(1000000);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                timer.Restart();
+                var mu2 = new SimpleMobiusCollection(1000000 + 1);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#if true
+                for (int i = 1; i <= 1000000; i++)
+                {
+                    if (mu1[i] != mu2[i])
+                        output.WriteLine("mu1[{0}] = {1}, mu2[{2}] = {3}", i, mu1[i], i, mu2[i]);
+                }
+#endif
+            }
+#endif
+#if false
             var algorithm1 = new PrimeCounting(0);
             var algorithm2 = new PrimeCountingMod3(8);
             var timer = new Stopwatch();
@@ -269,10 +349,12 @@ namespace Sandbox
 #if false
             var algorithm1 = new DivisionFreeDivisorSummatoryFunction(1, false);
             var algorithm2 = new Divisors();
+            var n = 1000;
             //var result = algorithm.primeCountingFunction(100);
-            var result1 = algorithm1.Evaluate(100);
-            var result2 = algorithm2.countprimes3(100);
-            Console.WriteLine("n = 100, result1 = {0}, result2 = {1}", result1, result2);
+            var result1 = algorithm1.Evaluate(n) - 2 * n + 1;
+            var result2 = algorithm2.Evaluate(n);
+            var result3 = algorithm2.countdivisorsfast(n, 2, 2);
+            Console.WriteLine("n = 100, result1 = {0}, result2 = {1}, result3 = {2}", result1, result2, result3);
 #endif
 
 #if false
@@ -647,7 +729,7 @@ namespace Sandbox
 #endif
 
 #if false
-            var primes = new SieveOfErostothones().Take(10).ToArray();
+            var primes = new SieveOfEratosthenes().Take(10).ToArray();
             for (var i = 0; i < primes.Length - 1; i++)
             {
                 for (var j = i + 1; j < primes.Length; j++)

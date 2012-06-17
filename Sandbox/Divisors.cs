@@ -452,7 +452,7 @@ namespace Sandbox
             return factorial(val) / (factorial(div) * factorial(val - div));
         }
 
-        double countdivisorsfast(BigInt n, BigInt k, BigInt a)
+        public double countdivisorsfast(BigInt n, BigInt k, BigInt a)
         {
             if (k == 0) return 1;
             if (k == 1) return n - a + 1;

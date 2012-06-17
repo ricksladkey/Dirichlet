@@ -59,7 +59,7 @@ namespace Decompose.Numerics.Test
         public void TestPrimality2()
         {
             var algorithm = MillerRabin.Create(16, new UInt32MontgomeryReduction());
-            Assert.IsTrue(new SieveOfErostothones().Take(10000).All(prime => algorithm.IsPrime((uint)prime)));
+            Assert.IsTrue(new SieveOfEratosthenes().Take(10000).All(prime => algorithm.IsPrime((uint)prime)));
         }
 
         [TestMethod]
@@ -491,9 +491,9 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void SieveOfErostothonesTest1()
+        public void SieveOfEratosthenesTest1()
         {
-            var primes = new SieveOfErostothones();
+            var primes = new SieveOfEratosthenes();
             int iterations = 1 << 18;
             for (int repetition = 1; repetition <= 2; repetition++)
             {

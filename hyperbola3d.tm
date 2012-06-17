@@ -3,8 +3,32 @@
 <style|generic>
 
 <\body>
-  By the fundemental theorem of arithmetic any whole number <math|n> can be
-  expressed as
+  The normal divisor function <math|\<tau\><around*|(|n|)>> (also known as
+  <math|d<around*|(|n|)>>) counts the number of ways that <math|n> can be
+  expressed as the ordered product of two integers
+
+  <\equation*>
+    \<tau\><rsub|><around*|(|n|)>=<big|sum><rsub|d<rsup|><rsub|1>*d<rsub|2>=n>1=<big|sum><rsub|d<around*|\||n|\<nobracket\>>>1
+  </equation*>
+
+  which can be generalized to other numbers of factors and so we can use the
+  notation <math|\<tau\><rsub|2><around*|(|n|)>=\<tau\><around*|(|n|)>> and
+  define <math|\<tau\><rsub|k><around*|(|n|)>> to be the number of ways that
+  <math|n> can be expressed as an ordered product of <math|k> integers.
+  \ Then
+
+  <\equation*>
+    \<tau\><rsub|3><around*|(|n|)>=<big|sum><rsub|d<rsub|1>*d<rsub|2>*d<rsub|3>=n>1=<big|sum><rsub|d<around*|\||n|\<nobracket\>>>\<tau\><rsub|><around*|(|<frac|n|d>|)>
+  </equation*>
+
+  and therefore <math|\<tau\><rsub|3><around*|(|n|)>> is multiplicative
+  becaue it is the Dirichlet convolution <math|1<around*|(|n|)>\<ast\>\<tau\><around*|(|n|)>>
+  of multiplicative functions.
+
+  The value of all <math|\<tau\><rsub|k><around*|(|n|)>> function is
+  determined entirely by the exponents in the prime decomposition of
+  <math|n>. By the fundemental theorem of arithmetic any whole number
+  <math|n> can be expressed uniquely as
 
   <\equation*>
     n=<big|prod><rsup|\<omega\><around*|(|n|)>><rsub|i=1>p<rsub|i><rsup|a<rsub|i>>
@@ -12,9 +36,17 @@
 
   where <math|\<omega\><around*|(|n|)>> is the number of distinct prime
   factors of <math|n>, <math|p<rsub|i>> is prime, and
-  <math|a<rsub|i>\<geq\>1>
+  <math|a<rsub|i>\<geq\>1>. A prime power <math|p<rsup|a>> has the divisors
+  <math|1,p,p<rsup|2>,\<ldots\>,p<rsup|a>> each of which has
+  <math|\<tau\><rsub|><around*|(|<frac|n|d>|)>> equal to
+  <math|a+1,a,a-1,\<ldots\>,1> and so <math|\<tau\><rsub|3><around*|(|p<rsup|a>|)>>
+  is
 
-  Calculating <math|\<tau\><rsub|3><around*|(|n|)>>
+  <\equation*>
+    \<tau\><rsub|3><around*|(|p<rsup|a>|)>=<around*|(|a+1|)>+a+<around*|(|a-1|)>+\<ldots\>+1=<frac|<around*|(|a+1|)>*<around*|(|a+2|)>|2>=<binom|a+2|a>
+  </equation*>
+
+  and then using multiplicativity
 
   <\equation*>
     \<tau\><rsub|3><around*|(|n|)>=<big|prod><rsup|\<omega\><around*|(|n|)>><rsub|i=1><binom|a<rsub|i>+2|a<rsub|i>>
@@ -25,6 +57,10 @@
   <\eqnarray*>
     <tformat|<table|<row|<cell|f<rsub|3><around*|(|n|)>>|<cell|\<assign\>>|<cell|<big|sum><rsub|d:d<rsup|3><around*|\||n|\<nobracket\>>><rsub|>\<mu\><around*|(|d|)>*\<tau\><rsub|3><around*|(|<frac|n|d<rsup|3>>|)>>>>>
   </eqnarray*>
+
+  We will show that <math|f<rsub|3><around*|(|n|)>> is multiplicative and
+  that it has useful properties for computing the prime counting function
+  <math|\<pi\><around*|(|n|)> mod 3>.
 
   Clearly
 
@@ -70,7 +106,10 @@
   </equation*>
 
   For <math|a\<geq\>3> <math|p<rsup|a>> is divisible by the cubes
-  <math|1<rsup|3>> and <math|p<rsup|3>> resulting in
+  <math|1<rsup|3>> and <math|p<rsup|3>> and possibly higher powers
+  <math|<around*|(|p<rsup|b>|)><rsup|3>> where <math|b\<gtr\>1> but in those
+  cases <math|\<mu\><around*|(|p<rsup|b>|)>=0> because the value being cubed
+  is not square-free. \ Therefore
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|f<rsub|3><around*|(|p<rsup|a>|)>>|<cell|=>|<cell|\<mu\><around*|(|1|)>*\<tau\><rsub|3><around*|(|<frac|p<rsup|a>|1<rsup|3>>|)>+\<mu\><around*|(|p|)>*\<tau\><rsub|3><around*|(|<frac|p<rsup|a>|p<rsup|3>>|)>>>|<row|<cell|>|<cell|=>|<cell|1\<cdot\>\<tau\><rsub|3><around*|(|p<rsup|a>|)>-1\<cdot\>\<tau\><rsub|3><around*|(|p<rsup|a-3>|)>>>|<row|<cell|>|<cell|=>|<cell|<binom|a+2|a>-<binom|a-1|a-3>>>|<row|<cell|>|<cell|=>|<cell|<frac|<around*|(|a+1|)>*<around*|(|a+2|)>|2>-<frac|<around*|(|a-2|)>*<around*|(|*a-1|)>|2>>>|<row|<cell|>|<cell|=>|<cell|3*a>>>>
@@ -166,12 +205,14 @@
   Expanding the first two summation levels we obtain
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|\<pi\><rsub|3><around*|(|n|)>>|<cell|=>|<cell|F<rsub|3><around*|(|n|)>-<big|sum><rsub|a\<gtr\>1><around*|[|a*<around*|(|F<rsub|3><around*|(|<around*|\<lfloor\>|n<rsup|1/a>|\<rfloor\>>|)>-<big|sum><rsub|b\<gtr\>1>b*\<pi\><around*|(|<around*|\<lfloor\>|n<rsup|1/<around*|(|a*b|)>>|\<rfloor\>>|)>|)>|]>>>|<row|<cell|>|<cell|=>|<cell|F<rsub|3><around*|(|n|)>-<big|sum><rsub|a\<gtr\>1>a*F<rsub|3><around*|(|<around*|\<lfloor\>|n<rsup|1/a>|\<rfloor\>>|)>+<big|sum><rsub|d<rsub|1>\<gtr\>1><big|sum><rsub|d<rsub|2>\<gtr\>1>d<rsub|1>*d<rsub|2>*\<pi\><around*|(|<around*|\<lfloor\>|n<rsup|1/<around*|(|d<rsub|1>*d<rsub|2>|)>>|\<rfloor\>>|)>>>|<row|<cell|>|<cell|=>|<cell|F<rsub|3><around*|(|n|)>-<big|sum><rsub|a\<gtr\>1>a*F<rsub|3><around*|(|<around*|\<lfloor\>|n<rsup|1/a>|\<rfloor\>>|)>+<big|sum><rsub|d<rsub|2>\<gtr\>1><big|sum><rsub|d<rsub|2>\<gtr\>1>d<rsub|1>*d<rsub|2>*F<rsub|3><around*|(|<around*|\<lfloor\>|n<rsup|1/<around*|(|d<rsub|1>d<rsub|2>|)>>|\<rfloor\>>|)>+\<ldots\>>>>>
+    <tformat|<table|<row|<cell|\<pi\><rsub|3><around*|(|n|)>>|<cell|=>|<cell|F<rsub|3><around*|(|n|)>-<big|sum><rsub|d<rsub|1>\<gtr\>1><around*|[|d<rsub|1>*<around*|(|F<rsub|3><around*|(|<around*|\<lfloor\>|n<rsup|1/d<rsub|1>>|\<rfloor\>>|)>-<big|sum><rsub|d<rsub|2>\<gtr\>1>d<rsub|2>*\<pi\><around*|(|<around*|\<lfloor\>|n<rsup|1/<around*|(|d<rsub|1>*d<rsub|2>|)>>|\<rfloor\>>|)>|)>|]>>>|<row|<cell|>|<cell|=>|<cell|F<rsub|3><around*|(|n|)>-<big|sum><rsub|d<rsub|1>\<gtr\>1>d<rsub|1>*F<rsub|3><around*|(|<around*|\<lfloor\>|n<rsup|1/d<rsub|1>>|\<rfloor\>>|)>+<big|sum><rsub|d<rsub|1>\<gtr\>1><big|sum><rsub|d<rsub|2>\<gtr\>1>d<rsub|1>*d<rsub|2>*\<pi\><around*|(|<around*|\<lfloor\>|n<rsup|1/<around*|(|d<rsub|1>*d<rsub|2>|)>>|\<rfloor\>>|)>>>|<row|<cell|>|<cell|=>|<cell|F<rsub|3><around*|(|n|)>-<big|sum><rsub|d<rsub|1>\<gtr\>1>d<rsub|1>*F<rsub|3><around*|(|<around*|\<lfloor\>|n<rsup|1/d<rsub|1>>|\<rfloor\>>|)>+<big|sum><rsub|d<rsub|2>\<gtr\>1><big|sum><rsub|d<rsub|2>\<gtr\>1>d<rsub|1>*d<rsub|2>*F<rsub|3><around*|(|<around*|\<lfloor\>|n<rsup|1/<around*|(|d<rsub|1>d<rsub|2>|)>>|\<rfloor\>>|)>-\<ldots\>>>>>
   </eqnarray*>
 
-  and so the double summation contributes an additional
-  <math|d<rsub|1*>*d<rsub|2>=a> to <math|c<around*|(|a|)>> for each distinct
-  pair of divisors <math|d<rsub|1>,d<rsub|2>\<gtr\>1 >of <math|a>.
+  and so the first summation contributes an additional <math|-d<rsub|1>> to
+  <math|c<around*|(|d<rsub|1>|)>> for each <math|d<rsub|1>\<gtr\>1> and the
+  double summation contributes an additional <math|d<rsub|1*>*d<rsub|2>> to
+  <math|c<around*|(|d<rsub|1*>*d<rsub|2>|)>> for each distinct pair of
+  divisors <math|d<rsub|1>,d<rsub|2>\<gtr\>1 >of <math|a>.
 
   Continuing the process and summing like terms by coefficient
   <math|c<around*|(|a|)>> gives

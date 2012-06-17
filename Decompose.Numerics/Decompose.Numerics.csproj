@@ -53,6 +53,8 @@
     <Compile Include="ArithmeticFunctions\PrimeCollection.cs" />
     <Compile Include="ArithmeticFunctions\PrimeCountingMod3.cs" />
     <Compile Include="ArithmeticFunctions\SimpleMobiusCollection.cs" />
+    <Compile Include="ArithmeticFunctions\SimplerMobiusCollection.cs" />
+    <Compile Include="ArithmeticFunctions\SquareFreeCounting.cs" />
     <Compile Include="Collections\BitMatrixHelper.cs" />
     <Compile Include="Collections\ByColSetBitMatrix.cs" />
     <Compile Include="Collections\Graph.cs" />
@@ -151,7 +153,7 @@
     <Compile Include="Reduction\Performance\UInt32MontgomeryReduction.cs" />
     <Compile Include="Reduction\Performance\MutableIntegerReduction.cs" />
     <Compile Include="Core\MutableIntegerStore.cs" />
-    <Compile Include="Core\SieveOfErostothones.cs" />
+    <Compile Include="Core\SieveOfEratosthenes.cs" />
     <Compile Include="SquareRoot\SqrtBinarySearch.cs" />
     <Compile Include="SquareRoot\SqrtByBits.cs" />
     <Compile Include="SquareRoot\SqrtNewtonsMethod.cs" />
