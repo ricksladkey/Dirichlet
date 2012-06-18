@@ -3,6 +3,56 @@
 <style|generic>
 
 <\body>
+  <section|Modular Prime Counting>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|f<rsub|k><around*|(|n|)>>|<cell|\<assign\>>|<cell|<big|sum><rsub|d:d<rsup|k><around*|\||n|\<nobracket\>>><rsub|>\<mu\><around*|(|d|)>*\<tau\><rsub|k><around*|(|<frac|n|d<rsup|k>>|)>>>>>
+  </eqnarray*>
+
+  <\equation*>
+    F<rsub|k><around*|(|n|)>\<assign\><around*|(|<big|sum><rsup|n><rsub|m=1>f<rsub|k><around*|(|m|)>-1|)>/k
+  </equation*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|F<rsub|k><around*|(|n|)>>|<cell|=>|<cell|<around*|(|<big|sum><rsup|<around*|\<lfloor\>|n<rsup|1/k>|\<rfloor\>>><rsub|d=1>\<mu\><around*|(|d|)>*T<rsub|k><around*|(|<around*|\<lfloor\>|<frac|n<rsup|>|d<rsup|k>>|\<rfloor\>>|)>-1|)>/k>>>>
+  </eqnarray*>
+
+  <section|Prime Counting Function Modulo 2>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|\<pi\><rsub|2><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
+    n|\<rfloor\>>><rsub|k=1>\<mu\><around*|(|i|)>*F<rsub|2><around*|(|n<rsup|1/k>|)>>>|<row|<cell|\<pi\><around*|(|n|)>>|<cell|\<equiv\>>|<cell|\<pi\><rsub|2><around*|(|n|)>
+    <around*|(|mod 2|)>>>>>
+  </eqnarray*>
+
+  We can avoid all the even numbers because every multiple of two is either
+  <math|2<rsup|a>> or contributes a multiple of <math|4> to
+  <math|\<pi\><rsub|2><around*|(|n|)>>. \ If <math|2> is omitted from each
+  term in <math|\<pi\><rsub|2><around*|(|n|)>>, <math|2> will not be counted
+  as a prime and nor will any powers of two be subtracted away, leaving
+  <math|\<pi\><rsub|2>> as a whole too small by one, which can be corrected
+  at the end.
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|T<rsup|><rsub|2,odd><around*|(|n|)>=<big|sum><rsub|x:x\<leq\>n,x
+    odd>\<tau\><rsub|2><around*|(|x|)>>|<cell|=>|<cell|<big|sum><rsub|x:x\<leq\><sqrt|n>,x
+    odd><around*|(|<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>+<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>
+    mod 2|)>-<around*|(|<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>+1|2>|\<rfloor\>>|)><rsup|2>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|F<rsub|2,odd><around*|(|n|)>>|<cell|=>|<cell|<around*|(|<big|sum><rsub|d:d\<leq\><sqrt|n>,d
+    odd>\<mu\><around*|(|d|)>*T<rsub|2,odd><around*|(|<around*|\<lfloor\>|<frac|n<rsup|>|d<rsup|2>>|\<rfloor\>>|)>-1|)>/2>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|\<pi\><rsub|2,odd><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
+    n|\<rfloor\>>><rsub|k=1>\<mu\><around*|(|i|)>*F<rsub|2,odd><around*|(|n<rsup|1/k>|)>>>|<row|<cell|\<pi\><around*|(|n|)>>|<cell|\<equiv\>>|<cell|\<pi\><rsub|2,odd><around*|(|n|)>+1
+    <around*|(|mod 2|)>,n\<geq\>2>>>>
+  </eqnarray*>
+
+  <section|Prime Counting Function Modulo 3>
+
   The normal divisor function <math|\<tau\><around*|(|n|)>> (also known as
   <math|d<around*|(|n|)>>) counts the number of ways that <math|n> can be
   expressed as the ordered product of two integers
@@ -257,3 +307,11 @@
     <associate|sfactor|4>
   </collection>
 </initial>
+
+<\references>
+  <\collection>
+    <associate|auto-1|<tuple|1|?>>
+    <associate|auto-2|<tuple|2|?>>
+    <associate|auto-3|<tuple|3|?>>
+  </collection>
+</references>

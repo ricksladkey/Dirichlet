@@ -1222,6 +1222,12 @@
   </bibliography>
 </body>
 
+<\initial>
+  <\collection>
+    <associate|sfactor|4>
+  </collection>
+</initial>
+
 <\references>
   <\collection>
     <associate|abc|<tuple|6|?>>

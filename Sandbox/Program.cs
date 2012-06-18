@@ -188,10 +188,84 @@ namespace Sandbox
             return n / threePQ >> 2;
         }
 
+        static int T2Odd(int n)
+        {
+            var sqrt = IntegerMath.FloorRoot(n, 2);
+            var sum = 0;
+            for (var i = 1; i <= sqrt; i += 2)
+            {
+                var ni = n / i;
+                sum += ni + (ni & 1);
+            }
+            sum -= IntegerMath.Power((sqrt + 1) / 2, 2);
+            return sum;
+        }
+
+        static int T2(int n)
+        {
+            var sqrt = IntegerMath.FloorRoot(n, 2);
+            var sum = 0;
+            for (var i = 1; i <= sqrt; i++)
+                sum += n / i;
+            sum = 2 * sum - IntegerMath.Power(sqrt, 2);
+            return sum;
+        }
+
+        static int t2(int n)
+        {
+            return IntegerMath.NumberOfDivisors(n, 2);
+        }
+
+        static int f2(int n, MobiusCollection mu)
+        {
+            var sum = 0;
+            for (int i = 1; i <= n; i++)
+            {
+                if (n % (i * i) == 0)
+                    sum += mu[i] * t2(n / (i * i));
+            }
+            return sum;
+        }
+
+        static int F2(int n, MobiusCollection mu)
+        {
+            var sqrt = IntegerMath.FloorRoot(n, 2);
+            var sum = 0;
+            for (var i = 1; i <= sqrt; i += 2)
+            {
+                if (mu[i] != 0)
+                    sum += mu[i] * T2Odd(n / (i * i));
+            }
+            return (sum - 1) / 2;
+        }
+
+        static int ParityOfPi(int n)
+        {
+            var mu = new MobiusCollection(n + 1, 0);
+            var sum = 0;
+            var kmax = IntegerMath.FloorLog(n, 2);
+            for (var k = 1; k <= kmax; k++)
+            {
+                if (mu[k] != 0)
+                    sum += mu[k] * F2(IntegerMath.FloorRoot(n, k), mu);
+            }
+            return (sum + (n >= 2 ? 1 : 0)) % 2;
+        }
+
         static void ParityTest()
         {
 #if true
-            for (var n = 5; n <= 1000; n += 11)
+            for (var i = 1; i <= 25; i++)
+            {
+                var n = IntegerMath.Power(2, i);
+                var value1 = PrimeCounting.PiPowerOfTwo(i) % 2;
+                var value2 = ParityOfPi(n);
+                Console.WriteLine("i = {0}, value1 = {1}, value2 = {2}", i, value1, value2);
+            }
+#endif
+
+#if false
+            for (var n = 30; n <= 100; n += 1)
             {
                 var h = new string[n + 1, n + 1];
                 for (var i = 1; i <= n; i++)
@@ -199,31 +273,25 @@ namespace Sandbox
                     for (var j = 1; j <= n; j++)
                         h[i, j] = i * j <= n ? (i % 2 != 0 && j % 2 != 0 ? "+" : "x") : " ";
                 }
-                var count = 0;
+                var odd = 0;
+                var both = 0;
                 for (var i = n; i >= 1; i--)
                 {
                     var s = "";
                     for (var j = 1; j <= n; j++)
                     {
+                        if (h[i, j] != " ")
+                            ++both;
                         if (h[i, j] == "+")
-                            ++count;
+                            ++odd;
                         s += h[i, j];
                     }
                     //Console.WriteLine(s);
                 }
-                var sqrt = IntegerMath.FloorRoot(n, 2);
-                var sum1 = 0;
-                for (var i = 1; i <= sqrt; i += 2)
-                    sum1 += (n / i + 1) / 2;
-                sum1 = 2 * sum1 - IntegerMath.Power((sqrt + 1) / 2, 2);
+                var sum1 = T2Odd(n) + 2 * T2(n / 2) - T2(n / 4);
                 var sum2 = 0;
-                for (var i = 1; i <= sqrt; i += 2)
-                {
-                    var ni = n / i;
-                    sum2 += ni + (ni & 1);
-                }
-                sum2 -= IntegerMath.Power((sqrt + 1) / 2, 2);
-                Console.WriteLine("count = {0}, sum1 = {1}, sum2 = {2}", count, sum1, sum2);
+                Console.WriteLine("odd = {0}, even = {1}, both = {2}", odd, both - odd, both);
+                Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);
             }
 #endif
 
