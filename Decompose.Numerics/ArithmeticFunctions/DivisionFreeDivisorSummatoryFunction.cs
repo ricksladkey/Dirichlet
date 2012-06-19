@@ -20,14 +20,16 @@ namespace Decompose.Numerics
 
         private int threads;
         private bool simple;
+        private bool odd;
         private BigInteger n;
         private long root6;
         private UInt128 sum;
 
-        public DivisionFreeDivisorSummatoryFunction(int threads, bool simple)
+        public DivisionFreeDivisorSummatoryFunction(int threads, bool simple, bool odd)
         {
             this.threads = threads;
             this.simple = simple;
+            this.odd = odd;
         }
 
         public BigInteger Evaluate(BigInteger n)
@@ -40,6 +42,11 @@ namespace Decompose.Numerics
                 Evaluate(1, xmax);
             else
                 EvaluateParallel(1, xmax);
+            if (odd)
+            {
+                var xmax2 = (xmax + 1) / 2;
+                return (BigInteger)sum - (BigInteger)xmax2 * xmax2;
+            }
             return 2 * (BigInteger)sum - (BigInteger)xmax * xmax;
         }
 
@@ -59,10 +66,10 @@ namespace Decompose.Numerics
             var x = x2;
             if (!simple)
             {
-                x = S1(x1, x);
+                x = odd ? S1Odd(x1, x) : S1(x1, x);
                 //x = S2(x1, x);
             }
-            x = S3(x1, x);
+            x = odd ? S3Odd(x1, x) : S3(x1, x);
         }
 
         private void EvaluateParallel(long xmin, long xmax)
@@ -235,6 +242,103 @@ namespace Decompose.Numerics
                     t = 0;
                 }
                 --x;
+            }
+            s += t;
+            AddToSum(ref s);
+            return x;
+        }
+
+        private long S1Odd(long x1, long x2)
+        {
+            var s = (UInt128)0;
+            var t = (ulong)0;
+            var x = (x2 & 1) == 0 ? x2 - 1 : x2;
+            var beta = (ulong)(n / (x + 2));
+            var eps = (long)(n % (x + 2));
+            var delta = (long)(n / x - beta);
+            var gamma = 2 * (long)beta - x * delta;
+            while (x >= x1)
+            {
+                eps += gamma;
+                if (eps >= x)
+                {
+                    ++delta;
+                    gamma -= x;
+                    eps -= x;
+                    if (eps >= x)
+                    {
+                        ++delta;
+                        gamma -= x;
+                        eps -= x;
+                        if (eps >= x)
+                            break;
+                    }
+                }
+                else if (eps < 0)
+                {
+                    --delta;
+                    gamma += x;
+                    eps += x;
+                }
+                gamma += 4 * delta;
+                beta += (ulong)delta;
+
+                Debug.Assert(eps == n % x);
+                Debug.Assert(beta == n / x);
+                Debug.Assert(delta == beta - n / (x + 2));
+                Debug.Assert(gamma == 2 * beta - (BigInteger)(x - 2) * delta);
+
+                t += beta + (beta & 1);
+                if (t > tmax)
+                {
+                    s += t;
+                    t = 0;
+                }
+                x -= 2;
+            }
+            s += t;
+            AddToSum(ref s);
+            return x;
+        }
+
+        private long S3Odd(long x1, long x2)
+        {
+            if (n < ulong.MaxValue)
+                return S3OddUInt64(x1, x2);
+
+            var s = (UInt128)0;
+            var tOdd = (ulong)0;
+            var nRep = (UInt128)n;
+            var x = (x2 & 1) == 0 ? x2 - 1 : x2;
+            while (x >= x1)
+            {
+                var beta = nRep / (ulong)x;
+                s += beta;
+                if (!beta.IsEven)
+                    ++tOdd;
+                x -= 2;
+            }
+            s += tOdd;
+            AddToSum(ref s);
+            return x;
+        }
+
+        private long S3OddUInt64(long x1, long x2)
+        {
+            var s = (UInt128)0;
+            var t = (ulong)0;
+            var nRep = (ulong)n;
+            var x = (x2 & 1) == 0 ? x2 - 1 : x2;
+            while (x >= x1)
+            {
+                var beta = nRep / (ulong)x;
+                t += beta + (beta & 1);
+                if (t > tmax)
+                {
+                    s += t;
+                    t = 0;
+                }
+                x -= 2;
             }
             s += t;
             AddToSum(ref s);

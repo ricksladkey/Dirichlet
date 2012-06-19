@@ -48,6 +48,7 @@ namespace Decompose.Numerics
         public bool IsZero { get { return (r3 | r2 | r1 | r0) == 0; } }
         public bool IsOne { get { return ((r3 | r2 | r1) ^ r0) == 1; } }
         public bool IsPowerOfTwo { get { return (this & (this - 1)).IsZero; } }
+        public bool IsEven { get { return (r0 & 1) == 0; } }
 
         public override string ToString()
         {

@@ -320,8 +320,90 @@
     <tformat|<table|<row|<cell|D<rsub|k,s><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|n<rsup|1/k>><rsub|m=s><big|sum><rsub|j=0><rsup|k-1><binom|k|j>*D<rsub|j,m+1><around*|(|<around*|\<lfloor\>|<frac|n|m<rsup|k-j>>|\<rfloor\>>|)>>>>>
   </eqnarray*>
 
+  \;
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|T<rsub|3><around*|(|n|)>>|<cell|=>|<cell|6*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
+    odd><rsup|><big|sum><rsub|z\<less\>x\<leq\><sqrt|n/z>,z
+    odd><around*|(|<frac|<around*|\<lfloor\>|<frac|n/z|x>|\<rfloor\>>+1|2>-<frac|z+1|2>|)>>>|<row|<cell|>|<cell|->|<cell|3*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
+    odd><rsup|><around*|(|<frac|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>+1|2>-<frac|z+1|2>|)><rsup|2>>>|<row|<cell|>|<cell|+>|<cell|3*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
+    odd><rsup|><around*|(|<frac|<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>+1|2>-<frac|z+1|2>|)>>>|<row|<cell|>|<cell|+>|<cell|<big|sum><rsub|z\<leq\><sqrt|n,|3>z
+    odd><rsup|>1>>|<row|<cell|>|<cell|=>|<cell|6*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
+    odd><rsup|>S<rsub|odd><around*|(|<frac|n|z>,z+2,<sqrt|<frac|n|z>>|)>>>|<row|<cell|>|<cell|->|<cell|3*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
+    odd><around*|(|<frac|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>+1|2>|)><rsup|2>>>|<row|<cell|>|<cell|<rsub|+>>|<cell|6*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
+    odd><rsup|><frac|z+1|2>*<frac|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>+1|2>>>|<row|<cell|>|<cell|->|<cell|3*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
+    odd><rsup|><around*|(|<frac|z-1|2>|)><rsup|2>*>>|<row|<cell|>|<cell|->|<cell|6*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
+    odd><rsup|><frac|z+1|2>*<frac|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>+1|2>>>|<row|<cell|>|<cell|+>|<cell|6*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
+    odd><rsup|><around*|(|<frac|z+1|2>|)><rsup|2>*>>|<row|<cell|>|<cell|+>|<cell|3*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
+    odd><frac|<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>+1|2>>>|<row|<cell|>|<cell|->|<cell|3**<big|sum><rsub|z\<leq\><sqrt|n,|3>z
+    odd><rsup|><frac|z+1|2>>>|<row|<cell|>|<cell|+>|<cell|<big|sum><rsub|z\<leq\><sqrt|n,|3>z
+    odd><rsup|>1>>|<row|<cell|>|<cell|=>|<cell|3*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
+    odd><rsup|><around*|(|2*S<rsub|odd><around*|(|<around*|\<lfloor\>|<frac|n|z>|\<rfloor\>>,z+2,<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>|)>-<around*|(|<frac|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>+1|2>|)><rsup|2>+<frac|<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>+1|2>|)>+<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>+1|2>|\<rfloor\>><rsup|3>>>>>
+  </eqnarray*>
+
   <\eqnarray*>
     <tformat|<table|<row|<cell|T<rsub|3><around*|(|n|)>>|<cell|=>|<cell|3*<big|sum><rsub|z=1><rsup|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>><around*|(|2*S<around*|(|<around*|\<lfloor\>|<frac|n|z>|\<rfloor\>>,z+1,<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>|)>-<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>><rsup|2>+<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>|)>+<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>><rsup|3>>>>>
+  </eqnarray*>
+
+  Sum of <math|T<rsub|2><around*|(|n|)>> correction term modulo 2.
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|S<around*|(|n;a,b|)>>|<cell|=>|<cell|<big|sum><rsub|a\<leq\>i\<leq\>b><around*|\<lfloor\>|<frac|n|i>|\<rfloor\>>>>>>
+  </eqnarray*>
+
+  <\equation*>
+    T<rsub|2><around*|(|n|)>=2*<big|sum><rsub|i=1><rsup|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>><around*|\<lfloor\>|<frac|n|i>|\<rfloor\>>-<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>><rsup|2>
+  </equation*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|T<rsub|2><around*|(|n|)>>|<cell|=>|<cell|2*<big|sum><rsub|i=1><rsup|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>><around*|\<lfloor\>|<frac|n|i>|\<rfloor\>>-<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>><rsup|2>>>|<row|<cell|>|<cell|=>|<cell|2*S<around*|(|n;1,<sqrt|n>|)>-<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>><rsup|2>>>>>
+  </eqnarray*>
+
+  \;
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|d<rsup|>=1><rsup|m>\<mu\><around*|(|d|)><around*|\<lfloor\>|<frac|m|d>|\<rfloor\>><rsup|2>>|<cell|=>|<cell|<big|sum><rsup|m><rsub|i=1>i<rsup|2>*<big|sum><rsup|<around*|\<lfloor\>|m/i|\<rfloor\>>><rsub|j=<around*|\<lfloor\>|m/<around*|(|i+1|)>|\<rfloor\>>+1>\<mu\><around*|(|j|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsup|m><rsub|i=1>i<rsup|2>*<around*|(|M<around*|(|<around*|\<lfloor\>|m/i|\<rfloor\>>|)>-M<around*|(|<around*|\<lfloor\>|m/<around*|(|i+1|)>|\<rfloor\>>|)>|)>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|<big|sum><rsub|i
+    odd><around*|(|M<around*|(|<around*|\<lfloor\>|m/i|\<rfloor\>>|)>-M<around*|(|<around*|\<lfloor\>|m/<around*|(|i+1|)>|\<rfloor\>>|)>|)>
+    <around*|(|mod 4|)>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|M<around*|(|m|)>-M<around*|(|<frac|m|2>|)>+M<around*|(|<frac|m|3>|)>-M<around*|(|<frac|m|4>|)>+\<ldots\>
+    <around*|(|mod 4|)>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|<big|sum><rsub|i=1><rsup|m><around*|(|-1|)><rsup|i+1>*M<around*|(|<frac|m|i>|)>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|-1
+    <around*|(|mod 4|)>,m\<geq\>2>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|F<rsub|2><around*|(|n|)>>|<cell|=>|<cell|<around*|(|<big|sum><rsub|d<rsup|>\<leq\><sqrt|n>>\<mu\><around*|(|d|)>*T<rsub|2><around*|(|<frac|n|d<rsup|2>>|)>-1|)>/2>>|<row|<cell|>|<cell|=>|<cell|<around*|[|<big|sum><rsub|d<rsup|>\<leq\><sqrt|n><rsup|>>\<mu\><around*|(|d|)>*<around*|(|2*S<around*|(|<frac|n|d<rsup|2>>;1,<sqrt|<frac|n|d<rsup|2>>>|)>-<around*|\<lfloor\>|<sqrt|n/d<rsup|2>>|\<rfloor\>><rsup|2>|)>-1|]>/2>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|d<rsup|>\<leq\><sqrt|n>>\<mu\><around*|(|d|)>*S<around*|(|<frac|n|d<rsup|2>>;1,<sqrt|<frac|n|d<rsup|2>>>|)>-<around*|(|<big|sum><rsub|d<rsup|>\<leq\><sqrt|n><rsup|>>\<mu\><around*|(|d|)><around*|\<lfloor\>|<frac|<sqrt|n>|d>|\<rfloor\>><rsup|2>+1|)>/2>>|<row|<cell|>|<cell|\<equiv\>>|<cell|<big|sum><rsub|d<rsup|>\<leq\><sqrt|n><rsup|>>\<mu\><around*|(|d|)>*S<around*|(|<frac|n|d<rsup|2>>;1,<sqrt|<frac|n|d<rsup|2>>>|)>-<around*|(|-1+1|)>/2
+    <around*|(|mod 2|)>,n\<geq\>4>>|<row|<cell|>|<cell|\<equiv\>>|<cell|<big|sum><rsub|d<rsup|>\<leq\><sqrt|n><rsup|>>\<mu\><around*|(|d|)>*S<around*|(|<frac|n|d<rsup|2>>;1,<sqrt|<frac|n|d<rsup|2>>>|)>
+    <around*|(|mod 2|)>,n\<geq\>4>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|T<rsup|><rsub|2,odd><around*|(|n|)>=<big|sum><rsub|x:x\<leq\>n,x
+    odd>\<tau\><rsub|2><around*|(|x|)>>|<cell|=>|<cell|<big|sum><rsub|x:x\<leq\><sqrt|n>,x
+    odd><around*|(|<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>+<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>
+    mod 2|)>-<around*|(|<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>+1|2>|\<rfloor\>>|)><rsup|2>>>|<row|<cell|>|<cell|=>|<cell|2*<big|sum><rsub|x:x\<leq\><sqrt|n>,x
+    odd><around*|(|<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>-<around*|\<lfloor\>|<frac|n|2x>|\<rfloor\>>|)>-<around*|(|<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>+1|2>|\<rfloor\>>|)><rsup|2>>>|<row|<cell|>|<cell|=>|<cell|2*<big|sum><rsub|x:x\<leq\><sqrt|n>,x
+    odd><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>-2*<big|sum><rsub|x:x\<leq\><sqrt|n>,x
+    odd><around*|\<lfloor\>|<frac|n|2x>|\<rfloor\>>-<around*|(|<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>+1|2>|\<rfloor\>>|)><rsup|2>>>|<row|<cell|>|<cell|=>|<cell|2*<big|sum><rsub|x:x\<leq\><sqrt|n>,x
+    odd><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>-2*<big|sum><rsub|x:x\<leq\><sqrt|n>,x
+    odd><around*|\<lfloor\>|<frac|n/2|x>|\<rfloor\>>-<around*|(|<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>+1|2>|\<rfloor\>>|)><rsup|2>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|T<rsub|2,odd><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|x
+    odd><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>-<big|sum><rsub|x
+    odd><around*|\<lfloor\>|<frac|n/2|x>|\<rfloor\>>>>|<row|<cell|<big|sum><rsub|x
+    odd><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>>|<cell|=>|<cell|T<rsub|2,odd><around*|(|n|)>+<big|sum><rsub|x
+    odd><around*|\<lfloor\>|<frac|n/2|x>|\<rfloor\>>>>|<row|<cell|<big|sum><rsub|x
+    even><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>>|<cell|=>|<cell|*T<rsub|2><around*|(|<frac|n|2>|)>>>|<row|<cell|T<rsub|2><around*|(|n|)>=<big|sum><rsub|x
+    odd><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>+<big|sum><rsub|x
+    even><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>>|<cell|=>|<cell|T<rsub|2,odd><around*|(|n|)>+<big|sum><rsub|x
+    odd><around*|\<lfloor\>|<frac|n/2|x>|\<rfloor\>>+*T<rsub|2><around*|(|<frac|n|2>|)>>>|<row|<cell|>|<cell|=>|<cell|T<rsub|2,odd><around*|(|n|)>+2*T<rsub|2><around*|(|<around*|\<lfloor\>|<frac|n|2>|\<rfloor\>>|)>-T<rsub|2><around*|(|<around*|\<lfloor\>|<frac|n|4>|\<rfloor\>>|)>>>|<row|<cell|<big|sum><rsub|x
+    odd><around*|\<lfloor\>|<frac|n/2|x>|\<rfloor\>>>|<cell|=>|<cell|*T<rsub|2><around*|(|<around*|\<lfloor\>|<frac|n|2>|\<rfloor\>>|)>-T<rsub|2><around*|(|<around*|\<lfloor\>|<frac|n|4>|\<rfloor\>>|)>>>|<row|<cell|<big|sum><rsub|x
+    odd><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>>|<cell|=>|<cell|T<rsub|2,odd><around*|(|n|)>+T<rsub|2,odd><around*|(|<frac|n|2>|)>+<big|sum><rsub|x
+    odd><around*|\<lfloor\>|<frac|n/4|x>|\<rfloor\>>>>|<row|<cell|<big|sum><rsub|x
+    odd><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
+    n|\<rfloor\>>><rsub|k=0>T<rsub|2,odd><around*|(|<frac|n|2<rsup|k>>|)>>>|<row|<cell|T<rsub|2,odd><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|x
+    odd><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>-<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
+    n|\<rfloor\>>><rsub|k=1>T<rsub|2,odd><around*|(|<frac|n|2<rsup|k>>|)>>>>>
   </eqnarray*>
 
   \;

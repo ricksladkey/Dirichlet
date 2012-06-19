@@ -241,9 +241,10 @@ namespace Sandbox
 
         static int ParityOfPi(int n)
         {
-            var mu = new MobiusCollection(n + 1, 0);
-            var sum = 0;
+            var sqrt = IntegerMath.FloorRoot(n, 2);
             var kmax = IntegerMath.FloorLog(n, 2);
+            var mu = new MobiusCollection(IntegerMath.Max(sqrt, kmax) + 1, 0);
+            var sum = 0;
             for (var k = 1; k <= kmax; k++)
             {
                 if (mu[k] != 0)
@@ -255,6 +256,49 @@ namespace Sandbox
         static void ParityTest()
         {
 #if true
+            var algorithm1 = new DivisionFreeDivisorSummatoryFunction(0, false, false);
+            var algorithm2 = new DivisionFreeDivisorSummatoryFunction(0, false, true);
+            var timer = new Stopwatch();
+            for (var i = 5; i <= 20; i++)
+            {
+                var n = IntegerMath.Power((BigInteger)10, i);
+
+                timer.Restart();
+                var sum1 = algorithm1.Evaluate(n);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+
+                timer.Restart();
+                var sum2 = algorithm2.Evaluate(n);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+
+                Console.WriteLine();
+            }
+#endif
+
+#if false
+            var n = 10000;
+            var sqrt = IntegerMath.FloorRoot(n, 2);
+            var sum1 = T2Odd(n);
+            var algorithm2 = new DivisionFreeDivisorSummatoryFunction(0, false, true);
+            var sum2 = algorithm2.Evaluate(n);
+            Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);
+#endif
+
+#if false
+            var mu = new MobiusCollection(101, 0);
+            for (var n = 1; n <= 100; n++)
+            {
+                var sum = 0;
+                for (var d = 1; d <= n; d++)
+                {
+                    Console.WriteLine("mu[{0}] = {1}, (n / d)^2 = {2}", d, mu[d], IntegerMath.Power(n / d, 2));
+                    sum += mu[d] * IntegerMath.Power(n / d, 2);
+                }
+                Console.WriteLine("n = {0}, sum = {1}, mod4 = {2}", n, sum, sum % 4);
+            }
+#endif
+
+#if false
             for (var i = 1; i <= 25; i++)
             {
                 var n = IntegerMath.Power(2, i);

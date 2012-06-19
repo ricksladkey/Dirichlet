@@ -20,7 +20,7 @@ namespace Decompose.Numerics
             var count = Math.Max(threads, 1);
             hyperbolicSum = new DivisionFreeDivisorSummatoryFunction[count];
             for (var i = 0; i < count; i++)
-                hyperbolicSum[i] = new DivisionFreeDivisorSummatoryFunction(0, false);
+                hyperbolicSum[i] = new DivisionFreeDivisorSummatoryFunction(0, false, false);
         }
 
         public BigInteger Evaluate(BigInteger n)
