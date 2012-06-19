@@ -58,7 +58,7 @@ namespace Decompose.Numerics
                 Evaluate(x1, x2);
             else
                 EvaluateParallel(x1, x2);
-            return sum;
+            return odd ? sum / 2 : sum;
         }
 
         private void Evaluate(long x1, long x2)

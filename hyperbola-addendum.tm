@@ -323,7 +323,7 @@
   \;
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|T<rsub|3><around*|(|n|)>>|<cell|=>|<cell|6*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
+    <tformat|<table|<row|<cell|T<rsub|3,odd><around*|(|n|)>>|<cell|=>|<cell|6*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
     odd><rsup|><big|sum><rsub|z\<less\>x\<leq\><sqrt|n/z>,z
     odd><around*|(|<frac|<around*|\<lfloor\>|<frac|n/z|x>|\<rfloor\>>+1|2>-<frac|z+1|2>|)>>>|<row|<cell|>|<cell|->|<cell|3*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
     odd><rsup|><around*|(|<frac|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>+1|2>-<frac|z+1|2>|)><rsup|2>>>|<row|<cell|>|<cell|+>|<cell|3*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
@@ -338,7 +338,7 @@
     odd><frac|<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>+1|2>>>|<row|<cell|>|<cell|->|<cell|3**<big|sum><rsub|z\<leq\><sqrt|n,|3>z
     odd><rsup|><frac|z+1|2>>>|<row|<cell|>|<cell|+>|<cell|<big|sum><rsub|z\<leq\><sqrt|n,|3>z
     odd><rsup|>1>>|<row|<cell|>|<cell|=>|<cell|3*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
-    odd><rsup|><around*|(|2*S<rsub|odd><around*|(|<around*|\<lfloor\>|<frac|n|z>|\<rfloor\>>,z+2,<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>|)>-<around*|(|<frac|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>+1|2>|)><rsup|2>+<frac|<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>+1|2>|)>+<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>+1|2>|\<rfloor\>><rsup|3>>>>>
+    odd><rsup|><around*|(|2*S<rsub|odd><around*|(|<around*|\<lfloor\>|<frac|n|z>|\<rfloor\>>,z+2,<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>|)>-<around*|(|<frac|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>+1|2>|)><rsup|2>+<frac|<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>+1|2>|)>>>|<row|<cell|>|<cell|+>|<cell|<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>+1|2>|\<rfloor\>><rsup|3>>>>>
   </eqnarray*>
 
   <\eqnarray*>
@@ -406,11 +406,7 @@
     n|\<rfloor\>>><rsub|k=1>T<rsub|2,odd><around*|(|<frac|n|2<rsup|k>>|)>>>>>
   </eqnarray*>
 
-  Division-free counting for odd divisors.
-
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|\<beta\><around*|(|x|)>>|<cell|=>|<cell|<around*|\<lfloor\>|n/x|\<rfloor\>>>>|<row|<cell|\<delta\><rsub|1><around*|(|x|)>>|<cell|=>|<cell|\<beta\><around*|(|x|)>-\<beta\><around*|(|x+2|)>>>|<row|<cell|\<delta\><rsub|2><around*|(|x|)>>|<cell|=>|<cell|\<delta\><rsub|1><around*|(|x|)>-\<delta\><rsub|1><around*|(|x+2|)>>>|<row|<cell|\<varepsilon\><around*|(|x|)>>|<cell|=>|<cell|n-x*\<beta\><around*|(|x|)>>>|<row|<cell|\<varepsilon\><around*|(|x+2|)>>|<cell|=>|<cell|n-<around*|(|x+2|)>*\<beta\><around*|(|x+2|)>>>|<row|<cell|\<varepsilon\><around*|(|x|)>-\<varepsilon\><around*|(|x+2|)>>|<cell|=>|<cell|<around*|(|x+2|)>*\<beta\><around*|(|x+2|)>-x*\<beta\><around*|(|x|)>>>|<row|<cell|>|<cell|=>|<cell|<around*|(|x+2|)>*\<beta\><around*|(|x+2|)>-x*<around*|(|\<beta\><around*|(|x+2|)>+\<delta\><rsub|1><around*|(|x+2|)>+\<delta\><rsub|2><around*|(|x|)>|)>>>|<row|<cell|>|<cell|=>|<cell|2*\<beta\><around*|(|x+2|)>-x*\<delta\><rsub|1><around*|(|x+2|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<gamma\><around*|(|x|)>>|<cell|=>|<cell|2*\<beta\><around*|(|x|)>-<around*|(|x-2|)>*\<delta\><rsub|1><around*|(|x|)>>>|<row|<cell|\<gamma\><around*|(|x+2|)>>|<cell|=>|<cell|2*\<beta\><around*|(|x+2|)>-x*\<delta\><rsub|1><around*|(|x+2|)>>>|<row|<cell|\<gamma\><around*|(|x|)>-\<gamma\><around*|(|x+2|)>>|<cell|=>|<cell|2*\<beta\><around*|(|x|)>-2*\<beta\><around*|(|x+2|)>-<around*|(|x-2|)>*\<delta\><rsub|1><around*|(|x|)>+x*\<delta\><rsub|1><around*|(|x+2|)>>>|<row|<cell|>|<cell|=>|<cell|2*<around*|(|\<beta\><around*|(|x|)>-\<beta\><around*|(|x+2|)>|)>-<around*|(|x-2|)>*\<delta\><rsub|1><around*|(|x|)>+x*<around*|(|\<delta\><rsub|1><around*|(|x|)>-\<delta\><rsub|2><around*|(|x|)>|)>>>|<row|<cell|>|<cell|=>|<cell|2*\<delta\><rsub|1><around*|(|x|)>+2*\<delta\><rsub|1><around*|(|x|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|>|<cell|=>|<cell|4*\<delta\><rsub|1><around*|(|x|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|<wide|\<varepsilon\>|^><around*|(|x|)>>|<cell|=>|<cell|\<varepsilon\><around*|(|x+2|)>+\<gamma\><around*|(|x+1|)>>>|<row|<cell|\<delta\><rsub|2><around*|(|x|)>>|<cell|=>|<cell|<around*|\<lfloor\>|<frac|<wide|\<varepsilon\>|^><around*|(|x|)>|x>|\<rfloor\>>>>|<row|<cell|\<delta\><rsub|1><around*|(|x|)>>|<cell|=>|<cell|\<delta\><rsub|1><around*|(|x+2|)>+\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<varepsilon\><around*|(|x|)>>|<cell|=>|<cell|<wide|\<varepsilon\>|^><around*|(|x|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<gamma\><around*|(|x|)>>|<cell|=>|<cell|\<gamma\><around*|(|x+2|)>+4*\<delta\><rsub|1><around*|(|x|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<beta\><around*|(|x|)>>|<cell|=>|<cell|\<beta\><around*|(|x+2|)>+\<delta\><rsub|1><around*|(|x|)>>>>>
-  </eqnarray*>
+  \;
 
   \;
 </body>

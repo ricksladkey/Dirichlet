@@ -106,7 +106,7 @@ namespace Decompose.Numerics
                 var sqrtnz = IntegerMath.FloorSquareRoot(nz);
                 var t = hyperbolicSum[thread].Evaluate(nz, (long)z + 2, (long)sqrtnz);
                 var sqrtnz2 = (sqrtnz + 1) / 2;
-                s += t - sqrtnz2 * sqrtnz2 + (nz / z + 1) / 2;
+                s += 2 * t - sqrtnz2 * sqrtnz2 + (nz / z + 1) / 2;
             }
             return s;
         }

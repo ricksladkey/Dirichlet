@@ -34,10 +34,14 @@
   at the end.
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|T<rsup|><rsub|2,odd><around*|(|n|)>=<big|sum><rsub|x:x\<leq\>n,x
-    odd>\<tau\><rsub|2><around*|(|x|)>>|<cell|=>|<cell|<big|sum><rsub|x:x\<leq\><sqrt|n>,x
+    <tformat|<table|<row|<cell|S<rsub|odd><around*|(|n;a,b|)>>|<cell|=>|<cell|<around*|(|<big|sum><rsub|x:a\<leq\>x\<leq\>b,x
     odd><around*|(|<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>+<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>
-    mod 2|)>-<around*|(|<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>+1|2>|\<rfloor\>>|)><rsup|2>>>>>
+    mod 2|)>|)>/2>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|T<rsup|><rsub|2,odd><around*|(|n|)>=<big|sum><rsub|x:x\<leq\>n,x
+    odd>\<tau\><rsub|2><around*|(|x|)>>|<cell|=>|<cell|2*S<rsub|odd><around*|(|n;1,<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>|)>-<around*|(|<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>+1|2>|\<rfloor\>>|)><rsup|2>>>>>
   </eqnarray*>
 
   <\eqnarray*>
@@ -299,7 +303,34 @@
   <math|3<around*|\||a|\<nobracket\>>> or <math|\<mu\><around*|(|a|)>=0> need
   not be computed.
 
-  \;
+  Then with some simple modifications, we can now apply the odd-only divisor
+  method which reduces the number of operations by a factor of four.
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|T<rsub|3,odd><around*|(|n|)>>|<cell|=>|<cell|3*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
+    odd><rsup|><around*|(|2*S<rsub|odd><around*|(|<around*|\<lfloor\>|<frac|n|z>|\<rfloor\>>;z+2,<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>|)>-<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>+1|2>|\<rfloor\>><rsup|2>+<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>+1|2>|\<rfloor\>>|)>>>|<row|<cell|>|<cell|+>|<cell|<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>+1|2>|\<rfloor\>><rsup|3>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|F<rsub|3,odd><around*|(|n|)>>|<cell|=>|<cell|<around*|(|<big|sum><rsub|d\<leq\><sqrt|n|3>,d
+    odd>\<mu\><around*|(|d|)>*T<rsub|3,odd><around*|(|<around*|\<lfloor\>|<frac|n<rsup|>|d<rsup|3>>|\<rfloor\>>|)>-1|)>/3>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|\<pi\><rsub|3,odd><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
+    n|\<rfloor\>>><rsub|a=1>a*\<mu\><around*|(|a|)>*F<rsub|3,odd><around*|(|<around*|\<lfloor\>|n<rsup|1/a>|\<rfloor\>>|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|\<pi\><around*|(|n|)>>|<cell|\<equiv\>>|<cell|\<pi\><rsub|3,odd><around*|(|n|)>+1
+    <around*|(|mod 3|)>,n\<geq\>2>>>>
+  </eqnarray*>
+
+  <section|Division-Free Counting for Odd Divisors>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|\<beta\><around*|(|x|)>>|<cell|=>|<cell|<around*|\<lfloor\>|n/x|\<rfloor\>>>>|<row|<cell|\<delta\><rsub|1><around*|(|x|)>>|<cell|=>|<cell|\<beta\><around*|(|x|)>-\<beta\><around*|(|x+2|)>>>|<row|<cell|\<delta\><rsub|2><around*|(|x|)>>|<cell|=>|<cell|\<delta\><rsub|1><around*|(|x|)>-\<delta\><rsub|1><around*|(|x+2|)>>>|<row|<cell|\<varepsilon\><around*|(|x|)>>|<cell|=>|<cell|n-x*\<beta\><around*|(|x|)>>>|<row|<cell|\<varepsilon\><around*|(|x+2|)>>|<cell|=>|<cell|n-<around*|(|x+2|)>*\<beta\><around*|(|x+2|)>>>|<row|<cell|\<varepsilon\><around*|(|x|)>-\<varepsilon\><around*|(|x+2|)>>|<cell|=>|<cell|<around*|(|x+2|)>*\<beta\><around*|(|x+2|)>-x*\<beta\><around*|(|x|)>>>|<row|<cell|>|<cell|=>|<cell|<around*|(|x+2|)>*\<beta\><around*|(|x+2|)>-x*<around*|(|\<beta\><around*|(|x+2|)>+\<delta\><rsub|1><around*|(|x+2|)>+\<delta\><rsub|2><around*|(|x|)>|)>>>|<row|<cell|>|<cell|=>|<cell|2*\<beta\><around*|(|x+2|)>-x*\<delta\><rsub|1><around*|(|x+2|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<gamma\><around*|(|x|)>>|<cell|=>|<cell|2*\<beta\><around*|(|x|)>-<around*|(|x-2|)>*\<delta\><rsub|1><around*|(|x|)>>>|<row|<cell|\<gamma\><around*|(|x+2|)>>|<cell|=>|<cell|2*\<beta\><around*|(|x+2|)>-x*\<delta\><rsub|1><around*|(|x+2|)>>>|<row|<cell|\<gamma\><around*|(|x|)>-\<gamma\><around*|(|x+2|)>>|<cell|=>|<cell|2*\<beta\><around*|(|x|)>-2*\<beta\><around*|(|x+2|)>-<around*|(|x-2|)>*\<delta\><rsub|1><around*|(|x|)>+x*\<delta\><rsub|1><around*|(|x+2|)>>>|<row|<cell|>|<cell|=>|<cell|2*<around*|(|\<beta\><around*|(|x|)>-\<beta\><around*|(|x+2|)>|)>-<around*|(|x-2|)>*\<delta\><rsub|1><around*|(|x|)>+x*<around*|(|\<delta\><rsub|1><around*|(|x|)>-\<delta\><rsub|2><around*|(|x|)>|)>>>|<row|<cell|>|<cell|=>|<cell|2*\<delta\><rsub|1><around*|(|x|)>+2*\<delta\><rsub|1><around*|(|x|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|>|<cell|=>|<cell|4*\<delta\><rsub|1><around*|(|x|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|<wide|\<varepsilon\>|^><around*|(|x|)>>|<cell|=>|<cell|\<varepsilon\><around*|(|x+2|)>+\<gamma\><around*|(|x+1|)>>>|<row|<cell|\<delta\><rsub|2><around*|(|x|)>>|<cell|=>|<cell|<around*|\<lfloor\>|<frac|<wide|\<varepsilon\>|^><around*|(|x|)>|x>|\<rfloor\>>>>|<row|<cell|\<delta\><rsub|1><around*|(|x|)>>|<cell|=>|<cell|\<delta\><rsub|1><around*|(|x+2|)>+\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<varepsilon\><around*|(|x|)>>|<cell|=>|<cell|<wide|\<varepsilon\>|^><around*|(|x|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<gamma\><around*|(|x|)>>|<cell|=>|<cell|\<gamma\><around*|(|x+2|)>+4*\<delta\><rsub|1><around*|(|x|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<beta\><around*|(|x|)>>|<cell|=>|<cell|\<beta\><around*|(|x+2|)>+\<delta\><rsub|1><around*|(|x|)>>>>>
+  </eqnarray*>
 </body>
 
 <\initial>
@@ -313,5 +344,24 @@
     <associate|auto-1|<tuple|1|?>>
     <associate|auto-2|<tuple|2|?>>
     <associate|auto-3|<tuple|3|?>>
+    <associate|auto-4|<tuple|4|?>>
   </collection>
 </references>
+
+<\auxiliary>
+  <\collection>
+    <\associate|toc>
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|Modular
+      Prime Counting> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-1><vspace|0.5fn>
+
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|Prime
+      Counting Function Modulo 2> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-2><vspace|0.5fn>
+
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|Prime
+      Counting Function Modulo 3> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-3><vspace|0.5fn>
+    </associate>
+  </collection>
+</auxiliary>
