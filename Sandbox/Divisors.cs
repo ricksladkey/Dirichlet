@@ -108,8 +108,6 @@ namespace Sandbox
         BigInt      g_scale;
         BigInt      g_divisor;
 
-        BigInt      g_lastMax;
-
         int         g_variablesLeft;
         BigInt      g_lastScaleDivisor;
         BigInt      g_scaleVal;

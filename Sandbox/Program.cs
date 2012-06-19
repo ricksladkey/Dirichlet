@@ -256,6 +256,24 @@ namespace Sandbox
         static void ParityTest()
         {
 #if true
+            var algorithm2 = new PrimeCountingOddMod3(8);
+            var timer = new Stopwatch();
+            for (var i = 10; i <= 20; i++)
+            {
+                timer.Restart();
+                for (var iterations = 0; iterations < 1; iterations++)
+                {
+                    var n = IntegerMath.Power((BigInteger)10, i);
+                    var p1 = PrimeCounting.PiPowerOfTen(i) % 3;
+                    var p2 = algorithm2.Evaluate(n);
+                    if (iterations == 0)
+                        Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}", i, p1, p2);
+                }
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
+#endif
+
+#if false
             var algorithm1 = new DivisionFreeDivisorSummatoryFunction(0, false, false);
             var algorithm2 = new DivisionFreeDivisorSummatoryFunction(0, false, true);
             var timer = new Stopwatch();
@@ -380,24 +398,6 @@ namespace Sandbox
                         output.WriteLine("mu1[{0}] = {1}, mu2[{2}] = {3}", i, mu1[i], i, mu2[i]);
                 }
 #endif
-            }
-#endif
-#if false
-            var algorithm1 = new PrimeCounting(0);
-            var algorithm2 = new PrimeCountingMod3(8);
-            var timer = new Stopwatch();
-            for (var i = 10; i <= 20; i++)
-            {
-                timer.Restart();
-                for (var iterations = 0; iterations < 1; iterations++)
-                {
-                    var n = IntegerMath.Power((BigInteger)10, i);
-                    var p1 = algorithm1.PiPowerOfTen(i) % 3;
-                    var p2 = algorithm2.Evaluate(n);
-                    if (iterations == 0)
-                        Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}", i, p1, p2);
-                }
-                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
 

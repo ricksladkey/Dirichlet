@@ -50,6 +50,7 @@
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunctionArticle.cs" />
     <Compile Include="ArithmeticFunctions\MobiusCollection.cs" />
     <Compile Include="ArithmeticFunctions\MobiusRange.cs" />
+    <Compile Include="ArithmeticFunctions\PrimeCountingOddMod3.cs" />
     <Compile Include="ArithmeticFunctions\PrimeCollection.cs" />
     <Compile Include="ArithmeticFunctions\PrimeCountingMod3.cs" />
     <Compile Include="ArithmeticFunctions\SimpleMobiusCollection.cs" />
