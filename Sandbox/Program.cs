@@ -256,9 +256,110 @@ namespace Sandbox
         static void ParityTest()
         {
 #if true
+            var nmax = 100;
+            var mu = new MobiusCollection(nmax + 1, 0);
+            for (var n = 1; n <= nmax; n++)
+            {
+                var root3 = IntegerMath.FloorRoot(n, 3);
+#if false
+                var sum = 0;
+                for (var d = 1; d <= root3; d += 2)
+                {
+                    var m = IntegerMath.FloorRoot(n / (d * d * d), 3);
+                    var m2 = (m + 1) / 2;
+                    sum += mu[d] * m2 * m2 * m2;
+                }
+                var mod = sum % 9;
+#endif
+#if false
+                var sum = 0;
+                for (var d = 1; d <= root3; d += 2)
+                {
+                    var m = n / (d * d * d);
+                    var zmax = IntegerMath.FloorRoot(m, 3);
+                    for (var z = 1; z <= zmax; z += 2)
+                    {
+                        var value = (IntegerMath.FloorRoot(m / z, 2) + 1) / 2;
+                        sum += mu[d] * value * value;
+                    }
+                }
+                var mod = sum % 3;
+#endif
+#if false
+                var sum = 0;
+                for (var d = 1; d <= root3; d += 2)
+                {
+                    var m = n / (d * d * d);
+                    var zmax = IntegerMath.FloorRoot(m, 3);
+                    for (var z = 1; z <= zmax; z += 2)
+                    {
+                        var value = (m / (z * z) + 1) / 2;
+                        sum += mu[d] * value;
+                    }
+                }
+                var mod = sum % 3;
+#endif
+#if false
+                var sum = 0;
+                for (var d = 1; d <= root3; d += 2)
+                {
+                    var m = n / (d * d * d);
+                    var zmax = IntegerMath.FloorRoot(m, 3);
+                    for (var z = 1; z <= zmax; z += 2)
+                    {
+                        var value1 = (IntegerMath.FloorRoot(m / z, 2) + 1) / 2;
+                        sum -= mu[d] * value1 * value1;
+                        var value2 = (m / (z * z) + 1) / 2;
+                        sum += mu[d] * value2;
+                    }
+                }
+                var mod = (sum + (n + (n & 1)) % 3) % 3;
+#endif
+#if false
+                var sum = 0;
+                for (var d = 1; d <= root3; d++)
+                {
+                    var m = root3 / d;
+                    sum += mu[d] * m * m * m;
+                }
+                var mod = sum % 9;
+#endif
+#if false
+                var sum = 0;
+                for (var d = 1; d <= n; d++)
+                    sum += mu[d] * (n / d) * (n / d);
+                var mod = sum % 4;
+#endif
+#if false
+                var sum = 0;
+                for (var d = 1; d <= n; d += 2)
+                    sum += mu[n / d];
+                var mod = sum;
+#endif
+#if false
+                var sum = 0;
+                for (var d = 1; d <= n; d++)
+                {
+                    if (d % 2 == 0)
+                        continue;
+                    sum += IntegerMath.Power(-1, 0) * IntegerMath.Mertens(n / d);
+                }
+                var mod = sum % 4;
+#endif
+#if true
+                var sum = 0;
+                for (var d = 1; d <= n; d += 2)
+                    sum += IntegerMath.MertensOdd(n / d);
+                var mod = sum;
+#endif
+                Console.WriteLine("n = {0}, sum = {1}, mod = {2}", n, sum, mod);
+            }
+#endif
+
+#if false
             var algorithm2 = new PrimeCountingOddMod3(8);
             var timer = new Stopwatch();
-            for (var i = 10; i <= 20; i++)
+            for (var i = 12; i <= 15; i++)
             {
                 timer.Restart();
                 for (var iterations = 0; iterations < 1; iterations++)

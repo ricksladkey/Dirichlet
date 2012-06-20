@@ -45,7 +45,7 @@ namespace Decompose.Numerics
             if (odd)
             {
                 var xmax2 = (xmax + 1) / 2;
-                return (BigInteger)sum - (BigInteger)xmax2 * xmax2;
+                return 2 * (BigInteger)sum - (BigInteger)xmax2 * xmax2;
             }
             return 2 * (BigInteger)sum - (BigInteger)xmax * xmax;
         }

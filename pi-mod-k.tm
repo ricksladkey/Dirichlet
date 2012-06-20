@@ -304,7 +304,7 @@
   not be computed.
 
   Then with some simple modifications, we can now apply the odd-only divisor
-  method which reduces the number of operations by a factor of four.
+  method which reduces the number of operations by roughly a factor of four.
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|T<rsub|3,odd><around*|(|n|)>>|<cell|=>|<cell|3*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
@@ -326,6 +326,99 @@
     <around*|(|mod 3|)>,n\<geq\>2>>>>
   </eqnarray*>
 
+  <section|Simplifying Summation Expressions>
+
+  Empirically we find that
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<around*|(|<big|sum><rsub|d\<leq\><sqrt|n|3>,d
+    odd>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<around*|\<lfloor\>|<frac|n<rsup|>|d<rsup|3>>|\<rfloor\>><rsup|1/3>|\<rfloor\>>+1|2>|\<rfloor\>><rsup|3>-1|)>/3>|<cell|\<equiv\>>|<cell|<choice|<tformat|<cwith|1|-1|1|1|cell-halign|r>|<table|<row|<cell|0>|<cell|if
+    n\<less\>27>>|<row|<cell|2>|<cell|if n\<geq\>27>>>>> <around*|(|mod
+    3|)>>>>>
+  </eqnarray*>
+
+  We now prove that this is indeed the case.
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|d\<leq\><sqrt|n|3>,d
+    odd>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<around*|\<lfloor\>|<frac|n<rsup|>|d<rsup|3>>|\<rfloor\>><rsup|1/3>|\<rfloor\>>+1|2>|\<rfloor\>><rsup|3>>|<cell|=>|<cell|<big|sum><rsub|d\<leq\><sqrt|n|3>,d
+    odd>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<frac|<sqrt|n|3>|d>|\<rfloor\>>+1|2>|\<rfloor\>><rsup|3>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|d\<leq\>m,d
+    odd>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<frac|m|d>|\<rfloor\>>+1|2>|\<rfloor\>><rsup|3>,m=<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|d\<leq\>m,d
+    odd>\<mu\><around*|(|d|)>*<around*|(|<around*|\<lfloor\>|<frac|m|d>|\<rfloor\>>-<around*|\<lfloor\>|<frac|m|2*d>|\<rfloor\>><rsup|>|)><rsup|3>,m=<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|d\<leq\>m,d
+    odd>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|m+d|2*d>|\<rfloor\>><rsup|><rsup|3>,m=<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>>>>>
+  </eqnarray*>
+
+  Characterize <math|M<rsub|odd><around*|(|n|)>>, the sum of the Mobius
+  function over odd arguments.
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|M<rsub|odd><around*|(|n|)>>|<cell|=>|<cell|\<mu\><around*|(|1|)>+\<mu\><around*|(|3|)>+\<mu\><around*|(|5|)>+\<ldots\>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>-<around*|(|\<mu\><around*|(|2|)>+\<mu\><around*|(|4|)>+\<mu\><around*|(|6|)>+\<mu\><around*|(|8|)>+\<ldots\>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>-<around*|(|\<mu\><around*|(|2|)>+\<mu\><around*|(|6|)>+\<mu\><around*|(|10|)>+\<mu\><around*|(|14|)>+\<ldots\>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>-<big|sum><rsub|i\<leq\>m/2,i
+    odd>\<mu\><around*|(|2*i|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>-<big|sum><rsub|i\<leq\>m/2,i
+    odd>\<mu\><around*|(|2|)>*\<mu\><around*|(|i|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>+<big|sum><rsub|i\<leq\>m/2,i
+    odd>\<mu\><around*|(|i|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>+M<rsub|odd><around*|(|<frac|n|2>|)>>>>>
+  </eqnarray*>
+
+  Expanding the recurrence
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|M<rsub|odd><around*|(|n|)>=<big|sum><rsub|d\<leq\>n,d
+    odd>\<mu\><around*|(|d|)>>|<cell|=>|<cell|M<around*|(|n|)>+M<rsub|odd><around*|(|<frac|n|2>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>+M<around*|(|<frac|n|2>|)>+M<rsub|odd><around*|(|<frac|n|4>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
+    n|\<rfloor\>>><rsub|k=0>M<around*|(|<frac|n|2<rsup|k>>|)>>>>>
+  </eqnarray*>
+
+  \;
+
+  Identities involving the Mertens function. \ Starting with
+
+  <\equation*>
+    <tabular|<tformat|<table|<row|<cell|<big|sum><rsub|m\<leq\>n>M<around*|(|<frac|n|m>|)>=1>|<cell|for
+    n\<geq\>1 <around*|(|Lehman|)>>>>>>
+  </equation*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|m\<leq\>n,m
+    even>M<around*|(|<frac|n|m>|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>n/2>M<around*|(|<frac|n|2*m>|)>=<big|sum><rsub|m\<leq\>n/2>M<around*|(|<frac|n/2|m>|)>=1,n\<geq\>2>>|<row|<cell|<big|sum><rsub|m\<leq\>n,m
+    odd>M<around*|(|<frac|n|m>|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>n>M<around*|(|<frac|n|m>|)>-<big|sum><rsub|m\<leq\>n,m
+    even>M<around*|(|<frac|n|m>|)>=1-1=0,n\<geq\>2>>|<row|<cell|<big|sum><rsub|m\<leq\>n><around*|(|-1|)><rsup|m+1>*M<around*|(|<frac|n|m>|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>n>M<around*|(|<frac|n|m>|)>-2*<big|sum><rsub|m\<leq\>n/2>M<around*|(|<frac|n/2|m>|)>=1-2=-1,n\<geq\>2>>>>
+  </eqnarray*>
+
+  Now combine these formula to obtain identies for the odd-Mertens function.
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|m\<leq\>n,m
+    even>M<rsub|odd><around*|(|<frac|n|m>|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>n,m
+    even><big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
+    n|\<rfloor\>>><rsub|k=0>M<around*|(|<frac|n|2<rsup|k>*m>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
+    n|\<rfloor\>>><rsub|k=0><big|sum><rsub|m\<leq\>n,m
+    even>M<around*|(|<frac|n/2<rsup|k>|m>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
+    n|\<rfloor\>>><rsub|k=0>1>>|<row|<cell|>|<cell|=>|<cell|<around*|\<lfloor\>|log<rsub|2>
+    n|\<rfloor\>>+1>>|<row|<cell|<big|sum><rsub|m\<leq\>n,m
+    odd>M<rsub|odd><around*|(|<frac|n|m>|)>>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
+    n|\<rfloor\>>><rsub|k=0><big|sum><rsub|m\<leq\>n,m
+    odd>M<around*|(|<frac|n/2<rsup|k>|m>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
+    n|\<rfloor\>>-1><rsub|k=0>0+M<around*|(|1|)>>>|<row|<cell|>|<cell|=>|<cell|1>>>>
+  </eqnarray*>
+
+  If <math|m mod 3=b> then
+
+  <\equation*>
+    m<rsup|3>=<around*|(|3*a+b|)><rsup|3>\<equiv\><choice|<tformat|<cwith|1|-1|3|3|cell-halign|r>|<table|<row|<cell|27*a<rsup|3>>|<cell|=>|<cell|0>|<cell|if
+    b =0>>|<row|<cell|27a<rsup|3>+27*a<rsup|2>+9*a+1>|<cell|=>|<cell|1>|<cell|if
+    b=1>>|<row|<cell|27*a<rsup|3>+54*a<rsup|2>+36*a+8>|<cell|=>|<cell|-1>|<cell|if
+    b=2>>>>> <around*|(|mod 9|)>
+  </equation*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|d\<leq\>m,d
+    odd><rsup|m>\<mu\><around*|(|d|)><around*|\<lfloor\>|<frac|m+d|*2*d>|\<rfloor\>><rsup|3>>|<cell|=>|<cell|<big|sum><rsup|m><rsub|i=1>i<rsup|3>*<big|sum><rsup|<around*|\<lfloor\>|m/2*i-1|\<rfloor\>>><rsub|j=<around*|\<lfloor\>|m/<around*|(|2*i+1|)>|\<rfloor\>>+1,j
+    odd>\<mu\><around*|(|j|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsup|m><rsub|i=1>i<rsup|3>*<around*|(|M<rsub|odd><around*|(|<around*|\<lfloor\>|<frac|m|2*i-1>|\<rfloor\>>|)>-M<rsub|odd><around*|(|<around*|\<lfloor\>|<frac|m|2*i+1>|\<rfloor\>>|)>|)>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|
+    M<rsub|odd><around*|(|<frac|m|1>|)>-M<rsub|odd><around*|(|<frac|m|3>|)>-M<rsub|odd><around*|(|<frac|m|3>|)>+M<rsub|odd><around*|(|<frac|m|5>|)>>>|<row|<cell|>|<cell|+>|<cell|M<rsub|odd><around*|(|<frac|m|7>|)>-M<rsub|odd><around*|(|<frac|m|9>|)>-M<rsub|odd><around*|(|<frac|m|9>|)>+M<rsub|odd><around*|(|<frac|m|11>|)>>>|<row|<cell|>|<cell|+>|<cell|\<ldots\>.
+    <around*|(|mod 9|)>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|<big|sum><rsub|i\<leq\>m,i
+    odd>M<rsub|odd><around*|(|<frac|m|i>|)>-3*<big|sum><rsub|i\<leq\>m/3,i
+    odd>M<rsub|odd><around*|(|<frac|m/3|i>|)><rsub|>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|1-3\<cdot\>1>>|<row|<cell|>|<cell|\<equiv\>>|<cell|7
+    <around*|(|mod 9|)>,m\<geq\>3>>>>
+  </eqnarray*>
+
   <section|Division-Free Counting for Odd Divisors>
 
   <\eqnarray*>
@@ -345,6 +438,7 @@
     <associate|auto-2|<tuple|2|?>>
     <associate|auto-3|<tuple|3|?>>
     <associate|auto-4|<tuple|4|?>>
+    <associate|auto-5|<tuple|5|?>>
   </collection>
 </references>
 
@@ -362,6 +456,10 @@
       <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|Prime
       Counting Function Modulo 3> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-3><vspace|0.5fn>
+
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|Division-Free
+      Counting for Odd Divisors> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-4><vspace|0.5fn>
     </associate>
   </collection>
 </auxiliary>

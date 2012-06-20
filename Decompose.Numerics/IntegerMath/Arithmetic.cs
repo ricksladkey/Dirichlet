@@ -33,6 +33,29 @@ namespace Decompose.Numerics
             throw new NotImplementedException();
         }
 
+        public static int Mertens(int n)
+        {
+            var sum = 0;
+            for (var i = 1; i <= n; i++)
+                sum += Mobius(i);
+            return sum;
+        }
+
+        public static int MertensOdd(int n)
+        {
+            var sum = 0;
+            for (var i = 1; i <= n; i += 2)
+                sum += Mobius(i);
+            return sum;
+        }
+
+        public static BigInteger Mertens(BigInteger n)
+        {
+            if (n < int.MaxValue)
+                return Mertens((int)n);
+            throw new NotImplementedException();
+        }
+
         public static int NumberOfDivisors(int n)
         {
             return factorerInt.Factor(n)

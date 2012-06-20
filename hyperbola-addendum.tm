@@ -260,14 +260,19 @@
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|<around*|\<lceil\>|<frac|<around*|\<lfloor\>|n/x|\<rfloor\>>|2>|\<rceil\>>>|<cell|=>|<cell|<frac|<around*|\<lfloor\>|n/x|\<rfloor\>>+1|2>>>|<row|<cell|>|<cell|=>|<cell|<around*|\<lfloor\>|<frac|n+x|2*x>|\<rfloor\>>>>|<row|<cell|>|<cell|=>|<cell|<around*|\<lfloor\>|<frac|n|2*x>|\<rfloor\>>+<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>
-    mod 2>>>>
+    mod 2>>|<row|<cell|>|<cell|=>|<cell|<around*|(|<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>+<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>
+    mod 2|)>/2>>>>
   </eqnarray*>
+
+  <\equation*>
+    S<rsub|odd><around*|(|n;a,b|)>=<around*|(|<big|sum><rsub|a\<leq\>x\<leq\>b,x
+    odd><around*|(|<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>+<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>
+    mod 2|)>|)>/2
+  </equation*>
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|T<rsup|><rsub|2,odd><around*|(|n|)>=<big|sum><rsub|x:x\<leq\>n,x
-    odd>\<tau\><rsub|2><around*|(|x|)>>|<cell|=>|<cell|<big|sum><rsub|x:x\<leq\><sqrt|n>,x
-    odd><around*|(|<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>+<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>
-    mod 2|)>-<around*|(|<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>+1|2>|\<rfloor\>>|)><rsup|2>>>>>
+    odd>\<tau\><rsub|2><around*|(|x|)>>|<cell|=>|<cell|2*S<rsub|odd><around*|(|n;1,<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>|)>-<around*|(|<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>+1|2>|\<rfloor\>>|)><rsup|2>>>>>
   </eqnarray*>
 
   Note that:
@@ -282,14 +287,6 @@
     would allow the successive approximation algorithm to be used for
     <math|T<rsub|2,odd><around*|(|n|)>> with a simple modification.
   </itemize-dot>
-
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|T<rsup|><rsub|2,odd><around*|(|n|)>=<big|sum><rsub|x*y\<leq\>n,x
-    odd,y odd>1>|<cell|=>|<cell|<big|sum><rsub|x:x\<leq\><sqrt|n>,x
-    odd><around*|(|<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>+<around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>
-    mod 2|)>-<frac|<around*|(|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>+<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>
-    mod 2|)>|4><rsup|2>>>>>
-  </eqnarray*>
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|T<rsup|><rsub|2><around*|(|n|)>>|<cell|=>|<cell|T<rsub|2,odd><around*|(|n|)>+2*T<rsub|2><around*|(|<around*|\<lfloor\>|<frac|n|2>|\<rfloor\>>|)>-T<rsub|2><around*|(|<around*|\<lfloor\>|<frac|n|4>|\<rfloor\>>|)>>>|<row|<cell|>|<cell|=>|<cell|T<rsub|2,odd><around*|(|n|)>+2*T<rsub|2,odd><around*|(|<around*|\<lfloor\>|<frac|n|2>|\<rfloor\>>|)>+3*T<rsub|2><around*|(|<around*|\<lfloor\>|<frac|n|4>|\<rfloor\>>|)>-2*T<rsub|2><around*|(|<around*|\<lfloor\>|<frac|n|8>|\<rfloor\>>|)>>>|<row|<cell|>|<cell|=>|<cell|T<rsub|2,odd><around*|(|n|)>+2*T<rsub|2,odd><around*|(|<around*|\<lfloor\>|<frac|n|2>|\<rfloor\>>|)>+3*T<rsub|2,odd><around*|(|<around*|\<lfloor\>|<frac|n|4>|\<rfloor\>>|)>+4*T<rsub|2><around*|(|<around*|\<lfloor\>|<frac|n|8>|\<rfloor\>>|)>-3*T<rsub|2><around*|(|<around*|\<lfloor\>|<frac|n|16>|\<rfloor\>>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
@@ -313,14 +310,8 @@
   <\eqnarray*>
     <tformat|<table|<row|<cell|T<rsub|0,odd><around*|(|n|)>>|<cell|=>|<cell|1>>|<row|<cell|T<rsub|1,odd><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|i
     \<leq\>n><rsub|i odd<rsup|>>T<rsub|0,odd><around*|(|<frac|n|i>|)>=<around*|\<lfloor\>|<frac|n+1|2>|\<rfloor\>>>>|<row|<cell|T<rsub|2,odd><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|i
-    \<leq\>n><rsub|i odd>T<rsub|1,odd><around*|(|<frac|n|i>|)>=>>>>
+    \<leq\>n><rsub|i odd>T<rsub|1,odd><around*|(|<frac|n|i>|)>>>>>
   </eqnarray*>
-
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|D<rsub|k,s><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|n<rsup|1/k>><rsub|m=s><big|sum><rsub|j=0><rsup|k-1><binom|k|j>*D<rsub|j,m+1><around*|(|<around*|\<lfloor\>|<frac|n|m<rsup|k-j>>|\<rfloor\>>|)>>>>>
-  </eqnarray*>
-
-  \;
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|T<rsub|3,odd><around*|(|n|)>>|<cell|=>|<cell|6*<big|sum><rsub|z\<leq\><sqrt|n,|3>z
@@ -356,7 +347,7 @@
   </equation*>
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|T<rsub|2><around*|(|n|)>>|<cell|=>|<cell|2*<big|sum><rsub|i=1><rsup|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>><around*|\<lfloor\>|<frac|n|i>|\<rfloor\>>-<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>><rsup|2>>>|<row|<cell|>|<cell|=>|<cell|2*S<around*|(|n;1,<sqrt|n>|)>-<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>><rsup|2>>>>>
+    <tformat|<table|<row|<cell|T<rsub|2><around*|(|n|)>>|<cell|=>|<cell|2*<big|sum><rsub|i=1><rsup|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>><around*|\<lfloor\>|<frac|n|i>|\<rfloor\>>-<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>><rsup|2>>>|<row|<cell|>|<cell|=>|<cell|2*S<around*|(|n;1,<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>|)>-<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>><rsup|2>>>>>
   </eqnarray*>
 
   \;
@@ -405,6 +396,10 @@
     odd><around*|\<lfloor\>|<frac|n|x>|\<rfloor\>>-<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
     n|\<rfloor\>>><rsub|k=1>T<rsub|2,odd><around*|(|<frac|n|2<rsup|k>>|)>>>>>
   </eqnarray*>
+
+  \;
+
+  \;
 
   \;
 
