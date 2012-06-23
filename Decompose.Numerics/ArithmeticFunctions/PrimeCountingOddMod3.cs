@@ -66,16 +66,24 @@ namespace Decompose.Numerics
             BigInteger value;
             if (t3Map.TryGetValue(n, out value))
                 return value;
-            return t3Map[n] = T3Slow(n);
+#if true
+            var result = t3Map[n] = T3Slow(n);
+#else
+            Console.WriteLine("T3({0})", n);
+            var timer = new Stopwatch();
+            timer.Restart();
+            var result = t3Map[n] = T3Slow(n);
+            Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
+            return result;
         }
 
         public BigInteger T3Slow(BigInteger n)
         {
-            //Console.WriteLine("T3({0})", n);
             var sum = (BigInteger)0;
             var root3 = IntegerMath.FloorRoot(n, 3);
             if (threads == 0)
-                sum += T3Worker(n, root3, 0);
+                sum += T3Worker(n, root3, 0, 1);
             else
             {
                 var tasks = new Task[threads];
@@ -84,7 +92,7 @@ namespace Decompose.Numerics
                     var thread = i;
                     tasks[i] = new Task(() =>
                     {
-                        var s = T3Worker(n, root3, thread);
+                        var s = T3Worker(n, root3, thread, threads);
                         lock (this)
                             sum += s;
                     });
@@ -92,23 +100,25 @@ namespace Decompose.Numerics
                 }
                 Task.WaitAll(tasks);
             }
-            var root32 = (root3 + 1) / 2;
-            sum = 3 * sum + root32 * root32 * root32;
-            return sum;
+            return 3 * sum + IntegerMath.Power(T1(root3), 3);
         }
 
-        private BigInteger T3Worker(BigInteger n, BigInteger root3, int thread)
+        private BigInteger T3Worker(BigInteger n, BigInteger root3, int worker, int workers)
         {
             var s = (BigInteger)0;
-            for (var z = (BigInteger)1 + 2 * thread; z <= root3; z += 2 * threads)
+            for (var z = (BigInteger)1 + 2 * worker; z <= root3; z += 2 * workers)
             {
                 var nz = n / z;
                 var sqrtnz = IntegerMath.FloorSquareRoot(nz);
-                var t = hyperbolicSum[thread].Evaluate(nz, (long)z + 2, (long)sqrtnz);
-                var sqrtnz2 = (sqrtnz + 1) / 2;
-                s += 2 * t - sqrtnz2 * sqrtnz2 + (nz / z + 1) / 2;
+                var t = hyperbolicSum[worker].Evaluate(nz, (long)z + 2, (long)sqrtnz);
+                s += 2 * t - IntegerMath.Power(T1(sqrtnz), 2) + T1(nz / z);
             }
             return s;
+        }
+
+        private static BigInteger T1(BigInteger n)
+        {
+            return (n + 1) / 2;
         }
     }
 }

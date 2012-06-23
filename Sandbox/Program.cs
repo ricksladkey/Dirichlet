@@ -255,8 +255,75 @@ namespace Sandbox
 
         static void ParityTest()
         {
+
 #if true
-            var nmax = 100;
+            for (int i = 12; i <= 20; i++)
+            {
+                var algorithm1 = new DivisionFreeDivisorSummatoryFunction(0, false, false);
+                var algorithm2 = new DivisorSummatoryFunction();
+                var n = IntegerMath.Power((BigInteger)10, i);
+                var sqrt = (long)IntegerMath.FloorSquareRoot(n);
+                var timer = new Stopwatch();
+                timer.Restart();
+                var s1 = algorithm1.Evaluate(n, 1, sqrt);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                timer.Restart();
+                var s2 = algorithm2.Evaluate(n, 1, sqrt);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
+            }
+#endif
+
+#if false
+            var algorithm1 = new DivisionFreeDivisorSummatoryFunction(8, false, true);
+            var algorithm2 = new PrimeCountingOddMod3(8);
+            var timer = new Stopwatch();
+            timer.Restart();
+#if false
+            {
+                var n = IntegerMath.Power((BigInteger)10, 16);
+                var zmax = IntegerMath.FloorRoot(n, 4);
+                var sum = (BigInteger)0;
+                for (var z = 1; z <= zmax; z++)
+                    sum += algorithm1.Evaluate(n / z, z + 2, (long)IntegerMath.FloorSquareRoot(n / z));
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
+#endif
+            for (var i = 16; i <= 16; i++)
+            {
+                timer.Restart();
+                for (var iterations = 0; iterations < 1; iterations++)
+                {
+                    var n = IntegerMath.Power((BigInteger)10, i);
+                    var p1 = PrimeCounting.PiPowerOfTen(i) % 3;
+                    var p2 = algorithm2.Evaluate(n);
+                    if (iterations == 0)
+                        Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}", i, p1, p2);
+                }
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
+#endif
+
+#if false
+            var n = IntegerMath.Primorial(6);
+            var logn = IntegerMath.FloorLog(n, 2);
+            var mu = 0;
+            var coef = new int[100];
+            for (var k = 1; k <= logn; k++)
+            {
+                for (var j = 0; j <= k; j++)
+                    coef[j] += IntegerMath.Power(-1, 2 * k - j) * IntegerMath.Binomial(k, j);
+            }
+            for (var j = 0; j <= logn; j++)
+            {
+                Console.WriteLine("coef[{0}] = {1}, tau{2}({3}) = {4}", j, coef[j], j, n, IntegerMath.NumberOfDivisors(n, j));
+                mu += coef[j] * IntegerMath.NumberOfDivisors(n, j);
+            }
+            Console.WriteLine("mu({0}) = {1}", n, mu);
+#endif
+
+#if false
+            var nmax = 1000;
             var mu = new MobiusCollection(nmax + 1, 0);
             for (var n = 1; n <= nmax; n++)
             {
@@ -282,6 +349,17 @@ namespace Sandbox
                         var value = (IntegerMath.FloorRoot(m / z, 2) + 1) / 2;
                         sum += mu[d] * value * value;
                     }
+                }
+                var mod = sum % 3;
+#endif
+#if true
+                var z = 1;
+                var sum = 0;
+                for (var d = 1; d <= root3; d += 2)
+                {
+                    var m = n / (d * d);
+                    var value = (IntegerMath.FloorRoot(m / z, 2) + 1) / 2;
+                    sum += mu[d] * value * value;
                 }
                 var mod = sum % 3;
 #endif
@@ -346,31 +424,13 @@ namespace Sandbox
                 }
                 var mod = sum % 4;
 #endif
-#if true
+#if false
                 var sum = 0;
                 for (var d = 1; d <= n; d += 2)
                     sum += IntegerMath.MertensOdd(n / d);
                 var mod = sum;
 #endif
                 Console.WriteLine("n = {0}, sum = {1}, mod = {2}", n, sum, mod);
-            }
-#endif
-
-#if false
-            var algorithm2 = new PrimeCountingOddMod3(8);
-            var timer = new Stopwatch();
-            for (var i = 12; i <= 15; i++)
-            {
-                timer.Restart();
-                for (var iterations = 0; iterations < 1; iterations++)
-                {
-                    var n = IntegerMath.Power((BigInteger)10, i);
-                    var p1 = PrimeCounting.PiPowerOfTen(i) % 3;
-                    var p2 = algorithm2.Evaluate(n);
-                    if (iterations == 0)
-                        Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}", i, p1, p2);
-                }
-                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
 

@@ -79,7 +79,7 @@
   becaue it is the Dirichlet convolution <math|1<around*|(|n|)>\<ast\>\<tau\><around*|(|n|)>>
   of multiplicative functions.
 
-  The value of all <math|\<tau\><rsub|k><around*|(|n|)>> function is
+  The values of all <math|\<tau\><rsub|k><around*|(|n|)>> functions are
   determined entirely by the exponents in the prime decomposition of
   <math|n>. By the fundemental theorem of arithmetic any whole number
   <math|n> can be expressed uniquely as
@@ -97,7 +97,7 @@
   is
 
   <\equation*>
-    \<tau\><rsub|3><around*|(|p<rsup|a>|)>=<around*|(|a+1|)>+a+<around*|(|a-1|)>+\<ldots\>+1=<frac|<around*|(|a+1|)>*<around*|(|a+2|)>|2>=<binom|a+2|a>
+    \<tau\><rsub|3><around*|(|p<rsup|a>|)>=<around*|(|a+1|)>+a+<around*|(|a-1|)>+\<ldots\>+1=<frac|<around*|(|a+1|)>*<around*|(|a+2|)>|2>=<binom|a+2|a>=<binom|a+2|2>
   </equation*>
 
   and then using multiplicativity
@@ -272,12 +272,12 @@
   <math|c<around*|(|a|)>> gives
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|c<around*|(|a|)>>|<cell|=>|<cell|<big|sum><rsub|1=a><rsup|d<rsub|i>\<gtr\>1>a-<big|sum><rsub|d<rsub|1>=a><rsup|d<rsub|i>\<gtr\>1>a+<big|sum><rsup|d<rsub|i>\<gtr\>1><rsub|d<rsub|1>*d<rsub|2>=a>a-<big|sum><rsup|d<rsub|i>\<gtr\>1><rsub|d<rsub|1>*d<rsub|2>*d<rsub|3>=a>a+\<ldots\>>>|<row|<cell|>|<cell|=>|<cell|a*<around*|(|<big|sum><rsub|1=a><rsup|d<rsub|i>\<gtr\>1>1-<big|sum><rsup|d<rsub|i>\<gtr\>1><rsub|d<rsub|1>=a>1+<big|sum><rsup|d<rsub|i>\<gtr\>1><rsub|d<rsub|1>*d<rsub|2>=a>1-<big|sum><rsup|d<rsub|i>\<gtr\>1><rsub|d<rsub|1>*d<rsub|2>*d<rsub|3>=a>1+\<ldots\>|)>>>>>
+    <tformat|<table|<row|<cell|c<around*|(|a|)>>|<cell|=>|<cell|<big|sum><rsub|1=a,d<rsub|i>\<gtr\>1>a-<big|sum><rsub|d<rsub|1>=a,d<rsub|i>\<gtr\>1>a+<big|sum><rsub|d<rsub|1>*d<rsub|2>=a,d<rsub|i>\<gtr\>1>a-<big|sum><rsub|d<rsub|1>*d<rsub|2>*d<rsub|3>=a,d<rsub|i>\<gtr\>1>a+\<ldots\>>>|<row|<cell|>|<cell|=>|<cell|a*<around*|(|<big|sum><rsub|1=a,d<rsub|i>\<gtr\>1>1-<big|sum><rsub|d<rsub|1>=a,d<rsub|i>\<gtr\>1>1+<big|sum><rsub|d<rsub|1>*d<rsub|2>=a,d<rsub|i>\<gtr\>1>1-<big|sum><rsub|d<rsub|1>*d<rsub|2>*d<rsub|3>=a,d<rsub|i>\<gtr\>1>1+\<ldots\>|)>>>>>
   </eqnarray*>
 
   Introducing the notation <math|t<rsub|j><around*|(|a|)>> for the number of
   ways of writing <math|a> as a product of <math|j> integers strictly greater
-  than one (order being distinguished) and using the identity
+  than one (order being distinguished) and using the identity (due to Linnik)
 
   <\equation*>
     \<mu\><around*|(|a|)>=<big|sum><rsup|\<infty\>><rsub|j=0><around*|(|-1|)><rsup|j>*t<rsub|j><around*|(|a|)>,a\<geq\>1
@@ -328,7 +328,7 @@
 
   <section|Simplifying Summation Expressions>
 
-  Empirically we find that
+  We observe for small values of <math|n> that
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|<around*|(|<big|sum><rsub|d\<leq\><sqrt|n|3>,d
@@ -337,28 +337,22 @@
     3|)>>>>>
   </eqnarray*>
 
-  We now prove that this is indeed the case.
-
-  <\eqnarray*>
-    <tformat|<table|<row|<cell|<big|sum><rsub|d\<leq\><sqrt|n|3>,d
-    odd>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<around*|\<lfloor\>|<frac|n<rsup|>|d<rsup|3>>|\<rfloor\>><rsup|1/3>|\<rfloor\>>+1|2>|\<rfloor\>><rsup|3>>|<cell|=>|<cell|<big|sum><rsub|d\<leq\><sqrt|n|3>,d
-    odd>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<frac|<sqrt|n|3>|d>|\<rfloor\>>+1|2>|\<rfloor\>><rsup|3>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|d\<leq\>m,d
-    odd>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<frac|m|d>|\<rfloor\>>+1|2>|\<rfloor\>><rsup|3>,m=<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|d\<leq\>m,d
-    odd>\<mu\><around*|(|d|)>*<around*|(|<around*|\<lfloor\>|<frac|m|d>|\<rfloor\>>-<around*|\<lfloor\>|<frac|m|2*d>|\<rfloor\>><rsup|>|)><rsup|3>,m=<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|d\<leq\>m,d
-    odd>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|m+d|2*d>|\<rfloor\>><rsup|><rsup|3>,m=<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>>>>>
-  </eqnarray*>
+  We now prove that this expression is valid for all <math|n> but first we
+  will need some additional machinery before we can prove the final result.
 
   Characterize <math|M<rsub|odd><around*|(|n|)>>, the sum of the Mobius
   function over odd arguments.
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|M<rsub|odd><around*|(|n|)>>|<cell|=>|<cell|\<mu\><around*|(|1|)>+\<mu\><around*|(|3|)>+\<mu\><around*|(|5|)>+\<ldots\>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>-<around*|(|\<mu\><around*|(|2|)>+\<mu\><around*|(|4|)>+\<mu\><around*|(|6|)>+\<mu\><around*|(|8|)>+\<ldots\>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>-<around*|(|\<mu\><around*|(|2|)>+\<mu\><around*|(|6|)>+\<mu\><around*|(|10|)>+\<mu\><around*|(|14|)>+\<ldots\>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>-<big|sum><rsub|i\<leq\>m/2,i
+    <tformat|<table|<row|<cell|M<rsub|odd><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|i\<leq\>n,i
+    odd>\<mu\><around*|(|i|)>>>|<row|<cell|>|<cell|=>|<cell|\<mu\><around*|(|1|)>+\<mu\><around*|(|3|)>+\<mu\><around*|(|5|)>+\<ldots\>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>-<around*|(|\<mu\><around*|(|2|)>+\<mu\><around*|(|4|)>+\<mu\><around*|(|6|)>+\<mu\><around*|(|8|)>+\<mu\><around*|(|10|)>+\<ldots\>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>-<around*|(|\<mu\><around*|(|2|)>+0+\<mu\><around*|(|6|)>+0+\<mu\><around*|(|10|)>+0+\<ldots\>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>-<around*|(|\<mu\><around*|(|2|)>+\<mu\><around*|(|6|)>+\<mu\><around*|(|10|)>+\<mu\><around*|(|14|)>+\<ldots\>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>-<around*|(|\<mu\><around*|(|2\<cdot\>1|)>+\<mu\><around*|(|2\<cdot\>3|)>+\<mu\><around*|(|2\<cdot\>5|)>+\<mu\><around*|(|2\<cdot\>7|)>+\<ldots\>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>-<big|sum><rsub|i\<leq\>m/2,i
     odd>\<mu\><around*|(|2*i|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>-<big|sum><rsub|i\<leq\>m/2,i
-    odd>\<mu\><around*|(|2|)>*\<mu\><around*|(|i|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>+<big|sum><rsub|i\<leq\>m/2,i
+    odd>\<mu\><around*|(|2|)>*\<mu\><around*|(|i|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>-<big|sum><rsub|i\<leq\>m/2,i
+    odd>-1\<cdot\>\<mu\><around*|(|i|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>+<big|sum><rsub|i\<leq\>m/2,i
     odd>\<mu\><around*|(|i|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|n|)>+M<rsub|odd><around*|(|<frac|n|2>|)>>>>>
   </eqnarray*>
 
-  Expanding the recurrence
+  Fully expanding the recurrence
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|M<rsub|odd><around*|(|n|)>=<big|sum><rsub|d\<leq\>n,d
@@ -375,6 +369,21 @@
     n\<geq\>1 <around*|(|Lehman|)>>>>>>
   </equation*>
 
+  which for completeness we can prove easily using the identity
+
+  <\equation*>
+    <big|sum><rsub|d<around*|\||m|\<nobracket\>>>\<mu\><around*|(|d|)>=<choice|<tformat|<table|<row|<cell|1>|<cell|if
+    m=1>>|<row|<cell|0>|<cell|if m\<gtr\>1>>>>>
+  </equation*>
+
+  and so
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsup|n><rsub|i=1>M<around*|(|<frac|n|i>|)>>|<cell|=>|<cell|<big|sum><rsub|x*y\<leq\>n>\<mu\><around*|(|y|)>=<big|sum><rsub|m=1><rsup|n><big|sum><rsub|d<around*|\||m|\<nobracket\>>>\<mu\><around*|(|d|)>=1+<big|sum><rsup|n><rsub|m=2>0=1>>>>
+  </eqnarray*>
+
+  and this leads to related identities
+
   <\eqnarray*>
     <tformat|<table|<row|<cell|<big|sum><rsub|m\<leq\>n,m
     even>M<around*|(|<frac|n|m>|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>n/2>M<around*|(|<frac|n|2*m>|)>=<big|sum><rsub|m\<leq\>n/2>M<around*|(|<frac|n/2|m>|)>=1,n\<geq\>2>>|<row|<cell|<big|sum><rsub|m\<leq\>n,m
@@ -382,7 +391,8 @@
     even>M<around*|(|<frac|n|m>|)>=1-1=0,n\<geq\>2>>|<row|<cell|<big|sum><rsub|m\<leq\>n><around*|(|-1|)><rsup|m+1>*M<around*|(|<frac|n|m>|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>n>M<around*|(|<frac|n|m>|)>-2*<big|sum><rsub|m\<leq\>n/2>M<around*|(|<frac|n/2|m>|)>=1-2=-1,n\<geq\>2>>>>
   </eqnarray*>
 
-  Now combine these formula to obtain identies for the odd-Mertens function.
+  Finally, we can apply these identities to obtain identities for the
+  odd-Mertens function.
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|<big|sum><rsub|m\<leq\>n,m
@@ -391,15 +401,19 @@
     n|\<rfloor\>>><rsub|k=0>M<around*|(|<frac|n|2<rsup|k>*m>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
     n|\<rfloor\>>><rsub|k=0><big|sum><rsub|m\<leq\>n,m
     even>M<around*|(|<frac|n/2<rsup|k>|m>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
-    n|\<rfloor\>>><rsub|k=0>1>>|<row|<cell|>|<cell|=>|<cell|<around*|\<lfloor\>|log<rsub|2>
-    n|\<rfloor\>>+1>>|<row|<cell|<big|sum><rsub|m\<leq\>n,m
+    n|\<rfloor\>>-1><rsub|k=0>1+<big|sum><rsub|m\<leq\>1,m
+    even>M<around*|(|<frac|1|m>|)>>>|<row|<cell|>|<cell|=>|<cell|<around*|\<lfloor\>|log<rsub|2>
+    n|\<rfloor\>>+0>>|<row|<cell|>|<cell|=>|<cell|<around*|\<lfloor\>|log<rsub|2>
+    n|\<rfloor\>>>>|<row|<cell|<big|sum><rsub|m\<leq\>n,m
     odd>M<rsub|odd><around*|(|<frac|n|m>|)>>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
     n|\<rfloor\>>><rsub|k=0><big|sum><rsub|m\<leq\>n,m
     odd>M<around*|(|<frac|n/2<rsup|k>|m>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
-    n|\<rfloor\>>-1><rsub|k=0>0+M<around*|(|1|)>>>|<row|<cell|>|<cell|=>|<cell|1>>>>
+    n|\<rfloor\>>-1><rsub|k=0>0+<big|sum><rsub|m\<leq\>1,m
+    odd>M<around*|(|<frac|1|m>|)>>>|<row|<cell|>|<cell|=>|<cell|0+1>>|<row|<cell|>|<cell|=>|<cell|1>>>>
   </eqnarray*>
 
-  If <math|m mod 3=b> then
+  If <math|m mod 3=b> then <math|m<rsup|3>> can only take on three values
+  modulo <math|9> because
 
   <\equation*>
     m<rsup|3>=<around*|(|3*a+b|)><rsup|3>\<equiv\><choice|<tformat|<cwith|1|-1|3|3|cell-halign|r>|<table|<row|<cell|27*a<rsup|3>>|<cell|=>|<cell|0>|<cell|if
@@ -408,18 +422,51 @@
     b=2>>>>> <around*|(|mod 9|)>
   </equation*>
 
+  First simplify and isolate the expression.
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|d\<leq\><sqrt|n|3>,d
+    odd>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<around*|\<lfloor\>|<frac|n<rsup|>|d<rsup|3>>|\<rfloor\>><rsup|1/3>|\<rfloor\>>+1|2>|\<rfloor\>><rsup|3>>|<cell|=>|<cell|<big|sum><rsub|d\<leq\><sqrt|n|3>,d
+    odd>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<frac|<sqrt|n|3>|d>|\<rfloor\>>+1|2>|\<rfloor\>><rsup|3>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|d\<leq\>m,d
+    odd>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<frac|m|d>|\<rfloor\>>+1|2>|\<rfloor\>><rsup|3>,m=<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|d\<leq\>m,d
+    odd>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|m+d|2*d>|\<rfloor\>><rsup|><rsup|3>,m=<around*|\<lfloor\>|<sqrt|n|3>|\<rfloor\>>>>>>
+  </eqnarray*>
+
+  \;
+
+  Finally, show that the expression evalutes to <math|7 mod 9>, for
+  <math|n\<geq\>27>.
+
   <\eqnarray*>
     <tformat|<table|<row|<cell|<big|sum><rsub|d\<leq\>m,d
     odd><rsup|m>\<mu\><around*|(|d|)><around*|\<lfloor\>|<frac|m+d|*2*d>|\<rfloor\>><rsup|3>>|<cell|=>|<cell|<big|sum><rsup|m><rsub|i=1>i<rsup|3>*<big|sum><rsup|<around*|\<lfloor\>|m/2*i-1|\<rfloor\>>><rsub|j=<around*|\<lfloor\>|m/<around*|(|2*i+1|)>|\<rfloor\>>+1,j
     odd>\<mu\><around*|(|j|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsup|m><rsub|i=1>i<rsup|3>*<around*|(|M<rsub|odd><around*|(|<around*|\<lfloor\>|<frac|m|2*i-1>|\<rfloor\>>|)>-M<rsub|odd><around*|(|<around*|\<lfloor\>|<frac|m|2*i+1>|\<rfloor\>>|)>|)>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|
-    M<rsub|odd><around*|(|<frac|m|1>|)>-M<rsub|odd><around*|(|<frac|m|3>|)>-M<rsub|odd><around*|(|<frac|m|3>|)>+M<rsub|odd><around*|(|<frac|m|5>|)>>>|<row|<cell|>|<cell|+>|<cell|M<rsub|odd><around*|(|<frac|m|7>|)>-M<rsub|odd><around*|(|<frac|m|9>|)>-M<rsub|odd><around*|(|<frac|m|9>|)>+M<rsub|odd><around*|(|<frac|m|11>|)>>>|<row|<cell|>|<cell|+>|<cell|\<ldots\>.
-    <around*|(|mod 9|)>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|<big|sum><rsub|i\<leq\>m,i
+    M<rsub|odd><around*|(|<frac|m|1>|)>-M<rsub|odd><around*|(|<frac|m|3>|)>-M<rsub|odd><around*|(|<frac|m|3>|)>+M<rsub|odd><around*|(|<frac|m|5>|)>>>|<row|<cell|>|<cell|+>|<cell|M<rsub|odd><around*|(|<frac|m|7>|)>-M<rsub|odd><around*|(|<frac|m|9>|)>-M<rsub|odd><around*|(|<frac|m|9>|)>+M<rsub|odd><around*|(|<frac|m|11>|)>>>|<row|<cell|>|<cell|+>|<cell|\<ldots\>.>>|<row|<cell|>|<cell|=>|<cell|
+    M<rsub|odd><around*|(|<frac|m|1>|)>+M<rsub|odd><around*|(|<frac|m|3>|)>-3*M<rsub|odd><around*|(|<frac|m|3>|)>+M<rsub|odd><around*|(|<frac|m|5>|)>>>|<row|<cell|>|<cell|+>|<cell|M<rsub|odd><around*|(|<frac|m|7>|)>+M<rsub|odd><around*|(|<frac|m|9>|)>-3*M<rsub|odd><around*|(|<frac|m|9>|)>+M<rsub|odd><around*|(|<frac|m|11>|)>>>|<row|<cell|>|<cell|+>|<cell|\<ldots\>.>>|<row|<cell|>|<cell|\<equiv\>>|<cell|<big|sum><rsub|i\<leq\>m,i
+    odd>M<rsub|odd><around*|(|<frac|m|i>|)>-<big|sum><rsub|i\<leq\>m/3,i
+    odd>3*M<rsub|odd><around*|(|<frac|m|3*i>|)><rsub|>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|<big|sum><rsub|i\<leq\>m,i
     odd>M<rsub|odd><around*|(|<frac|m|i>|)>-3*<big|sum><rsub|i\<leq\>m/3,i
-    odd>M<rsub|odd><around*|(|<frac|m/3|i>|)><rsub|>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|1-3\<cdot\>1>>|<row|<cell|>|<cell|\<equiv\>>|<cell|7
+    odd>M<rsub|odd><around*|(|<frac|m/3|i>|)>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|1-3\<cdot\><around*|[|m\<geq\>3|]>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|7
     <around*|(|mod 9|)>,m\<geq\>3>>>>
   </eqnarray*>
 
+  Modifying <math|T<rsub|3,odd>> slightly gives
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|T<rprime|'><rsub|3,odd><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|z\<leq\><sqrt|n,|3>z
+    odd><rsup|><around*|(|2*S<rsub|odd><around*|(|<around*|\<lfloor\>|<frac|n|z>|\<rfloor\>>;z+2,<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>|)>-<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<sqrt|<frac|n|z>>|\<rfloor\>>+1|2>|\<rfloor\>><rsup|2>+<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<frac|n|z<rsup|2>>|\<rfloor\>>+1|2>|\<rfloor\>>|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|F<rsub|3,odd><around*|(|n|)>>|<cell|\<equiv\>>|<cell|<big|sum><rsub|d\<leq\><sqrt|n|3>,d
+    odd>\<mu\><around*|(|d|)>*T<rprime|'><rsub|3,odd><around*|(|<around*|\<lfloor\>|<frac|n<rsup|>|d<rsup|3>>|\<rfloor\>>|)>+2*<around*|[|n\<geq\>27|]>
+    <around*|(|mod 3|)>>>>>
+  </eqnarray*>
+
   <section|Division-Free Counting for Odd Divisors>
+
+  The division-free counting method is easily adapted to processing only odd
+  indices.
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|\<beta\><around*|(|x|)>>|<cell|=>|<cell|<around*|\<lfloor\>|n/x|\<rfloor\>>>>|<row|<cell|\<delta\><rsub|1><around*|(|x|)>>|<cell|=>|<cell|\<beta\><around*|(|x|)>-\<beta\><around*|(|x+2|)>>>|<row|<cell|\<delta\><rsub|2><around*|(|x|)>>|<cell|=>|<cell|\<delta\><rsub|1><around*|(|x|)>-\<delta\><rsub|1><around*|(|x+2|)>>>|<row|<cell|\<varepsilon\><around*|(|x|)>>|<cell|=>|<cell|n-x*\<beta\><around*|(|x|)>>>|<row|<cell|\<varepsilon\><around*|(|x+2|)>>|<cell|=>|<cell|n-<around*|(|x+2|)>*\<beta\><around*|(|x+2|)>>>|<row|<cell|\<varepsilon\><around*|(|x|)>-\<varepsilon\><around*|(|x+2|)>>|<cell|=>|<cell|<around*|(|x+2|)>*\<beta\><around*|(|x+2|)>-x*\<beta\><around*|(|x|)>>>|<row|<cell|>|<cell|=>|<cell|<around*|(|x+2|)>*\<beta\><around*|(|x+2|)>-x*<around*|(|\<beta\><around*|(|x+2|)>+\<delta\><rsub|1><around*|(|x+2|)>+\<delta\><rsub|2><around*|(|x|)>|)>>>|<row|<cell|>|<cell|=>|<cell|2*\<beta\><around*|(|x+2|)>-x*\<delta\><rsub|1><around*|(|x+2|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<gamma\><around*|(|x|)>>|<cell|=>|<cell|2*\<beta\><around*|(|x|)>-<around*|(|x-2|)>*\<delta\><rsub|1><around*|(|x|)>>>|<row|<cell|\<gamma\><around*|(|x+2|)>>|<cell|=>|<cell|2*\<beta\><around*|(|x+2|)>-x*\<delta\><rsub|1><around*|(|x+2|)>>>|<row|<cell|\<gamma\><around*|(|x|)>-\<gamma\><around*|(|x+2|)>>|<cell|=>|<cell|2*\<beta\><around*|(|x|)>-2*\<beta\><around*|(|x+2|)>-<around*|(|x-2|)>*\<delta\><rsub|1><around*|(|x|)>+x*\<delta\><rsub|1><around*|(|x+2|)>>>|<row|<cell|>|<cell|=>|<cell|2*<around*|(|\<beta\><around*|(|x|)>-\<beta\><around*|(|x+2|)>|)>-<around*|(|x-2|)>*\<delta\><rsub|1><around*|(|x|)>+x*<around*|(|\<delta\><rsub|1><around*|(|x|)>-\<delta\><rsub|2><around*|(|x|)>|)>>>|<row|<cell|>|<cell|=>|<cell|2*\<delta\><rsub|1><around*|(|x|)>+2*\<delta\><rsub|1><around*|(|x|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|>|<cell|=>|<cell|4*\<delta\><rsub|1><around*|(|x|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|<wide|\<varepsilon\>|^><around*|(|x|)>>|<cell|=>|<cell|\<varepsilon\><around*|(|x+2|)>+\<gamma\><around*|(|x+1|)>>>|<row|<cell|\<delta\><rsub|2><around*|(|x|)>>|<cell|=>|<cell|<around*|\<lfloor\>|<frac|<wide|\<varepsilon\>|^><around*|(|x|)>|x>|\<rfloor\>>>>|<row|<cell|\<delta\><rsub|1><around*|(|x|)>>|<cell|=>|<cell|\<delta\><rsub|1><around*|(|x+2|)>+\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<varepsilon\><around*|(|x|)>>|<cell|=>|<cell|<wide|\<varepsilon\>|^><around*|(|x|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<gamma\><around*|(|x|)>>|<cell|=>|<cell|\<gamma\><around*|(|x+2|)>+4*\<delta\><rsub|1><around*|(|x|)>-x*\<delta\><rsub|2><around*|(|x|)>>>|<row|<cell|\<beta\><around*|(|x|)>>|<cell|=>|<cell|\<beta\><around*|(|x+2|)>+\<delta\><rsub|1><around*|(|x|)>>>>>
@@ -457,9 +504,13 @@
       Counting Function Modulo 3> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-3><vspace|0.5fn>
 
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|Simplifying
+      Summation Expressions> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-4><vspace|0.5fn>
+
       <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|Division-Free
       Counting for Odd Divisors> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-4><vspace|0.5fn>
+      <no-break><pageref|auto-5><vspace|0.5fn>
     </associate>
   </collection>
 </auxiliary>

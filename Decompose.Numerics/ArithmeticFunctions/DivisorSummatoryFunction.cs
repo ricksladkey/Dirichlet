@@ -25,20 +25,29 @@ namespace Decompose.Numerics
         }
 
         private readonly Integer smallRegionCutoff = 10;
-        private readonly Integer minimumMultiplier = 10;
+        private readonly Integer minimumMultiplier = 600;
 
         private Integer n;
         private Integer xmin;
         private Integer xmax;
 
         private Stack<Region> stack;
+        private DivisionFreeDivisorSummatoryFunction manualAlgorithm;
 
         public DivisorSummatoryFunction()
         {
             stack = new Stack<Region>();
+            manualAlgorithm = new DivisionFreeDivisorSummatoryFunction(0, false, false);
         }
 
         public Integer Evaluate(Integer n)
+        {
+            var xmax = IntegerMath.FloorSquareRoot(n);
+            var s = Evaluate(n, 1, (long)xmax);
+            return 2 * s - xmax * xmax;
+        }
+
+        public Integer Evaluate(Integer n, long xfirst, long xlast)
         {
             this.n = n;
 
@@ -47,8 +56,8 @@ namespace Decompose.Numerics
 
             // Compute the range of values over which we will apply the
             // geometric algorithm.
-            xmax = IntegerMath.FloorRoot(n, 2);
-            xmin = IntegerMath.Min(IntegerMath.FloorRoot(n, 3) * minimumMultiplier, xmax);
+            xmax = (Integer)xlast;
+            xmin = IntegerMath.Max(xfirst, IntegerMath.Min(IntegerMath.FloorRoot(n, 3) * minimumMultiplier, xmax));
 
             // Calculate the line tangent to the hyperbola at the x = sqrt(n).
             var m0 = (Integer)1;
@@ -87,10 +96,16 @@ namespace Decompose.Numerics
                 // Handle left-overs.
                 if (x1a < xmin)
                 {
+#if false
                     // Process the last few values above xmin as the number of
                     // points above the last L0.
                     for (var x = xmin; x < x0; x++)
                         sum += n / x - (r0 - m0 * x);
+#else
+                    var rest = x0 - xmin;
+                    sum -= (r0 - m0 * x0) * rest + m0 * rest * (rest + 1) / 2;
+                    xmin = x0;
+#endif
                     break;
                 }
 
@@ -138,11 +153,7 @@ namespace Decompose.Numerics
             }
 
             // Process values one up to xmin.
-            for (var x = (Integer)1; x < xmin; x++)
-                sum += n / x;
-
-            // Account for sqrt(n) < x <= n using the Dirichlet hyperbola method.
-            sum = 2 * sum - xmax * xmax;
+            sum += manualAlgorithm.Evaluate(n, xfirst, (long)xmin - 1);
 
             return sum;
         }
