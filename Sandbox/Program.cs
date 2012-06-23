@@ -260,13 +260,17 @@ namespace Sandbox
             for (int i = 12; i <= 20; i++)
             {
                 var algorithm1 = new DivisionFreeDivisorSummatoryFunction(0, false, false);
-                var algorithm2 = new DivisorSummatoryFunction();
+                var algorithm2 = new DivisorSummatoryFunctionOdd();
                 var n = IntegerMath.Power((BigInteger)10, i);
                 var sqrt = (long)IntegerMath.FloorSquareRoot(n);
                 var timer = new Stopwatch();
+#if true
                 timer.Restart();
                 var s1 = algorithm1.Evaluate(n, 1, sqrt);
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#else
+                var s1 = 0;
+#endif
                 timer.Restart();
                 var s2 = algorithm2.Evaluate(n, 1, sqrt);
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);

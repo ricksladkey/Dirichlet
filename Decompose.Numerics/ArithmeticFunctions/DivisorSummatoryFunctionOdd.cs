@@ -30,10 +30,12 @@ namespace Decompose.Numerics
 
         private BigInteger n;
         private Stack<Region> stack;
+        private DivisionFreeDivisorSummatoryFunction manualAlgorithm;
 
         public DivisorSummatoryFunctionOdd()
         {
             stack = new Stack<Region>();
+            manualAlgorithm = new DivisionFreeDivisorSummatoryFunction(0, false, false);
         }
 
         public BigInteger Evaluate(BigInteger n)
@@ -43,7 +45,7 @@ namespace Decompose.Numerics
             return 2 * s - xmax * xmax;
         }
 
-        public BigInteger Evaluate(BigInteger n, long x0, long xmax)
+        public BigInteger Evaluate(BigInteger n, BigInteger x0, BigInteger xmax)
         {
             this.n = n;
             var ymin = n / xmax;
@@ -80,10 +82,9 @@ namespace Decompose.Numerics
                 c2 = c4;
             }
             s += (xmax - xmin + 1) * ymin + Triangle(xmax - xmin);
-            for (var x = xmin; x < x2; x++)
-                s += n / x - (a2 * (x2 - x) + y2);
-            for (var x = x0; x < xmin; x++)
-                s += n / x;
+            var rest = x2 - xmin;
+            s -= y2 * rest + a2 * Triangle(rest);
+            s += manualAlgorithm.Evaluate(n, x0, x2 - 1);
             return s;
         }
 
@@ -107,8 +108,6 @@ namespace Decompose.Numerics
                 ++c1;
                 --w;
             }
-            if (w <= C2 || h <= C2)
-                return s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2);
             var u4 = UTan(a1, b1, c1, a2, b2, c2);
             if (u4 == 0)
                 return s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2);
@@ -117,7 +116,7 @@ namespace Decompose.Numerics
             var v5 = VFloor(u5, a1, b1, c1, a2, b2, c2);
             var v6 = u4 + v4;
             var u7 = u5 + v5;
-            if (u7 >= w)
+            if (u4 <= C2 || v5 <= C2 || v6 >= h || u7 >= w)
                 return s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2);
             s += Triangle(v6 - 1) - Triangle(v6 - u5) + Triangle(u7 - u5);
             stack.Push(new Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));

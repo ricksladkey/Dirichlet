@@ -50,14 +50,14 @@ namespace Decompose.Numerics
             return 2 * (BigInteger)sum - (BigInteger)xmax * xmax;
         }
 
-        public BigInteger Evaluate(BigInteger n, long x1, long x2)
+        public BigInteger Evaluate(BigInteger n, BigInteger x1, BigInteger x2)
         {
             this.n = n;
             sum = 0;
             if (threads <= 1 || x2 - x1 < ((long)1 << 10))
-                Evaluate(x1, x2);
+                Evaluate((long)x1, (long)x2);
             else
-                EvaluateParallel(x1, x2);
+                EvaluateParallel((long)x1, (long)x2);
             return odd ? sum / 2 : sum;
         }
 

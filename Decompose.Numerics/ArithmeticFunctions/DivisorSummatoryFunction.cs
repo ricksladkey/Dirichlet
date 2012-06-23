@@ -47,7 +47,7 @@ namespace Decompose.Numerics
             return 2 * s - xmax * xmax;
         }
 
-        public Integer Evaluate(Integer n, long xfirst, long xlast)
+        public Integer Evaluate(Integer n, BigInteger xfirst, BigInteger xlast)
         {
             this.n = n;
 
@@ -153,7 +153,7 @@ namespace Decompose.Numerics
             }
 
             // Process values one up to xmin.
-            sum += manualAlgorithm.Evaluate(n, xfirst, (long)xmin - 1);
+            sum += manualAlgorithm.Evaluate(n, xfirst, xmin - 1);
 
             return sum;
         }
@@ -433,7 +433,12 @@ namespace Decompose.Numerics
             var a = mxy1 * mxy1 - 2 * denom * n;
             var b = horizontal ? mx1 - my1 : my1 - mx1;
             var da = 2 * mxy1 - 1;
-            for (var i = (Integer)1; i <= max; i++)
+            var imax = (long)max;
+#if false
+            if (imax > 1000)
+                Console.WriteLine("imax = {0}", imax);
+#endif
+            for (var i = (long)1; i <= imax; i++)
             {
                 da += 2;
                 a += da;
