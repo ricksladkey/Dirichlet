@@ -106,5 +106,17 @@ namespace Decompose.Numerics
                 sum += NumberOfDivisors(j, i);
             return sum;
         }
+
+        public static int PrimeCountingFunction(int n)
+        {
+            return primes.TakeWhile(p => p <= n).Count();
+        }
+
+        public static BigInteger PrimeCountingFunction(BigInteger n)
+        {
+            if (n < int.MaxValue)
+                return PrimeCountingFunction((int)n);
+            throw new NotImplementedException();
+        }
     }
 }

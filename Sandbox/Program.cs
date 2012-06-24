@@ -255,11 +255,10 @@ namespace Sandbox
 
         static void ParityTest()
         {
-
 #if true
-            for (int i = 12; i <= 20; i++)
+            for (int i = 6; i <= 6; i++)
             {
-                var algorithm1 = new DivisionFreeDivisorSummatoryFunction(0, false, false);
+                var algorithm1 = new DivisionFreeDivisorSummatoryFunction(0, false, true);
                 var algorithm2 = new DivisorSummatoryFunctionOdd();
                 var n = IntegerMath.Power((BigInteger)10, i);
                 var sqrt = (long)IntegerMath.FloorSquareRoot(n);
