@@ -63,7 +63,7 @@ namespace Decompose.Numerics
             while (true)
             {
                 var a1 = a2 + 1;
-                var x4 = T1(IntegerMath.FloorSquareRoot(n / a1));
+                var x4 = YTan(a1);
                 var y4 = YFloor(x4);
                 var c4 = a1 * x4 + y4;
                 var x5 = x4 + 1;
@@ -98,22 +98,20 @@ namespace Decompose.Numerics
             var s = (BigInteger)0;
             var a3 = a1 + a2;
             var b3 = b1 + b2;
-            while (h > 0 && H(w, 1, a1, b1, c1, a2, b2, c2) <= n)
+            if (h > 0 && H(w, 1, a1, b1, c1, a2, b2, c2) <= n)
             {
                 s += w;
                 ++c2;
                 --h;
             }
             Debug.Assert(h == 0 || H(w, 0, a1, b1, c1, a2, b2, c2) <= n && H(w, 1, a1, b1, c1, a2, b2, c2) > n);
-            while (w > 0 && H(1, h, a1, b1, c1, a2, b2, c2) <= n)
+            if (w > 0 && H(1, h, a1, b1, c1, a2, b2, c2) <= n)
             {
                 s += h;
                 ++c1;
                 --w;
             }
             Debug.Assert(w == 0 || H(0, h, a1, b1, c1, a2, b2, c2) <= n && H(1, h, a1, b1, c1, a2, b2, c2) > n);
-            if (w == 0 || h == 0)
-                return s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2);
             var u4 = UTan(a1, b1, c1, a2, b2, c2);
             if (u4 == 0)
                 return s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2);
@@ -191,6 +189,11 @@ namespace Decompose.Numerics
         private BigInteger T1(BigInteger x)
         {
             return (x + 1) / 2;
+        }
+
+        private BigInteger YTan(BigInteger a)
+        {
+            return T1(IntegerMath.FloorSquareRoot(n / a));
         }
 
         private BigInteger YFloor(BigInteger x)
