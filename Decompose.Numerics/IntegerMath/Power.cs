@@ -5,6 +5,66 @@ namespace Decompose.Numerics
 {
     public static partial class IntegerMath
     {
+        public static int Square(int a)
+        {
+            return a * a;
+        }
+
+        public static uint Square(uint a)
+        {
+            return a * a;
+        }
+
+        public static long Square(long a)
+        {
+            return a * a;
+        }
+
+        public static ulong Square(ulong a)
+        {
+            return a * a;
+        }
+
+        public static BigInteger Square(BigInteger a)
+        {
+            return a * a;
+        }
+
+        public static Rational Square(Rational a)
+        {
+            return a * a;
+        }
+
+        public static int Cube(int a)
+        {
+            return a * a * a;
+        }
+
+        public static uint Cube(uint a)
+        {
+            return a * a * a;
+        }
+
+        public static long Cube(long a)
+        {
+            return a * a * a;
+        }
+
+        public static ulong Cube(ulong a)
+        {
+            return a * a * a;
+        }
+
+        public static BigInteger Cube(BigInteger a)
+        {
+            return a * a * a;
+        }
+
+        public static Rational Cube(Rational a)
+        {
+            return a * a * a;
+        }
+
         public static int Power(int value, int exponent)
         {
             var result = (int)1;

@@ -492,8 +492,12 @@
   Formulas for <math|T<rsub|2,odd><around*|(|n|)>>
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|Y<rsub|tan><around*|(|x|)>>|<cell|=>|<cell|<around*|\<lfloor\>|<around*|(|<around*|\<lfloor\>|<sqrt|<frac|n|a>>|\<rfloor\>>+1|)>/2|\<rfloor\>>>>|<row|<cell|U<around*|(|v|)>>|<cell|=>|<cell|<frac|2*<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>|)>*<around*|(|v+c<rsub|2>|)>+a<rsub|2>-b<rsub|2>-<sqrt|<around*|(|2*<around*|(|v+c<rsub|2>|)>-a<rsub|2>-b<rsub|2>|)><rsup|2>-4*a<rsub|2>*b<rsub|2>*n>|4*a<rsub|2>*b<rsub|2>>-c<rsub|1>>>|<row|<cell|V<around*|(|u|)>>|<cell|=>|<cell|<frac|2*<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>|)>*<around*|(|u+c<rsub|1>|)>-a<rsub|1>+b<rsub|1>-<sqrt|<around*|(|2*<around*|(|u+c<rsub|1>|)>-a<rsub|1>-b<rsub|1>|)><rsup|2>-4*a<rsub|1>*b<rsub|1>*n>|4*a<rsub|1>*b<rsub|1>>-c<rsub|2>>>|<row|<cell|U<rsub|tan><around*|(|v|)>>|<cell|=>|<cell|<frac|<around*|(|a<rsub|1>+b<rsub|1>|)>*a<rsub|3>*b<rsub|3>+<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>+2*a<rsub|1>*b<rsub|1>|)>*<sqrt|a<rsub|3>*b<rsub|3>*n>|2*a<rsub|3>*b<rsub|3>>-c<rsub|1>>>>>
+    <tformat|<table|<row|<cell|Y<rsub|tan><around*|(|a|)>>|<cell|=>|<cell|<around*|\<lfloor\>|<around*|(|<around*|\<lfloor\>|<sqrt|<frac|n|a>>|\<rfloor\>>+1|)>/2|\<rfloor\>>>>|<row|<cell|Y<rsub|floor><around*|(|x|)>>|<cell|=>|<cell|<around*|\<lfloor\>|<around*|(|<around*|\<lfloor\>|<frac|n|2*x+1>|\<rfloor\>>+1|)>/2|\<rfloor\>>>>|<row|<cell|U<around*|(|v|)>>|<cell|=>|<cell|<frac|2*<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>|)>*<around*|(|v+c<rsub|2>|)>+a<rsub|2>-b<rsub|2>-<sqrt|<around*|(|2*<around*|(|v+c<rsub|2>|)>-a<rsub|2>-b<rsub|2>|)><rsup|2>-4*a<rsub|2>*b<rsub|2>*n>|4*a<rsub|2>*b<rsub|2>>-c<rsub|1>>>|<row|<cell|V<around*|(|u|)>>|<cell|=>|<cell|<frac|2*<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>|)>*<around*|(|u+c<rsub|1>|)>-a<rsub|1>+b<rsub|1>-<sqrt|<around*|(|2*<around*|(|u+c<rsub|1>|)>-a<rsub|1>-b<rsub|1>|)><rsup|2>-4*a<rsub|1>*b<rsub|1>*n>|4*a<rsub|1>*b<rsub|1>>-c<rsub|2>>>|<row|<cell|U<rsub|tan><around*|(|v|)>>|<cell|=>|<cell|<frac|<around*|(|a<rsub|1>+b<rsub|1>|)>*a<rsub|3>*b<rsub|3>+<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>+2*a<rsub|1>*b<rsub|1>|)>*<sqrt|a<rsub|3>*b<rsub|3>*n>|2*a<rsub|3>*b<rsub|3>>-c<rsub|1>>>>>
   </eqnarray*>
+
+  Empirically <math|max<around*|(|a<rsub|i>|)>\<leq\>n<rsup|1/3>,max<around*|(|b<rsub|i>|)>\<leq\>n<rsup|1/6>,max<around*|(|c<rsub|i>|)>\<leq\>n<rsup|1/3>>.
+
+  \;
 
   \;
 </body>

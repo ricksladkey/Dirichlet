@@ -428,10 +428,6 @@ namespace Decompose.Numerics
             var b = horizontal ? mx1 - my1 : my1 - mx1;
             var da = 2 * mxy1 - 1;
             var imax = (long)max;
-#if false
-            if (imax > 1000)
-                Console.WriteLine("imax = {0}", imax);
-#endif
             for (var i = (long)1; i <= imax; i++)
             {
                 da += 2;

@@ -71,7 +71,7 @@ namespace Decompose.Numerics
                 var c5 = a1 * x5 + y5;
                 if (x4 < xmin)
                     break;
-                s += Triangle(c4 - c2 - xmin) - Triangle(c4 - c2 - x5) + Triangle(c5 - c2 - x5);
+                s += Triangle(c4 - c2 - x0) - Triangle(c4 - c2 - x5) + Triangle(c5 - c2 - x5);
                 s += ProcessRegion(a1 * x2 + y2 - c5, a2 * x5 + y5 - c2, a1, 1, c5, a2, 1, c2);
                 while (stack.Count > 0)
                 {
@@ -83,8 +83,8 @@ namespace Decompose.Numerics
                 y2 = y4;
                 c2 = c4;
             }
-            s += (xmax - xmin + 1) * ymin + Triangle(xmax - xmin);
-            var rest = x2 - xmin;
+            s += (xmax - x0 + 1) * ymin + Triangle(xmax - x0);
+            var rest = x2 - x0;
             s -= y2 * rest + a2 * Triangle(rest);
             s += manualAlgorithm.Evaluate(n, 2 * x0 - 1, 2 * x2 - 3);
             return s;
@@ -135,7 +135,42 @@ namespace Decompose.Numerics
 
         public BigInteger ProcessRegionManual(BigInteger w, BigInteger h, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
         {
+#if false
             return w < h ? ProcessRegionHorizontal(w, h, a1, b1, c1, a2, b2, c2) : ProcessRegionVertical(w, h, a1, b1, c1, a2, b2, c2);
+#else
+            return w < h ? ProcessRegionManual(w, a1, b1, c1, a2, b2, c2) : ProcessRegionManual(h, b2, a2, c2, b1, a1, c1);
+#endif
+        }
+
+        public BigInteger ProcessRegionManual(BigInteger w, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
+        {
+            if (w <= 1)
+                return 0;
+
+            var s = (BigInteger)0;
+            var umax = (long)w - 1;
+            var t1 = 2 * (a1 * b2 + b1 * a2);
+            var t2 = t1 * (1 + c1) - a1 + b1;
+            var t3 = 4 * (2 * c1 - b1 - a1) + 12;
+            var t4 = 4 * a1 * b1;
+            var t5 = IntegerMath.Square(2 * (1 + c1) - a1 - b1) - t4 * n;
+
+            var u = (long)1;
+            while (true)
+            {
+                Debug.Assert((t2 - IntegerMath.CeilingSquareRoot(t5)) / t4 - c2 == VFloor(u, a1, b1, c1, a2, b2, c2));
+                s += (t2 - IntegerMath.CeilingSquareRoot(t5)) / t4;
+                if (u >= umax)
+                    break;
+                t2 += t1;
+                t5 += t3;
+                t3 += 8;
+                ++u;
+            }
+
+            s -= umax * c2;
+            Debug.Assert(s == ProcessRegionHorizontal(w, 0, a1, b1, c1, a2, b2, c2));
+            return s;
         }
 
         public BigInteger ProcessRegionHorizontal(BigInteger w, BigInteger h, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
@@ -168,17 +203,17 @@ namespace Decompose.Numerics
         public BigInteger UTan(BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
         {
             var a3b3 = (a1 + a2) * (b1 + b2);
-            return ((a1 + b1) * a3b3 + IntegerMath.FloorSquareRoot(BigInteger.Pow(a1 * b2 + b1 * a2 + 2 * a1 * b1, 2) * a3b3 * n)) / (2 * a3b3) - c1;
+            return ((a1 + b1) * a3b3 + IntegerMath.FloorSquareRoot(IntegerMath.Square(a1 * b2 + b1 * a2 + 2 * a1 * b1) * a3b3 * n)) / (2 * a3b3) - c1;
         }
 
         public BigInteger UFloor(BigInteger v, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
         {
-            return (2 * (a1 * b2 + b1 * a2) * (v + c2) + a2 - b2 - IntegerMath.CeilingSquareRoot(BigInteger.Pow(2 * (v + c2) - a2 - b2, 2) - 4 * a2 * b2 * n)) / (4 * a2 * b2) - c1;
+            return (2 * (a1 * b2 + b1 * a2) * (v + c2) + a2 - b2 - IntegerMath.CeilingSquareRoot(IntegerMath.Square(2 * (v + c2) - a2 - b2) - 4 * a2 * b2 * n)) / (4 * a2 * b2) - c1;
         }
 
         public BigInteger VFloor(BigInteger u, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
         {
-            return (2 * (a1 * b2 + b1 * a2) * (u + c1) - a1 + b1 - IntegerMath.CeilingSquareRoot(BigInteger.Pow(2 * (u + c1) - a1 - b1, 2) - 4 * a1 * b1 * n)) / (4 * a1 * b1) - c2;
+            return (2 * (a1 * b2 + b1 * a2) * (u + c1) - a1 + b1 - IntegerMath.CeilingSquareRoot(IntegerMath.Square(2 * (u + c1) - a1 - b1) - 4 * a1 * b1 * n)) / (4 * a1 * b1) - c2;
         }
 
         public static BigInteger Triangle(BigInteger a)
