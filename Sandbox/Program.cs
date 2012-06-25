@@ -256,7 +256,7 @@ namespace Sandbox
         static void ParityTest()
         {
 #if true
-            for (int i = 6; i <= 6; i++)
+            for (int i = 6; i <= 18; i++)
             {
                 var algorithm1 = new DivisionFreeDivisorSummatoryFunction(0, false, true);
                 var algorithm2 = new DivisorSummatoryFunctionOdd();

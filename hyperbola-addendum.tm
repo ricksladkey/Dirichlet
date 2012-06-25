@@ -476,10 +476,23 @@
     mod x|)>\<geq\> x|]>>>>>
   </eqnarray*>
 
+  Attempt to calculate <math|T<rsub|2><around*|(|n|)>,T<rsub|2><around*|(|n/2|)>>
+  at the same time.
+
   <\eqnarray*>
     <tformat|<table|<row|<cell|S<around*|(|n;a,b|)>>|<cell|=>|<cell|2*S<around*|(|<around*|\<lfloor\>|<frac|n|2>|\<rfloor\>>;a,b|)>+<big|sum><rsub|a\<leq\>x\<leq\>b,2*<around*|(|n
     mod x|)>\<geq\> x>1>>|<row|<cell|S<around*|(|n;1,<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>|)>>|<cell|=>|<cell|2*S<around*|(|<around*|\<lfloor\>|<frac|n|2>|\<rfloor\>>|)>;1,<around*|\<nobracket\>|<around*|\<lfloor\>|<sqrt|<frac|n|2>>|\<rfloor\>>|)>+S<around*|(|n;<around*|\<lfloor\>|<sqrt|<frac|n|2>>|\<rfloor\>>+1,<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>|)>+<big|sum><rsub|x\<leq\><around*|\<lfloor\>|<sqrt|n/2>|\<rfloor\>>,2*<around*|(|n
     mod x|)>\<geq\> x>1>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|x<rprime|'>>|<cell|=>|<cell|<frac|x+1|2>>>|<row|<cell|y<rprime|'>>|<cell|=>|<cell|<frac|y+1|2>>>|<row|<cell|x>|<cell|=>|<cell|2*x<rprime|'>-1>>|<row|<cell|y>|<cell|=>|<cell|2*y<rprime|'>-1>>|<row|<cell|x*y>|<cell|=>|<cell|n>>|<row|<cell|<around*|(|2*x<rprime|'>-1|)>*<around*|(|2*y<rprime|'>-1|)>>|<cell|=>|<cell|n>>>>
+  </eqnarray*>
+
+  Formulas for <math|T<rsub|2,odd><around*|(|n|)>>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|Y<rsub|tan><around*|(|x|)>>|<cell|=>|<cell|<around*|\<lfloor\>|<around*|(|<around*|\<lfloor\>|<sqrt|<frac|n|a>>|\<rfloor\>>+1|)>/2|\<rfloor\>>>>|<row|<cell|U<around*|(|v|)>>|<cell|=>|<cell|<frac|2*<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>|)>*<around*|(|v+c<rsub|2>|)>+a<rsub|2>-b<rsub|2>-<sqrt|<around*|(|2*<around*|(|v+c<rsub|2>|)>-a<rsub|2>-b<rsub|2>|)><rsup|2>-4*a<rsub|2>*b<rsub|2>*n>|4*a<rsub|2>*b<rsub|2>>-c<rsub|1>>>|<row|<cell|V<around*|(|u|)>>|<cell|=>|<cell|<frac|2*<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>|)>*<around*|(|u+c<rsub|1>|)>-a<rsub|1>+b<rsub|1>-<sqrt|<around*|(|2*<around*|(|u+c<rsub|1>|)>-a<rsub|1>-b<rsub|1>|)><rsup|2>-4*a<rsub|1>*b<rsub|1>*n>|4*a<rsub|1>*b<rsub|1>>-c<rsub|2>>>|<row|<cell|U<rsub|tan><around*|(|v|)>>|<cell|=>|<cell|<frac|<around*|(|a<rsub|1>+b<rsub|1>|)>*a<rsub|3>*b<rsub|3>+<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>+2*a<rsub|1>*b<rsub|1>|)>*<sqrt|a<rsub|3>*b<rsub|3>*n>|2*a<rsub|3>*b<rsub|3>>-c<rsub|1>>>>>
   </eqnarray*>
 
   \;

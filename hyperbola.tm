@@ -630,7 +630,7 @@
   mod x> gives
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|\<varepsilon\><around*|(|x|)>-\<varepsilon\><around*|(|x+1|)>>|<cell|=>|<cell|<around*|(|x+a|)>\<beta\><around*|(|x+1|)>-x*\<beta\><around*|(|x|)>>>|<row|<cell|>|<cell|=>|<cell|<around*|(|x+1|)>*\<beta\><around*|(|x+1|)>-x*<around*|(|\<beta\><around*|(|x+1|)>+\<delta\><rsub|1><around*|(|x+1|)>+\<delta\><rsub|2><around*|(|x|)>|)>>>|<row|<cell|>|<cell|=>|<cell|\<beta\><around*|(|x+1|)>-x*\<delta\><rsub|1><around*|(|x+1|)>-x*\<delta\><rsub|2><around*|(|x|)>>>>>
+    <tformat|<table|<row|<cell|\<varepsilon\><around*|(|x|)>-\<varepsilon\><around*|(|x+1|)>>|<cell|=>|<cell|<around*|(|x+1|)>\<beta\><around*|(|x+1|)>-x*\<beta\><around*|(|x|)>>>|<row|<cell|>|<cell|=>|<cell|<around*|(|x+1|)>*\<beta\><around*|(|x+1|)>-x*<around*|(|\<beta\><around*|(|x+1|)>+\<delta\><rsub|1><around*|(|x+1|)>+\<delta\><rsub|2><around*|(|x|)>|)>>>|<row|<cell|>|<cell|=>|<cell|\<beta\><around*|(|x+1|)>-x*\<delta\><rsub|1><around*|(|x+1|)>-x*\<delta\><rsub|2><around*|(|x|)>>>>>
   </eqnarray*>
 
   Introducing the intermediate quantity <math|\<gamma\><around*|(|x|)>=\<beta\><around*|(|x|)>-<around*|(|x-1|)>*\<delta\><rsub|1><around*|(|x|)>>
