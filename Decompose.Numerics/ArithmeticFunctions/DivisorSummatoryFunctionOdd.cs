@@ -13,8 +13,16 @@ namespace Decompose.Numerics
         {
             public Region(BigInteger w, BigInteger h, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
             {
-                this.w = w; this.h = h; this.a1 = a1; this.b1 = b1; this.c1 = c1; this.a2 = a2; this.b2 = b2; this.c2 = c2;
+                this.w = w;
+                this.h = h;
+                this.a1 = a1;
+                this.b1 = b1;
+                this.c1 = c1;
+                this.a2 = a2;
+                this.b2 = b2;
+                this.c2 = c2;
             }
+
             public BigInteger w;
             public BigInteger h;
             public BigInteger a1;
@@ -96,47 +104,56 @@ namespace Decompose.Numerics
             Console.WriteLine("ProcessRegion: w = {0}, h = {1}, a1/b1 = {2}/{3}, a2/b2 = {4}/{5}, c1 = {6}, c2 = {7}", w, h, a1, b1, a2, b2, c1, c2);
 #endif
             var s = (BigInteger)0;
-            var a3 = a1 + a2;
-            var b3 = b1 + b2;
-            if (h > 0 && H(w, 1, a1, b1, c1, a2, b2, c2) <= n)
+            while (true)
             {
-                s += w;
-                ++c2;
-                --h;
-            }
-            Debug.Assert(h == 0 || H(w, 0, a1, b1, c1, a2, b2, c2) <= n && H(w, 1, a1, b1, c1, a2, b2, c2) > n);
-            if (w > 0 && H(1, h, a1, b1, c1, a2, b2, c2) <= n)
-            {
-                s += h;
-                ++c1;
-                --w;
-            }
-            Debug.Assert(w == 0 || H(0, h, a1, b1, c1, a2, b2, c2) <= n && H(1, h, a1, b1, c1, a2, b2, c2) > n);
-            var ab1 = a1 + b1;
-            var a3b3 = (a1 + a2) * (b1 + b2);
-            var abba = a1 * b2 + b1 * a2;
-            var ab2 = 2 * a1 * b1;
-            var u4 = UTan(ab1, abba, ab2, a3b3, c1);
-            if (u4 == 0)
-                return s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2);
-            var u5 = u4 + 1;
-            BigInteger v4, v5;
-            VFloor2(u4, a1, b1, c1, c2, abba, ab2, out v4, out v5);
-            Debug.Assert(v4 == VFloor(u4, a1, b1, c1, a2, b2, c2));
-            Debug.Assert(v5 == VFloor(u5, a1, b1, c1, a2, b2, c2));
-            Debug.Assert(H(u4, v4, a1, b1, c1, a2, b2, c2) <= n && H(u4, v4 + 1, a1, b1, c1, a2, b2, c2) > n);
-            Debug.Assert(H(u5, v5, a1, b1, c1, a2, b2, c2) <= n && H(u5, v5 + 1, a1, b1, c1, a2, b2, c2) > n);
-            var v6 = u4 + v4;
-            var u7 = u5 + v5;
-            if (u4 <= C2 || v5 <= C2 || v6 >= h || u7 >= w)
-                return s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2);
-            s += Triangle(v6 - 1) - Triangle(v6 - u5) + Triangle(u7 - u5);
-            stack.Push(new Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
-            stack.Push(new Region(w - u7, v5, a3, b3, c1 + c2 + u7, a2, b2, c2));
+                var a3 = a1 + a2;
+                var b3 = b1 + b2;
+                if (h > 0 && H(w, 1, a1, b1, c1, a2, b2, c2) <= n)
+                {
+                    s += w;
+                    ++c2;
+                    --h;
+                }
+                Debug.Assert(h == 0 || H(w, 0, a1, b1, c1, a2, b2, c2) <= n && H(w, 1, a1, b1, c1, a2, b2, c2) > n);
+                if (w > 0 && H(1, h, a1, b1, c1, a2, b2, c2) <= n)
+                {
+                    s += h;
+                    ++c1;
+                    --w;
+                }
+                Debug.Assert(w == 0 || H(0, h, a1, b1, c1, a2, b2, c2) <= n && H(1, h, a1, b1, c1, a2, b2, c2) > n);
+                var ab1 = a1 + b1;
+                var a3b3 = (a1 + a2) * (b1 + b2);
+                var abba = a1 * b2 + b1 * a2;
+                var ab2 = 2 * a1 * b1;
+                var u4 = UTan(ab1, abba, ab2, a3b3, c1);
+                if (u4 == 0)
+                    return s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2);
+                var u5 = u4 + 1;
+                BigInteger v4, v5;
+                VFloor2(u4, a1, b1, c1, c2, abba, ab2, out v4, out v5);
+                Debug.Assert(v4 == VFloor(u4, a1, b1, c1, a2, b2, c2));
+                Debug.Assert(v5 == VFloor(u5, a1, b1, c1, a2, b2, c2));
+                Debug.Assert(H(u4, v4, a1, b1, c1, a2, b2, c2) <= n && H(u4, v4 + 1, a1, b1, c1, a2, b2, c2) > n);
+                Debug.Assert(H(u5, v5, a1, b1, c1, a2, b2, c2) <= n && H(u5, v5 + 1, a1, b1, c1, a2, b2, c2) > n);
+                var v6 = u4 + v4;
+                var u7 = u5 + v5;
+                if (u4 <= C2 || v5 <= C2 || v6 >= h || u7 >= w)
+                    return s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2);
+                if (v6 != u7)
+                    s += Triangle(v6 - 1) - Triangle(v6 - u5) + Triangle(u7 - u5);
+                else
+                    s += Triangle(v6 - 1);
+                stack.Push(new Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
+                w -= u7;
+                h = v5;
+                a1 = a3;
+                b1 = b3;
+                c1 += c2 + u7;
 #if DEBUG
             Console.WriteLine("ProcessRegion: s = {0}", s);
 #endif
-            return s;
+            }
         }
 
         public BigInteger ProcessRegionManual(BigInteger w, BigInteger h, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
@@ -155,22 +172,23 @@ namespace Decompose.Numerics
 
             var s = (BigInteger)0;
             var umax = (long)w - 1;
-            var t1 = 2 * (a1 * b2 + b1 * a2);
+            var t1 = (a1 * b2 + b1 * a2) << 1;
             var t2 = t1 * (1 + c1) - a1 + b1;
-            var t3 = 4 * (2 * c1 - b1 - a1) + 12;
-            var t4 = 4 * a1 * b1;
-            var t5 = IntegerMath.Square(2 * (1 + c1) - a1 - b1) - t4 * n;
+            var t3 = (c1 << 1) - a1 - b1;
+            var t4 = (t3 << 2) + 12;
+            var t5 = (a1 * b1) << 2;
+            var t6 = IntegerMath.Square(t3 + 2) - t5 * n;
 
             var u = (long)1;
             while (true)
             {
-                Debug.Assert((t2 - IntegerMath.CeilingSquareRoot(t5)) / t4 - c2 == VFloor(u, a1, b1, c1, a2, b2, c2));
-                s += (t2 - IntegerMath.CeilingSquareRoot(t5)) / t4;
+                Debug.Assert((t2 - IntegerMath.CeilingSquareRoot(t6)) / t5 - c2 == VFloor(u, a1, b1, c1, a2, b2, c2));
+                s += (t2 - IntegerMath.CeilingSquareRoot(t6)) / t5;
                 if (u >= umax)
                     break;
                 t2 += t1;
-                t5 += t3;
-                t3 += 8;
+                t6 += t4;
+                t4 += 8;
                 ++u;
             }
 
@@ -200,17 +218,14 @@ namespace Decompose.Numerics
 
         public BigInteger H(BigInteger u, BigInteger v, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
         {
-            return (2 * (b2 * (u + c1) - b1 * (v + c2)) - 1) * (2 * (a1 * (v + c2) - a2 * (u + c1)) - 1);
+            var uu = u + c1;
+            var vv = v + c2;
+            return (((b2 * uu - b1 * vv) << 1) - 1) * (((a1 * vv - a2 * uu) << 1) - 1);
         }
 
         public BigInteger UTan(BigInteger ab1, BigInteger abba, BigInteger ab2, BigInteger a3b3, BigInteger c1)
         {
             return (ab1 + IntegerMath.FloorSquareRoot(IntegerMath.Square(abba + ab2) * n / a3b3)) / 2 - c1;
-        }
-
-        public BigInteger UTanSlow(BigInteger ab1, BigInteger abba, BigInteger ab2, BigInteger a3b3, BigInteger c1)
-        {
-            return (ab1 * a3b3 + IntegerMath.FloorSquareRoot(IntegerMath.Square(abba + ab2) * a3b3 * n)) / (2 * a3b3) - c1;
         }
 
         public BigInteger UFloor(BigInteger v, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
@@ -225,22 +240,23 @@ namespace Decompose.Numerics
 
         public void VFloor2(BigInteger u1, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger c2, BigInteger abba, BigInteger ab2, out BigInteger v1, out BigInteger v2)
         {
-            var uu = 2 * (u1 + c1);
+            var uu = (u1 + c1) << 1;
             var t1 = abba * uu - a1 + b1;
-            var t3 = 2 * ab2;
-            var t2 = IntegerMath.Square(uu - a1 - b1) - t3 * n;
-            v1 = (t1 - IntegerMath.CeilingSquareRoot(t2)) / t3 - c2;
-            v2 = (t1 + 2 * abba - IntegerMath.CeilingSquareRoot(t2 + 4 * (uu - a1 - b1 + 1))) / t3 - c2;
+            var t2 = ab2 << 1;
+            var t3 = uu - a1 - b1;
+            var t4 = IntegerMath.Square(t3) - t2 * n;
+            v1 = (t1 - IntegerMath.CeilingSquareRoot(t4)) / t2 - c2;
+            v2 = (t1 + (abba << 1) - IntegerMath.CeilingSquareRoot(t4 + ((t3 + 1) << 2))) / t2 - c2;
         }
 
         public static BigInteger Triangle(BigInteger a)
         {
-            return a * (a + 1) / 2;
+            return a * (a + 1) >> 1;
         }
 
         private BigInteger T1(BigInteger x)
         {
-            return (x + 1) / 2;
+            return (x + 1) >> 1;
         }
 
         private BigInteger YTan(BigInteger a)
@@ -250,7 +266,7 @@ namespace Decompose.Numerics
 
         private BigInteger YFloor(BigInteger x)
         {
-            return (n / (2 * x - 1) + 1) / 2;
+            return (n / ((x << 1) - 1) + 1) >> 1;
         }
     }
 }
