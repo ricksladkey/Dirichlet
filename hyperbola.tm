@@ -293,7 +293,7 @@
   each other, we could sum columns of lattice points:
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|>|<cell|S<rsub|W><around*|(|w|)>=<big|sum><rsup|w><rsub|u=1><around*|\<lfloor\>|V<around*|(|u|)>|\<rfloor\>>>|<cell|<eq-number>>>|<row|<cell|>|<cell|S<rsub|H><around*|(|h|)>=<big|sum><rsub|v=1><rsup|h><around*|\<lfloor\>|U<around*|(|v|)>|\<rfloor\>>>|<cell|<eq-number>>>>>
+    <tformat|<table|<row|<cell|>|<cell|S<rsub|W><around*|(|w|)>=<big|sum><rsup|w-1><rsub|u=1><around*|\<lfloor\>|V<around*|(|u|)>|\<rfloor\>>>|<cell|<eq-number>>>|<row|<cell|>|<cell|S<rsub|H><around*|(|h|)>=<big|sum><rsub|v=1><rsup|h-1><around*|\<lfloor\>|U<around*|(|v|)>|\<rfloor\>>>|<cell|<eq-number>>>>>
   </eqnarray*>
 
   using whichever axis has fewer points, keeping in mind that it could be
