@@ -33,8 +33,11 @@ namespace Decompose.Numerics
             public BigInteger c2;
         }
 
-        public static readonly BigInteger C1 = 1;
-        public static readonly BigInteger C2 = 10;
+        public static readonly BigInteger C1 = 1000;
+        public static readonly BigInteger C2 = 20;
+
+        private static readonly BigInteger nmax = (BigInteger)1 << 94;
+        private const ulong tmax = (ulong)1 << 62;
 
         private BigInteger n;
         private Stack<Region> stack = new Stack<Region>();
@@ -118,7 +121,36 @@ namespace Decompose.Numerics
 
         public BigInteger ProcessRegionManual(BigInteger w, BigInteger h, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
         {
-            return w < h ? ProcessRegionHorizontal(w, h, a1, b1, c1, a2, b2, c2) : ProcessRegionVertical(w, h, a1, b1, c1, a2, b2, c2);
+            return w < h ? ProcessRegionManual(w, a1, b1, c1, a2, b2, c2) : ProcessRegionManual(h, b2, a2, c2, b1, a1, c1);
+        }
+
+        public BigInteger ProcessRegionManual(BigInteger w, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
+        {
+            if (w <= 1)
+                return 0;
+
+            var s = (BigInteger)0;
+            var umax = w - 1;
+            var t1 = a1 * b2 + b1 * a2;
+            var t2 = 1 + c1;
+            var t3 = 2 * t2 + 1;
+            var t4 = 2 * a1 * b1;
+            var t5 = t1 * t2 - t4 * c2;
+            var t6 = t2 * t2 - 2 * t4 * n;
+
+            var u = (BigInteger)1;
+            while (true)
+            {
+                s += (t5 - CeilingSquareRoot(t6)) / t4;
+                if (u >= umax)
+                    break;
+                t5 += t1;
+                t6 += t3;
+                t3 += 2;
+                ++u;
+            }
+
+            return s;
         }
 
         public BigInteger ProcessRegionHorizontal(BigInteger w, BigInteger h, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
@@ -166,12 +198,18 @@ namespace Decompose.Numerics
         {
             if (x1 > x2)
                 return 0;
+            return n <= nmax ? S1Fast(n, (long)x1, (long)x2) : S1Slow(n, x1, x2);
+        }
+
+        public static BigInteger S1Fast(BigInteger n, long x1, long x2)
+        {
             var s = (BigInteger)0;
-            var x = x2;
-            var beta = n / (x + 1);
-            var eps = n - (x + 1) * beta;
-            var delta = n / x - beta;
-            var gamma = beta - x * delta;
+            var t = (ulong)0;
+            var x = (long)x2;
+            var beta = (long)(n / (x + 1));
+            var eps = (long)(n % (x + 1));
+            var delta = (long)(n / x - beta);
+            var gamma = (long)(beta - x * delta);
             while (x >= x1)
             {
                 eps += gamma;
@@ -197,15 +235,22 @@ namespace Decompose.Numerics
                 }
                 gamma += 2 * delta;
                 beta += delta;
+                t += (ulong)beta;
+                if (t >= tmax)
+                {
+                    s += t;
+                    t = 0;
+                }
+                --x;
+            }
+            return s + t + S1Slow(n, x1, x);
+        }
 
-                s += beta;
-                --x;
-            }
-            while (x >= x1)
-            {
+        public static BigInteger S1Slow(BigInteger n, BigInteger x1, BigInteger x2)
+        {
+            var s = (BigInteger)0;
+            for (var x = x1; x <= x2; x++)
                 s += n / x;
-                --x;
-            }
             return s;
         }
 

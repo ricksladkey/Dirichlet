@@ -195,7 +195,7 @@ namespace Decompose.Numerics
             var u = (long)1;
             while (true)
             {
-                Debug.Assert((t5 - IntegerMath.CeilingSquareRoot(t6)) / t4 - c2 == VFloor(u, a1, b1, c1, a2, b2, c2));
+                Debug.Assert((t5 - IntegerMath.CeilingSquareRoot(t6)) / t4 == VFloor(u, a1, b1, c1, a2, b2, c2));
                 s += (t5 - IntegerMath.CeilingSquareRoot(t6)) / t4;
                 if (u >= umax)
                     break;
