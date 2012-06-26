@@ -6,7 +6,7 @@ using Integer = System.Numerics.BigInteger;
 
 namespace Decompose.Numerics
 {
-    public class DivisorSummatoryFunction
+    public class DivisorSummatoryFunction : IDivisorSummatoryFunction<BigInteger>
     {
         private struct Region
         {

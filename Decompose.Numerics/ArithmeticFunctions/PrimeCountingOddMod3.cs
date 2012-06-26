@@ -11,16 +11,22 @@ namespace Decompose.Numerics
         private int threads;
         private MobiusCollection mobius;
         private Dictionary<BigInteger, BigInteger> t3Map;
-        private DivisionFreeDivisorSummatoryFunction[] hyperbolicSum;
+        private IDivisorSummatoryFunction<BigInteger> [] hyperbolicSum;
 
         public PrimeCountingOddMod3(int threads)
         {
             this.threads = threads;
             t3Map = new Dictionary<BigInteger, BigInteger>();
             var count = Math.Max(threads, 1);
-            hyperbolicSum = new DivisionFreeDivisorSummatoryFunction[count];
+            hyperbolicSum = new IDivisorSummatoryFunction<BigInteger>[count];
             for (var i = 0; i < count; i++)
+            {
+#if false
                 hyperbolicSum[i] = new DivisionFreeDivisorSummatoryFunction(0, false, true);
+#else
+                hyperbolicSum[i] = new DivisorSummatoryFunctionOdd();
+#endif
+            }
         }
 
         public BigInteger Evaluate(BigInteger n)

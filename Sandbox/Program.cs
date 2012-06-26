@@ -321,14 +321,36 @@ namespace Sandbox
         static void ParityTest()
         {
 #if true
-            for (int i = 20; i <= 20; i++)
+            for (int i = 0; i <= 20; i++)
+            {
+                var algorithm1 = new DivisionFreeDivisorSummatoryFunction(0, false, false);
+                var algorithm2 = new DivisorSummatoryFunctionArticle();
+                var n = IntegerMath.Power((BigInteger)10, i);
+                var sqrt = (long)IntegerMath.FloorSquareRoot(n);
+                var timer = new Stopwatch();
+#if true
+                timer.Restart();
+                var s1 = algorithm1.Evaluate(n);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#else
+                var s1 = 0;
+#endif
+                timer.Restart();
+                var s2 = algorithm2.Evaluate(n);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
+            }
+#endif
+
+#if false
+            for (int i = 18; i <= 22; i++)
             {
                 var algorithm1 = new DivisionFreeDivisorSummatoryFunction(0, false, true);
                 var algorithm2 = new DivisorSummatoryFunctionOdd();
                 var n = IntegerMath.Power((BigInteger)10, i);
                 var sqrt = (long)IntegerMath.FloorSquareRoot(n);
                 var timer = new Stopwatch();
-#if false
+#if true
                 timer.Restart();
                 var s1 = algorithm1.Evaluate(n, 1, sqrt);
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
@@ -347,17 +369,7 @@ namespace Sandbox
             var algorithm2 = new PrimeCountingOddMod3(8);
             var timer = new Stopwatch();
             timer.Restart();
-#if false
-            {
-                var n = IntegerMath.Power((BigInteger)10, 16);
-                var zmax = IntegerMath.FloorRoot(n, 4);
-                var sum = (BigInteger)0;
-                for (var z = 1; z <= zmax; z++)
-                    sum += algorithm1.Evaluate(n / z, z + 2, (long)IntegerMath.FloorSquareRoot(n / z));
-                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-            }
-#endif
-            for (var i = 16; i <= 16; i++)
+            for (var i = 20; i <= 20; i++)
             {
                 timer.Restart();
                 for (var iterations = 0; iterations < 1; iterations++)

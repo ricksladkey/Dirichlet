@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class DivisorSummatoryFunctionOdd
+    public class DivisorSummatoryFunctionOdd : IDivisorSummatoryFunction<BigInteger>
     {
         private struct Region
         {
@@ -49,15 +49,28 @@ namespace Decompose.Numerics
         public BigInteger Evaluate(BigInteger n)
         {
             var xmax = IntegerMath.FloorSquareRoot(n);
-            var s = Evaluate(n, 1, (long)xmax);
+            var s = Evaluate(n, 1, xmax);
             return 2 * s - xmax * xmax;
         }
 
         public BigInteger Evaluate(BigInteger n, BigInteger x0, BigInteger xmax)
         {
+            var result = EvaluateInternal(n, x0, xmax);
+#if false
+            var expected = new DivisionFreeDivisorSummatoryFunction(0, false, true).Evaluate(n, x0, xmax);
+            if (expected != result)
+                Debugger.Break();
+#endif
+            return result;
+        }
+
+        public BigInteger EvaluateInternal(BigInteger n, BigInteger x0, BigInteger xmax)
+        {
             this.n = n;
             x0 = T1(x0);
             xmax = T1(xmax);
+            if (x0 > xmax)
+                return 0;
             var ymin = YFloor(xmax);
             var xmin = IntegerMath.Max(x0, IntegerMath.Min(T1(C1 * IntegerMath.CeilingRoot(2 * n, 3)), xmax));
 #if DEBUG
@@ -224,7 +237,7 @@ namespace Decompose.Numerics
 
         public BigInteger UTan(BigInteger ab1, BigInteger abba, BigInteger ab2, BigInteger a3b3, BigInteger c1)
         {
-            return (ab1 + IntegerMath.FloorSquareRoot(IntegerMath.Square(abba + ab2) * n / a3b3)) / 2 - c1;
+            return (ab1 + IntegerMath.FloorSquareRoot(IntegerMath.Square(abba + ab2) * n / a3b3) - (c1 << 1)) / 2;
         }
 
         public BigInteger UFloor(BigInteger v, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)

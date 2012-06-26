@@ -49,6 +49,7 @@
     <Compile Include="ArithmeticFunctions\DivisionFreeDivisorSummatoryFunction.cs" />
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunctionArticle.cs" />
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunctionOdd.cs" />
+    <Compile Include="ArithmeticFunctions\IDivisorSummatoryFunction.cs" />
     <Compile Include="ArithmeticFunctions\MobiusCollection.cs" />
     <Compile Include="ArithmeticFunctions\MobiusRange.cs" />
     <Compile Include="ArithmeticFunctions\PrimeCountingOddMod3.cs" />

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Decompose.Numerics
 {
-    public class DivisionFreeDivisorSummatoryFunction
+    public class DivisionFreeDivisorSummatoryFunction : IDivisorSummatoryFunction<BigInteger>
     {
         private struct WorkItem
         {
