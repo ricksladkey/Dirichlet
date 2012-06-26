@@ -253,17 +253,82 @@ namespace Sandbox
             return (sum + (n >= 2 ? 1 : 0)) % 2;
         }
 
+        static void MuSummationTest()
+        {
+#if false
+            var n = 1000;
+            var sum = (double)0;
+            var mu = new MobiusCollection(n + 1, 8);
+            for (var a = 1; a <= n; a++)
+            {
+                for (var b = 1; b <= n; b++)
+                {
+                    var gcd = IntegerMath.GreatestCommonDivisor(a, b);
+                    var term = (Rational)(mu[a] * mu[b]) / IntegerMath.Square((BigInteger)a * b) * IntegerMath.Square((BigInteger)gcd);
+                    sum += (double)term;
+                }
+            }
+            Console.WriteLine("sum = {0}", sum);
+#endif
+
+#if false
+            var n = 300;
+            var sum = (double)0;
+            var mu = new MobiusCollection(n + 1, 8);
+            for (var a = 1; a <= n; a++)
+            {
+                for (var b = 1; b <= n; b++)
+                {
+                    for (var c = 1; c <= n; c++)
+                    {
+                        var gcd = IntegerMath.GreatestCommonDivisor(a, b);
+                        if (gcd == 1)
+                            continue;
+                        gcd = IntegerMath.GreatestCommonDivisor(gcd, c);
+                        var term = (Rational)(mu[a] * mu[b] * mu[c]) / IntegerMath.Square((BigInteger)a * b * c) * IntegerMath.Power((BigInteger)gcd, 3);
+                        sum += (double)term;
+                    }
+                }
+            }
+            Console.WriteLine("sum = {0}", sum);
+#endif
+
+#if false
+            var n = 70;
+            var sum = (double)0;
+            var mu = new MobiusCollection(n + 1, 8);
+            for (var a = 1; a <= n; a++)
+            {
+                for (var b = 1; b <= n; b++)
+                {
+                    for (var c = 1; c <= n; c++)
+                    {
+                        for (var d = 1; d <= n; d++)
+                        {
+                            var gcd = IntegerMath.GreatestCommonDivisor(a, b);
+                            gcd = IntegerMath.GreatestCommonDivisor(gcd, c);
+                            gcd = IntegerMath.GreatestCommonDivisor(gcd, d);
+                            var term = (Rational)(mu[a] * mu[b] * mu[c] * mu[d]) / IntegerMath.Square((BigInteger)a * b * c * d) * IntegerMath.Power((BigInteger)gcd, 4);
+                            sum += (double)term;
+                        }
+                    }
+                }
+            }
+            Console.WriteLine("sum = {0}", sum);
+#endif
+        }
+
         static void ParityTest()
         {
 #if true
-            for (int i = 15; i <= 20; i++)
+            for (int i = 20; i <= 20; i++)
             {
                 var algorithm1 = new DivisionFreeDivisorSummatoryFunction(0, false, true);
                 var algorithm2 = new DivisorSummatoryFunctionOdd();
                 var n = IntegerMath.Power((BigInteger)10, i);
                 var sqrt = (long)IntegerMath.FloorSquareRoot(n);
                 var timer = new Stopwatch();
-#if true
+#if false
                 timer.Restart();
                 var s1 = algorithm1.Evaluate(n, 1, sqrt);
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);

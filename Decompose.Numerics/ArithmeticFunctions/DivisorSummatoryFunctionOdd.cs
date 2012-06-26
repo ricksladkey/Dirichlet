@@ -34,7 +34,7 @@ namespace Decompose.Numerics
         }
 
         public static readonly BigInteger C1 = 600;
-        public static readonly BigInteger C2 = 10;
+        public static readonly BigInteger C2 = 20;
 
         private BigInteger n;
         private Stack<Region> stack;
@@ -173,26 +173,25 @@ namespace Decompose.Numerics
             var s = (BigInteger)0;
             var umax = (long)w - 1;
             var t1 = (a1 * b2 + b1 * a2) << 1;
-            var t2 = t1 * (1 + c1) - a1 + b1;
-            var t3 = (c1 << 1) - a1 - b1;
-            var t4 = (t3 << 2) + 12;
-            var t5 = (a1 * b1) << 2;
-            var t6 = IntegerMath.Square(t3 + 2) - t5 * n;
+            var t2 = (c1 << 1) - a1 - b1;
+            var t3 = (t2 << 2) + 12;
+            var t4 = (a1 * b1) << 2;
+            var t5 = t1 * (1 + c1) - a1 + b1 - t4 * c2;
+            var t6 = IntegerMath.Square(t2 + 2) - t4 * n;
 
             var u = (long)1;
             while (true)
             {
-                Debug.Assert((t2 - IntegerMath.CeilingSquareRoot(t6)) / t5 - c2 == VFloor(u, a1, b1, c1, a2, b2, c2));
-                s += (t2 - IntegerMath.CeilingSquareRoot(t6)) / t5;
+                Debug.Assert((t5 - IntegerMath.CeilingSquareRoot(t6)) / t4 - c2 == VFloor(u, a1, b1, c1, a2, b2, c2));
+                s += (t5 - IntegerMath.CeilingSquareRoot(t6)) / t4;
                 if (u >= umax)
                     break;
-                t2 += t1;
-                t6 += t4;
-                t4 += 8;
+                t5 += t1;
+                t6 += t3;
+                t3 += 8;
                 ++u;
             }
 
-            s -= umax * c2;
             Debug.Assert(s == ProcessRegionHorizontal(w, 0, a1, b1, c1, a2, b2, c2));
 #if DEBUG
             Console.WriteLine("ProcessRegionManual: s = {0}", s);
@@ -241,12 +240,12 @@ namespace Decompose.Numerics
         public void VFloor2(BigInteger u1, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger c2, BigInteger abba, BigInteger ab2, out BigInteger v1, out BigInteger v2)
         {
             var uu = (u1 + c1) << 1;
-            var t1 = abba * uu - a1 + b1;
-            var t2 = ab2 << 1;
+            var t1 = ab2 << 1;
+            var t2 = abba * uu - a1 + b1 - t1 * c2;
             var t3 = uu - a1 - b1;
-            var t4 = IntegerMath.Square(t3) - t2 * n;
-            v1 = (t1 - IntegerMath.CeilingSquareRoot(t4)) / t2 - c2;
-            v2 = (t1 + (abba << 1) - IntegerMath.CeilingSquareRoot(t4 + ((t3 + 1) << 2))) / t2 - c2;
+            var t4 = IntegerMath.Square(t3) - t1 * n;
+            v1 = (t2 - IntegerMath.CeilingSquareRoot(t4)) / t1;
+            v2 = (t2 + (abba << 1) - IntegerMath.CeilingSquareRoot(t4 + ((t3 + 1) << 2))) / t1;
         }
 
         public static BigInteger Triangle(BigInteger a)
