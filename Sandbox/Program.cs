@@ -8,6 +8,7 @@ using System.Linq.Expressions;
 using System.Numerics;
 using System.Reflection;
 using Decompose.Numerics;
+using BigInt = Gnu.MP.Integer;
 
 namespace Sandbox
 {
@@ -320,7 +321,7 @@ namespace Sandbox
 
         static void ParityTest()
         {
-#if true
+#if false
             for (int i = 17; i <= 20; i++)
             {
                 var algorithm1 = new DivisionFreeDivisorSummatoryFunction(0, false, false);
@@ -342,13 +343,18 @@ namespace Sandbox
             }
 #endif
 
-#if false
-            for (int i = 18; i <= 22; i++)
+#if true
+            for (int i = 15; i <= 15; i++)
             {
+#if false
                 var algorithm1 = new DivisionFreeDivisorSummatoryFunction(0, false, true);
                 var algorithm2 = new DivisorSummatoryFunctionOdd();
+#else
+                var algorithm1 = new DivisorSummatoryFunctionOdd();
+                var algorithm2 = new DivisorSummatoryFunctionOddGnuMP();
+#endif
                 var n = IntegerMath.Power((BigInteger)10, i);
-                var sqrt = (long)IntegerMath.FloorSquareRoot(n);
+                var sqrt = IntegerMath.FloorSquareRoot(n);
                 var timer = new Stopwatch();
 #if true
                 timer.Restart();
@@ -369,7 +375,7 @@ namespace Sandbox
             var algorithm2 = new PrimeCountingOddMod3(8);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 20; i <= 20; i++)
+            for (var i = 16; i <= 20; i++)
             {
                 timer.Restart();
                 for (var iterations = 0; iterations < 1; iterations++)

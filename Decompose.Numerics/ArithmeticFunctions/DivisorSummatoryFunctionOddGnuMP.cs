@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Numerics;
 using System.Diagnostics;
+using BigInteger = Gnu.MP.Integer;
 
 namespace Decompose.Numerics
 {
-    public class DivisorSummatoryFunctionOdd : IDivisorSummatoryFunction<BigInteger>
+    public class DivisorSummatoryFunctionOddGnuMP : IDivisorSummatoryFunction<BigInteger>
     {
         private struct Region
         {
@@ -33,14 +34,14 @@ namespace Decompose.Numerics
             public BigInteger c2;
         }
 
-        public static readonly BigInteger C1 = 600;
+        public static readonly BigInteger C1 = 1;
         public static readonly BigInteger C2 = 20;
 
         private BigInteger n;
         private Stack<Region> stack;
         private DivisionFreeDivisorSummatoryFunction manualAlgorithm;
 
-        public DivisorSummatoryFunctionOdd()
+        public DivisorSummatoryFunctionOddGnuMP()
         {
             stack = new Stack<Region>();
             manualAlgorithm = new DivisionFreeDivisorSummatoryFunction(0, false, true);
@@ -48,7 +49,7 @@ namespace Decompose.Numerics
 
         public BigInteger Evaluate(BigInteger n)
         {
-            var xmax = IntegerMath.FloorSquareRoot(n);
+            var xmax = BigInteger.FloorSquareRoot(n);
             var s = Evaluate(n, 1, xmax);
             return 2 * s - xmax * xmax;
         }
@@ -72,7 +73,7 @@ namespace Decompose.Numerics
             if (x0 > xmax)
                 return 0;
             var ymin = YFloor(xmax);
-            var xmin = IntegerMath.Max(x0, IntegerMath.Min(T1(C1 * IntegerMath.CeilingRoot(2 * n, 3)), xmax));
+            var xmin = BigInteger.Max(x0, BigInteger.Min(T1(C1 * BigInteger.CeilingRoot(2 * n, 3)), xmax));
 #if DEBUG
             Console.WriteLine("n = {0}, xmin = {1}, xmax = {2}", n, xmin, xmax);
 #endif
@@ -107,7 +108,7 @@ namespace Decompose.Numerics
             s += (xmax - x0 + 1) * ymin + Triangle(xmax - x0);
             var rest = x2 - x0;
             s -= y2 * rest + a2 * Triangle(rest);
-            s += manualAlgorithm.Evaluate(n, 2 * x0 - 1, 2 * x2 - 3);
+            s += (BigInteger)manualAlgorithm.Evaluate(n, 2 * x0 - 1, 2 * x2 - 3);
             return s;
         }
 
@@ -184,19 +185,19 @@ namespace Decompose.Numerics
                 return 0;
 
             var s = (BigInteger)0;
-            var umax = (long)w - 1;
-            var t1 = (a1 * b2 + b1 * a2) << 1;
-            var t2 = (c1 << 1) - a1 - b1;
-            var t3 = (t2 << 2) + 12;
-            var t4 = (a1 * b1) << 2;
+            var umax = (BigInteger)w - 1;
+            var t1 = 2 * (a1 * b2 + b1 * a2);
+            var t2 = 2 * c1 - a1 - b1;
+            var t3 = 4 * t2 + 12;
+            var t4 = 4 * a1 * b1;
             var t5 = t1 * (1 + c1) - a1 + b1 - t4 * c2;
-            var t6 = IntegerMath.Square(t2 + 2) - t4 * n;
+            var t6 = Square(t2 + 2) - t4 * n;
 
-            var u = (long)1;
+            var u = (BigInteger)1;
             while (true)
             {
-                Debug.Assert((t5 - IntegerMath.CeilingSquareRoot(t6)) / t4 == VFloor(u, a1, b1, c1, a2, b2, c2));
-                s += (t5 - IntegerMath.CeilingSquareRoot(t6)) / t4;
+                Debug.Assert((t5 - BigInteger.CeilingSquareRoot(t6)) / t4 == VFloor(u, a1, b1, c1, a2, b2, c2));
+                s += (t5 - BigInteger.CeilingSquareRoot(t6)) / t4;
                 if (u >= umax)
                     break;
                 t5 += t1;
@@ -232,53 +233,58 @@ namespace Decompose.Numerics
         {
             var uu = u + c1;
             var vv = v + c2;
-            return (((b2 * uu - b1 * vv) << 1) - 1) * (((a1 * vv - a2 * uu) << 1) - 1);
+            return (2 * (b2 * uu - b1 * vv) - 1) * (2 * (a1 * vv - a2 * uu) - 1);
         }
 
         public BigInteger UTan(BigInteger ab1, BigInteger abba, BigInteger ab2, BigInteger a3b3, BigInteger c1)
         {
-            return (ab1 + IntegerMath.FloorSquareRoot(IntegerMath.Square(abba + ab2) * n / a3b3) - (c1 << 1)) / 2;
+            return (ab1 + BigInteger.FloorSquareRoot(Square(abba + ab2) * n / a3b3) - 2 * c1) / 2;
         }
 
         public BigInteger UFloor(BigInteger v, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
         {
-            return (2 * (a1 * b2 + b1 * a2) * (v + c2) + a2 - b2 - IntegerMath.CeilingSquareRoot(IntegerMath.Square(2 * (v + c2) - a2 - b2) - 4 * a2 * b2 * n)) / (4 * a2 * b2) - c1;
+            return (2 * (a1 * b2 + b1 * a2) * (v + c2) + a2 - b2 - BigInteger.CeilingSquareRoot(Square(2 * (v + c2) - a2 - b2) - 4 * a2 * b2 * n)) / (4 * a2 * b2) - c1;
         }
 
         public BigInteger VFloor(BigInteger u, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
         {
-            return (2 * (a1 * b2 + b1 * a2) * (u + c1) - a1 + b1 - IntegerMath.CeilingSquareRoot(IntegerMath.Square(2 * (u + c1) - a1 - b1) - 4 * a1 * b1 * n)) / (4 * a1 * b1) - c2;
+            return (2 * (a1 * b2 + b1 * a2) * (u + c1) - a1 + b1 - BigInteger.CeilingSquareRoot(Square(2 * (u + c1) - a1 - b1) - 4 * a1 * b1 * n)) / (4 * a1 * b1) - c2;
         }
 
         public void VFloor2(BigInteger u1, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger c2, BigInteger abba, BigInteger ab2, out BigInteger v1, out BigInteger v2)
         {
-            var uu = (u1 + c1) << 1;
-            var t1 = ab2 << 1;
+            var uu = 2 * (u1 + c1);
+            var t1 = 2 * ab2;
             var t2 = abba * uu - a1 + b1 - t1 * c2;
             var t3 = uu - a1 - b1;
-            var t4 = IntegerMath.Square(t3) - t1 * n;
-            v1 = (t2 - IntegerMath.CeilingSquareRoot(t4)) / t1;
-            v2 = (t2 + (abba << 1) - IntegerMath.CeilingSquareRoot(t4 + ((t3 + 1) << 2))) / t1;
+            var t4 = Square(t3) - t1 * n;
+            v1 = (t2 - BigInteger.CeilingSquareRoot(t4)) / t1;
+            v2 = (t2 + 2 * abba - BigInteger.CeilingSquareRoot(t4 + 4 * (t3 + 1))) / t1;
+        }
+
+        public static BigInteger Square(BigInteger a)
+        {
+            return a * a;
         }
 
         public static BigInteger Triangle(BigInteger a)
         {
-            return a * (a + 1) >> 1;
+            return a * (a + 1) / 2;
         }
 
         private BigInteger T1(BigInteger x)
         {
-            return (x + 1) >> 1;
+            return (x + 1) / 2;
         }
 
         private BigInteger YTan(BigInteger a)
         {
-            return T1(IntegerMath.FloorSquareRoot(n / a));
+            return T1(BigInteger.FloorSquareRoot(n / a));
         }
 
         private BigInteger YFloor(BigInteger x)
         {
-            return (n / ((x << 1) - 1) + 1) >> 1;
+            return (n / (2 * x - 1) + 1) / 2;
         }
     }
 }

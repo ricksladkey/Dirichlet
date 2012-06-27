@@ -21,7 +21,7 @@ namespace Decompose.Numerics
             hyperbolicSum = new IDivisorSummatoryFunction<BigInteger>[count];
             for (var i = 0; i < count; i++)
             {
-#if false
+#if true
                 hyperbolicSum[i] = new DivisionFreeDivisorSummatoryFunction(0, false, true);
 #else
                 hyperbolicSum[i] = new DivisorSummatoryFunctionOdd();

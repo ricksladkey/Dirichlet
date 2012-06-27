@@ -171,7 +171,9 @@ namespace Decompose.Numerics
 
         public BigInteger H(BigInteger u, BigInteger v, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
         {
-            return (b2 * (u + c1) - b1 * (v + c2)) * (a1 * (v + c2) - a2 * (u + c1));
+            var uu = u + c1;
+            var vv = v + c2;
+            return (b2 * uu - b1 * vv) * (a1 * vv - a2 * uu);
         }
 
         public BigInteger UTan(BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)

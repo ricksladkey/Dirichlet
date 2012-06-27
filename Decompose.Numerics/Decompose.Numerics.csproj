@@ -49,6 +49,7 @@
     <Compile Include="ArithmeticFunctions\DivisionFreeDivisorSummatoryFunction.cs" />
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunctionArticle.cs" />
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunctionOdd.cs" />
+    <Compile Include="ArithmeticFunctions\DivisorSummatoryFunctionOddGnuMP.cs" />
     <Compile Include="ArithmeticFunctions\IDivisorSummatoryFunction.cs" />
     <Compile Include="ArithmeticFunctions\MobiusCollection.cs" />
     <Compile Include="ArithmeticFunctions\MobiusRange.cs" />
@@ -64,6 +65,9 @@
     <Compile Include="Collections\SetBitMatrix.cs" />
     <Compile Include="Collections\IntegerSet.cs" />
     <Compile Include="Core\Rational.cs" />
+    <Compile Include="GnuMP\Integer.cs" />
+    <Compile Include="GnuMP\Rational.cs" />
+    <Compile Include="GnuMP\Real.cs" />
     <Compile Include="IntegerMath\Arithmetic.cs" />
     <Compile Include="IntegerMath\Binomial.cs" />
     <Compile Include="IntegerMath\Factorial.cs" />

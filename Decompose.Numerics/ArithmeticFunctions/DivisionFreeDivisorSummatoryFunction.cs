@@ -17,6 +17,8 @@ namespace Decompose.Numerics
 
         private const ulong tmax = (ulong)1 << 62;
         private const long maximumBatchSize = (long)1 << 28;
+        private const long nmax = (long)1 << 58;
+        private const long nmaxOdd = (long)1 << 60;
 
         private int threads;
         private bool simple;
@@ -108,6 +110,8 @@ namespace Decompose.Numerics
 
         private long S1(long x1, long x2)
         {
+            if (n < nmax)
+                return S1Small(x1, x2);
             var s = (UInt128)0;
             var t = (ulong)0;
             var x = x2;
@@ -155,6 +159,53 @@ namespace Decompose.Numerics
                 --x;
             }
             s += t;
+            AddToSum(ref s);
+            return x;
+        }
+
+        private long S1Small(long x1, long x2)
+        {
+            var t = (ulong)0;
+            var x = x2;
+            var beta = (ulong)(n / (x + 1));
+            var eps = (long)(n % (x + 1));
+            var delta = (long)(n / x - beta);
+            var gamma = (long)beta - x * delta;
+            while (x >= x1)
+            {
+                eps += gamma;
+                if (eps >= x)
+                {
+                    ++delta;
+                    gamma -= x;
+                    eps -= x;
+                    if (eps >= x)
+                    {
+                        ++delta;
+                        gamma -= x;
+                        eps -= x;
+                        if (eps >= x)
+                            break;
+                    }
+                }
+                else if (eps < 0)
+                {
+                    --delta;
+                    gamma += x;
+                    eps += x;
+                }
+                gamma += delta + delta;
+                beta += (ulong)delta;
+
+                Debug.Assert(eps == n % x);
+                Debug.Assert(beta == n / x);
+                Debug.Assert(delta == beta - n / (x + 1));
+                Debug.Assert(gamma == beta - (BigInteger)(x - 1) * delta);
+
+                t += beta;
+                --x;
+            }
+            var s = (UInt128)t;
             AddToSum(ref s);
             return x;
         }
@@ -250,6 +301,8 @@ namespace Decompose.Numerics
 
         private long S1Odd(long x1, long x2)
         {
+            if (n < nmaxOdd)
+                return S1OddSmall(x1, x2);
             var s = (UInt128)0;
             var t = (ulong)0;
             var x = (x2 & 1) == 0 ? x2 - 1 : x2;
@@ -297,6 +350,53 @@ namespace Decompose.Numerics
                 x -= 2;
             }
             s += t;
+            AddToSum(ref s);
+            return x;
+        }
+
+        private long S1OddSmall(long x1, long x2)
+        {
+            var t = (ulong)0;
+            var x = (x2 & 1) == 0 ? x2 - 1 : x2;
+            var beta = (ulong)(n / (x + 2));
+            var eps = (long)(n % (x + 2));
+            var delta = (long)(n / x - beta);
+            var gamma = 2 * (long)beta - x * delta;
+            while (x >= x1)
+            {
+                eps += gamma;
+                if (eps >= x)
+                {
+                    ++delta;
+                    gamma -= x;
+                    eps -= x;
+                    if (eps >= x)
+                    {
+                        ++delta;
+                        gamma -= x;
+                        eps -= x;
+                        if (eps >= x)
+                            break;
+                    }
+                }
+                else if (eps < 0)
+                {
+                    --delta;
+                    gamma += x;
+                    eps += x;
+                }
+                gamma += 4 * delta;
+                beta += (ulong)delta;
+
+                Debug.Assert(eps == n % x);
+                Debug.Assert(beta == n / x);
+                Debug.Assert(delta == beta - n / (x + 2));
+                Debug.Assert(gamma == 2 * beta - (BigInteger)(x - 2) * delta);
+
+                t += beta + (beta & 1);
+                x -= 2;
+            }
+            var s = (UInt128)t;
             AddToSum(ref s);
             return x;
         }
