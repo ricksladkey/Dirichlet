@@ -344,9 +344,9 @@ namespace Sandbox
 #endif
 
 #if true
-            for (int i = 15; i <= 15; i++)
+            for (int i = 1; i <= 15; i++)
             {
-#if false
+#if true
                 var algorithm1 = new DivisionFreeDivisorSummatoryFunction(0, false, true);
                 var algorithm2 = new DivisorSummatoryFunctionOdd();
 #else
@@ -355,6 +355,7 @@ namespace Sandbox
 #endif
                 var n = IntegerMath.Power((BigInteger)10, i);
                 var sqrt = IntegerMath.FloorSquareRoot(n);
+                Console.WriteLine("n = {0}", n);
                 var timer = new Stopwatch();
 #if true
                 timer.Restart();
