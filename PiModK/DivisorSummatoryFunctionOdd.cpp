@@ -7,7 +7,7 @@ UInt64 DivisorSummatoryFunctionOdd::tmax;
 
 DivisorSummatoryFunctionOdd::DivisorSummatoryFunctionOdd()
 {
-    C1 = 1;
+    C1 = 600;
     C2 = 20;
     nmax = (Integer)1 << 94;
     tmax = (UInt64)1 << 62;
