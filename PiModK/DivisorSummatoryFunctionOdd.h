@@ -30,10 +30,10 @@ public:
         Integer c2;
     };
 
-    static Integer C1;
-    static Integer C2;
-    static Integer nmax;
-    static UInt64 tmax;
+    Integer C1;
+    Integer C2;
+    Integer nmax;
+    UInt64 tmax;
 
     Integer n;
     std::stack<Region> regions;
@@ -70,7 +70,7 @@ public:
         return (2 * (a1 * b2 + b1 * a2) * (u + c1) - a1 + b1 - CeilingSquareRoot(Square(2 * (u + c1) - a1 - b1) - 4 * a1 * b1 * n)) / (4 * a1 * b1) - c2;
     }
 
-    void VFloor2(Integer u1, Integer a1, Integer b1, Integer c1, Integer c2, Integer abba, Integer ab2, Integer &v1, Integer &v2)
+    void VFloor2(Integer u1, Integer a1, Integer b1, Integer c1, Integer c2, Integer abba, Integer ab2, Integer& v1, Integer& v2)
     {
         Integer uu = 2 * (u1 + c1);
         Integer t1 = 2 * ab2;
@@ -101,7 +101,7 @@ public:
         return (n / (2 * x - 1) + 1) / 2;
     }
 
-    static Integer S1(Integer n, Integer x1, Integer x2);
-    static Integer S1Fast(Integer n, Int64 x1, Int64 x2);
-    static Integer S1Slow(Integer n, Integer x1, Integer x2);
+    Integer S1(Integer n, Integer x1, Integer x2);
+    Integer S1Fast(Integer n, Int64 x1, Int64 x2);
+    Integer S1Slow(Integer n, Integer x1, Integer x2);
 };

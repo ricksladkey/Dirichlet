@@ -1,10 +1,5 @@
 #include "stdafx.h"
 
-Integer DivisorSummatoryFunctionOdd::C1;
-Integer DivisorSummatoryFunctionOdd::C2;
-Integer DivisorSummatoryFunctionOdd::nmax;
-UInt64 DivisorSummatoryFunctionOdd::tmax;
-
 DivisorSummatoryFunctionOdd::DivisorSummatoryFunctionOdd()
 {
     C1 = 600;
@@ -20,11 +15,11 @@ Integer DivisorSummatoryFunctionOdd::Evaluate(Integer n)
     return 2 * s - xmax * xmax;
 }
 
-Integer DivisorSummatoryFunctionOdd::Evaluate(Integer n, Integer x0, Integer xmax)
+Integer DivisorSummatoryFunctionOdd::Evaluate(Integer n, Integer xfirst, Integer xlast)
 {
     this->n = n;
-    x0 = T1(x0);
-    xmax = T1(xmax);
+    Integer x0 = T1(xfirst);
+    Integer xmax = T1(xlast);
     if (x0 > xmax)
         return 0;
     Integer ymin = YFloor(xmax);
@@ -114,19 +109,39 @@ Integer DivisorSummatoryFunctionOdd::ProcessRegion(Integer w, Integer h, Integer
             s += Triangle(v6 - 1) - Triangle(v6 - u5) + Triangle(u7 - u5);
         else
             s += Triangle(v6 - 1);
-        regions.push(*(new Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6)));
+#if 0
+        regions.push(Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
         w -= u7;
         h = v5;
         a1 = a3;
         b1 = b3;
         c1 += c2 + u7;
+#endif
+#if 1
+        regions.push(Region(w - u7, v5, a3, b3, c1 + c2 + u7, a2, b2, c2));
+        w = u4;
+        h -= v6;
+        a2 = a3;
+        b2 = b3;
+        c2 += c1 + v6;
+#endif
+#if 0
+        regions.push(Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
+        regions.push(Region(w - u7, v5, a3, b3, c1 + c2 + u7, a2, b2, c2));
+        return s;
+#endif
+#if 0
+        s += ProcessRegion(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6);
+        s += ProcessRegion(w - u7, v5, a3, b3, c1 + c2 + u7, a2, b2, c2);
+        return s;
+#endif
 #if DEBUG
-    printf("ProcessRegion: s = %s\n", s.get_str().c_str());
+        printf("ProcessRegion: s = %s\n", s.get_str().c_str());
 #endif
     }
 }
 
-Integer DivisorSummatoryFunctionOdd::ProcessRegionManual(Integer w, Integer h, Integer a1, Integer b1, Integer c1, Integer a2, Integer b2, Integer c2)
+Integer DivisorSummatoryFunctionOdd::ProcessRegionManual(Integer w,  Integer h,  Integer a1,  Integer b1,  Integer c1,  Integer a2,  Integer b2,  Integer c2)
 {
 #if 0
     return w < h ? ProcessRegionHorizontal(w, h, a1, b1, c1, a2, b2, c2) : ProcessRegionVertical(w, h, a1, b1, c1, a2, b2, c2);
@@ -135,7 +150,7 @@ Integer DivisorSummatoryFunctionOdd::ProcessRegionManual(Integer w, Integer h, I
 #endif
 }
 
-Integer DivisorSummatoryFunctionOdd::ProcessRegionManual(Integer w, Integer a1, Integer b1, Integer c1, Integer a2, Integer b2, Integer c2)
+Integer DivisorSummatoryFunctionOdd::ProcessRegionManual(Integer w,  Integer a1,  Integer b1,  Integer c1,  Integer a2,  Integer b2,  Integer c2)
 {
     if (w <= 1)
         return 0;
