@@ -36,14 +36,16 @@ namespace Decompose.Numerics
         public static readonly BigInteger C1 = 600;
         public static readonly BigInteger C2 = 20;
 
+        private int threads;
         private BigInteger n;
         private Stack<Region> stack;
         private DivisionFreeDivisorSummatoryFunction manualAlgorithm;
 
-        public DivisorSummatoryFunctionOdd()
+        public DivisorSummatoryFunctionOdd(int threads)
         {
+            this.threads = threads;
             stack = new Stack<Region>();
-            manualAlgorithm = new DivisionFreeDivisorSummatoryFunction(0, false, true);
+            manualAlgorithm = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
         }
 
         public BigInteger Evaluate(BigInteger n)

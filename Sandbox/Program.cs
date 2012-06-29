@@ -344,11 +344,11 @@ namespace Sandbox
 #endif
 
 #if true
-            for (int i = 1; i <= 15; i++)
+            for (int i = 1; i <= 24; i++)
             {
 #if true
-                var algorithm1 = new DivisionFreeDivisorSummatoryFunction(0, false, true);
-                var algorithm2 = new DivisorSummatoryFunctionOdd();
+                var algorithm1 = new DivisionFreeDivisorSummatoryFunction(8, false, true);
+                var algorithm2 = new DivisorSummatoryFunctionOdd(8);
 #else
                 var algorithm1 = new DivisorSummatoryFunctionOdd();
                 var algorithm2 = new DivisorSummatoryFunctionOddGnuMP();

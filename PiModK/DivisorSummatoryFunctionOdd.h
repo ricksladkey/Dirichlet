@@ -32,7 +32,8 @@ public:
 
     Integer C1;
     Integer C2;
-    Integer nmax;
+    Integer nslow;
+    Integer nsmall;
     UInt64 tmax;
 
     Integer n;
@@ -104,4 +105,6 @@ public:
     Integer S1(Integer n, Integer x1, Integer x2);
     Integer S1Fast(Integer n, Int64 x1, Int64 x2);
     Integer S1Slow(Integer n, Integer x1, Integer x2);
+    Integer S1SmallFast(Integer n, Int64 x1, Int64 x2);
+    Integer S1SmallSlow(UInt64 n, Int64 x1, Int64 x2);
 };

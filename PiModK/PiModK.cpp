@@ -6,7 +6,7 @@ void Compute()
 {
     DivisorSummatoryFunctionOdd algorithm;
     CStopWatch timer;
-    for (int i = 20; i <= 20; i++)
+    for (int i = 1; i <= 24; i++)
     {
         Integer n = Power(Integer(10), i);
         Integer x2 = sqrt(n);
@@ -14,7 +14,7 @@ void Compute()
         Integer s = algorithm.Evaluate(n, 1, x2);
         timer.stopTimer();
         std::string sRep = s.get_str();
-        printf("i = %d, s = %s, elapsed = %g\n", i, sRep.c_str(), timer.getElapsedTime() * 1000);
+        printf("i = %d, s = %s, elapsed = %.3f\n", i, sRep.c_str(), timer.getElapsedTime() * 1000);
     }
 }
 

@@ -2,9 +2,10 @@
 
 DivisorSummatoryFunctionOdd::DivisorSummatoryFunctionOdd()
 {
-    C1 = 600;
+    C1 = 300;
     C2 = 20;
-    nmax = (Integer)1 << 94;
+    nslow = (Integer)1 << 92;
+    nsmall = (Integer)1 << 60;
     tmax = (UInt64)1 << 62;
 }
 
@@ -204,11 +205,13 @@ Integer DivisorSummatoryFunctionOdd::S1(Integer n, Integer x1, Integer x2)
 {
     if (x1 > x2)
         return 0;
-    return (n <= nmax ? S1Fast(n, x1.get_sx(), x2.get_sx()) : S1Slow(n, x1, x2)) / 2;
+    return (n <= nslow ? S1Fast(n, x1.get_sx(), x2.get_sx()) : S1Slow(n, x1, x2)) / 2;
 }
 
 Integer DivisorSummatoryFunctionOdd::S1Fast(Integer n, Int64 x1, Int64 x2)
 {
+    if (n < nsmall)
+        return S1SmallFast(n, x1, x2);
     Integer s = (Integer)0;
     UInt64 t = (UInt64)0;
     Int64 x = (x2 & 1) == 0 ? x2 - 1 : x2;
@@ -262,6 +265,60 @@ Integer DivisorSummatoryFunctionOdd::S1Slow(Integer n, Integer x1, Integer x2)
     for (Integer x = (x2 & 1) == 0 ? x2 - 1 : x2; x >= x1; x -= 2)
     {
         Integer beta = n / x;
+        s += beta + (beta & 1);
+    }
+    return s;
+}
+
+Integer DivisorSummatoryFunctionOdd::S1SmallFast(Integer n, Int64 x1, Int64 x2)
+{
+    UInt64 t = (UInt64)0;
+    Int64 x = (x2 & 1) == 0 ? x2 - 1 : x2;
+    UInt64 beta = Integer(n / Integer(x + 2)).get_ux();
+    Int64 eps = Integer(n % Integer(x + 2)).get_sx();
+    Int64 delta = Integer(n / Integer(x) - Integer(beta)).get_sx();
+    Int64 gamma = 2 * beta - x * delta;
+    while (x >= x1)
+    {
+        eps += gamma;
+        if (eps >= x)
+        {
+            ++delta;
+            gamma -= x;
+            eps -= x;
+            if (eps >= x)
+            {
+                ++delta;
+                gamma -= x;
+                eps -= x;
+                if (eps >= x)
+                    break;
+            }
+        }
+        else if (eps < 0)
+        {
+            --delta;
+            gamma += x;
+            eps += x;
+        }
+        gamma += 4 * delta;
+        beta += delta;
+        Assert(Integer(eps) == n % Integer(x));
+        Assert(Integer(beta) == n / Integer(x));
+        Assert(Integer(delta) == Integer(beta) - n / Integer((x + 2)));
+        Assert(Integer(gamma) == 2 * Integer(beta) - Integer(x - 2) * Integer(delta));
+        t += beta + (beta & 1);
+        x -= 2;
+    }
+    return Integer(t) + S1SmallSlow(n.get_ux(), x1, x);
+}
+
+Integer DivisorSummatoryFunctionOdd::S1SmallSlow(UInt64 n, Int64 x1, Int64 x2)
+{
+    UInt64 s = (UInt64)0;
+    for (Int64 x = (x2 & 1) == 0 ? x2 - 1 : x2; x >= x1; x -= 2)
+    {
+        UInt64 beta = n / x;
         s += beta + (beta & 1);
     }
     return s;
