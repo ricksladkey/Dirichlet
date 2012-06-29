@@ -344,28 +344,29 @@ namespace Sandbox
 #endif
 
 #if true
+            var threads = 0;
             for (int i = 20; i <= 20; i++)
             {
 #if true
-                var algorithm1 = new DivisionFreeDivisorSummatoryFunction(8, false, true);
-                var algorithm2 = new DivisorSummatoryFunctionOdd(0);
+                var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
+                var algorithm2 = new DivisorSummatoryFunctionOdd(threads);
 #else
                 var algorithm1 = new DivisorSummatoryFunctionOdd();
                 var algorithm2 = new DivisorSummatoryFunctionOddGnuMP();
 #endif
                 var n = IntegerMath.Power((BigInteger)10, i);
-                var sqrt = IntegerMath.FloorSquareRoot(n);
-                Console.WriteLine("n = {0}", n);
+                var xmax = IntegerMath.FloorSquareRoot(n);
+                var xmin = IntegerMath.Min(600 * IntegerMath.CeilingRoot(2 * n, 3), xmax);
                 var timer = new Stopwatch();
 #if true
                 timer.Restart();
-                var s1 = algorithm1.Evaluate(n, 1, sqrt);
+                var s1 = algorithm1.Evaluate(n, xmin, xmax);
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #else
                 var s1 = 0;
 #endif
                 timer.Restart();
-                var s2 = algorithm2.Evaluate(n, 1, sqrt);
+                var s2 = algorithm2.Evaluate(n, xmin, xmax);
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
                 Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
             }

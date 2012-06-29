@@ -84,8 +84,16 @@ namespace Decompose.Numerics
                 Debugger.Break();
 #endif
             // Wait for completion.
-            while (queue.Count != 0)
+            while (true)
+            {
                 Thread.Yield();
+                if (queue.Count == 0)
+                {
+                    Thread.Yield();
+                    if (queue.Count == 0)
+                        break;
+                }
+            }
             queue.CompleteAdding();
             Task.WaitAll(tasks);
 
@@ -94,15 +102,17 @@ namespace Decompose.Numerics
 
         public void ConsumeRegions()
         {
+            var s = (BigInteger)0;
             var r = default(Region);
             while (queue.TryTake(out r, Timeout.Infinite))
-                AddToSum(ProcessRegion(r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2));
+                s += ProcessRegion(r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2);
+            AddToSum(s);
         }
 
         public BigInteger EvaluateInternal(BigInteger n, BigInteger x0, BigInteger xmax)
         {
             this.n = n;
-            x0 = T1(x0);
+            x0 = T1(x0 + 1);
             xmax = T1(xmax);
             if (x0 > xmax)
                 return 0;
@@ -130,6 +140,7 @@ namespace Decompose.Numerics
                 s += Triangle(c4 - c2 - x0) - Triangle(c4 - c2 - x5) + Triangle(c5 - c2 - x5);
                 if (threads == 0)
                 {
+                    Console.WriteLine("a1 = {0}", a1);
                     s += ProcessRegion(a1 * x2 + y2 - c5, a2 * x5 + y5 - c2, a1, 1, c5, a2, 1, c2);
                     while (queue.Count > 0)
                     {

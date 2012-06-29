@@ -19,7 +19,7 @@ Integer DivisorSummatoryFunctionOdd::Evaluate(Integer n)
 Integer DivisorSummatoryFunctionOdd::Evaluate(Integer n, Integer xfirst, Integer xlast)
 {
     this->n = n;
-    Integer x0 = T1(xfirst);
+    Integer x0 = T1(xfirst + 1);
     Integer xmax = T1(xlast);
     if (x0 > xmax)
         return 0;

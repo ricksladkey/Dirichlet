@@ -68,7 +68,7 @@ namespace Decompose.Numerics
         public BigInteger EvaluateInternal(BigInteger n, BigInteger x0, BigInteger xmax)
         {
             this.n = n;
-            x0 = T1(x0);
+            x0 = T1(x0 + 1);
             xmax = T1(xmax);
             if (x0 > xmax)
                 return 0;
