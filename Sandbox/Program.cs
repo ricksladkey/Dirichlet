@@ -347,29 +347,6 @@ namespace Sandbox
 
         static void ParityTest()
         {
-
-#if false
-            for (int i = 17; i <= 20; i++)
-            {
-                var algorithm1 = new DivisionFreeDivisorSummatoryFunction(0, false, false);
-                var algorithm2 = new DivisorSummatoryFunctionArticle();
-                var n = IntegerMath.Power((BigInteger)10, i);
-                var sqrt = (long)IntegerMath.FloorSquareRoot(n);
-                var timer = new Stopwatch();
-#if true
-                timer.Restart();
-                var s1 = algorithm1.Evaluate(n);
-                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-#else
-                var s1 = 0;
-#endif
-                timer.Restart();
-                var s2 = algorithm2.Evaluate(n);
-                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-                Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
-            }
-#endif
-
 #if true
             var threads = 8;
             for (int i = 18; i <= 24; i++)
@@ -393,6 +370,28 @@ namespace Sandbox
 #endif
                 timer.Restart();
                 var s2 = algorithm2.Evaluate(n, xmin, xmax);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
+            }
+#endif
+
+#if false
+            for (int i = 17; i <= 20; i++)
+            {
+                var algorithm1 = new DivisionFreeDivisorSummatoryFunction(0, false, false);
+                var algorithm2 = new DivisorSummatoryFunctionArticle();
+                var n = IntegerMath.Power((BigInteger)10, i);
+                var sqrt = (long)IntegerMath.FloorSquareRoot(n);
+                var timer = new Stopwatch();
+#if true
+                timer.Restart();
+                var s1 = algorithm1.Evaluate(n);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#else
+                var s1 = 0;
+#endif
+                timer.Restart();
+                var s2 = algorithm2.Evaluate(n);
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
                 Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
             }

@@ -43,6 +43,7 @@ namespace Decompose.Numerics
         private BigInteger n;
         private BigInteger sum;
         private int unprocessed;
+        private ManualResetEventSlim finished;
         private BlockingCollection<Region> queue;
         private DivisionFreeDivisorSummatoryFunction manualAlgorithm;
 
@@ -50,6 +51,7 @@ namespace Decompose.Numerics
         {
             this.threads = threads;
             queue = new BlockingCollection<Region>();
+            finished = new ManualResetEventSlim();
             manualAlgorithm = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
         }
 
@@ -78,15 +80,13 @@ namespace Decompose.Numerics
                 tasks[consumer] = Task.Factory.StartNew(ConsumeRegions);
             }
 
-            AddToSum(EvaluateInternal(n, x0, xmax));
-#if false
-            var expected = new DivisionFreeDivisorSummatoryFunction(0, false, true).Evaluate(n, x0, xmax);
-            if (expected != result)
-                Debugger.Break();
-#endif
+            // Produce work items.
+            unprocessed = 1;
+            finished.Reset();
+            AddToSum(Processed(EvaluateInternal(n, x0, xmax)));
+            finished.Wait();
+
             // Wait for completion.
-            while (unprocessed != 0)
-                Thread.Yield();
             queue.CompleteAdding();
             Task.WaitAll(tasks);
 
@@ -110,7 +110,9 @@ namespace Decompose.Numerics
 
         private BigInteger Processed(BigInteger result)
         {
-            Interlocked.Add(ref unprocessed, -1);
+            var value = Interlocked.Add(ref unprocessed, -1);
+            if (value == 0)
+                finished.Set();
             return result;
         }
 
