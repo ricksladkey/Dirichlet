@@ -42,6 +42,7 @@ namespace Decompose.Numerics
         private int threads;
         private BigInteger n;
         private BigInteger sum;
+        private int unprocessed;
         private BlockingCollection<Region> queue;
         private DivisionFreeDivisorSummatoryFunction manualAlgorithm;
 
@@ -84,16 +85,8 @@ namespace Decompose.Numerics
                 Debugger.Break();
 #endif
             // Wait for completion.
-            while (true)
-            {
+            while (unprocessed != 0)
                 Thread.Yield();
-                if (queue.Count == 0)
-                {
-                    Thread.Yield();
-                    if (queue.Count == 0)
-                        break;
-                }
-            }
             queue.CompleteAdding();
             Task.WaitAll(tasks);
 
@@ -107,6 +100,18 @@ namespace Decompose.Numerics
             while (queue.TryTake(out r, Timeout.Infinite))
                 s += ProcessRegion(r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2);
             AddToSum(s);
+        }
+
+        private void Enqueue(Region r)
+        {
+            Interlocked.Add(ref unprocessed, 1);
+            queue.Add(r);
+        }
+
+        private BigInteger Processed(BigInteger result)
+        {
+            Interlocked.Add(ref unprocessed, -1);
+            return result;
         }
 
         public BigInteger EvaluateInternal(BigInteger n, BigInteger x0, BigInteger xmax)
@@ -140,7 +145,6 @@ namespace Decompose.Numerics
                 s += Triangle(c4 - c2 - x0) - Triangle(c4 - c2 - x5) + Triangle(c5 - c2 - x5);
                 if (threads == 0)
                 {
-                    Console.WriteLine("a1 = {0}", a1);
                     s += ProcessRegion(a1 * x2 + y2 - c5, a2 * x5 + y5 - c2, a1, 1, c5, a2, 1, c2);
                     while (queue.Count > 0)
                     {
@@ -149,7 +153,7 @@ namespace Decompose.Numerics
                     }
                 }
                 else
-                    queue.Add(new Region(a1 * x2 + y2 - c5, a2 * x5 + y5 - c2, a1, 1, c5, a2, 1, c2));
+                    Enqueue(new Region(a1 * x2 + y2 - c5, a2 * x5 + y5 - c2, a1, 1, c5, a2, 1, c2));
                 a2 = a1;
                 x2 = x4;
                 y2 = y4;
@@ -192,7 +196,7 @@ namespace Decompose.Numerics
                 var ab2 = 2 * a1 * b1;
                 var u4 = UTan(ab1, abba, ab2, a3b3, c1);
                 if (u4 <= 0)
-                    return s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2);
+                    return Processed(s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2));
                 var u5 = u4 + 1;
                 BigInteger v4, v5;
                 VFloor2(u4, a1, b1, c1, c2, abba, ab2, out v4, out v5);
@@ -203,7 +207,7 @@ namespace Decompose.Numerics
                 var v6 = u4 + v4;
                 var u7 = u5 + v5;
                 if (u4 <= C2 || v5 <= C2 || v6 >= h || u7 >= w)
-                    return s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2);
+                    return Processed(s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2));
                 if (v6 != u7)
                     s += Triangle(v6 - 1) - Triangle(v6 - u5) + Triangle(u7 - u5);
                 else
@@ -213,7 +217,7 @@ namespace Decompose.Numerics
 #endif
                 if (threads == 0)
                 {
-                    queue.Add(new Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
+                    Enqueue(new Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
                     w -= u7;
                     h = v5;
                     a1 = a3;
@@ -222,9 +226,9 @@ namespace Decompose.Numerics
                 }
                 else
                 {
-                    queue.Add(new Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
-                    queue.Add(new Region(w - u7, v5, a3, b3, c1 + c2 + u7, a2, b2, c2));
-                    return s;
+                    Enqueue(new Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
+                    Enqueue(new Region(w - u7, v5, a3, b3, c1 + c2 + u7, a2, b2, c2));
+                    return Processed(s);
                 }
             }
         }

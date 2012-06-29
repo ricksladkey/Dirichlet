@@ -319,8 +319,35 @@ namespace Sandbox
 #endif
         }
 
+        static void SumOfPrimePowersPrime()
+        {
+            var pmax = 100000;
+            var kmax = 20;
+            for (var p = (BigInteger)2; p <= pmax; p++)
+            {
+                if (!IntegerMath.IsPrime(p))
+                    continue;
+#if true
+                for (var k = (BigInteger)2; k <= kmax; k++)
+                {
+                    var s = (BigInteger)0;
+                    for (var i = (BigInteger)0; i <= k; i++)
+                        s += IntegerMath.Power(p, i);
+                    var n = IntegerMath.PerfectPower(s);
+                    if (n == 1)
+                        continue;
+                    var q = n.IsOne ? s : IntegerMath.Root(s, n);
+                    if (!IntegerMath.IsPrime(q))
+                        continue;
+                    Console.WriteLine("p = {0}, q = {1}, k = {2}, n = {3}", p, q, k, n);
+                }
+#endif
+            }
+        }
+
         static void ParityTest()
         {
+
 #if false
             for (int i = 17; i <= 20; i++)
             {
@@ -344,19 +371,18 @@ namespace Sandbox
 #endif
 
 #if true
-            var threads = 0;
-            for (int i = 20; i <= 20; i++)
+            var threads = 8;
+            for (int i = 18; i <= 24; i++)
             {
-#if true
                 var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
                 var algorithm2 = new DivisorSummatoryFunctionOdd(threads);
-#else
-                var algorithm1 = new DivisorSummatoryFunctionOdd();
-                var algorithm2 = new DivisorSummatoryFunctionOddGnuMP();
-#endif
                 var n = IntegerMath.Power((BigInteger)10, i);
                 var xmax = IntegerMath.FloorSquareRoot(n);
+#if false
                 var xmin = IntegerMath.Min(600 * IntegerMath.CeilingRoot(2 * n, 3), xmax);
+#else
+                var xmin = 1;
+#endif
                 var timer = new Stopwatch();
 #if true
                 timer.Restart();

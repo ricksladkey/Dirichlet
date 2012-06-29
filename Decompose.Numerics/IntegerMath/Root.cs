@@ -161,7 +161,7 @@ namespace Decompose.Numerics
                 var modulus = moduli[i];
                 var exponent = (modulus - 1) / p;
                 var value = (int)((Number<T>)a % modulus);
-                if (IntegerMath.ModularPower(value, exponent, modulus) != 1)
+                if (value != 0 && IntegerMath.ModularPower(value, exponent, modulus) != 1)
                     return false;
             }
             return true;
