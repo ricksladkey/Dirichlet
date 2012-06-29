@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Numerics;
 using System.Diagnostics;
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Decompose.Numerics
 {
@@ -38,13 +41,14 @@ namespace Decompose.Numerics
 
         private int threads;
         private BigInteger n;
-        private Stack<Region> stack;
+        private BigInteger sum;
+        private BlockingCollection<Region> queue;
         private DivisionFreeDivisorSummatoryFunction manualAlgorithm;
 
         public DivisorSummatoryFunctionOdd(int threads)
         {
             this.threads = threads;
-            stack = new Stack<Region>();
+            queue = new BlockingCollection<Region>();
             manualAlgorithm = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
         }
 
@@ -57,13 +61,42 @@ namespace Decompose.Numerics
 
         public BigInteger Evaluate(BigInteger n, BigInteger x0, BigInteger xmax)
         {
-            var result = EvaluateInternal(n, x0, xmax);
+            sum = 0;
+            if (threads == 0)
+            {
+                AddToSum(EvaluateInternal(n, x0, xmax));
+                return sum;
+            }
+
+            // Create consumers.
+            var consumers = threads;
+            var tasks = new Task[consumers];
+            for (var consumer = 0; consumer < consumers; consumer++)
+            {
+                var thread = consumer;
+                tasks[consumer] = Task.Factory.StartNew(ConsumeRegions);
+            }
+
+            AddToSum(EvaluateInternal(n, x0, xmax));
 #if false
             var expected = new DivisionFreeDivisorSummatoryFunction(0, false, true).Evaluate(n, x0, xmax);
             if (expected != result)
                 Debugger.Break();
 #endif
-            return result;
+            // Wait for completion.
+            while (queue.Count != 0)
+                Thread.Yield();
+            queue.CompleteAdding();
+            Task.WaitAll(tasks);
+
+            return sum;
+        }
+
+        public void ConsumeRegions()
+        {
+            var r = default(Region);
+            while (queue.TryTake(out r, Timeout.Infinite))
+                AddToSum(ProcessRegion(r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2));
         }
 
         public BigInteger EvaluateInternal(BigInteger n, BigInteger x0, BigInteger xmax)
@@ -95,12 +128,17 @@ namespace Decompose.Numerics
                 if (x4 < xmin)
                     break;
                 s += Triangle(c4 - c2 - x0) - Triangle(c4 - c2 - x5) + Triangle(c5 - c2 - x5);
-                s += ProcessRegion(a1 * x2 + y2 - c5, a2 * x5 + y5 - c2, a1, 1, c5, a2, 1, c2);
-                while (stack.Count > 0)
+                if (threads == 0)
                 {
-                    var r = stack.Pop();
-                    s += ProcessRegion(r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2);
+                    s += ProcessRegion(a1 * x2 + y2 - c5, a2 * x5 + y5 - c2, a1, 1, c5, a2, 1, c2);
+                    while (queue.Count > 0)
+                    {
+                        var r = queue.Take();
+                        s += ProcessRegion(r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2);
+                    }
                 }
+                else
+                    queue.Add(new Region(a1 * x2 + y2 - c5, a2 * x5 + y5 - c2, a1, 1, c5, a2, 1, c2));
                 a2 = a1;
                 x2 = x4;
                 y2 = y4;
@@ -159,15 +197,24 @@ namespace Decompose.Numerics
                     s += Triangle(v6 - 1) - Triangle(v6 - u5) + Triangle(u7 - u5);
                 else
                     s += Triangle(v6 - 1);
-                stack.Push(new Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
-                w -= u7;
-                h = v5;
-                a1 = a3;
-                b1 = b3;
-                c1 += c2 + u7;
 #if DEBUG
-            Console.WriteLine("ProcessRegion: s = {0}", s);
+                Console.WriteLine("ProcessRegion: s = {0}", s);
 #endif
+                if (threads == 0)
+                {
+                    queue.Add(new Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
+                    w -= u7;
+                    h = v5;
+                    a1 = a3;
+                    b1 = b3;
+                    c1 += c2 + u7;
+                }
+                else
+                {
+                    queue.Add(new Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
+                    queue.Add(new Region(w - u7, v5, a3, b3, c1 + c2 + u7, a2, b2, c2));
+                    return s;
+                }
             }
         }
 
@@ -281,6 +328,12 @@ namespace Decompose.Numerics
         private BigInteger YFloor(BigInteger x)
         {
             return (n / ((x << 1) - 1) + 1) >> 1;
+        }
+
+        private void AddToSum(BigInteger s)
+        {
+            lock (this)
+                sum += s;
         }
     }
 }
