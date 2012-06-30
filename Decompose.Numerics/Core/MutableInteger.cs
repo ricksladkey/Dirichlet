@@ -1843,49 +1843,49 @@ namespace Decompose.Numerics
         private static readonly ulong maxRep = (ulong)1 << maxRepShift;
         private static readonly MutableInteger maxRepSquared = (MutableInteger)maxRep * maxRep;
 
-        public MutableInteger SetFloorSquareRoot(MutableInteger n, IStore<MutableInteger> store)
+        public MutableInteger SetFloorSquareRoot(MutableInteger a, IStore<MutableInteger> store)
         {
-            if (n.CompareTo(maxRep) <= 0)
-                Set((uint)Math.Floor(Math.Sqrt((ulong)n)));
-            else if (n.CompareTo(maxRepSquared) <= 0)
+            if (a.CompareTo(maxRep) <= 0)
+                Set((uint)Math.Floor(Math.Sqrt((ulong)a)));
+            else if (a.CompareTo(maxRepSquared) <= 0)
             {
                 var reg1 = store.Allocate();
-                var shift = n.GetBitLength() - maxRepShift;
-                Set(n).UnsignedRightShift(shift);
+                var shift = a.GetBitLength() - maxRepShift;
+                Set(a).UnsignedRightShift(shift);
                 Set((uint)Math.Floor(Math.Sqrt((ulong)this * (double)(1 << shift))));
-                reg1.SetProduct(this, this).Subtract(n);
+                reg1.SetProduct(this, this).Subtract(a);
                 if (reg1.Sign == -1)
-                    Subtract(1);
-                else if (reg1.Subtract(this).CompareTo(this) > 0)
-                    Add(1);
+                    SetUnsignedDifference(this, 1);
+                else if (reg1.Subtract(this).CompareTo(this) > 0) // reg1 >= 2 * this + 1
+                    SetUnsignedSum(this, 1);
                 store.Release(reg1);
             }
             else
                 throw new NotImplementedException();
-            Debug.Assert((BigInteger)this * (BigInteger)this <= (BigInteger)n && ((BigInteger)this + 1) * ((BigInteger)this + 1) > (BigInteger)n);
+            Debug.Assert((BigInteger)this * (BigInteger)this <= (BigInteger)a && ((BigInteger)this + 1) * ((BigInteger)this + 1) > (BigInteger)a);
             return this;
         }
 
-        public MutableInteger SetCeilingSquareRoot(MutableInteger n, IStore<MutableInteger> store)
+        public MutableInteger SetCeilingSquareRoot(MutableInteger a, IStore<MutableInteger> store)
         {
-            if (n.CompareTo(maxRep) <= 0)
-                Set((uint)Math.Ceiling(Math.Sqrt((ulong)n)));
-            else if (n.CompareTo(maxRepSquared) <= 0)
+            if (a.CompareTo(maxRep) <= 0)
+                Set((uint)Math.Ceiling(Math.Sqrt((ulong)a)));
+            else if (a.CompareTo(maxRepSquared) <= 0)
             {
                 var reg1 = store.Allocate();
-                var shift = n.GetBitLength() - maxRepShift;
-                Set(n).UnsignedRightShift(shift);
+                var shift = a.GetBitLength() - maxRepShift;
+                Set(a).UnsignedRightShift(shift);
                 Set((uint)Math.Ceiling(Math.Sqrt((ulong)this * (double)(1 << shift))));
-                reg1.SetProduct(this, this).Subtract(n);
+                reg1.SetProduct(this, this).Subtract(a);
                 if (reg1.Sign == -1)
-                    Add(1);
-                else if (reg1.Subtract(this).CompareTo(this) > 0)
-                    Subtract(1);
+                    SetUnsignedSum(this, 1);
+                else if (reg1.Subtract(this).CompareTo(this) > 0) // reg1 >= 2 * this + 1
+                    SetUnsignedDifference(this, 1);
                 store.Release(reg1);
             }
             else
                 throw new NotImplementedException();
-            Debug.Assert((BigInteger)this * (BigInteger)this >= (BigInteger)n && ((BigInteger)this - 1) * ((BigInteger)this - 1) < (BigInteger)n);
+            Debug.Assert((BigInteger)this * (BigInteger)this >= (BigInteger)a && ((BigInteger)this - 1) * ((BigInteger)this - 1) < (BigInteger)a);
             return this;
         }
 

@@ -15,40 +15,40 @@ namespace Decompose.Numerics
         private static readonly ulong maxRep = (ulong)1 << maxRepShift;
         private static readonly BigInteger maxRepSquared = (BigInteger)maxRep * maxRep;
 
-        public static BigInteger FloorSquareRoot(BigInteger n)
+        public static BigInteger FloorSquareRoot(BigInteger a)
         {
-            if (n <= maxRep)
-                return (BigInteger)Math.Floor(Math.Sqrt((double)n));
-            else if (n <= maxRepSquared)
+            if (a <= maxRep)
+                return (BigInteger)Math.Floor(Math.Sqrt((double)a));
+            else if (a <= maxRepSquared)
             {
-                var s = (BigInteger)Math.Floor(Math.Sqrt((double)n));
-                var r = n - s * s;
+                var s = (BigInteger)Math.Floor(Math.Sqrt((double)a));
+                var r = a - s * s;
                 if (r.Sign == -1)
                     --s;
                 else if (r > (s << 1)) // r >= 2 * s + 1
                     ++s;
-                Debug.Assert(FloorSquareRoot<BigInteger>(n) == s);
+                Debug.Assert(FloorSquareRoot<BigInteger>(a) == s);
                 return s;
             }
-            return FloorSquareRoot<BigInteger>(n);
+            return FloorSquareRoot<BigInteger>(a);
         }
 
-        public static BigInteger CeilingSquareRoot(BigInteger n)
+        public static BigInteger CeilingSquareRoot(BigInteger a)
         {
-            if (n <= maxRep)
-                return (BigInteger)Math.Ceiling(Math.Sqrt((double)n));
-            else if (n <= maxRepSquared)
+            if (a <= maxRep)
+                return (BigInteger)Math.Ceiling(Math.Sqrt((double)a));
+            else if (a <= maxRepSquared)
             {
-                var s = (BigInteger)Math.Ceiling(Math.Sqrt((double)n));
-                var r = s * s - n;
+                var s = (BigInteger)Math.Ceiling(Math.Sqrt((double)a));
+                var r = s * s - a;
                 if (r.Sign == -1)
                     ++s;
                 else if (r > (s << 1)) // r >= 2 * s + 1
                     --s;
-                Debug.Assert(CeilingSquareRoot<BigInteger>(n) == s);
+                Debug.Assert(CeilingSquareRoot<BigInteger>(a) == s);
                 return s;
             }
-            return CeilingSquareRoot<BigInteger>(n);
+            return CeilingSquareRoot<BigInteger>(a);
         }
 
         public static T FloorSquareRoot<T>(T a)
