@@ -25,7 +25,7 @@ namespace Decompose.Numerics
                 var r = n - s * s;
                 if (r.Sign == -1)
                     --s;
-                else if (r > (s << 1))
+                else if (r > (s << 1)) // r >= 2 * s + 1
                     ++s;
                 Debug.Assert(FloorSquareRoot<BigInteger>(n) == s);
                 return s;
@@ -43,7 +43,7 @@ namespace Decompose.Numerics
                 var r = s * s - n;
                 if (r.Sign == -1)
                     ++s;
-                else if (r > (s << 1))
+                else if (r > (s << 1)) // r >= 2 * s + 1
                     --s;
                 Debug.Assert(CeilingSquareRoot<BigInteger>(n) == s);
                 return s;
@@ -56,7 +56,7 @@ namespace Decompose.Numerics
             if (((Number<T>)a).Sign < 0)
                 throw new InvalidOperationException("negative radicand");
             Number<T> power;
-            return FloorSquareRootCore(a, Number<T>.Log(a).Real, out power);
+            return FloorSquareRootCore(a, out power);
         }
 
         public static T CeilingSquareRoot<T>(T a)
@@ -64,7 +64,7 @@ namespace Decompose.Numerics
             if (((Number<T>)a).Sign < 0)
                 throw new InvalidOperationException("negative radicand");
             Number<T> power;
-            var c = FloorSquareRootCore(a, Number<T>.Log(a).Real, out power);
+            var c = FloorSquareRootCore(a, out power);
             return power == a ? c : c + 1;
         }
 
@@ -75,7 +75,7 @@ namespace Decompose.Numerics
             if (degree.IsEven && a != absA)
                 throw new InvalidOperationException("negative radicand");
             Number<T> power;
-            var c = FloorRootCore(absA, Number<T>.Log(absA).Real, degree, out power);
+            var c = FloorRootCore(absA, degree, out power);
             return a == absA ? c : -c;
         }
 
@@ -107,7 +107,7 @@ namespace Decompose.Numerics
             if (degree.IsEven && a != absA)
                 throw new InvalidOperationException("negative radicand");
             Number<T> power;
-            var c = FloorRootCore(absA, Number<T>.Log(absA).Real, degree, out power);
+            var c = FloorRootCore(absA, degree, out power);
             if (power != absA)
                 throw new InvalidOperationException("not a perfect power");
             return a == absA ? c : -c;
@@ -119,7 +119,7 @@ namespace Decompose.Numerics
             // E. Bach and J. Sorenson, Algorithmica 9 (1993) 313-328.
             // Algorithm B (modified).
             var absA = Number<T>.Abs(a);
-            var bits = (Number<T>)Math.Floor(Number<T>.Log(absA, 2).Real);
+            var bits = IntegerMath.FloorLog((T)absA, 2);
             var logA = Number<T>.Log(absA).Real;
             foreach (var p in primes)
             {
@@ -167,6 +167,11 @@ namespace Decompose.Numerics
             return true;
         }
 
+        private static Number<T> FloorSquareRootCore<T>(Number<T> a, out Number<T> power)
+        {
+            return FloorSquareRootCore(a, Number<T>.Log(a).Real, out power);
+        }
+
         private static Number<T> FloorSquareRootCore<T>(Number<T> a, double logA, out Number<T> power)
         {
             if (a.IsZero)
@@ -200,6 +205,11 @@ namespace Decompose.Numerics
             power = c * c;
             Debug.Assert(power <= a && Power((BigInteger)c + 1, 2) > a);
             return c;
+        }
+
+        private static Number<T> FloorRootCore<T>(Number<T> a, Number<T> degree, out Number<T> power)
+        {
+            return FloorRootCore(a, Number<T>.Log(a).Real, degree, out power);
         }
 
         private static Number<T> FloorRootCore<T>(Number<T> a, double logA, Number<T> degree, out Number<T> power)

@@ -1,4 +1,6 @@
-﻿using System;
+﻿#undef DIAG
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -36,16 +38,18 @@ namespace Decompose.Numerics
             public BigInteger c2;
         }
 
-        public static readonly BigInteger C1 = 600;
-        public static readonly BigInteger C2 = 20;
+        public static readonly BigInteger C1 = 500;
+        public static readonly BigInteger C2 = 30;
 
         private int threads;
         private BigInteger n;
         private BigInteger sum;
         private int unprocessed;
+        private BigInteger xmanual;
         private ManualResetEventSlim finished;
         private BlockingCollection<Region> queue;
         private DivisionFreeDivisorSummatoryFunction manualAlgorithm;
+        private IStore<MutableInteger>[] stores;
 
         public DivisorSummatoryFunctionOdd(int threads)
         {
@@ -53,6 +57,9 @@ namespace Decompose.Numerics
             queue = new BlockingCollection<Region>();
             finished = new ManualResetEventSlim();
             manualAlgorithm = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
+            stores = new IStore<MutableInteger>[Math.Max(threads, 1)];
+            for (var i = 0; i < Math.Max(threads, 1); i++)
+                stores[i] = new MutableIntegerStore(8);
         }
 
         public BigInteger Evaluate(BigInteger n)
@@ -68,6 +75,7 @@ namespace Decompose.Numerics
             if (threads == 0)
             {
                 AddToSum(EvaluateInternal(n, x0, xmax));
+                AddToSum(manualAlgorithm.Evaluate(n, 2 * x0 - 1, 2 * xmanual - 3));
                 return sum;
             }
 
@@ -77,7 +85,7 @@ namespace Decompose.Numerics
             for (var consumer = 0; consumer < consumers; consumer++)
             {
                 var thread = consumer;
-                tasks[consumer] = Task.Factory.StartNew(ConsumeRegions);
+                tasks[consumer] = Task.Factory.StartNew(() => ConsumeRegions(thread));
             }
 
             // Produce work items.
@@ -85,20 +93,23 @@ namespace Decompose.Numerics
             finished.Reset();
             AddToSum(Processed(EvaluateInternal(n, x0, xmax)));
             finished.Wait();
+            queue.CompleteAdding();
+
+            // Add manual portion.
+            AddToSum(manualAlgorithm.Evaluate(n, 2 * x0 - 1, 2 * xmanual - 3));
 
             // Wait for completion.
-            queue.CompleteAdding();
             Task.WaitAll(tasks);
 
             return sum;
         }
 
-        public void ConsumeRegions()
+        public void ConsumeRegions(int thread)
         {
             var s = (BigInteger)0;
             var r = default(Region);
             while (queue.TryTake(out r, Timeout.Infinite))
-                s += ProcessRegion(r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2);
+                s += ProcessRegion(thread, r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2);
             AddToSum(s);
         }
 
@@ -125,7 +136,7 @@ namespace Decompose.Numerics
                 return 0;
             var ymin = YFloor(xmax);
             var xmin = IntegerMath.Max(x0, IntegerMath.Min(T1(C1 * IntegerMath.CeilingRoot(2 * n, 3)), xmax));
-#if DEBUG
+#if DIAG
             Console.WriteLine("n = {0}, xmin = {1}, xmax = {2}", n, xmin, xmax);
 #endif
             var s = (BigInteger)0;
@@ -147,11 +158,11 @@ namespace Decompose.Numerics
                 s += Triangle(c4 - c2 - x0) - Triangle(c4 - c2 - x5) + Triangle(c5 - c2 - x5);
                 if (threads == 0)
                 {
-                    s += ProcessRegion(a1 * x2 + y2 - c5, a2 * x5 + y5 - c2, a1, 1, c5, a2, 1, c2);
+                    s += ProcessRegion(0, a1 * x2 + y2 - c5, a2 * x5 + y5 - c2, a1, 1, c5, a2, 1, c2);
                     while (queue.Count > 0)
                     {
                         var r = queue.Take();
-                        s += ProcessRegion(r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2);
+                        s += ProcessRegion(0, r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2);
                     }
                 }
                 else
@@ -164,13 +175,13 @@ namespace Decompose.Numerics
             s += (xmax - x0 + 1) * ymin + Triangle(xmax - x0);
             var rest = x2 - x0;
             s -= y2 * rest + a2 * Triangle(rest);
-            s += manualAlgorithm.Evaluate(n, 2 * x0 - 1, 2 * x2 - 3);
+            xmanual = x2;
             return s;
         }
 
-        public BigInteger ProcessRegion(BigInteger w, BigInteger h, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
+        public BigInteger ProcessRegion(int thread, BigInteger w, BigInteger h, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
         {
-#if DEBUG
+#if DIAG
             Console.WriteLine("ProcessRegion: w = {0}, h = {1}, a1/b1 = {2}/{3}, a2/b2 = {4}/{5}, c1 = {6}, c2 = {7}", w, h, a1, b1, a2, b2, c1, c2);
 #endif
             var s = (BigInteger)0;
@@ -198,7 +209,7 @@ namespace Decompose.Numerics
                 var ab2 = 2 * a1 * b1;
                 var u4 = UTan(ab1, abba, ab2, a3b3, c1);
                 if (u4 <= 0)
-                    return Processed(s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2));
+                    return Processed(s + ProcessRegionManual(thread, w, h, a1, b1, c1, a2, b2, c2));
                 var u5 = u4 + 1;
                 BigInteger v4, v5;
                 VFloor2(u4, a1, b1, c1, c2, abba, ab2, out v4, out v5);
@@ -209,12 +220,12 @@ namespace Decompose.Numerics
                 var v6 = u4 + v4;
                 var u7 = u5 + v5;
                 if (u4 <= C2 || v5 <= C2 || v6 >= h || u7 >= w)
-                    return Processed(s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2));
+                    return Processed(s + ProcessRegionManual(thread, w, h, a1, b1, c1, a2, b2, c2));
                 if (v6 != u7)
                     s += Triangle(v6 - 1) - Triangle(v6 - u5) + Triangle(u7 - u5);
                 else
                     s += Triangle(v6 - 1);
-#if DEBUG
+#if DIAG
                 Console.WriteLine("ProcessRegion: s = {0}", s);
 #endif
                 if (threads == 0)
@@ -235,16 +246,13 @@ namespace Decompose.Numerics
             }
         }
 
-        public BigInteger ProcessRegionManual(BigInteger w, BigInteger h, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
+        public BigInteger ProcessRegionManual(int thread, BigInteger w, BigInteger h, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
         {
-#if false
-            return w < h ? ProcessRegionHorizontal(w, h, a1, b1, c1, a2, b2, c2) : ProcessRegionVertical(w, h, a1, b1, c1, a2, b2, c2);
-#else
-            return w < h ? ProcessRegionManual(w, a1, b1, c1, a2, b2, c2) : ProcessRegionManual(h, b2, a2, c2, b1, a1, c1);
-#endif
+            return w < h ? ProcessRegionManual(thread, w, a1, b1, c1, a2, b2, c2) : ProcessRegionManual(thread, h, b2, a2, c2, b1, a1, c1);
         }
 
-        public BigInteger ProcessRegionManual(BigInteger w, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
+#if false
+        public BigInteger ProcessRegionManual(int thread, BigInteger w, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
         {
             if (w <= 1)
                 return 0;
@@ -272,11 +280,69 @@ namespace Decompose.Numerics
             }
 
             Debug.Assert(s == ProcessRegionHorizontal(w, 0, a1, b1, c1, a2, b2, c2));
-#if DEBUG
+#if DIAG
             Console.WriteLine("ProcessRegionManual: s = {0}", s);
 #endif
             return s;
         }
+#endif
+
+#if true
+        public BigInteger ProcessRegionManual(int thread, BigInteger w, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
+        {
+            if (w <= 1)
+                return 0;
+
+            var s = (BigInteger)0;
+            var umax = (long)w - 1;
+            var t1 = (a1 * b2 + b1 * a2) << 1;
+            var t2 = (c1 << 1) - a1 - b1;
+            var t3 = (t2 << 2) + 12;
+            var t4 = (a1 * b1) << 2;
+            var t5 = t1 * (1 + c1) - a1 + b1 - t4 * c2;
+            var t6 = IntegerMath.Square(t2 + 2) - t4 * n;
+
+            var store = stores[thread];
+            var sRep = store.Allocate().Set(0);
+            var t1Rep = store.Allocate().Set(t1);
+            var t3Rep = store.Allocate().Set(t3);
+            var t4Rep = store.Allocate().Set(t4);
+            var t5Rep = store.Allocate().Set(t5);
+            var t6Rep = store.Allocate().Set(t6);
+            var t7Rep = store.Allocate();
+            var t8Rep = store.Allocate();
+            var vRep = store.Allocate();
+
+            var u = (long)1;
+            while (true)
+            {
+                t8Rep.SetDifference(t5Rep, t7Rep.SetCeilingSquareRoot(t6Rep, store)).ModuloWithQuotient(t4Rep, vRep);
+                sRep.Add(vRep);
+                if (u >= umax)
+                    break;
+                t5Rep.Add(t1Rep);
+                t6Rep.Add(t3Rep);
+                t3Rep.Add(8);
+                ++u;
+            }
+            s = sRep;
+
+            store.Release(sRep);
+            store.Release(t1Rep);
+            store.Release(t3Rep);
+            store.Release(t4Rep);
+            store.Release(t6Rep);
+            store.Release(t7Rep);
+            store.Release(t8Rep);
+            store.Release(vRep);
+
+            Debug.Assert(s == ProcessRegionHorizontal(w, 0, a1, b1, c1, a2, b2, c2));
+#if DIAG
+            Console.WriteLine("ProcessRegionManual: s = {0}", s);
+#endif
+            return s;
+        }
+#endif
 
         public BigInteger ProcessRegionHorizontal(BigInteger w, BigInteger h, BigInteger a1, BigInteger b1, BigInteger c1, BigInteger a2, BigInteger b2, BigInteger c2)
         {

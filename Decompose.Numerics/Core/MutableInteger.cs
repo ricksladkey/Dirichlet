@@ -1839,6 +1839,56 @@ namespace Decompose.Numerics
             return this;
         }
 
+        private const int maxRepShift = 53;
+        private static readonly ulong maxRep = (ulong)1 << maxRepShift;
+        private static readonly MutableInteger maxRepSquared = (MutableInteger)maxRep * maxRep;
+
+        public MutableInteger SetFloorSquareRoot(MutableInteger n, IStore<MutableInteger> store)
+        {
+            if (n.CompareTo(maxRep) <= 0)
+                Set((uint)Math.Floor(Math.Sqrt((ulong)n)));
+            else if (n.CompareTo(maxRepSquared) <= 0)
+            {
+                var reg1 = store.Allocate();
+                var shift = n.GetBitLength() - maxRepShift;
+                Set(n).UnsignedRightShift(shift);
+                Set((uint)Math.Floor(Math.Sqrt((ulong)this * (double)(1 << shift))));
+                reg1.SetProduct(this, this).Subtract(n);
+                if (reg1.Sign == -1)
+                    Subtract(1);
+                else if (reg1.Subtract(this).CompareTo(this) > 0)
+                    Add(1);
+                store.Release(reg1);
+            }
+            else
+                throw new NotImplementedException();
+            Debug.Assert((BigInteger)this * (BigInteger)this <= (BigInteger)n && ((BigInteger)this + 1) * ((BigInteger)this + 1) > (BigInteger)n);
+            return this;
+        }
+
+        public MutableInteger SetCeilingSquareRoot(MutableInteger n, IStore<MutableInteger> store)
+        {
+            if (n.CompareTo(maxRep) <= 0)
+                Set((uint)Math.Ceiling(Math.Sqrt((ulong)n)));
+            else if (n.CompareTo(maxRepSquared) <= 0)
+            {
+                var reg1 = store.Allocate();
+                var shift = n.GetBitLength() - maxRepShift;
+                Set(n).UnsignedRightShift(shift);
+                Set((uint)Math.Ceiling(Math.Sqrt((ulong)this * (double)(1 << shift))));
+                reg1.SetProduct(this, this).Subtract(n);
+                if (reg1.Sign == -1)
+                    Add(1);
+                else if (reg1.Subtract(this).CompareTo(this) > 0)
+                    Subtract(1);
+                store.Release(reg1);
+            }
+            else
+                throw new NotImplementedException();
+            Debug.Assert((BigInteger)this * (BigInteger)this >= (BigInteger)n && ((BigInteger)this - 1) * ((BigInteger)this - 1) < (BigInteger)n);
+            return this;
+        }
+
 #if true
         public MutableInteger BarrettReduction(MutableInteger z, MutableInteger mu, int k)
         {

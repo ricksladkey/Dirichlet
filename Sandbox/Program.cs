@@ -345,6 +345,21 @@ namespace Sandbox
             }
         }
 
+        static T EvaluateAndTime<T>(Func<T> expr)
+        {
+            var timer = new Stopwatch();
+            var process = Process.GetCurrentProcess();
+            var cpu1 = process.TotalProcessorTime;
+            timer.Restart();
+            var result = expr();
+            var elapsed = timer.ElapsedTicks;
+            var cpu2 = process.TotalProcessorTime;
+            output.WriteLine("elapsed = {0:F3} msec, cpu = {1:F3}, ratio = {2:F3}",
+                (double)elapsed / Stopwatch.Frequency * 1000, (cpu2 - cpu1).TotalMilliseconds,
+                (cpu2 - cpu1).TotalMilliseconds / ((double)elapsed / Stopwatch.Frequency * 1000));
+            return result;
+        }
+
         static void ParityTest()
         {
 #if true
@@ -360,17 +375,12 @@ namespace Sandbox
 #else
                 var xmin = 1;
 #endif
-                var timer = new Stopwatch();
-#if true
-                timer.Restart();
-                var s1 = algorithm1.Evaluate(n, xmin, xmax);
-                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#if false
+                var s1 = EvaluateAndTime(() => algorithm1.Evaluate(n, xmin, xmax));
 #else
                 var s1 = 0;
 #endif
-                timer.Restart();
-                var s2 = algorithm2.Evaluate(n, xmin, xmax);
-                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                var s2 = EvaluateAndTime(() => algorithm2.Evaluate(n, xmin, xmax));
                 Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
             }
 #endif
