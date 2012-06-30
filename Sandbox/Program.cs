@@ -364,7 +364,7 @@ namespace Sandbox
         {
 #if true
             var threads = 8;
-            for (int i = 18; i <= 24; i++)
+            for (int i = 22; i <= 22; i++)
             {
                 var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
                 var algorithm2 = new DivisorSummatoryFunctionOdd(threads);

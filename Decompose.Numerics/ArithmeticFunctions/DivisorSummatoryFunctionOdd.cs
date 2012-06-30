@@ -311,13 +311,13 @@ namespace Decompose.Numerics
             var t6Rep = store.Allocate().Set(t6);
             var t7Rep = store.Allocate();
             var t8Rep = store.Allocate();
-            var vRep = store.Allocate();
 
             var u = (long)1;
             while (true)
             {
-                t8Rep.SetUnsignedDifference(t5Rep, t7Rep.SetCeilingSquareRoot(t6Rep, store)).ModuloWithQuotient(t4Rep, vRep);
-                sRep.Add(vRep);
+                t8Rep.SetUnsignedDifference(t5Rep, t7Rep.SetCeilingSquareRoot(t6Rep, store))
+                    .ModuloWithQuotient(t4Rep, t7Rep);
+                sRep.SetUnsignedSum(sRep, t7Rep);
                 if (u >= umax)
                     break;
                 t5Rep.SetUnsignedSum(t5Rep, t1Rep);
@@ -334,7 +334,6 @@ namespace Decompose.Numerics
             store.Release(t6Rep);
             store.Release(t7Rep);
             store.Release(t8Rep);
-            store.Release(vRep);
 
             Debug.Assert(s == ProcessRegionHorizontal(w, 0, a1, b1, c1, a2, b2, c2));
 #if DIAG
