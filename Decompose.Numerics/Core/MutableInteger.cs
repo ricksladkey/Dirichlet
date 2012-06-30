@@ -1073,7 +1073,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        private void SetUnsignedSum(MutableInteger a, MutableInteger b)
+        public MutableInteger SetUnsignedSum(MutableInteger a, MutableInteger b)
         {
             CheckValid();
             int limit = Math.Max(a.last, b.last);
@@ -1099,6 +1099,7 @@ namespace Decompose.Numerics
             last = limit;
             sign = a.sign;
             CheckValid();
+            return this;
         }
 
         public MutableInteger Increment()
@@ -1126,11 +1127,10 @@ namespace Decompose.Numerics
         {
             if (a.sign == -1)
                 return SetDifference(a, b);
-            SetUnsignedSum(a, b);
-            return this;
+            return SetUnsignedSum(a, b);
         }
 
-        private void SetUnsignedSum(MutableInteger a, uint b)
+        public MutableInteger SetUnsignedSum(MutableInteger a, uint b)
         {
             CheckValid();
             var abits = a.bits;
@@ -1178,6 +1178,7 @@ namespace Decompose.Numerics
             sign = a.sign;
 
             CheckValid();
+            return this;
         }
 
         public MutableInteger AddModulo(MutableInteger a, MutableInteger n)
@@ -1219,7 +1220,7 @@ namespace Decompose.Numerics
             return this;
         }
 
-        private void SetUnsignedDifference(MutableInteger a, MutableInteger b)
+        public MutableInteger SetUnsignedDifference(MutableInteger a, MutableInteger b)
         {
             CheckValid();
             var limit = a.last;
@@ -1240,6 +1241,7 @@ namespace Decompose.Numerics
                 --limit;
             last = limit;
             CheckValid();
+            return this;
         }
 
         public MutableInteger Decrement()
@@ -1267,11 +1269,10 @@ namespace Decompose.Numerics
         {
             if (a.sign == -1)
                 return SetSum(a, b);
-            SetUnsignedDifference(a, b);
-            return this;
+            return SetUnsignedDifference(a, b);
         }
 
-        private void SetUnsignedDifference(MutableInteger a, uint b)
+        public MutableInteger SetUnsignedDifference(MutableInteger a, uint b)
         {
             CheckValid();
             CheckLast(a.last);
@@ -1303,6 +1304,7 @@ namespace Decompose.Numerics
             last = limit;
             sign = a.sign;
             CheckValid();
+            return this;
         }
 
         public MutableInteger SubtractModulo(MutableInteger a, MutableInteger n)
@@ -1363,7 +1365,7 @@ namespace Decompose.Numerics
             }
         }
 
-        public void SetSignedSum(MutableInteger a, MutableInteger b, bool subtraction)
+        private void SetSignedSum(MutableInteger a, MutableInteger b, bool subtraction)
         {
             var asign = a.sign;
             var bsign = subtraction ? -b.sign : b.sign;

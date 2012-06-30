@@ -316,13 +316,13 @@ namespace Decompose.Numerics
             var u = (long)1;
             while (true)
             {
-                t8Rep.SetDifference(t5Rep, t7Rep.SetCeilingSquareRoot(t6Rep, store)).ModuloWithQuotient(t4Rep, vRep);
+                t8Rep.SetUnsignedDifference(t5Rep, t7Rep.SetCeilingSquareRoot(t6Rep, store)).ModuloWithQuotient(t4Rep, vRep);
                 sRep.Add(vRep);
                 if (u >= umax)
                     break;
-                t5Rep.Add(t1Rep);
-                t6Rep.Add(t3Rep);
-                t3Rep.Add(8);
+                t5Rep.SetUnsignedSum(t5Rep, t1Rep);
+                t6Rep.SetUnsignedSum(t6Rep, t3Rep);
+                t3Rep.SetUnsignedSum(t3Rep, 8);
                 ++u;
             }
             s = sRep;
