@@ -360,9 +360,196 @@ namespace Sandbox
             return result;
         }
 
+        static int P(int x, int p)
+        {
+            return 2 * IntegerMath.SumOfNumberOfDivisors(x / p) - IntegerMath.SumOfNumberOfDivisors(x / (p * p));
+        }
+
+        static int P2(int x, int p)
+        {
+            return 3 * IntegerMath.SumOfNumberOfDivisors(x / (p * p)) - 2 * IntegerMath.SumOfNumberOfDivisors(x / (p * p * p));
+        }
+
+        static int P(int x, int p, int q)
+        {
+            return P(x, p * q) - IntegerMath.SumOfNumberOfDivisors(x / (p * q));
+        }
+
+        static int PQ(int x, int p, int a, int q, int b)
+        {
+            var c = IntegerMath.Power(p, a) * IntegerMath.Power(q, b);
+            if (x < c)
+                return 0;
+            return (a + 1) * (b + 1)
+                * (IntegerMath.SumOfNumberOfDivisors(x / c) - P(x / c, p) - P(x / c, q) + PQ(x / c, p, 1, q, 1))
+                + PQ(x, p, a + 1, q, b) + PQ(x, p, a, q, b + 1) - PQ(x, p, a + 1, q, b + 1);
+        }
+
         static void ParityTest()
         {
 #if true
+            var p = 5;
+            var q = 7;
+            var d = p * q;
+            for (var x = 0; x <= 1000; x += d)
+            {
+                var sum1 = 0;
+                for (var n = 1; n <= x / d; n++)
+                    sum1 += IntegerMath.NumberOfDivisors(d * n);
+                var sum2 = 0;
+                sum2 += PQ(x, p, 1, q, 1);
+                var sum3 = 0;
+                var sum4 = 0;
+                Console.WriteLine("x = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}, sum4 = {4}", x, sum1, sum2, sum3, sum4);
+            }
+#endif
+
+#if false
+            var mu = new MobiusCollection(100 + 1, 8);
+            for (var x = 1; x <= 100; x++)
+            {
+                var sqrt = IntegerMath.FloorSquareRoot(x);
+                var sum1 = 0;
+                for (var n = 1; n <= x; n++)
+                    sum1 += IntegerMath.NumberOfDivisors(n * n);
+                var sum2 = 0;
+                for (var a = 1; a <= sqrt; a++)
+                    sum2 += IntegerMath.Mobius(a) * IntegerMath.SumOfNumberOfDivisors(x / (a * a), 3);
+                var sum3 = 0;
+                for (var n = 1; n <= x; n++)
+                {
+                    for (var a = 1; a <= n; a++)
+                    {
+                        if (n % a != 0)
+                            continue;
+                        for (var b = 1; b <= a; b++)
+                        {
+                            if (a % (b * b) != 0)
+                                continue;
+                            sum3 += IntegerMath.NumberOfDivisors(n / a) * IntegerMath.Mobius(b);
+                        }
+                    }
+                }
+                var sum4 = 0;
+                Console.WriteLine("x = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}, sum4 = {4}", x, sum1, sum2, sum3, sum4);
+            }
+#endif
+
+#if false
+            var mu = new MobiusCollection(100 + 1, 8);
+            for (var x = 1; x <= 100; x++)
+            {
+                var sqrt = IntegerMath.FloorSquareRoot(x);
+                var sum1 = IntegerMath.NumberOfDivisors(x) * IntegerMath.Liouville(x);
+                var sum2 = 0;
+                for (var a = 1; a <= x; a++)
+                {
+                    if (x % a != 0)
+                        continue;
+                    sum2 += IntegerMath.Liouville(a) * IntegerMath.Liouville(x / a);
+                }
+                var sum3 = 0;
+                var sum4 = 0;
+                Console.WriteLine("n = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}, sum4 = {4}", x, sum1, sum2, sum3, sum4);
+            }
+#endif
+
+#if false
+            var mu = new MobiusCollection(100 + 1, 8);
+            for (var x = 1; x <= 100; x++)
+            {
+                var sqrt = IntegerMath.FloorSquareRoot(x);
+                var sum1 = 0;
+                for (var a = 1; a <= x; a++)
+                {
+                    var term = IntegerMath.Power(3, IntegerMath.LittleOmega(a));
+                    sum1 += term;
+                }
+                var sum2 = 0;
+                for (var a = 1; a <= x; a++)
+                {
+                    var term = mu[a] * mu[a] * IntegerMath.NumberOfDivisors(a) * (x / a);
+                    sum2 += term;
+                }
+                var sum3 = 0;
+                for (var a = 1; a <= sqrt; a++)
+                {
+                    for (var b = 1; b <= x / (a * a); b++)
+                        sum3 += IntegerMath.Mobius(a) * IntegerMath.NumberOfDivisors(a * a * b) * (x / (a * a * b));
+                }
+                var sum4 = 0;
+                for (var a = 1; a <= x; a++)
+                {
+                    for (var b = 1; b <= x / a; b++)
+                        sum4 += IntegerMath.Square(IntegerMath.Mobius(a * b)) * x / (a * b);
+                }
+                Console.WriteLine("n = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}, sum4 = {4}", x, sum1, sum2, sum3, sum4);
+            }
+#endif
+
+#if false
+            var mu = new MobiusCollection(100 + 1, 8);
+            for (var n = 1; n <= 100; n++)
+            {
+                var sum1 = 0;
+                for (var x = 1; x <= n; x++)
+                {
+                    for (var d = 1; d <= x; d++)
+                    {
+                        if (x % (d * d) != 0)
+                            continue;
+                        var term = mu[d];
+                        sum1 += term;
+                    }
+                }
+                var sum2 = new PrimeCounting(8).NumberOfSquareFree(n);
+                var sum3 = 0;
+                for (var x = 1; x <= n; x++)
+                {
+                    var term = mu[x] * (n / (x * x));
+                    sum3 += term;
+                }
+                Console.WriteLine("n = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}", n, sum1, sum2, sum3);
+            }
+#endif
+
+#if false
+            var mu = new MobiusCollection(100 + 1, 8);
+            for (var n = 1; n <= 100; n++)
+            {
+                var sum1 = 0;
+                for (var d = 1; d <= n; d++)
+                {
+                    if (n % (d * d) != 0)
+                        continue;
+                    var term = mu[d] * IntegerMath.NumberOfDivisors(n / (d * d));
+                    Console.Write(" {0}", term);
+                    sum1 += term;
+                }
+                Console.WriteLine("");
+                var sum2 = 0;
+                for (var d = 1; d <= n; d++)
+                {
+                    if (n % d != 0)
+                        continue;
+                    var term = mu[d] * mu[d];
+                    sum2 += term;
+                }
+                var sum3 = 0;
+                for (var d = 1; d <= n; d++)
+                {
+                    if (n % d != 0)
+                        continue;
+                    var term = mu[n / d] * IntegerMath.NumberOfDivisors(d * d);
+                    Console.Write(" {0}", term);
+                    sum3 += term;
+                }
+                Console.WriteLine("");
+                Console.WriteLine("n = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}", n, sum1, sum2, sum3);
+            }
+#endif
+
+#if false
             var threads = 8;
             for (int i = 22; i <= 22; i++)
             {
@@ -1361,15 +1548,13 @@ namespace Sandbox
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
 #if false
-            var factorer = new TrialDivisionFactorization();
             for (var j = 10; j <= 20; j += 2)
             {
                 var n = 1 << j;
                 var count = 0;
                 for (var i = 2; i < n; i++)
                 {
-                    var factors = factorer.Factor(i).ToArray();
-                    if (IntegerMath.IsSquareFree(factors) && factors.All(factor => factor * factor < i))
+                    if (IntegerMath.IsSquareFree(i) && factors.All(factor => factor * factor < i))
                         ++count;
                 }
                 Console.WriteLine("n = {0}, count = {1}, n / count = {2}", n, count, (double)n / count);

@@ -121,7 +121,7 @@ namespace Decompose.Numerics
             allPrimes = new SieveOfEratosthenes();
             solver = new Solver(config.Threads, config.MergeLimit, (diag & Diag.Solving) != 0);
             multiplierCandidates = Enumerable.Range(1, maximumMultiplier)
-                .Where(value => IntegerMath.IsSquareFree(smallIntegerFactorer.Factor(value))).ToArray();
+                .Where(value => IntegerMath.IsSquareFree(value)).ToArray();
         }
 
         public IEnumerable<BigInteger> Factor(BigInteger n)

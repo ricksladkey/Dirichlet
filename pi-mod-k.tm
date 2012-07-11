@@ -21,15 +21,15 @@
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|\<pi\><rsub|2><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
-    n|\<rfloor\>>><rsub|k=1>\<mu\><around*|(|i|)>*F<rsub|2><around*|(|n<rsup|1/k>|)>>>|<row|<cell|\<pi\><around*|(|n|)>>|<cell|\<equiv\>>|<cell|\<pi\><rsub|2><around*|(|n|)>
-    <around*|(|mod 2|)>>>>>
+    n|\<rfloor\>>><rsub|k=1>\<mu\><around*|(|i|)>*F<rsub|2><around*|(|n<rsup|1/k>|)>>>|<row|<cell|\<pi\><around*|(|n|)>>|<cell|\<equiv\>>|<cell|\<pi\><rsub|2><around*|(|n|)><space|1em><around*|(|mod
+    2|)>>>>>
   </eqnarray*>
 
-  We can avoid all the even numbers because every multiple of two is either
-  <math|2<rsup|a>> or contributes a multiple of <math|4> to
+  We can avoid all the even numbers because every multiple of two is either a
+  prime power <math|2<rsup|a>> or contributes a multiple of <math|4> to
   <math|\<pi\><rsub|2><around*|(|n|)>>. \ If <math|2> is omitted from each
   term in <math|\<pi\><rsub|2><around*|(|n|)>>, <math|2> will not be counted
-  as a prime and nor will any powers of two be subtracted away, leaving
+  as a prime nor will any powers of two be subtracted away, leaving
   <math|\<pi\><rsub|2>> as a whole too small by one, which can be corrected
   at the end.
 
@@ -51,8 +51,16 @@
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|\<pi\><rsub|2,odd><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|<around*|\<lfloor\>|log<rsub|2>
-    n|\<rfloor\>>><rsub|k=1>\<mu\><around*|(|i|)>*F<rsub|2,odd><around*|(|n<rsup|1/k>|)>>>|<row|<cell|\<pi\><around*|(|n|)>>|<cell|\<equiv\>>|<cell|\<pi\><rsub|2,odd><around*|(|n|)>+1
-    <around*|(|mod 2|)>,n\<geq\>2>>>>
+    n|\<rfloor\>>><rsub|k=1>\<mu\><around*|(|i|)>*F<rsub|2,odd><around*|(|n<rsup|1/k>|)>>>|<row|<cell|\<pi\><around*|(|n|)>>|<cell|\<equiv\>>|<cell|\<pi\><rsub|2,odd><around*|(|n|)>+1<space|1em><around*|(|mod
+    2|)>,<space|1em>n\<geq\>2>>>>
+  </eqnarray*>
+
+  Formulas for <math|T<rsub|2,odd><around*|(|n|)>> for successive
+  approximation algorithm
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|T<rsub|1,odd><around*|(|x|)>>|<cell|=>|<cell|<around*|\<lfloor\>|<frac|x+1|2>|\<rfloor\>>=<frac|x+x
+    mod 2|2>>>|<row|<cell|H<around*|(|u,v|)>>|<cell|=>|<cell|<around*|(|2*<around*|(|b<rsub|2>*<around*|(|u+c<rsub|1>|)>-b<rsub|1>*<around*|(|v+c<rsub|2>|)>|)>-1|)>*<around*|(|2*<around*|(|a<rsub|1>*<around*|(|*v+c<rsub|2>|)>-a<rsub|2>*<around*|(|u+c<rsub|1>|)>|)>-1|)>>>|<row|<cell|Y<rsub|tan><rsup|><around*|(|a|)>>|<cell|=>|<cell|T<rsub|1,odd><around*|(|<sqrt|<frac|n|a>>|)>>>|<row|<cell|Y<rsub|floor><around*|(|x|)>>|<cell|=>|<cell|T<rsub|1,odd><around*|(|<frac|n|2*x-1>|)>>>|<row|<cell|U<around*|(|v|)>>|<cell|=>|<cell|<frac|2*<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>|)>*<around*|(|v+c<rsub|2>|)>+a<rsub|2>-b<rsub|2>-<sqrt|<around*|(|2*<around*|(|v+c<rsub|2>|)>-a<rsub|2>-b<rsub|2>|)><rsup|2>-4*a<rsub|2>*b<rsub|2>*n>|4*a<rsub|2>*b<rsub|2>>-c<rsub|1>>>|<row|<cell|V<around*|(|u|)>>|<cell|=>|<cell|<frac|2*<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>|)>*<around*|(|u+c<rsub|1>|)>-a<rsub|1>+b<rsub|1>-<sqrt|<around*|(|2*<around*|(|u+c<rsub|1>|)>-a<rsub|1>-b<rsub|1>|)><rsup|2>-4*a<rsub|1>*b<rsub|1>*n>|4*a<rsub|1>*b<rsub|1>>-c<rsub|2>>>|<row|<cell|U<rsub|tan><around*|(|v|)>>|<cell|=>|<cell|<frac|<around*|(|a<rsub|1>+b<rsub|1>|)>*a<rsub|3>*b<rsub|3>+<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>+2*a<rsub|1>*b<rsub|1>|)>*<sqrt|a<rsub|3>*b<rsub|3>*n>|2*a<rsub|3>*b<rsub|3>>-c<rsub|1>>>|<row|<cell|>|<cell|=>|<cell|<frac|a<rsub|1>+b<rsub|1>+*<sqrt|<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>+2*a<rsub|1>*b<rsub|1>|)><rsup|2>*n/<around*|(|a<rsub|3>*b<rsub|3>|)>>|2>-c<rsub|1>>>>>
   </eqnarray*>
 
   <section|Prime Counting Function Modulo 3>
@@ -72,11 +80,11 @@
   \ Then
 
   <\equation*>
-    \<tau\><rsub|3><around*|(|n|)>=<big|sum><rsub|d<rsub|1>*d<rsub|2>*d<rsub|3>=n>1=<big|sum><rsub|d<around*|\||n|\<nobracket\>>>\<tau\><rsub|><around*|(|<frac|n|d>|)>
+    \<tau\><rsub|3><around*|(|n|)>=<big|sum><rsub|d<rsub|1>*d<rsub|2>*d<rsub|3>=n>1=<big|sum><rsub|d<around*|\||n|\<nobracket\>>>\<tau\><rsub|2><around*|(|<frac|n|d>|)>
   </equation*>
 
   and therefore <math|\<tau\><rsub|3><around*|(|n|)>> is multiplicative
-  becaue it is the Dirichlet convolution <math|1<around*|(|n|)>\<ast\>\<tau\><around*|(|n|)>>
+  becaue it is the Dirichlet convolution <math|1<around*|(|n|)>\<ast\>\<tau\><rsub|2><around*|(|n|)>>
   of multiplicative functions.
 
   The values of all <math|\<tau\><rsub|k><around*|(|n|)>> functions are
@@ -92,7 +100,7 @@
   factors of <math|n>, <math|p<rsub|i>> is prime, and
   <math|a<rsub|i>\<geq\>1>. A prime power <math|p<rsup|a>> has the divisors
   <math|1,p,p<rsup|2>,\<ldots\>,p<rsup|a>> each of which has
-  <math|\<tau\><rsub|><around*|(|<frac|n|d>|)>> equal to
+  <math|\<tau\><rsub|2><rsub|><around*|(|<frac|n|d>|)>> equal to
   <math|a+1,a,a-1,\<ldots\>,1> and so <math|\<tau\><rsub|3><around*|(|p<rsup|a>|)>>
   is
 
@@ -103,7 +111,7 @@
   and then using multiplicativity
 
   <\equation*>
-    \<tau\><rsub|3><around*|(|n|)>=<big|prod><rsup|\<omega\><around*|(|n|)>><rsub|i=1><binom|a<rsub|i>+2|a<rsub|i>>
+    \<tau\><rsub|3><around*|(|n|)>=<big|prod><rsup|\<omega\><around*|(|n|)>><rsub|i=1><binom|a<rsub|i>+2|2>
   </equation*>
 
   Define
@@ -143,20 +151,21 @@
   prime powers. \ For the prime power <math|p<rsup|a>>
 
   <\equation*>
-    \<tau\><rsub|3><around*|(|p<rsup|<rsup|a>>|)>=<binom|a+2|a>
+    \<tau\><rsub|3><around*|(|p<rsup|<rsup|a>>|)>=<binom|a+2|2>
   </equation*>
 
   For <math|1\<leq\>a\<less\>3> the only cube <math|p<rsup|a>> is divisible
   by is <math|1<rsup|3>>
 
   <\equation*>
-    f<rsub|3><around*|(|p<rsup|a>|)>=\<mu\><around*|(|1|)>*\<tau\><rsub|3><around*|(|<frac|p<rsup|a>|1<rsup|3>>|)>=1\<cdot\>\<tau\><rsub|3><around*|(|p<rsup|a>|)>=<binom|a+2|a>,f<rsub|3><around*|(|p|)>=<binom|3|1>=3,f<rsub|3><around*|(|p<rsup|2>|)>=<binom|4|2>=6
+    f<rsub|3><around*|(|p<rsup|a>|)>=\<mu\><around*|(|1|)>*\<tau\><rsub|3><around*|(|<frac|p<rsup|a>|1<rsup|3>>|)>=1\<cdot\>\<tau\><rsub|3><around*|(|p<rsup|a>|)>=<binom|a+2|2>,f<rsub|3><around*|(|p|)>=<binom|3|2>=3,f<rsub|3><around*|(|p<rsup|2>|)>=<binom|4|2>=6
   </equation*>
 
   and so
 
   <\equation*>
-    f<rsub|3><around*|(|p<rsup|a>|)>=3*a\<nocomma\>,1\<leq\>a\<less\>3
+    f<rsub|3><around*|(|p<rsup|a>|)>=3*a\<nocomma\><space|1em>for all
+    1\<leq\>a\<less\>3
   </equation*>
 
   For <math|a\<geq\>3> <math|p<rsup|a>> is divisible by the cubes
@@ -166,19 +175,19 @@
   is not square-free. \ Therefore
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|f<rsub|3><around*|(|p<rsup|a>|)>>|<cell|=>|<cell|\<mu\><around*|(|1|)>*\<tau\><rsub|3><around*|(|<frac|p<rsup|a>|1<rsup|3>>|)>+\<mu\><around*|(|p|)>*\<tau\><rsub|3><around*|(|<frac|p<rsup|a>|p<rsup|3>>|)>>>|<row|<cell|>|<cell|=>|<cell|1\<cdot\>\<tau\><rsub|3><around*|(|p<rsup|a>|)>-1\<cdot\>\<tau\><rsub|3><around*|(|p<rsup|a-3>|)>>>|<row|<cell|>|<cell|=>|<cell|<binom|a+2|a>-<binom|a-1|a-3>>>|<row|<cell|>|<cell|=>|<cell|<frac|<around*|(|a+1|)>*<around*|(|a+2|)>|2>-<frac|<around*|(|a-2|)>*<around*|(|*a-1|)>|2>>>|<row|<cell|>|<cell|=>|<cell|3*a>>>>
+    <tformat|<table|<row|<cell|f<rsub|3><around*|(|p<rsup|a>|)>>|<cell|=>|<cell|\<mu\><around*|(|1|)>*\<tau\><rsub|3><around*|(|<frac|p<rsup|a>|1<rsup|3>>|)>+\<mu\><around*|(|p|)>*\<tau\><rsub|3><around*|(|<frac|p<rsup|a>|p<rsup|3>>|)>>>|<row|<cell|>|<cell|=>|<cell|1\<cdot\>\<tau\><rsub|3><around*|(|p<rsup|a>|)>-1\<cdot\>\<tau\><rsub|3><around*|(|p<rsup|a-3>|)>>>|<row|<cell|>|<cell|=>|<cell|<binom|a+2|2>-<binom|a-1|2>>>|<row|<cell|>|<cell|=>|<cell|<frac|<around*|(|a+1|)>*<around*|(|a+2|)>|2>-<frac|<around*|(|a-2|)>*<around*|(|*a-1|)>|2>>>|<row|<cell|>|<cell|=>|<cell|3*a>>>>
   </eqnarray*>
 
   because <math|\<mu\><around*|(|p|)>=-1> for <math|p> prime and so
 
   <\equation*>
-    f<rsub|3><around*|(|p<rsup|a>|)>=3*a,a\<geq\>3
+    f<rsub|3><around*|(|p<rsup|a>|)>=3*a<space|1em>for all a\<geq\>3
   </equation*>
 
   and combining these results
 
   <\equation*>
-    f<rsub|3><around*|(|p<rsup|a>|)>=3*a,a\<geq\>1
+    f<rsub|3><around*|(|p<rsup|a>|)>=3*a<space|1em>for all a\<geq\>1
   </equation*>
 
   Then using multiplicativity we obtain:
@@ -193,8 +202,8 @@
 
   <\equation*>
     f<rsub|3><around*|(|n|)>\<equiv\><choice|<tformat|<table|<row|<cell|1>|<cell|if
-    n=1>>|<row|<cell|3*a>|<cell|if n=p<rsup|a>>>|<row|<cell|0>|<cell|otherwise>>>>>
-    <around*|(|mod 9|)>
+    n=1>>|<row|<cell|3*a>|<cell|if n=p<rsup|a>>>|<row|<cell|0>|<cell|otherwise>>>>><space|1em><around*|(|mod
+    9|)>
   </equation*>
 
   Defining
@@ -322,8 +331,15 @@
   </eqnarray*>
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|\<pi\><around*|(|n|)>>|<cell|\<equiv\>>|<cell|\<pi\><rsub|3,odd><around*|(|n|)>+1
-    <around*|(|mod 3|)>,n\<geq\>2>>>>
+    <tformat|<table|<row|<cell|\<pi\><around*|(|n|)>>|<cell|\<equiv\>>|<cell|\<pi\><rsub|3,odd><around*|(|n|)>+1<space|1em><around*|(|mod
+    3|)><space|1em>for all n\<geq\>2>>>>
+  </eqnarray*>
+
+  or using the Iverson bracket
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|\<pi\><around*|(|n|)>>|<cell|\<equiv\>>|<cell|\<pi\><rsub|3,odd><around*|(|n|)>+<around*|[|n\<geq\>2|]><space|1em><around*|(|mod
+    3|)>>>>>
   </eqnarray*>
 
   <section|Simplifying Summation Expressions>

@@ -8,20 +8,66 @@ namespace Decompose.Numerics
 {
     public static partial class IntegerMath
     {
-        public static bool IsSquareFree<T>(IEnumerable<T> factors)
+        private static IFactorizationAlgorithm<int> factorerInt = new TrialDivisionFactorization();
+
+        public static bool IsSquareFree(int n)
         {
+            return Abs(Mobius(n)) == 1;
+        }
+
+        public static bool IsSquareFree(BigInteger n)
+        {
+            return Abs(Mobius(n)) == 1;
+        }
+
+        public static int LittleOmega(int n)
+        {
+            var factors = factorerInt.Factor(n).ToArray();
             return factors
                 .OrderBy(factor => factor)
                 .GroupBy(factor => factor)
-                .All(grouping => grouping.Count() < 2);
+                .Count();
         }
 
-        private static IFactorizationAlgorithm<int> factorerInt = new TrialDivisionFactorization();
+        public static BigInteger LittleOmega(BigInteger n)
+        {
+            if (n < int.MaxValue)
+                return LittleOmega((int)n);
+            throw new NotImplementedException();
+        }
+
+        public static int BigOmega(int n)
+        {
+            return factorerInt.Factor(n).Count();
+        }
+
+        public static BigInteger BigOmega(BigInteger n)
+        {
+            if (n < int.MaxValue)
+                return BigOmega((int)n);
+            throw new NotImplementedException();
+        }
+
+        public static int Liouville(int n)
+        {
+            return BigOmega(n) % 2 == 0 ? 1 : -1;
+        }
+
+        public static BigInteger Liouville(BigInteger n)
+        {
+            if (n < int.MaxValue)
+                return Liouville((int)n);
+            throw new NotImplementedException();
+        }
 
         public static int Mobius(int n)
         {
             var factors = factorerInt.Factor(n).ToArray();
-            if (!IsSquareFree(factors))
+            bool squareFree = factors
+                .OrderBy(factor => factor)
+                .GroupBy(factor => factor)
+                .All(grouping => grouping.Count() < 2);
+            if (!squareFree)
                 return 0;
             return factors.Length % 2 == 0 ? 1 : -1;
         }
@@ -89,6 +135,16 @@ namespace Decompose.Numerics
             if (n < int.MaxValue)
                 return NumberOfDivisors((int)n, i);
             throw new NotImplementedException();
+        }
+
+        public static int SumOfNumberOfDivisors(int n)
+        {
+            return SumOfNumberOfDivisors(n, 2);
+        }
+
+        public static BigInteger SumOfNumberOfDivisors(BigInteger n)
+        {
+            return SumOfNumberOfDivisors(n, 2);
         }
 
         public static int SumOfNumberOfDivisors(int n, int i)
