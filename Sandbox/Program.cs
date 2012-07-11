@@ -360,9 +360,10 @@ namespace Sandbox
             return result;
         }
 
-        static int P(int x, int p)
+        static int P(int x, int p, int a)
         {
-            return 2 * IntegerMath.SumOfNumberOfDivisors(x / p) - IntegerMath.SumOfNumberOfDivisors(x / (p * p));
+            var y = x / IntegerMath.Power(p, a);
+            return (a + 1) * IntegerMath.SumOfNumberOfDivisors(y) - a * IntegerMath.SumOfNumberOfDivisors(y / p);
         }
 
         static int P2(int x, int p)
@@ -370,34 +371,80 @@ namespace Sandbox
             return 3 * IntegerMath.SumOfNumberOfDivisors(x / (p * p)) - 2 * IntegerMath.SumOfNumberOfDivisors(x / (p * p * p));
         }
 
-        static int P(int x, int p, int q)
+        static int PQRecursive(int x, int p, int a, int q, int b)
         {
-            return P(x, p * q) - IntegerMath.SumOfNumberOfDivisors(x / (p * q));
+            var y = x / (IntegerMath.Power(p, a) * IntegerMath.Power(q, b));
+            if (y == 0)
+                return 0;
+            Console.WriteLine("x = {0}, p = {1}, a = {2}, q = {3}, b = {4}", x, p, a, q, b);
+            return (a + 1) * (b + 1)
+                * (IntegerMath.SumOfNumberOfDivisors(y) - P(y, p, 1) - P(y, q, 1) + PQRecursive(y, p, 1, q, 1))
+                + PQRecursive(x, p, a + 1, q, b) + PQRecursive(x, p, a, q, b + 1) - PQRecursive(x, p, a + 1, q, b + 1);
         }
 
         static int PQ(int x, int p, int a, int q, int b)
         {
-            var c = IntegerMath.Power(p, a) * IntegerMath.Power(q, b);
-            if (x < c)
-                return 0;
-            return (a + 1) * (b + 1)
-                * (IntegerMath.SumOfNumberOfDivisors(x / c) - P(x / c, p) - P(x / c, q) + PQ(x / c, p, 1, q, 1))
-                + PQ(x, p, a + 1, q, b) + PQ(x, p, a, q, b + 1) - PQ(x, p, a + 1, q, b + 1);
+            var y = x / (IntegerMath.Power(p, a) * IntegerMath.Power(q, b));
+            return (a + 1) * (b + 1) * IntegerMath.SumOfNumberOfDivisors(y)
+                - a * (b + 1) * IntegerMath.SumOfNumberOfDivisors(y / p)
+                - (a + 1) * b * IntegerMath.SumOfNumberOfDivisors(y / q)
+                + a * b * IntegerMath.SumOfNumberOfDivisors(y / (p * q));
+        }
+
+        class CoefficientMap
+        {
+            private Dictionary<Tuple<int, int>, int> map = new Dictionary<Tuple<int, int>, int>();
+
+            public int this[int a, int b]
+            {
+                get { return map.ContainsKey(Tuple.Create(a, b)) ? map[Tuple.Create(a, b)] : 0; }
+                set { map[Tuple.Create(a, b)] = value; }
+            }
+
+            public Dictionary<Tuple<int, int>, int> Map
+            {
+                get { return map; }
+            }
+        }
+
+        static void PQ(CoefficientMap map, int sign, int depth, int a0, int b0, int a, int b)
+        {
+            if (--depth == 0)
+                return;
+            var coef = sign * (a + 1) * (b + 1);
+            map[a0 + a, b0 + b] += coef;
+            map[a0 + a + 1, b0 + b] -= 2 * coef;
+            map[a0 + a + 2, b0 + b] += coef;
+            map[a0 + a, b + b0 + 1] -= 2 * coef;
+            map[a0 + a, b + b0 + 2] += coef;
+            PQ(map, coef, depth, a0 + a, b0 + b, 1, 1);
+            PQ(map, sign, depth, a0, b0, a + 1, b);
+            PQ(map, sign, depth, a0, b0, a, b + 1);
+            PQ(map, -sign, depth, a0, b0, a + 1, b + 1);
         }
 
         static void ParityTest()
         {
+#if false
+            var map = new CoefficientMap();
+            PQ(map, 1, 10, 0, 0, 1, 2);
+            foreach (var pair in map.Map.OrderBy(pair => pair.Key.Item1).ThenBy(pair => pair.Key.Item2))
+                Console.WriteLine("map[{0}, {1}] = {2}", pair.Key.Item1, pair.Key.Item2, pair.Value);
+#endif
+
 #if true
-            var p = 5;
-            var q = 7;
-            var d = p * q;
+            var p = 2;
+            var q = 3;
+            var a = 3;
+            var b = 2;
+            var d = IntegerMath.Power(p, a) * IntegerMath.Power(q, b);
             for (var x = 0; x <= 1000; x += d)
             {
                 var sum1 = 0;
                 for (var n = 1; n <= x / d; n++)
                     sum1 += IntegerMath.NumberOfDivisors(d * n);
                 var sum2 = 0;
-                sum2 += PQ(x, p, 1, q, 1);
+                sum2 += PQ(x, p, a, q, b);
                 var sum3 = 0;
                 var sum4 = 0;
                 Console.WriteLine("x = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}, sum4 = {4}", x, sum1, sum2, sum3, sum4);
