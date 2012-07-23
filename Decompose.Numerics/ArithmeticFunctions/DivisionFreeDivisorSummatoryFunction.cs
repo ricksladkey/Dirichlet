@@ -39,7 +39,7 @@ namespace Decompose.Numerics
             this.n = n;
             sum = 0;
             var xmax = (long)IntegerMath.FloorSquareRoot(n);
-            root6 = (long)IntegerMath.CeilingRoot(n, 6);
+            //root6 = (long)IntegerMath.CeilingRoot(n, 6);
             if (threads <= 1)
                 Evaluate(1, xmax);
             else

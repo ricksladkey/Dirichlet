@@ -4,69 +4,35 @@ using System.Linq;
 using System.Text;
 using System.Numerics;
 using System.Diagnostics;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace Decompose.Numerics
 {
     public class SquareFreeCounting
     {
-        private static BigInteger[] data10 = new BigInteger[]
+        private struct WorkItem
         {
-            BigInteger.Parse("1"),
-            BigInteger.Parse("7"),
-            BigInteger.Parse("61"),
-            BigInteger.Parse("608"),
-            BigInteger.Parse("6083"),
-            BigInteger.Parse("60794"),
-            BigInteger.Parse("607926"),
-            BigInteger.Parse("6079291"),
-            BigInteger.Parse("60792694"),
-            BigInteger.Parse("607927124"),
-            BigInteger.Parse("6079270942"),
-            BigInteger.Parse("60792710280"),
-            BigInteger.Parse("607927102274"),
-            BigInteger.Parse("6079271018294"),
-            BigInteger.Parse("60792710185947"),
-            BigInteger.Parse("607927101854103"),
-            BigInteger.Parse("6079271018540405"),
-            BigInteger.Parse("60792710185403794"),
-            BigInteger.Parse("607927101854022750"),
-            BigInteger.Parse("6079271018540280875"),
-            BigInteger.Parse("60792710185402613302"),
-            BigInteger.Parse("607927101854026645617"),
-            BigInteger.Parse("6079271018540266153468"),
-            BigInteger.Parse("60792710185402662868753"),
-            BigInteger.Parse("607927101854026628773299"),
-            BigInteger.Parse("6079271018540266286424910"),
-            BigInteger.Parse("60792710185402662866945299"),
-            BigInteger.Parse("607927101854026628664226541"),
-            BigInteger.Parse("6079271018540266286631251028"),
-            BigInteger.Parse("60792710185402662866327383816"),
-            BigInteger.Parse("607927101854026628663278087296"),
-            BigInteger.Parse("6079271018540266286632795633943"),
-            BigInteger.Parse("60792710185402662866327694188957"),
-            BigInteger.Parse("607927101854026628663276901540346"),
-            BigInteger.Parse("6079271018540266286632767883637220"),
-            BigInteger.Parse("60792710185402662866327677953999263"),
-            BigInteger.Parse("607927101854026628663276779463775476"),
-        };
-
-        public static BigInteger PowerOfTen(int n)
-        {
-            return data10[n];
+            public long Min;
+            public long Max;
         }
 
+        private const long maximumBatchSize = (long)1 << 20;
         private const long tmax = (long)1 << 62;
         private const long tmin = -tmax;
 
         private int threads;
+        private bool simple;
         private BigInteger n;
         private BigInteger sum;
-        private int sqrt;
-        private MobiusCollection mobius;
+        private long xmax;
+        private MobiusRange mobius;
 
-        public SquareFreeCounting(int threads)
+        public SquareFreeCounting(int threads, bool simple)
         {
             this.threads = threads;
+            this.simple = simple;
         }
 
         public BigInteger Evaluate(BigInteger n)
@@ -75,30 +41,63 @@ namespace Decompose.Numerics
             if (n == 1)
                 return 1;
             sum = 0;
-            sqrt = (int)IntegerMath.FloorSquareRoot(n);
-            mobius = new MobiusCollection(sqrt + 1, threads);
-#if false
-            EvaluateSlow(1, sqrt);
-#else
-            var x = S1(1, sqrt);
-            EvaluateSlow(1, x);
-#endif
+            xmax = (long)IntegerMath.FloorSquareRoot(n);
+            mobius = new MobiusRange(xmax + 1, 0);
+            if (threads <= 1)
+            {
+                var values = new sbyte[xmax + 1];
+                Evaluate(1, xmax, values);
+            }
+            else
+                EvaluateParallel(1, xmax);
             return sum;
         }
 
-        private void EvaluateSlow(long x1, long x2)
+        private void Evaluate(long x1, long x2, sbyte[] values)
         {
-            for (var x = x1; x <= x2; x++)
-            {
-                var mu = mobius[(int)x];
-                if (mu == 1)
-                    sum += n / ((long)x * x);
-                else if (mu == -1)
-                    sum -= n / ((long)x * x);
-            }
+            mobius.GetValues(x1, x2 + 1, values);
+            var x = x2;
+            if (!simple)
+                x = S1(x1, x, values);
+            x = S3(x1, x, values);
         }
 
-        private long S1(long x1, long x2)
+        private void EvaluateParallel(long xmin, long xmax)
+        {
+            // Create consumers.
+            var queue = new BlockingCollection<WorkItem>();
+            var consumers = threads;
+            var tasks = new Task[consumers];
+            for (var consumer = 0; consumer < consumers; consumer++)
+            {
+                var thread = consumer;
+                tasks[consumer] = Task.Factory.StartNew(() => ConsumeItems(thread, queue));
+            }
+
+            // Produce work items.
+            ProduceItems(queue, xmin, xmax);
+
+            // Wait for completion.
+            queue.CompleteAdding();
+            Task.WaitAll(tasks);
+        }
+
+        private void ProduceItems(BlockingCollection<WorkItem> queue, long imin, long imax)
+        {
+            var batchSize = Math.Min(maximumBatchSize, (imax - imin + 1 + threads - 1) / threads);
+            for (var i = imin; i <= imax; i += batchSize)
+                queue.Add(new WorkItem { Min = i, Max = Math.Min(i + batchSize - 1, imax) });
+        }
+
+        private void ConsumeItems(int thread, BlockingCollection<WorkItem> queue)
+        {
+            var values = new sbyte[maximumBatchSize];
+            var item = default(WorkItem);
+            while (queue.TryTake(out item, Timeout.Infinite))
+                Evaluate(item.Min, item.Max, values);
+        }
+
+        private long S1(long x1, long x2, sbyte[] values)
         {
             var s = (UInt128)n;
             var t = (long)0;
@@ -143,6 +142,13 @@ namespace Decompose.Numerics
                     {
                         ++alpha;
                         alphax += x;
+                        if (alphax <= beta)
+                        {
+                            ++alpha;
+                            alphax += x;
+                            if (alphax <= beta)
+                                break;
+                        }
                     }
                 }
 
@@ -152,7 +158,7 @@ namespace Decompose.Numerics
                 Debug.Assert(gamma == beta - (BigInteger)(x - 1) * delta);
                 Debug.Assert(alpha == n / ((BigInteger)x * x));
 
-                var mu = mobius[(int)x];
+                var mu = values[(int)(x - x1)];
                 if (mu == -1)
                     t -= alpha;
                 else if (mu == 1)
@@ -177,6 +183,21 @@ namespace Decompose.Numerics
             return x;
         }
 
+        private long S3(long x1, long x2, sbyte[] values)
+        {
+            var s = (BigInteger)0;
+            for (var x = x1; x <= x2; x++)
+            {
+                var mu = values[(int)(x - x1)];
+                if (mu == 1)
+                    s += n / ((long)x * x);
+                else if (mu == -1)
+                    s -= n / ((long)x * x);
+            }
+            AddToSum(s);
+            return x1 - 1;
+        }
+
         private void AddToSum(BigInteger s)
         {
             if (!s.IsZero)
@@ -184,6 +205,52 @@ namespace Decompose.Numerics
                 lock (this)
                     sum += s;
             }
+        }
+
+        private static BigInteger[] data10 = new BigInteger[]
+        {
+            BigInteger.Parse("1"),
+            BigInteger.Parse("7"),
+            BigInteger.Parse("61"),
+            BigInteger.Parse("608"),
+            BigInteger.Parse("6083"),
+            BigInteger.Parse("60794"),
+            BigInteger.Parse("607926"),
+            BigInteger.Parse("6079291"),
+            BigInteger.Parse("60792694"),
+            BigInteger.Parse("607927124"),
+            BigInteger.Parse("6079270942"),
+            BigInteger.Parse("60792710280"),
+            BigInteger.Parse("607927102274"),
+            BigInteger.Parse("6079271018294"),
+            BigInteger.Parse("60792710185947"),
+            BigInteger.Parse("607927101854103"),
+            BigInteger.Parse("6079271018540405"),
+            BigInteger.Parse("60792710185403794"),
+            BigInteger.Parse("607927101854022750"),
+            BigInteger.Parse("6079271018540280875"),
+            BigInteger.Parse("60792710185402613302"),
+            BigInteger.Parse("607927101854026645617"),
+            BigInteger.Parse("6079271018540266153468"),
+            BigInteger.Parse("60792710185402662868753"),
+            BigInteger.Parse("607927101854026628773299"),
+            BigInteger.Parse("6079271018540266286424910"),
+            BigInteger.Parse("60792710185402662866945299"),
+            BigInteger.Parse("607927101854026628664226541"),
+            BigInteger.Parse("6079271018540266286631251028"),
+            BigInteger.Parse("60792710185402662866327383816"),
+            BigInteger.Parse("607927101854026628663278087296"),
+            BigInteger.Parse("6079271018540266286632795633943"),
+            BigInteger.Parse("60792710185402662866327694188957"),
+            BigInteger.Parse("607927101854026628663276901540346"),
+            BigInteger.Parse("6079271018540266286632767883637220"),
+            BigInteger.Parse("60792710185402662866327677953999263"),
+            BigInteger.Parse("607927101854026628663276779463775476"),
+        };
+
+        public static BigInteger PowerOfTen(int n)
+        {
+            return data10[n];
         }
     }
 }
