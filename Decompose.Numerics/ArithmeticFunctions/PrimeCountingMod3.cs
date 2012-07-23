@@ -29,7 +29,6 @@ namespace Decompose.Numerics
             var jmax = IntegerMath.FloorLog(n, 2);
             var dmax = IntegerMath.FloorRoot(n, 3);
             mobius = new MobiusCollection((int)(IntegerMath.Max(jmax, dmax) + 1), 0);
-            //return Pi3Recursive(n);
             return Pi3(n);
         }
 
@@ -42,16 +41,6 @@ namespace Decompose.Numerics
                 if (k % 3 != 0 && mobius[k] != 0)
                     sum += k * mobius[k] * F3(IntegerMath.FloorRoot(n, k));
             }
-            return sum % 3;
-        }
-
-        public BigInteger Pi3Recursive(BigInteger n)
-        {
-            //Console.WriteLine("pi3({0})", n);
-            var kmax = IntegerMath.FloorLog(n, 2);
-            var sum = F3(n);
-            for (var k = 2; k <= kmax; k++)
-                sum -= (k % 3) * Pi3Recursive(IntegerMath.FloorRoot(n, k));
             return sum % 3;
         }
 

@@ -63,6 +63,11 @@
     mod 2|2>>>|<row|<cell|H<around*|(|u,v|)>>|<cell|=>|<cell|<around*|(|2*<around*|(|b<rsub|2>*<around*|(|u+c<rsub|1>|)>-b<rsub|1>*<around*|(|v+c<rsub|2>|)>|)>-1|)>*<around*|(|2*<around*|(|a<rsub|1>*<around*|(|*v+c<rsub|2>|)>-a<rsub|2>*<around*|(|u+c<rsub|1>|)>|)>-1|)>>>|<row|<cell|Y<rsub|tan><rsup|><around*|(|a|)>>|<cell|=>|<cell|T<rsub|1,odd><around*|(|<sqrt|<frac|n|a>>|)>>>|<row|<cell|Y<rsub|floor><around*|(|x|)>>|<cell|=>|<cell|T<rsub|1,odd><around*|(|<frac|n|2*x-1>|)>>>|<row|<cell|U<around*|(|v|)>>|<cell|=>|<cell|<frac|2*<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>|)>*<around*|(|v+c<rsub|2>|)>+a<rsub|2>-b<rsub|2>-<sqrt|<around*|(|2*<around*|(|v+c<rsub|2>|)>-a<rsub|2>-b<rsub|2>|)><rsup|2>-4*a<rsub|2>*b<rsub|2>*n>|4*a<rsub|2>*b<rsub|2>>-c<rsub|1>>>|<row|<cell|V<around*|(|u|)>>|<cell|=>|<cell|<frac|2*<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>|)>*<around*|(|u+c<rsub|1>|)>-a<rsub|1>+b<rsub|1>-<sqrt|<around*|(|2*<around*|(|u+c<rsub|1>|)>-a<rsub|1>-b<rsub|1>|)><rsup|2>-4*a<rsub|1>*b<rsub|1>*n>|4*a<rsub|1>*b<rsub|1>>-c<rsub|2>>>|<row|<cell|U<rsub|tan><around*|(|v|)>>|<cell|=>|<cell|<frac|<around*|(|a<rsub|1>+b<rsub|1>|)>*a<rsub|3>*b<rsub|3>+<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>+2*a<rsub|1>*b<rsub|1>|)>*<sqrt|a<rsub|3>*b<rsub|3>*n>|2*a<rsub|3>*b<rsub|3>>-c<rsub|1>>>|<row|<cell|>|<cell|=>|<cell|<frac|a<rsub|1>+b<rsub|1>+*<sqrt|<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>+2*a<rsub|1>*b<rsub|1>|)><rsup|2>*n/<around*|(|a<rsub|3>*b<rsub|3>|)>>|2>-c<rsub|1>>>>>
   </eqnarray*>
 
+  Although counter-intuitive, it may be benficial to multiply, e.g.,
+  <math|c<rsub|1>> by <math|4*a<rsub|2>*b*2> and subtract it from the
+  numerator of the first term in <math|U<around*|(|v|)>> before dividing in
+  order to reduce the magnitude of the dividend.
+
   <section|Prime Counting Function Modulo 3>
 
   The normal divisor function <math|\<tau\><around*|(|n|)>> (also known as
@@ -435,7 +440,7 @@
     m<rsup|3>=<around*|(|3*a+b|)><rsup|3>\<equiv\><choice|<tformat|<cwith|1|-1|3|3|cell-halign|r>|<table|<row|<cell|27*a<rsup|3>>|<cell|=>|<cell|0>|<cell|if
     b =0>>|<row|<cell|27a<rsup|3>+27*a<rsup|2>+9*a+1>|<cell|=>|<cell|1>|<cell|if
     b=1>>|<row|<cell|27*a<rsup|3>+54*a<rsup|2>+36*a+8>|<cell|=>|<cell|-1>|<cell|if
-    b=2>>>>> <around*|(|mod 9|)>
+    b=2>>>>><space|1em><around*|(|mod 9|)>
   </equation*>
 
   First simplify and isolate the expression.
@@ -456,8 +461,10 @@
   <\eqnarray*>
     <tformat|<table|<row|<cell|<big|sum><rsub|d\<leq\>m,d
     odd><rsup|m>\<mu\><around*|(|d|)><around*|\<lfloor\>|<frac|m+d|*2*d>|\<rfloor\>><rsup|3>>|<cell|=>|<cell|<big|sum><rsup|m><rsub|i=1>i<rsup|3>*<big|sum><rsup|<around*|\<lfloor\>|m/2*i-1|\<rfloor\>>><rsub|j=<around*|\<lfloor\>|m/<around*|(|2*i+1|)>|\<rfloor\>>+1,j
-    odd>\<mu\><around*|(|j|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsup|m><rsub|i=1>i<rsup|3>*<around*|(|M<rsub|odd><around*|(|<around*|\<lfloor\>|<frac|m|2*i-1>|\<rfloor\>>|)>-M<rsub|odd><around*|(|<around*|\<lfloor\>|<frac|m|2*i+1>|\<rfloor\>>|)>|)>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|
-    M<rsub|odd><around*|(|<frac|m|1>|)>-M<rsub|odd><around*|(|<frac|m|3>|)>-M<rsub|odd><around*|(|<frac|m|3>|)>+M<rsub|odd><around*|(|<frac|m|5>|)>>>|<row|<cell|>|<cell|+>|<cell|M<rsub|odd><around*|(|<frac|m|7>|)>-M<rsub|odd><around*|(|<frac|m|9>|)>-M<rsub|odd><around*|(|<frac|m|9>|)>+M<rsub|odd><around*|(|<frac|m|11>|)>>>|<row|<cell|>|<cell|+>|<cell|\<ldots\>.>>|<row|<cell|>|<cell|=>|<cell|
+    odd>\<mu\><around*|(|j|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsup|m><rsub|i=1>i<rsup|3>*<around*|(|M<rsub|odd><around*|(|<around*|\<lfloor\>|<frac|m|2*i-1>|\<rfloor\>>|)>-M<rsub|odd><around*|(|<around*|\<lfloor\>|<frac|m|2*i+1>|\<rfloor\>>|)>|)>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|1\<cdot\><around*|(|
+    M<rsub|odd><around*|(|<frac|m|1>|)>-M<rsub|odd><around*|(|<frac|m|3>|)>|)>-1\<cdot\><around*|(|M<rsub|odd><around*|(|<frac|m|3>|)>-M<rsub|odd><around*|(|<frac|m|5>|)>|)>>>|<row|<cell|>|<cell|>|<cell|0\<cdot\><around*|(|M<rsub|odd><around*|(|<frac|m|5>|)>-M<rsub|odd><around*|(|<frac|m|7>|)>|)>+\<ldots\><space|1em><around*|(|mod
+    9|)>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|
+    M<rsub|odd><around*|(|<frac|m|1>|)>-M<rsub|odd><around*|(|<frac|m|3>|)>-M<rsub|odd><around*|(|<frac|m|3>|)>+M<rsub|odd><around*|(|<frac|m|5>|)>>>|<row|<cell|>|<cell|+>|<cell|M<rsub|odd><around*|(|<frac|m|7>|)>-M<rsub|odd><around*|(|<frac|m|9>|)>-M<rsub|odd><around*|(|<frac|m|9>|)>+M<rsub|odd><around*|(|<frac|m|11>|)>>>|<row|<cell|>|<cell|+>|<cell|\<ldots\>.>>|<row|<cell|>|<cell|\<equiv\>>|<cell|
     M<rsub|odd><around*|(|<frac|m|1>|)>+M<rsub|odd><around*|(|<frac|m|3>|)>-3*M<rsub|odd><around*|(|<frac|m|3>|)>+M<rsub|odd><around*|(|<frac|m|5>|)>>>|<row|<cell|>|<cell|+>|<cell|M<rsub|odd><around*|(|<frac|m|7>|)>+M<rsub|odd><around*|(|<frac|m|9>|)>-3*M<rsub|odd><around*|(|<frac|m|9>|)>+M<rsub|odd><around*|(|<frac|m|11>|)>>>|<row|<cell|>|<cell|+>|<cell|\<ldots\>.>>|<row|<cell|>|<cell|\<equiv\>>|<cell|<big|sum><rsub|i\<leq\>m,i
     odd>M<rsub|odd><around*|(|<frac|m|i>|)>-<big|sum><rsub|i\<leq\>m/3,i
     odd>3*M<rsub|odd><around*|(|<frac|m|3*i>|)><rsub|>>>|<row|<cell|>|<cell|\<equiv\>>|<cell|<big|sum><rsub|i\<leq\>m,i
@@ -481,7 +488,7 @@
 
   <section|Division-Free Counting for Odd Divisors>
 
-  The division-free counting method is easily adapted to processing only odd
+  The division-free counting method is easily adapted to processing alternate
   indices.
 
   <\eqnarray*>

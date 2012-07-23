@@ -53,6 +53,7 @@
     <Compile Include="ArithmeticFunctions\IDivisorSummatoryFunction.cs" />
     <Compile Include="ArithmeticFunctions\MobiusCollection.cs" />
     <Compile Include="ArithmeticFunctions\MobiusRange.cs" />
+    <Compile Include="ArithmeticFunctions\PrimeCountingMod2.cs" />
     <Compile Include="ArithmeticFunctions\PrimeCountingOddMod3.cs" />
     <Compile Include="ArithmeticFunctions\PrimeCollection.cs" />
     <Compile Include="ArithmeticFunctions\PrimeCountingMod3.cs" />

@@ -366,29 +366,37 @@ namespace Sandbox
             return (a + 1) * IntegerMath.SumOfNumberOfDivisors(y) - a * IntegerMath.SumOfNumberOfDivisors(y / p);
         }
 
-        static int P2(int x, int p)
-        {
-            return 3 * IntegerMath.SumOfNumberOfDivisors(x / (p * p)) - 2 * IntegerMath.SumOfNumberOfDivisors(x / (p * p * p));
-        }
-
-        static int PQRecursive(int x, int p, int a, int q, int b)
-        {
-            var y = x / (IntegerMath.Power(p, a) * IntegerMath.Power(q, b));
-            if (y == 0)
-                return 0;
-            Console.WriteLine("x = {0}, p = {1}, a = {2}, q = {3}, b = {4}", x, p, a, q, b);
-            return (a + 1) * (b + 1)
-                * (IntegerMath.SumOfNumberOfDivisors(y) - P(y, p, 1) - P(y, q, 1) + PQRecursive(y, p, 1, q, 1))
-                + PQRecursive(x, p, a + 1, q, b) + PQRecursive(x, p, a, q, b + 1) - PQRecursive(x, p, a + 1, q, b + 1);
-        }
-
-        static int PQ(int x, int p, int a, int q, int b)
+        static int P(int x, int p, int a, int q, int b)
         {
             var y = x / (IntegerMath.Power(p, a) * IntegerMath.Power(q, b));
             return (a + 1) * (b + 1) * IntegerMath.SumOfNumberOfDivisors(y)
                 - a * (b + 1) * IntegerMath.SumOfNumberOfDivisors(y / p)
                 - (a + 1) * b * IntegerMath.SumOfNumberOfDivisors(y / q)
                 + a * b * IntegerMath.SumOfNumberOfDivisors(y / (p * q));
+        }
+
+        static int P(int x, int p, int a, int q, int b, int r, int c)
+        {
+            var y = x / (IntegerMath.Power(p, a) * IntegerMath.Power(q, b) * IntegerMath.Power(r, c));
+            return (a + 1) * (b + 1) * (c + 1) * IntegerMath.SumOfNumberOfDivisors(y)
+                - a * (b + 1) * (c + 1) * IntegerMath.SumOfNumberOfDivisors(y / p)
+                - (a + 1) * b * (c + 1) * IntegerMath.SumOfNumberOfDivisors(y / q)
+                - (a + 1) * (b + 1) * c * IntegerMath.SumOfNumberOfDivisors(y / r)
+                + a * b * (c + 1) * IntegerMath.SumOfNumberOfDivisors(y / (p * q))
+                + a * (b + 1) * c * IntegerMath.SumOfNumberOfDivisors(y / (p * r))
+                + (a + 1) * b * c * IntegerMath.SumOfNumberOfDivisors(y / (q * r))
+                - a * b * c * IntegerMath.SumOfNumberOfDivisors(y / (p * q * r));
+        }
+
+        static int PRecursive(int x, int p, int a, int q, int b)
+        {
+            var y = x / (IntegerMath.Power(p, a) * IntegerMath.Power(q, b));
+            if (y == 0)
+                return 0;
+            Console.WriteLine("x = {0}, p = {1}, a = {2}, q = {3}, b = {4}", x, p, a, q, b);
+            return (a + 1) * (b + 1)
+                * (IntegerMath.SumOfNumberOfDivisors(y) - P(y, p, 1) - P(y, q, 1) + PRecursive(y, p, 1, q, 1))
+                + PRecursive(x, p, a + 1, q, b) + PRecursive(x, p, a, q, b + 1) - PRecursive(x, p, a + 1, q, b + 1);
         }
 
         class CoefficientMap
@@ -407,7 +415,7 @@ namespace Sandbox
             }
         }
 
-        static void PQ(CoefficientMap map, int sign, int depth, int a0, int b0, int a, int b)
+        static void P(CoefficientMap map, int sign, int depth, int a0, int b0, int a, int b)
         {
             if (--depth == 0)
                 return;
@@ -415,16 +423,53 @@ namespace Sandbox
             map[a0 + a, b0 + b] += coef;
             map[a0 + a + 1, b0 + b] -= 2 * coef;
             map[a0 + a + 2, b0 + b] += coef;
-            map[a0 + a, b + b0 + 1] -= 2 * coef;
-            map[a0 + a, b + b0 + 2] += coef;
-            PQ(map, coef, depth, a0 + a, b0 + b, 1, 1);
-            PQ(map, sign, depth, a0, b0, a + 1, b);
-            PQ(map, sign, depth, a0, b0, a, b + 1);
-            PQ(map, -sign, depth, a0, b0, a + 1, b + 1);
+            map[a0 + a, b0 + b + 1] -= 2 * coef;
+            map[a0 + a, b0 + b + 2] += coef;
+            P(map, coef, depth, a0 + a, b0 + b, 1, 1);
+            P(map, sign, depth, a0, b0, a + 1, b);
+            P(map, sign, depth, a0, b0, a, b + 1);
+            P(map, -sign, depth, a0, b0, a + 1, b + 1);
         }
 
         static void ParityTest()
         {
+#if true
+            var algorithm = new SquareFreeCounting(8);
+            var timer = new Stopwatch();
+            for (var i = 18; i <= 18; i++)
+            {
+                var n = IntegerMath.Power((BigInteger)10, i);
+                var sum1 = SquareFreeCounting.PowerOfTen(i);
+                timer.Restart();
+                var sum2 = algorithm.Evaluate(n);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
+            }
+#endif
+
+#if false
+            var algorithm1 = new DivisionFreeDivisorSummatoryFunction(1, false, false);
+            var algorithm2 = new Divisors();
+            var n = 1000;
+            //var result = algorithm.primeCountingFunction(100);
+            var result1 = algorithm1.Evaluate(n) - 2 * n + 1;
+            var result2 = algorithm2.Evaluate(n);
+            var result3 = algorithm2.countdivisorsfast(n, 2, 2);
+            Console.WriteLine("n = 100, result1 = {0}, result2 = {1}, result3 = {2}", result1, result2, result3);
+#endif
+
+#if false
+            var n = 3;
+            var mu = new MobiusCollection(1000, 8);
+            var sqrt = IntegerMath.FloorSquareRoot(n);
+            var sum = 0;
+            for (var a = 1; a <= sqrt; a++)
+            {
+                sum += mu[a] * IntegerMath.SumOfNumberOfDivisors(n / (a * a), 3);
+            }
+            Console.WriteLine("n = {0}, sum = {1}", n, sum);
+#endif
+
 #if false
             var map = new CoefficientMap();
             PQ(map, 1, 10, 0, 0, 1, 2);
@@ -432,19 +477,21 @@ namespace Sandbox
                 Console.WriteLine("map[{0}, {1}] = {2}", pair.Key.Item1, pair.Key.Item2, pair.Value);
 #endif
 
-#if true
+#if false
             var p = 2;
             var q = 3;
-            var a = 3;
+            var r = 5;
+            var a = 2;
             var b = 2;
-            var d = IntegerMath.Power(p, a) * IntegerMath.Power(q, b);
-            for (var x = 0; x <= 1000; x += d)
+            var c = 2;
+            var d = IntegerMath.Power(p, a) * IntegerMath.Power(q, b) * IntegerMath.Power(r, c);
+            for (var x = 0; x <= 10000; x += d)
             {
                 var sum1 = 0;
                 for (var n = 1; n <= x / d; n++)
                     sum1 += IntegerMath.NumberOfDivisors(d * n);
                 var sum2 = 0;
-                sum2 += PQ(x, p, a, q, b);
+                sum2 += P(x, p, a, q, b, r, c);
                 var sum3 = 0;
                 var sum4 = 0;
                 Console.WriteLine("x = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}, sum4 = {4}", x, sum1, sum2, sum3, sum4);
@@ -974,17 +1021,6 @@ namespace Sandbox
                     smt -= IntegerMath.Binomial(i - 1, i - p);
                 Console.WriteLine("i = {0}, smt(i) = {1}, smt(i)%{2} = {3}", i, smt, p2, smt / p % p);
             }
-#endif
-
-#if false
-            var algorithm1 = new DivisionFreeDivisorSummatoryFunction(1, false);
-            var algorithm2 = new Divisors();
-            var n = 1000;
-            //var result = algorithm.primeCountingFunction(100);
-            var result1 = algorithm1.Evaluate(n) - 2 * n + 1;
-            var result2 = algorithm2.Evaluate(n);
-            var result3 = algorithm2.countdivisorsfast(n, 2, 2);
-            Console.WriteLine("n = 100, result1 = {0}, result2 = {1}, result3 = {2}", result1, result2, result3);
 #endif
 
 #if false

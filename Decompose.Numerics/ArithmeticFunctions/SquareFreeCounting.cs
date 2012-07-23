@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Numerics;
+using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
@@ -52,6 +53,137 @@ namespace Decompose.Numerics
         public static BigInteger PowerOfTen(int n)
         {
             return data10[n];
+        }
+
+        private const long tmax = (long)1 << 62;
+        private const long tmin = -tmax;
+
+        private int threads;
+        private BigInteger n;
+        private BigInteger sum;
+        private int sqrt;
+        private MobiusCollection mobius;
+
+        public SquareFreeCounting(int threads)
+        {
+            this.threads = threads;
+        }
+
+        public BigInteger Evaluate(BigInteger n)
+        {
+            this.n = n;
+            if (n == 1)
+                return 1;
+            sum = 0;
+            sqrt = (int)IntegerMath.FloorSquareRoot(n);
+            mobius = new MobiusCollection(sqrt + 1, threads);
+#if false
+            EvaluateSlow(1, sqrt);
+#else
+            var x = S1(1, sqrt);
+            EvaluateSlow(1, x);
+#endif
+            return sum;
+        }
+
+        private void EvaluateSlow(long x1, long x2)
+        {
+            for (var x = x1; x <= x2; x++)
+            {
+                var mu = mobius[(int)x];
+                if (mu == 1)
+                    sum += n / ((long)x * x);
+                else if (mu == -1)
+                    sum -= n / ((long)x * x);
+            }
+        }
+
+        private long S1(long x1, long x2)
+        {
+            var s = (UInt128)n;
+            var t = (long)0;
+            var x = x2;
+            var beta = (long)(n / (x + 1));
+            var eps = (long)(n % (x + 1));
+            var delta = (long)(n / x - beta);
+            var gamma = (long)beta - x * delta;
+            var alpha = beta / (x + 1);
+            var alphax = (alpha + 1) * (x + 1);
+            while (x >= x1)
+            {
+                eps += gamma;
+                if (eps >= x)
+                {
+                    ++delta;
+                    gamma -= x;
+                    eps -= x;
+                    if (eps >= x)
+                    {
+                        ++delta;
+                        gamma -= x;
+                        eps -= x;
+                        if (eps >= x)
+                            break;
+                    }
+                }
+                else if (eps < 0)
+                {
+                    --delta;
+                    gamma += x;
+                    eps += x;
+                }
+                gamma += delta + delta;
+                beta += delta;
+                alphax -= alpha + 1;
+                if (alphax <= beta)
+                {
+                    ++alpha;
+                    alphax += x;
+                    if (alphax <= beta)
+                    {
+                        ++alpha;
+                        alphax += x;
+                    }
+                }
+
+                Debug.Assert(eps == n % x);
+                Debug.Assert(beta == n / x);
+                Debug.Assert(delta == beta - n / (x + 1));
+                Debug.Assert(gamma == beta - (BigInteger)(x - 1) * delta);
+                Debug.Assert(alpha == n / ((BigInteger)x * x));
+
+                var mu = mobius[(int)x];
+                if (mu == -1)
+                    t -= alpha;
+                else if (mu == 1)
+                    t += alpha;
+                if (t > tmax)
+                {
+                    s += (ulong)t;
+                    t = 0;
+                }
+                else if (t < tmin)
+                {
+                    s -= (ulong)-t;
+                    t = 0;
+                }
+                --x;
+            }
+            if (t > 0)
+                s += (ulong)t;
+            else if (t < 0)
+                s -= (ulong)-t;
+            AddToSum(s < n ? -(n - s) : (s - n));
+            return x;
+        }
+
+        private void AddToSum(BigInteger s)
+        {
+            if (!s.IsZero)
+            {
+                lock (this)
+                    sum += s;
+            }
         }
     }
 }
