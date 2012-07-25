@@ -51,6 +51,7 @@
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunctionOdd.cs" />
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunctionOddGnuMP.cs" />
     <Compile Include="ArithmeticFunctions\IDivisorSummatoryFunction.cs" />
+    <Compile Include="ArithmeticFunctions\MertensRange.cs" />
     <Compile Include="ArithmeticFunctions\MobiusCollection.cs" />
     <Compile Include="ArithmeticFunctions\MobiusRange.cs" />
     <Compile Include="ArithmeticFunctions\PrimeCountingMod2.cs" />

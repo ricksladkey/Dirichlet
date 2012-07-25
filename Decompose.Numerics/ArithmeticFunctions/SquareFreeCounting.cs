@@ -46,7 +46,7 @@ namespace Decompose.Numerics
             var sqrt = (long)IntegerMath.FloorPower(n, 1, 2);
             imax = (long)IntegerMath.FloorRoot(n, 5) / C1;
             xmax = imax == 0 ? sqrt : Xi(imax);
-            mobius = new MobiusRange(sqrt + 1, 0);
+            mobius = new MobiusRange(xmax + 1, 0);
             if (threads <= 1)
             {
                 var values = new sbyte[xmax + 1];

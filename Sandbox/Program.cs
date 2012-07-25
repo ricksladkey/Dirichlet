@@ -448,7 +448,25 @@ namespace Sandbox
 #endif
 
 #if true
-            var n = (long)10000;
+            var timer = new Stopwatch();
+            for (var i = 12; i <= 12; i++)
+            {
+                var n = IntegerMath.Power((long)10, i);
+                var mertens = new MertensRange(new MobiusRange(n + 1, 8));
+                timer.Restart();
+                var sum1 = mertens.Evaluate(n);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#if false
+                var sum2 = IntegerMath.Mertens(n);
+#else
+                var sum2 = 0;
+#endif
+                Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
+            }
+#endif
+
+#if false
+            var n = (long)1000000;
             var mobius = new MobiusRange(n + 1, 8);
             var u = IntegerMath.FloorPower(n, 2, 3);
             var v = n / u;
@@ -468,16 +486,19 @@ namespace Sandbox
                 var s = (long)0;
                 var jmax = IntegerMath.FloorSquareRoot(ni);
                 var kmax = ni / jmax;
-                for (var j = 2; j <= jmax; j++)
-                {
-                    var y = i * j;
-                    if (y <= v)
-                        s += array[y];
-                    else
-                        s += m[ni / j];
-                }
+                var jmin = v / i;
+                var ijmax = jmin * i;
+                for (var ij = 2 * i; ij <= ijmax; ij += i)
+                    s += array[ij];
+                for (var j = jmin + 1; j <= jmax; j++)
+                    s += m[ni / j];
+                var current = ni;
                 for (var k = 1; k < kmax; k++)
-                    s += (ni / k - ni / (k + 1)) * m[k];
+                {
+                    var next = ni / (k + 1);
+                    s += (current - next) * m[k];
+                    current = next;
+                }
                 array[i] = 1 - s;
             }
             var sum1 = array[1];
