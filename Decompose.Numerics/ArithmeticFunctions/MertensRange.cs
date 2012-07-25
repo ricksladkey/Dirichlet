@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Numerics;
+using System.Threading.Tasks;
 
 namespace Decompose.Numerics
 {
@@ -33,29 +34,56 @@ namespace Decompose.Numerics
 
         public long Evaluate(long n)
         {
+            var threads = mobius.Threads;
             var v = Math.Max(1, n / u);
+            if (threads <= 1)
+            {
+                for (var i = 1; i <= v; i++)
+                    UpdateMx(n, v, i);
+            }
+            else
+            {
+                var batchSize = (v + threads - 1) / threads;
+                var tasks = new Task[threads];
+                for (var thread = 0; thread < threads; thread++)
+                {
+                    var offset = thread + 1;
+                    tasks[thread] = Task.Factory.StartNew(() =>
+                        {
+                            for (var i = offset; i <= v; i += threads)
+                                UpdateMx(n, v, i);
+                        });
+                }
+                Task.WaitAll(tasks);
+            }
             for (var i = v; i >= 1; i--)
             {
-                var ni = n / i;
                 var s = (long)0;
-                var jmax = IntegerMath.FloorSquareRoot(ni);
-                var kmax = ni / jmax;
-                var jmin = v / i;
-                var ijmax = jmin * i;
+                var ijmax = v / i * i;
                 for (var ij = 2 * i; ij <= ijmax; ij += i)
                     s += mx[ij];
-                for (var j = jmin + 1; j <= jmax; j++)
-                    s += m[ni / j];
-                var current = ni;
-                for (var k = 1; k < kmax; k++)
-                {
-                    var next = ni / (k + 1);
-                    s += (current - next) * m[k];
-                    current = next;
-                }
-                mx[i] = 1 - s;
+                mx[i] -= s;
             }
             return mx[1];
+        }
+
+        private void UpdateMx(long n, long v, long i)
+        {
+            var ni = n / i;
+            var s = (long)0;
+            var jmax = IntegerMath.FloorSquareRoot(ni);
+            var kmax = ni / jmax;
+            var jmin = v / i;
+            for (var j = jmin + 1; j <= jmax; j++)
+                s += m[ni / j];
+            var current = ni;
+            for (var k = 1; k < kmax; k++)
+            {
+                var next = ni / (k + 1);
+                s += (current - next) * m[k];
+                current = next;
+            }
+            mx[i] = 1 - s;
         }
     }
 }

@@ -449,7 +449,7 @@ namespace Sandbox
 
 #if true
             var timer = new Stopwatch();
-            for (var i = 12; i <= 12; i++)
+            for (var i = 1; i <= 12; i++)
             {
                 var n = IntegerMath.Power((long)10, i);
                 var mertens = new MertensRange(new MobiusRange(n + 1, 8));

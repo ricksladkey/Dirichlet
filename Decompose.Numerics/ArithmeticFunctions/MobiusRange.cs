@@ -33,6 +33,7 @@ namespace Decompose.Numerics
         private ConcurrentQueue<Data> queue;
 
         public long Size { get { return size; } }
+        public int Threads { get { return threads; } }
 
         public MobiusRange(long size, int threads)
         {
