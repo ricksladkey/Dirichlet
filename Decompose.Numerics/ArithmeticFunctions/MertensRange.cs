@@ -10,7 +10,9 @@ namespace Decompose.Numerics
     public class MertensRange
     {
         private MobiusRange mobius;
+        private long n;
         private long u;
+        private long imax;
         private long[] m;
         private long[] mx;
 
@@ -34,46 +36,39 @@ namespace Decompose.Numerics
 
         public long Evaluate(long n)
         {
+            this.n = n;
+            imax = Math.Max(1, n / u);
             var threads = mobius.Threads;
-            var v = Math.Max(1, n / u);
             if (threads <= 1)
             {
-                for (var i = 1; i <= v; i++)
-                    UpdateMx(n, v, i);
+                for (var i = 1; i <= imax; i++)
+                    UpdateMx(i);
             }
             else
             {
-                var batchSize = (v + threads - 1) / threads;
                 var tasks = new Task[threads];
                 for (var thread = 0; thread < threads; thread++)
                 {
                     var offset = thread + 1;
                     tasks[thread] = Task.Factory.StartNew(() =>
                         {
-                            for (var i = offset; i <= v; i += threads)
-                                UpdateMx(n, v, i);
+                            for (var i = offset; i <= imax; i += threads)
+                                UpdateMx(i);
                         });
                 }
                 Task.WaitAll(tasks);
             }
-            for (var i = v; i >= 1; i--)
-            {
-                var s = (long)0;
-                var ijmax = v / i * i;
-                for (var ij = 2 * i; ij <= ijmax; ij += i)
-                    s += mx[ij];
-                mx[i] -= s;
-            }
+            ComputeMx();
             return mx[1];
         }
 
-        private void UpdateMx(long n, long v, long i)
+        private void UpdateMx(long i)
         {
             var ni = n / i;
             var s = (long)0;
             var jmax = IntegerMath.FloorSquareRoot(ni);
             var kmax = ni / jmax;
-            var jmin = v / i;
+            var jmin = imax / i;
             for (var j = jmin + 1; j <= jmax; j++)
                 s += m[ni / j];
             var current = ni;
@@ -84,6 +79,18 @@ namespace Decompose.Numerics
                 current = next;
             }
             mx[i] = 1 - s;
+        }
+
+        private void ComputeMx()
+        {
+            for (var i = imax; i >= 1; i--)
+            {
+                var s = (long)0;
+                var ijmax = imax / i * i;
+                for (var ij = 2 * i; ij <= ijmax; ij += i)
+                    s += mx[ij];
+                mx[i] -= s;
+            }
         }
     }
 }

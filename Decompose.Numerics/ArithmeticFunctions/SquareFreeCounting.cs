@@ -43,9 +43,8 @@ namespace Decompose.Numerics
             if (n == 1)
                 return 1;
             sum = 0;
-            var sqrt = (long)IntegerMath.FloorPower(n, 1, 2);
             imax = (long)IntegerMath.FloorRoot(n, 5) / C1;
-            xmax = imax == 0 ? sqrt : Xi(imax);
+            xmax = imax != 0 ? Xi(imax) : (long)IntegerMath.FloorPower(n, 1, 2);
             mobius = new MobiusRange(xmax + 1, 0);
             if (threads <= 1)
             {

@@ -221,35 +221,6 @@ namespace Decompose.Numerics
             return IntegerMath.ModularQuotient(n.Numerator, n.Denominator, p);
         }
 
-#if false
-        public static int FloorSquareRoot(int n)
-        {
-            return (int)Math.Floor(Math.Sqrt(n));
-        }
-
-        public static uint FloorSquareRoot(uint n)
-        {
-            return (uint)Math.Floor(Math.Sqrt(n));
-        }
-
-        public static long FloorSquareRoot(long n)
-        {
-            return (long)Math.Floor(Math.Sqrt(n));
-        }
-
-        public static ulong FloorSquareRoot(ulong n)
-        {
-            return (ulong)Math.Floor(Math.Sqrt(n));
-        }
-
-        private static ISqrtAlgorithm<BigInteger> sqrt = new SqrtNewtonsMethod();
-
-        public static BigInteger FloorSquareRoot(BigInteger n)
-        {
-            return sqrt.Sqrt(n);
-        }
-#endif
-
         public static int GetDigitLength(BigInteger n, int b)
         {
             return (int)Math.Ceiling(BigInteger.Log(n, b));

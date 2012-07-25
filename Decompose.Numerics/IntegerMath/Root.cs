@@ -12,8 +12,56 @@ namespace Decompose.Numerics
         private static double log2 = Math.Log(2);
 
         private const int maxRepShift = 53;
-        private static readonly ulong maxRep = (ulong)1 << maxRepShift;
+        private static readonly long maxRep = (long)1 << maxRepShift;
         private static readonly BigInteger maxRepSquared = (BigInteger)maxRep * maxRep;
+
+        public static int FloorSquareRoot(int n)
+        {
+            return (int)Math.Floor(Math.Sqrt(n));
+        }
+
+        public static uint FloorSquareRoot(uint n)
+        {
+            return (uint)Math.Floor(Math.Sqrt(n));
+        }
+
+        public static long FloorSquareRoot(long a)
+        {
+            if (a <= maxRep)
+                return (long)Math.Floor(Math.Sqrt((double)a));
+            var s = (long)Math.Floor(Math.Sqrt((double)a));
+            var r = a - s * s;
+            if (r < 0)
+                --s;
+            else if (r > (s << 1)) // r >= 2 * s + 1
+                ++s;
+            Debug.Assert(FloorSquareRoot<BigInteger>(a) == s);
+            return s;
+        }
+
+        public static long CeilingSquareRoot(long a)
+        {
+            if (a <= maxRep)
+                return (long)Math.Ceiling(Math.Sqrt((double)a));
+            var s = (long)Math.Ceiling(Math.Sqrt((double)a));
+            var r = s * s - a;
+            if (r < 0)
+                ++s;
+            else if (r > (s << 1)) // r >= 2 * s + 1
+                --s;
+            Debug.Assert(CeilingSquareRoot<BigInteger>(a) == s);
+            return s;
+        }
+
+        public static ulong FloorSquareRoot(ulong a)
+        {
+            return (ulong)FloorSquareRoot((long)a);
+        }
+
+        public static ulong CeilingSquareRoot(ulong a)
+        {
+            return (ulong)CeilingSquareRoot((long)a);
+        }
 
         public static BigInteger FloorSquareRoot(BigInteger a)
         {
