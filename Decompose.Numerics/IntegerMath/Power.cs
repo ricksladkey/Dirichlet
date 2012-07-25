@@ -150,5 +150,29 @@ namespace Decompose.Numerics
                 return Power((BigInteger)value, exponent);
             return new Rational(Power(value.Numerator, exponent), Power(value.Denominator, exponent));
         }
+
+        public static BigInteger FloorPower(BigInteger value, BigInteger numerator, BigInteger denominator)
+        {
+            if (denominator.IsOne)
+                return Power(value, numerator);
+            return FloorRoot(Power(value, numerator), denominator);
+        }
+
+        public static BigInteger CeilingPower(BigInteger value, BigInteger numerator, BigInteger denominator)
+        {
+            if (denominator.IsOne)
+                return Power(value, numerator);
+            return CeilingRoot(Power(value, numerator), denominator);
+        }
+
+        public static BigInteger FloorPower(BigInteger value, Rational exponent)
+        {
+            return FloorPower(value, exponent.Numerator, exponent.Denominator);
+        }
+
+        public static BigInteger CeilingPower(BigInteger value, Rational exponent)
+        {
+            return CeilingPower(value, exponent.Numerator, exponent.Denominator);
+        }
     }
 }

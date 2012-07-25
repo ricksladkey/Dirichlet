@@ -436,7 +436,7 @@ namespace Sandbox
 #if true
             var algorithm = new SquareFreeCounting(8, false);
             var timer = new Stopwatch();
-            for (var i = 18; i <= 20; i++)
+            for (var i = 6; i <= 10; i++)
             {
                 var n = IntegerMath.Power((BigInteger)10, i);
                 var sum1 = SquareFreeCounting.PowerOfTen(i);

@@ -25,8 +25,9 @@ namespace Decompose.Numerics
         private int threads;
         private bool simple;
         private BigInteger n;
-        private BigInteger sum;
+        private long imax;
         private long xmax;
+        private BigInteger sum;
         private MobiusRange mobius;
 
         public SquareFreeCounting(int threads, bool simple)
@@ -41,8 +42,10 @@ namespace Decompose.Numerics
             if (n == 1)
                 return 1;
             sum = 0;
-            xmax = (long)IntegerMath.FloorSquareRoot(n);
-            mobius = new MobiusRange(xmax + 1, 0);
+            var sqrt = (long)IntegerMath.FloorPower(n, 1, 2);
+            imax = (long)IntegerMath.FloorRoot(n, 5);
+            xmax = Xi(imax);
+            mobius = new MobiusRange(sqrt + 1, 0);
             if (threads <= 1)
             {
                 var values = new sbyte[xmax + 1];
@@ -50,7 +53,58 @@ namespace Decompose.Numerics
             }
             else
                 EvaluateParallel(1, xmax);
+            EvaluateTail(imax);
             return sum;
+        }
+
+        private void EvaluateTail(long imax)
+        {
+            var m = new long[xmax + 1];
+            ComputeM(m);
+            var mx = new long[imax + 1];
+            ComputeMx(m, mx);
+
+            var s = (BigInteger)0;
+            for (var i = 1; i < imax; i++)
+                s += mx[i];
+            s -= (imax - 1) * mx[imax];
+            AddToSum(s);
+        }
+
+        private long Xi(long i)
+        {
+            return (long)IntegerMath.FloorSquareRoot(n / i);
+        }
+
+        private void ComputeM(long[] m)
+        {
+            var values = new sbyte[m.Length];
+            mobius.GetValues(0, m.Length, values);
+            var s = (long)0;
+            for (int i = 0; i < m.Length; i++)
+            {
+                s += values[i];
+                m[i] = s;
+                Debug.Assert(m[i] == IntegerMath.Mertens(i));
+            }
+        }
+
+        private void ComputeMx(long[] m, long[] mx)
+        {
+            for (var i = imax; i >= 1; i--)
+            {
+                var xi = Xi(i);
+                var s = (long)1;
+                for (var d = 2; d <= xi; d++)
+                {
+                    var k = xi / d;
+                    if (k <= m.Length)
+                        s -= m[k];
+                    else
+                        s -= mx[d * d * i];
+                }
+                mx[i] = s;
+            }
         }
 
         private void Evaluate(long x1, long x2, sbyte[] values)
@@ -143,12 +197,7 @@ namespace Decompose.Numerics
                         ++alpha;
                         alphax += x;
                         if (alphax <= beta)
-                        {
-                            ++alpha;
-                            alphax += x;
-                            if (alphax <= beta)
-                                break;
-                        }
+                            break;
                     }
                 }
 
@@ -158,7 +207,7 @@ namespace Decompose.Numerics
                 Debug.Assert(gamma == beta - (BigInteger)(x - 1) * delta);
                 Debug.Assert(alpha == n / ((BigInteger)x * x));
 
-                var mu = values[(int)(x - x1)];
+                var mu = values[x - x1];
                 if (mu == -1)
                     t -= alpha;
                 else if (mu == 1)
@@ -188,7 +237,7 @@ namespace Decompose.Numerics
             var s = (BigInteger)0;
             for (var x = x1; x <= x2; x++)
             {
-                var mu = values[(int)(x - x1)];
+                var mu = values[x - x1];
                 if (mu == 1)
                     s += n / ((long)x * x);
                 else if (mu == -1)
