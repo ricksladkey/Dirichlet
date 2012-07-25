@@ -433,7 +433,7 @@ namespace Sandbox
 
         static void ParityTest()
         {
-#if true
+#if false
             var algorithm = new SquareFreeCounting(8, false);
             var timer = new Stopwatch();
             for (var i = 18; i <= 24; i++)
@@ -445,6 +445,44 @@ namespace Sandbox
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
                 Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
             }
+#endif
+
+#if true
+            var n = (long)10000;
+            var mobius = new MobiusRange(n + 1, 8);
+            var u = IntegerMath.FloorPower(n, 2, 3);
+            var v = n / u;
+            var array = new long[v + 1];
+            var m = new long[u + 1];
+            var values = new sbyte[u + 1];
+            mobius.GetValues(0, u + 1, values);
+            var t = (long)0;
+            for (var i = 0; i <= u; i++)
+            {
+                t += values[i];
+                m[i] = t;
+            }
+            for (var i = v; i >= 1; i--)
+            {
+                var ni = n / i;
+                var s = (long)0;
+                var jmax = IntegerMath.FloorSquareRoot(ni);
+                var kmax = ni / jmax;
+                for (var j = 2; j <= jmax; j++)
+                {
+                    var y = i * j;
+                    if (y <= v)
+                        s += array[y];
+                    else
+                        s += m[ni / j];
+                }
+                for (var k = 1; k < kmax; k++)
+                    s += (ni / k - ni / (k + 1)) * m[k];
+                array[i] = 1 - s;
+            }
+            var sum1 = array[1];
+            var sum2 = IntegerMath.Mertens(n);
+            Console.WriteLine("n = {0}, sum1 = {1}, sum2 = {2}", n, sum1, sum2);
 #endif
 
 #if false

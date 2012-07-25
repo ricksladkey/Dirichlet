@@ -151,6 +151,30 @@ namespace Decompose.Numerics
             return new Rational(Power(value.Numerator, exponent), Power(value.Denominator, exponent));
         }
 
+        public static long FloorPower(long value, long numerator, long denominator)
+        {
+            if (denominator == 1)
+                return Power(value, numerator);
+            return FloorRoot(Power(value, numerator), denominator);
+        }
+
+        public static long CeilingPower(long value, long numerator, long denominator)
+        {
+            if (denominator == 1)
+                return Power(value, numerator);
+            return CeilingRoot(Power(value, numerator), denominator);
+        }
+
+        public static long FloorPower(long value, Rational exponent)
+        {
+            return FloorPower(value, (long)exponent.Numerator, (long)exponent.Denominator);
+        }
+
+        public static long CeilingPower(long value, Rational exponent)
+        {
+            return CeilingPower(value, (long)exponent.Numerator, (long)exponent.Denominator);
+        }
+
         public static BigInteger FloorPower(BigInteger value, BigInteger numerator, BigInteger denominator)
         {
             if (denominator.IsOne)
