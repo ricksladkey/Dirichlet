@@ -936,7 +936,36 @@
   </eqnarray*>
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|<big|sum><rsub|d\<leq\>n>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|n|d<rsup|2>>|\<rfloor\>>>|<cell|=>|<cell|<big|sum><rsub|d\<leq\><sqrt|2*n|3>>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|n|d<rsup|2>>|\<rfloor\>>+<big|sum><rsub|i\<leq\><sqrt|n/4|3>>i*<around*|(|M<around*|(|<sqrt|<frac|n|i>>|)>-M<around*|(|<sqrt|<frac|n|i+1>>|)>|)>>>>>
+    <tformat|<table|<row|<cell|<big|sum><rsub|d\<leq\><sqrt|n>>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|n|d<rsup|2>>|\<rfloor\>>>|<cell|=>|<cell|<big|sum><rsub|d\<leq\>d<rsub|1>>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|n|d<rsup|2>>|\<rfloor\>>+<big|sum><rsub|i\<less\>n/d<rsub|1><rsup|2>>i*<around*|(|M<around*|(|<sqrt|<frac|n|i>>|)>-M<around*|(|<sqrt|<frac|n|i+1>>|)>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|d\<leq\>d<rsub|1>>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|n|d<rsup|2>>|\<rfloor\>>+<big|sum><rsub|i\<less\>n/d<rsub|1><rsup|2>-1>M<around*|(|<sqrt|<frac|n|i>>|)>-<around*|\<lfloor\>|<frac|n|d<rsub|1><rsup|2>>-1|\<rfloor\>>M<around*|(|<sqrt|<frac|n|i+1>>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|d\<leq\>d<rsub|1>>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|n|d<rsup|2>>|\<rfloor\>>+<big|sum><rsub|i\<less\>n/d<rsub|1><rsup|2>-1><around*|(|1-<big|sum><rsub|d\<geq\>2>M<around*|(|<frac|<sqrt|<frac|n|i>>|d>|)>|)>-<around*|\<lfloor\>|<frac|n|d<rsub|1><rsup|2>>-1|\<rfloor\>>M<around*|(|<sqrt|<frac|n|i+1>>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|d\<leq\>d<rsub|1>>\<mu\><around*|(|d|)>*<around*|\<lfloor\>|<frac|n|d<rsup|2>>|\<rfloor\>>+n/d<rsub|1><rsup|2>-2-<big|sum><rsub|i\<less\>n/d<rsub|1><rsup|2>-1><big|sum><rsub|d\<geq\>2>M<around*|(|<sqrt|<frac|n|d<rsup|2>*i>>|)>-<around*|\<lfloor\>|<frac|n|d<rsub|1><rsup|2>>-1|\<rfloor\>>M<around*|(|<sqrt|<frac|n|i+1>>|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|i\<less\>I><big|sum><rsub|2\<leq\>d\<leq\><sqrt|n/i>>M<around*|(|<sqrt|<frac|n|d<rsup|2>*i>>|)>>|<cell|=>|<cell|M<around*|(|<sqrt|<frac|n|2<rsup|2>>>|)>+M<around*|(|<sqrt|<frac|n|3<rsup|2>>>|)>+\<ldots\>+M<around*|(|<sqrt|<frac|n|<sqrt|n><rsup|2>>>|)>>>|<row|<cell|>|<cell|+>|<cell|M<around*|(|<sqrt|<frac|n|2*2<rsup|2>>>|)>+M<around*|(|<sqrt|<frac|n|2*3<rsup|2>>>|)>+\<ldots\>+M<around*|(|<sqrt|<frac|n|2*<sqrt|n/2><rsup|2>>>|)>>>|<row|<cell|>|<cell|>|<cell|>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|x\<leq\><sqrt|n>>\<mu\><around*|(|x|)>*T<around*|(|<frac|n|x<rsup|2>>|)>>|<cell|=>|<cell|<big|sum><rsub|x\<leq\>n<rsup|2/7>>\<mu\><around*|(|x|)>*T<around*|(|<frac|n|x<rsup|2>>|)>>>|<row|<cell|>|<cell|+>|<cell|<big|sum><rsub|n<rsup|2/7>\<less\>x\<leq\>n<rsup|2/5>>\<mu\><around*|(|x|)>*<around*|[|T<around*|(|<frac|n|<around*|(|x-1|)><rsup|2>>|)>-<big|sum><rsub|n/x<rsup|2>\<leq\>u\<less\>n/<around*|(|x-1|)><rsup|2>>\<tau\><around*|(|u|)>|]>>>|<row|<cell|>|<cell|+>|<cell|<big|sum><rsub|k\<leq\>n<rsup|1/5>>T<around*|(|k|)>*<around*|(|M<around*|(|<sqrt|<frac|n|k>>|)>-M<around*|(|<sqrt|<frac|n|k+1>>|)>|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|k\<leq\>n<rsup|1/5>>T<around*|(|k|)>*<around*|(|M<around*|(|<sqrt|<frac|n|k>>|)>-M<around*|(|<sqrt|<frac|n|k+1>>|)>|)>>|<cell|=>|<cell|T<around*|(|1|)>*M<around*|(|<sqrt|n>|)>>>|<row|<cell|>|<cell|->|<cell|T<around*|(|1|)>*M<around*|(|<sqrt|<frac|n|2>>|)>+T<around*|(|2|)>*M<around*|(|<sqrt|<frac|n|2>>|)>>>|<row|<cell|>|<cell|->|<cell|\<ldots\>>>|<row|<cell|>|<cell|->|<cell|T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|<sqrt|n>|)>>>|<row|<cell|>|<cell|+>|<cell|<around*|(|T<around*|(|2|)>-T<around*|(|1|)>|)>*M<around*|(|<sqrt|<frac|n|2>>|)>>>|<row|<cell|>|<cell|->|<cell|T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|<sqrt|n>|)>+\<tau\><around*|(|2|)>*M<around*|(|<sqrt|<frac|n|2>>|)>+\<ldots\>-T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)><with|font-series|bold|>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|k\<less\>n<rsup|1/5>>\<tau\><around*|(|k|)>*M<around*|(|<sqrt|<frac|n|k>>|)>+M<around*|(|<sqrt|n>|)>-T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|k\<less\>n<rsup|1/5>>\<tau\><around*|(|k|)>*M<rprime|'><around*|(|k|)>+M<rprime|'><around*|(|1|)>-T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>>>
+  </eqnarray*>
+
+  Calculating a function over a sequence of integers with ascending divisors
+  in square-root time.
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|j=a><rsup|n>f<around*|(|<around*|\<lfloor\>|<frac|n|j>|\<rfloor\>>|)>>|<cell|=>|<cell|<big|sum><rsub|j=a><rsup|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>>f<around*|(|<around*|\<lfloor\>|<frac|n|j>|\<rfloor\>>|)>+<big|sum><rsub|j=1><rsup|<around*|\<lfloor\>|n/<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>|\<rfloor\>>-1><around*|(|<around*|\<lfloor\>|<frac|n|j>|\<rfloor\>>-<around*|\<lfloor\>|<frac|n|j+1>|\<rfloor\>>|)>*f<around*|(|j|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|m\<leq\>n,m
+    odd>M<around*|(|<frac|n|m>|)>>|<cell|=>|<cell|0<space|1em><around*|(|n\<geq\>2|)>>>|<row|<cell|M<around*|(|n|)>>|<cell|=>|<cell|-<big|sum><rsub|3\<leq\>m\<leq\>n,m
+    odd>\<Mu\><around*|(|<frac|n|m>|)>>>|<row|<cell|>|<cell|=>|<cell|-<big|sum><rsub|2\<leq\>m\<leq\>n/2>M<around*|(|<frac|n|2*m-1>|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|M<rprime|'><around*|(|k|)>>|<cell|=>|<cell|M<around*|(|<sqrt|<frac|n|k>>|)>=M<around*|(|m|)>>>|<row|<cell|>|<cell|=>|<cell|1-<big|sum><rsub|j\<geq\>2>M<around*|(|<sqrt|<frac|n|j<rsup|2>*k>>|)>>>|<row|<cell|>|<cell|=>|<cell|1-<big|sum><rsub|j\<geq\>2,d>M<rprime|'><around*|(|j<rsup|2>k|)>>>|<row|<cell|>|<cell|=>|<cell|1-<big|sum><rsup|<around*|\<lfloor\>|<sqrt|m>|\<rfloor\>>><rsub|j=2>M<rprime|'><around*|(|j<rsup|2>k|)>-<big|sum><rsup|<around*|\<lfloor\>|m/<around*|\<lfloor\>|<sqrt|m>|\<rfloor\>>|\<rfloor\>>-1><rsub|j=1><around*|(|<around*|\<lfloor\>|<frac|m|j>|\<rfloor\>>-<around*|\<lfloor\>|<frac|m|j+1>|\<rfloor\>>|)>*M<around*|(|j|)>>>>>
   </eqnarray*>
 </body>
 

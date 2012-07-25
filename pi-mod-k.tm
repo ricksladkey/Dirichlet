@@ -63,10 +63,11 @@
     mod 2|2>>>|<row|<cell|H<around*|(|u,v|)>>|<cell|=>|<cell|<around*|(|2*<around*|(|b<rsub|2>*<around*|(|u+c<rsub|1>|)>-b<rsub|1>*<around*|(|v+c<rsub|2>|)>|)>-1|)>*<around*|(|2*<around*|(|a<rsub|1>*<around*|(|*v+c<rsub|2>|)>-a<rsub|2>*<around*|(|u+c<rsub|1>|)>|)>-1|)>>>|<row|<cell|Y<rsub|tan><rsup|><around*|(|a|)>>|<cell|=>|<cell|T<rsub|1,odd><around*|(|<sqrt|<frac|n|a>>|)>>>|<row|<cell|Y<rsub|floor><around*|(|x|)>>|<cell|=>|<cell|T<rsub|1,odd><around*|(|<frac|n|2*x-1>|)>>>|<row|<cell|U<around*|(|v|)>>|<cell|=>|<cell|<frac|2*<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>|)>*<around*|(|v+c<rsub|2>|)>+a<rsub|2>-b<rsub|2>-<sqrt|<around*|(|2*<around*|(|v+c<rsub|2>|)>-a<rsub|2>-b<rsub|2>|)><rsup|2>-4*a<rsub|2>*b<rsub|2>*n>|4*a<rsub|2>*b<rsub|2>>-c<rsub|1>>>|<row|<cell|V<around*|(|u|)>>|<cell|=>|<cell|<frac|2*<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>|)>*<around*|(|u+c<rsub|1>|)>-a<rsub|1>+b<rsub|1>-<sqrt|<around*|(|2*<around*|(|u+c<rsub|1>|)>-a<rsub|1>-b<rsub|1>|)><rsup|2>-4*a<rsub|1>*b<rsub|1>*n>|4*a<rsub|1>*b<rsub|1>>-c<rsub|2>>>|<row|<cell|U<rsub|tan><around*|(|v|)>>|<cell|=>|<cell|<frac|<around*|(|a<rsub|1>+b<rsub|1>|)>*a<rsub|3>*b<rsub|3>+<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>+2*a<rsub|1>*b<rsub|1>|)>*<sqrt|a<rsub|3>*b<rsub|3>*n>|2*a<rsub|3>*b<rsub|3>>-c<rsub|1>>>|<row|<cell|>|<cell|=>|<cell|<frac|a<rsub|1>+b<rsub|1>+*<sqrt|<around*|(|a<rsub|1>*b<rsub|2>+b<rsub|1>*a<rsub|2>+2*a<rsub|1>*b<rsub|1>|)><rsup|2>*n/<around*|(|a<rsub|3>*b<rsub|3>|)>>|2>-c<rsub|1>>>>>
   </eqnarray*>
 
-  Although counter-intuitive, it may be benficial to multiply, e.g.,
-  <math|c<rsub|1>> by <math|4*a<rsub|2>*b*2> and subtract it from the
-  numerator of the first term in <math|U<around*|(|v|)>> before dividing in
-  order to reduce the magnitude of the dividend.
+  Although counter-intuitive, multiplying, e.g., <math|c<rsub|1>> by
+  <math|4*a<rsub|2>*b*<rsub|2>> and subtracting it from the numerator of the
+  first term in <math|U<around*|(|v|)>> before dividing will reduce the
+  magnitude of the dividend for the division operation and therefore may be
+  beneficial.
 
   <section|Prime Counting Function Modulo 3>
 
@@ -85,7 +86,7 @@
   \ Then
 
   <\equation*>
-    \<tau\><rsub|3><around*|(|n|)>=<big|sum><rsub|d<rsub|1>*d<rsub|2>*d<rsub|3>=n>1=<big|sum><rsub|d<around*|\||n|\<nobracket\>>>\<tau\><rsub|2><around*|(|<frac|n|d>|)>
+    \<tau\><rsub|3><around*|(|n|)>=<big|sum><rsub|d<rsub|1>*d<rsub|2>*d<rsub|3>=n>1=<big|sum><rsub|d<around*|\||n|\<nobracket\>>>\<tau\><rsub|2><around*|(|d|)>=<big|sum><rsub|d<around*|\||n|\<nobracket\>>>\<tau\><rsub|2><around*|(|<frac|n|d>|)>
   </equation*>
 
   and therefore <math|\<tau\><rsub|3><around*|(|n|)>> is multiplicative

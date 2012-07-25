@@ -21,6 +21,7 @@ namespace Decompose.Numerics
         private const long maximumBatchSize = (long)1 << 20;
         private const long tmax = (long)1 << 62;
         private const long tmin = -tmax;
+        private const long C1 = 2;
 
         private int threads;
         private bool simple;
@@ -43,8 +44,8 @@ namespace Decompose.Numerics
                 return 1;
             sum = 0;
             var sqrt = (long)IntegerMath.FloorPower(n, 1, 2);
-            imax = (long)IntegerMath.FloorRoot(n, 5);
-            xmax = Xi(imax);
+            imax = (long)IntegerMath.FloorRoot(n, 5) / C1;
+            xmax = imax == 0 ? sqrt : Xi(imax);
             mobius = new MobiusRange(sqrt + 1, 0);
             if (threads <= 1)
             {
@@ -53,12 +54,15 @@ namespace Decompose.Numerics
             }
             else
                 EvaluateParallel(1, xmax);
-            EvaluateTail(imax);
+            EvaluateTail();
             return sum;
         }
 
-        private void EvaluateTail(long imax)
+        private void EvaluateTail()
         {
+            if (imax == 0)
+                return;
+
             var m = new long[xmax + 1];
             ComputeM(m);
             var mx = new long[imax + 1];
@@ -68,6 +72,7 @@ namespace Decompose.Numerics
             for (var i = 1; i < imax; i++)
                 s += mx[i];
             s -= (imax - 1) * mx[imax];
+
             AddToSum(s);
         }
 
@@ -85,25 +90,70 @@ namespace Decompose.Numerics
             {
                 s += values[i];
                 m[i] = s;
-                Debug.Assert(m[i] == IntegerMath.Mertens(i));
             }
         }
 
         private void ComputeMx(long[] m, long[] mx)
         {
+            ComputeMxSmall(m, mx);
+            ComputeMxLarge(m, mx);
+            ComputeMxRecursive(mx);
+        }
+
+        private void ComputeMxSmall(long[] m, long[] mx)
+        {
+            // Add the contributions to each mx from all the small m values.
+            for (var i = 1; i <= imax; i++)
+            {
+                var xi = Xi(i);
+                var jmax = IntegerMath.FloorSquareRoot(xi);
+                var kmax = xi / jmax;
+                var s = (long)0;
+                var current = xi;
+                for (var k = (long)1; k < kmax; k++)
+                {
+                    var next = xi / (k + 1);
+                    s += (current - next) * m[k];
+                    current = next;
+                }
+                mx[i] = s;
+            }
+        }
+
+        private void ComputeMxLarge(long[] m, long[] mx)
+        {
+            // Add the contributions to each mx from all the large m values.
+            for (var i = 1; i <= imax; i++)
+            {
+                var xi = Xi(i);
+                var jmax = IntegerMath.FloorSquareRoot(xi);
+                var kmax = xi / jmax;
+                var s = (long)0;
+                for (var j = (long)2; j <= jmax; j++)
+                {
+                    var y = xi / j;
+                    if (y <= xmax)
+                        s += m[y];
+                }
+                mx[i] += s;
+            }
+        }
+
+        private void ComputeMxRecursive(long[] mx)
+        {
+            // Add the remaining contributions to each mx from other mx values.
             for (var i = imax; i >= 1; i--)
             {
                 var xi = Xi(i);
-                var s = (long)1;
-                for (var d = 2; d <= xi; d++)
+                var jmax = IntegerMath.FloorSquareRoot(xi);
+                var s = (long)0;
+                for (var j = (long)2; j <= jmax; j++)
                 {
-                    var k = xi / d;
-                    if (k <= m.Length)
-                        s -= m[k];
-                    else
-                        s -= mx[d * d * i];
+                    var y = xi / j;
+                    if (y > xmax)
+                        s += mx[j * j * i];
                 }
-                mx[i] = s;
+                mx[i] = 1 - mx[i] - s;
             }
         }
 
