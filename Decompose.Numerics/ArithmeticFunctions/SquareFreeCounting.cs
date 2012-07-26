@@ -18,7 +18,7 @@ namespace Decompose.Numerics
             public long Max;
         }
 
-        private const long maximumBatchSize = (long)1 << 20;
+        private const long maximumBatchSize = (long)1 << 24;
         private const long tmax = (long)1 << 62;
         private const long tmin = -tmax;
         private const long C1 = 2;
@@ -31,6 +31,7 @@ namespace Decompose.Numerics
         private BigInteger sum;
         private MobiusRange mobius;
         private MertensRange mertens;
+        private long[] xi;
         private long[] mx;
 
         public SquareFreeCounting(int threads, bool simple)
@@ -49,10 +50,13 @@ namespace Decompose.Numerics
             xmax = imax != 0 ? Xi(imax) : (long)IntegerMath.FloorPower(n, 1, 2);
             mobius = new MobiusRange(xmax + 1, 0);
             mertens = new MertensRange(mobius);
+            xi = new long[imax + 1];
             mx = new long[imax + 1];
 
-            // Initialize mx.
-            for (var i = 0; i <= imax; i++)
+            // Initialize xi and mx.
+            for (var i = 1; i <= imax; i++)
+                xi[i] = Xi(i);
+            for (var i = 1; i <= imax; i++)
                 mx[i] = 1;
 
             if (threads <= 1)
@@ -91,19 +95,19 @@ namespace Decompose.Numerics
             // Add the contributions to each mx from all the small m values.
             for (var i = 1; i <= imax; i++)
             {
-                var xi = Xi(i);
-                var sqrt = IntegerMath.FloorSquareRoot(xi);
-                var jmin = Math.Max(2, FirstDivisorNotAbove(xi, x2));
-                var jmax = Math.Min(sqrt, LastDivisorNotBelow(xi, x1));
+                var x = xi[i];
+                var sqrt = IntegerMath.FloorSquareRoot(x);
+                var jmin = Math.Max(2, FirstDivisorNotAbove(x, x2));
+                var jmax = Math.Min(sqrt, LastDivisorNotBelow(x, x1));
                 var kmin = Math.Max(1, x1);
-                var kmax = Math.Min(x2, xi / sqrt - 1);
+                var kmax = Math.Min(x2, x / sqrt - 1);
                 var s = (long)0;
                 for (var j = jmin; j <= jmax; j++)
-                    s += m[xi / j - x1];
-                var current = xi / kmin;
+                    s += m[x / j - x1];
+                var current = x / kmin;
                 for (var k = kmin; k <= kmax; k++)
                 {
-                    var next = xi / (k + 1);
+                    var next = x / (k + 1);
                     s += (current - next) * m[k - x1];
                     current = next;
                 }
@@ -159,7 +163,6 @@ namespace Decompose.Numerics
             x = S3(x1, x, values);
 
             var s = mertens.Evaluate(x1 - 1);
-            Debug.Assert(s == IntegerMath.Mertens(x1 - 1));
             var kmax = x2 - x1;
             for (var k = 0; k <= kmax; k++)
             {
@@ -191,7 +194,18 @@ namespace Decompose.Numerics
 
         private void ProduceItems(BlockingCollection<WorkItem> queue, long imin, long imax)
         {
-            var batchSize = Math.Min(maximumBatchSize, (imax - imin + 1 + threads - 1) / threads);
+#if false
+            var split = (long)IntegerMath.FloorPower(n, 4, 15);
+            BatchRange(queue, imin, split, maximumBatchSize / 10);
+            BatchRange(queue, split + 1, imax, maximumBatchSize);
+#else
+            BatchRange(queue, imin, imax, maximumBatchSize);
+#endif
+        }
+
+        private void BatchRange(BlockingCollection<WorkItem> queue, long imin, long imax, long batchSizeLimit)
+        {
+            var batchSize = Math.Min(batchSizeLimit, (imax - imin + 1 + threads - 1) / threads);
             for (var i = imin; i <= imax; i += batchSize)
                 queue.Add(new WorkItem { Min = i, Max = Math.Min(i + batchSize - 1, imax) });
         }
@@ -288,22 +302,27 @@ namespace Decompose.Numerics
                 s += (ulong)t;
             else if (t < 0)
                 s -= (ulong)-t;
-            AddToSum(s < n ? -(n - s) : (s - n));
+            AddToSum(s - n);
             return x;
         }
 
         private long S3(long x1, long x2, sbyte[] values)
         {
-            var s = (BigInteger)0;
+            var nRep = (UInt128)n;
+            var s = nRep;
+            var xx = (ulong)x1 * (ulong)x1;
+            var dx = 2 * (ulong)x1 + 1;
             for (var x = x1; x <= x2; x++)
             {
                 var mu = values[x - x1];
                 if (mu == 1)
-                    s += n / ((long)x * x);
+                    s += nRep / xx;
                 else if (mu == -1)
-                    s -= n / ((long)x * x);
+                    s -= nRep / xx;
+                xx += dx;
+                dx += 2;
             }
-            AddToSum(s);
+            AddToSum(s - n);
             return x1 - 1;
         }
 
