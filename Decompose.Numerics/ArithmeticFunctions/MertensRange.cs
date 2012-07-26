@@ -10,11 +10,8 @@ namespace Decompose.Numerics
     public class MertensRange
     {
         private MobiusRange mobius;
-        private long n;
         private long u;
-        private long imax;
         private long[] m;
-        private long[] mx;
 
         public MertensRange(MobiusRange mobius)
         {
@@ -31,18 +28,19 @@ namespace Decompose.Numerics
                 t += values[i];
                 m[i] = t;
             }
-            mx = new long[nmax / u + 1];
         }
 
         public long Evaluate(long n)
         {
-            this.n = n;
-            imax = Math.Max(1, n / u);
+            if (n <= 0)
+                return 0;
+            var imax = Math.Max(1, n / u);
+            var mx = new long[imax + 1];
             var threads = mobius.Threads;
             if (threads <= 1)
             {
                 for (var i = 1; i <= imax; i++)
-                    UpdateMx(i);
+                    UpdateMx(mx, n, imax, i);
             }
             else
             {
@@ -53,16 +51,16 @@ namespace Decompose.Numerics
                     tasks[thread] = Task.Factory.StartNew(() =>
                         {
                             for (var i = offset; i <= imax; i += threads)
-                                UpdateMx(i);
+                                UpdateMx(mx, n, imax, i);
                         });
                 }
                 Task.WaitAll(tasks);
             }
-            ComputeMx();
+            ComputeMx(mx, imax);
             return mx[1];
         }
 
-        private void UpdateMx(long i)
+        private void UpdateMx(long[] mx, long n, long imax, long i)
         {
             var ni = n / i;
             var s = (long)0;
@@ -81,7 +79,7 @@ namespace Decompose.Numerics
             mx[i] = 1 - s;
         }
 
-        private void ComputeMx()
+        private void ComputeMx(long[] mx, long imax)
         {
             for (var i = imax; i >= 1; i--)
             {
