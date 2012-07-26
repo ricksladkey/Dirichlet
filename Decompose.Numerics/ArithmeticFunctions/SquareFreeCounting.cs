@@ -161,7 +161,7 @@ namespace Decompose.Numerics
             var batchSize = (length + batches - 1) / batches;
             var m0 = mertens.Evaluate(x1 - 1);
             var x = x1;
-            while (x < x2)
+            while (x <= x2)
             {
                 m0 = EvaluateBatch(x, Math.Min(x + batchSize - 1, x2), values, m, m0);
                 x += batchSize;
@@ -184,7 +184,7 @@ namespace Decompose.Numerics
                 m[k] = s;
             }
             UpdateMx(m, x1, x2);
-            return m[x2 - x1];
+            return s;
         }
 
         private void EvaluateParallel(long x1, long x2)
@@ -391,9 +391,9 @@ namespace Decompose.Numerics
             BigInteger.Parse("607927101854026628663276779463775476"),
         };
 
-        public static BigInteger PowerOfTen(int n)
+        public static BigInteger PowerOfTen(int i)
         {
-            return data10[n];
+            return data10[i];
         }
     }
 }

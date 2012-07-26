@@ -948,7 +948,7 @@
   </eqnarray*>
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|<big|sum><rsub|k\<leq\>n<rsup|1/5>>T<around*|(|k|)>*<around*|(|M<around*|(|<sqrt|<frac|n|k>>|)>-M<around*|(|<sqrt|<frac|n|k+1>>|)>|)>>|<cell|=>|<cell|T<around*|(|1|)>*M<around*|(|<sqrt|n>|)>>>|<row|<cell|>|<cell|->|<cell|T<around*|(|1|)>*M<around*|(|<sqrt|<frac|n|2>>|)>+T<around*|(|2|)>*M<around*|(|<sqrt|<frac|n|2>>|)>>>|<row|<cell|>|<cell|->|<cell|\<ldots\>>>|<row|<cell|>|<cell|->|<cell|T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|<sqrt|n>|)>>>|<row|<cell|>|<cell|+>|<cell|<around*|(|T<around*|(|2|)>-T<around*|(|1|)>|)>*M<around*|(|<sqrt|<frac|n|2>>|)>>>|<row|<cell|>|<cell|->|<cell|T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|<sqrt|n>|)>+\<tau\><around*|(|2|)>*M<around*|(|<sqrt|<frac|n|2>>|)>+\<ldots\>-T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)><with|font-series|bold|>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|k\<less\>n<rsup|1/5>>\<tau\><around*|(|k|)>*M<around*|(|<sqrt|<frac|n|k>>|)>+M<around*|(|<sqrt|n>|)>-T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|k\<less\>n<rsup|1/5>>\<tau\><around*|(|k|)>*M<rprime|'><around*|(|k|)>+M<rprime|'><around*|(|1|)>-T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>>>
+    <tformat|<table|<row|<cell|<big|sum><rsub|k\<leq\>n<rsup|1/5>>T<around*|(|k|)>*<around*|(|M<around*|(|<sqrt|<frac|n|k>>|)>-M<around*|(|<sqrt|<frac|n|k+1>>|)>|)>>|<cell|=>|<cell|T<around*|(|1|)>*M<around*|(|<sqrt|n>|)>>>|<row|<cell|>|<cell|->|<cell|T<around*|(|1|)>*M<around*|(|<sqrt|<frac|n|2>>|)>+T<around*|(|2|)>*M<around*|(|<sqrt|<frac|n|2>>|)>>>|<row|<cell|>|<cell|->|<cell|\<ldots\>>>|<row|<cell|>|<cell|->|<cell|T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|<sqrt|n>|)>>>|<row|<cell|>|<cell|+>|<cell|<around*|(|T<around*|(|2|)>-T<around*|(|1|)>|)>*M<around*|(|<sqrt|<frac|n|2>>|)>>>|<row|<cell|>|<cell|+>|<cell|\<ldots\>>>|<row|<cell|>|<cell|->|<cell|T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|<sqrt|n>|)>+\<tau\><around*|(|2|)>*M<around*|(|<sqrt|<frac|n|2>>|)>+\<ldots\>-T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)><with|font-series|bold|>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|k\<less\>n<rsup|1/5>>\<tau\><around*|(|k|)>*M<around*|(|<sqrt|<frac|n|k>>|)>+M<around*|(|<sqrt|n>|)>-T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|k\<less\>n<rsup|1/5>>\<tau\><around*|(|k|)>*M<rprime|'><around*|(|k|)>+M<rprime|'><around*|(|1|)>-T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>>>
   </eqnarray*>
 
   Calculating a function over a sequence of integers with ascending divisors
@@ -960,12 +960,17 @@
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|<big|sum><rsub|m\<leq\>n,m
-    odd>M<around*|(|<frac|n|m>|)>>|<cell|=>|<cell|0<space|1em><around*|(|n\<geq\>2|)>>>|<row|<cell|M<around*|(|n|)>>|<cell|=>|<cell|-<big|sum><rsub|3\<leq\>m\<leq\>n,m
-    odd>\<Mu\><around*|(|<frac|n|m>|)>>>|<row|<cell|>|<cell|=>|<cell|-<big|sum><rsub|2\<leq\>m\<leq\>n/2>M<around*|(|<frac|n|2*m-1>|)>>>>>
+    odd>M<around*|(|<frac|n|m>|)>>|<cell|=>|<cell|0<space|1em><around*|(|n\<geq\>2|)>>>|<row|<cell|M<around*|(|n|)>>|<cell|=>|<cell|-<big|sum><rsub|3\<leq\>k\<leq\>n,j
+    odd>M<around*|(|<frac|n|j>|)>>>|<row|<cell|>|<cell|=>|<cell|-<big|sum><rsub|3\<leq\>m\<leq\><sqrt|n>,j
+    odd>M<around*|(|<frac|n|j>|)>>>|<row|<cell|>|<cell|->|<cell|<big|sum><rsub|1\<leq\>k\<less\><sqrt|n>><around*|(|T<rsub|1,odd><around*|(|<frac|n|k>|)>-T<rsub|1,odd><around*|(|<frac|n|k+1>|)>|)>*M<around*|(|k|)>>>>>
   </eqnarray*>
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|M<rprime|'><around*|(|k|)>>|<cell|=>|<cell|M<around*|(|<sqrt|<frac|n|k>>|)>=M<around*|(|m|)>>>|<row|<cell|>|<cell|=>|<cell|1-<big|sum><rsub|j\<geq\>2>M<around*|(|<sqrt|<frac|n|j<rsup|2>*k>>|)>>>|<row|<cell|>|<cell|=>|<cell|1-<big|sum><rsub|j\<geq\>2,d>M<rprime|'><around*|(|j<rsup|2>k|)>>>|<row|<cell|>|<cell|=>|<cell|1-<big|sum><rsup|<around*|\<lfloor\>|<sqrt|m>|\<rfloor\>>><rsub|j=2>M<rprime|'><around*|(|j<rsup|2>k|)>-<big|sum><rsup|<around*|\<lfloor\>|m/<around*|\<lfloor\>|<sqrt|m>|\<rfloor\>>|\<rfloor\>>-1><rsub|j=1><around*|(|<around*|\<lfloor\>|<frac|m|j>|\<rfloor\>>-<around*|\<lfloor\>|<frac|m|j+1>|\<rfloor\>>|)>*M<around*|(|j|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<around*|\<lfloor\>|<frac|x<rsub|i>|j>|\<rfloor\>>>|<cell|\<leq\>>|<cell|x<rsub|max>\<less\><around*|\<lfloor\>|<frac|x<rsub|i>|<around*|(|j-1|)>>|\<rfloor\>>>>|<row|<cell|<around*|\<lfloor\>|<frac|x<rsub|i>|<around*|(|j+1|)>>|\<rfloor\>>>|<cell|\<leq\>>|<cell|x<rsub|max>\<less\><around*|\<lfloor\>|<frac|x<rsub|i>|j>|\<rfloor\>>>>>>
   </eqnarray*>
 </body>
 

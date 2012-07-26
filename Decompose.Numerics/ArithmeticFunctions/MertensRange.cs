@@ -47,10 +47,11 @@ namespace Decompose.Numerics
                 var tasks = new Task[threads];
                 for (var thread = 0; thread < threads; thread++)
                 {
-                    var offset = thread + 1;
+                    var offset = 2 * thread + 1;
+                    var increment = 2 * threads;
                     tasks[thread] = Task.Factory.StartNew(() =>
                         {
-                            for (var i = offset; i <= imax; i += threads)
+                            for (var i = offset; i <= imax; i += increment)
                                 UpdateMx(mx, n, imax, i);
                         });
                 }
@@ -67,21 +68,21 @@ namespace Decompose.Numerics
             var jmax = IntegerMath.FloorSquareRoot(ni);
             var kmax = ni / jmax;
             var jmin = imax / i;
-            for (var j = jmin + 1; j <= jmax; j++)
+            for (var j = UpToOdd(jmin + 1); j <= jmax; j += 2)
                 s += m[ni / j];
-            var current = ni;
+            var current = T1Odd(ni);
             for (var k = 1; k < kmax; k++)
             {
-                var next = ni / (k + 1);
+                var next = T1Odd(ni / (k + 1));
                 s += (current - next) * m[k];
                 current = next;
             }
-            mx[i] = 1 - s;
+            mx[i] = -s;
         }
 
         private void ComputeMx(long[] mx, long imax)
         {
-            for (var i = imax; i >= 1; i--)
+            for (var i = DownToOdd(imax); i >= 1; i -= 2)
             {
                 var s = (long)0;
                 var ijmax = imax / i * i;
@@ -89,6 +90,47 @@ namespace Decompose.Numerics
                     s += mx[ij];
                 mx[i] -= s;
             }
+        }
+
+        private long UpToOdd(long a)
+        {
+            return a + (~a & 1);
+        }
+
+        private long DownToOdd(long a)
+        {
+            return a - (~a & 1);
+        }
+
+        private long T1Odd(long a)
+        {
+            return (a + (a & 1)) >> 1;
+        }
+
+        private static BigInteger[] data10 = new BigInteger[]
+        {
+            BigInteger.Parse("0"),
+            BigInteger.Parse("-1"),
+            BigInteger.Parse("1"),
+            BigInteger.Parse("2"),
+            BigInteger.Parse("-23"),
+            BigInteger.Parse("-48"),
+            BigInteger.Parse("212"),
+            BigInteger.Parse("1037"),
+            BigInteger.Parse("1928"),
+            BigInteger.Parse("-222"),
+            BigInteger.Parse("-33722"),
+            BigInteger.Parse("-87856"),
+            BigInteger.Parse("62366"),
+            BigInteger.Parse("599582"),
+            BigInteger.Parse("-875575"),
+            BigInteger.Parse("-3216373"),
+            BigInteger.Parse("-3195437"),
+        };
+
+        public static BigInteger PowerOfTen(int i)
+        {
+            return data10[i];
         }
     }
 }
