@@ -39,7 +39,7 @@ namespace Decompose.Numerics
             var threads = mobius.Threads;
             if (threads <= 1)
             {
-                for (var i = 1; i <= imax; i++)
+                for (var i = 1; i <= imax; i += 2)
                     UpdateMx(mx, n, imax, i);
             }
             else
