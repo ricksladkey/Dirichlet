@@ -433,10 +433,10 @@ namespace Sandbox
 
         static void ParityTest()
         {
-#if false
+#if true
             var algorithm = new SquareFreeCounting(8, false);
             var timer = new Stopwatch();
-            for (var i = 18; i <= 24; i++)
+            for (var i = 4; i <= 24; i++)
             {
                 var n = IntegerMath.Power((BigInteger)10, i);
                 var sum1 = SquareFreeCounting.PowerOfTen(i);
@@ -447,7 +447,7 @@ namespace Sandbox
             }
 #endif
 
-#if true
+#if false
             var timer = new Stopwatch();
             for (var i = 1; i <= 12; i++)
             {

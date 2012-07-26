@@ -1794,3 +1794,36 @@ n<=x,n%6=1,  n<=x,n%6=5, n<=x,n%6=3
 7 3
 8
 9
+
+xi / j <= xmax
+
+xi / j <= xmax + (j - 1)/j
+
+xi / j <= (j * xmax + j - 1) / j
+
+xi <= j * xmax + j - 1
+
+xi / xmax <= j + (j - 1)/xmax
+j = xi / xmax - (j - 1)/xmax
+
+floor(xi / j) <= xmax < floor(xi / (j + 1))
+
+(j + 1) > floor(xi / xmax)
+j > floor(xi / xmax) - 1
+
+floor(xi / j) <= xmax
+floor(xi / j) * j <= xmax * j
+
+if exactly divisible
+
+xi <= xmax * j
+
+floor(xi / j) = floor(Xi(j * j * i))
+
+xmax = 11
+xi = 31
+
+xi / 2 = 15
+xi / 3 = 10
+
+xi / xmax = 2

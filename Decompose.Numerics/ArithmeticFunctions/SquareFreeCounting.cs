@@ -126,14 +126,10 @@ namespace Decompose.Numerics
             {
                 var xi = Xi(i);
                 var jmax = IntegerMath.FloorSquareRoot(xi);
-                var kmax = xi / jmax;
+                var jmin = Math.Max(2, FirstDivisorBelow(xi, xmax));
                 var s = (long)0;
-                for (var j = (long)2; j <= jmax; j++)
-                {
-                    var y = xi / j;
-                    if (y <= xmax)
-                        s += m[y];
-                }
+                for (var j = jmin; j <= jmax; j++)
+                    s += m[xi / j];
                 mx[i] += s;
             }
         }
@@ -145,15 +141,22 @@ namespace Decompose.Numerics
             {
                 var xi = Xi(i);
                 var jmax = IntegerMath.FloorSquareRoot(xi);
+                var jmin = Math.Max(2, FirstDivisorBelow(xi, xmax));
                 var s = (long)0;
-                for (var j = (long)2; j <= jmax; j++)
-                {
-                    var y = xi / j;
-                    if (y > xmax)
-                        s += mx[j * j * i];
-                }
+                for (var j = (long)2; j < jmin; j++)
+                    s += mx[j * j * i];
                 mx[i] = 1 - mx[i] - s;
             }
+        }
+
+        private long FirstDivisorBelow(long xi, long xmax)
+        {
+            var jmin = (xi + xmax - 1) / xmax;
+            if (jmin > 1 && xi / (jmin - 1) <= xmax)
+                --jmin;
+            Debug.Assert(jmin == 1 || xi / (jmin - 1) > xmax);
+            Debug.Assert(xi / jmin <= xmax);
+            return jmin;
         }
 
         private void Evaluate(long x1, long x2, sbyte[] values)
@@ -196,8 +199,14 @@ namespace Decompose.Numerics
         {
             var values = new sbyte[maximumBatchSize];
             var item = default(WorkItem);
-            while (queue.TryTake(out item, Timeout.Infinite))
-                Evaluate(item.Min, item.Max, values);
+            try
+            {
+                while (queue.TryTake(out item, Timeout.Infinite))
+                    Evaluate(item.Min, item.Max, values);
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
 
         private long S1(long x1, long x2, sbyte[] values)
