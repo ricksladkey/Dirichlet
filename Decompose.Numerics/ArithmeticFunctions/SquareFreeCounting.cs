@@ -61,8 +61,8 @@ namespace Decompose.Numerics
 
             if (threads <= 1)
             {
-                var values = new sbyte[xmax + 1];
-                var m = new long[xmax + 1];
+                var values = new sbyte[maximumBatchSize];
+                var m = new long[maximumBatchSize];
                 Evaluate(1, xmax, values, m);
             }
             else
@@ -156,13 +156,27 @@ namespace Decompose.Numerics
 
         private void Evaluate(long x1, long x2, sbyte[] values, long[] m)
         {
-            mobius.GetValues(x1, x2 + 1, values);
+            var length = x2 - x1 + 1;
+            var batches = (length + m.Length - 1) / m.Length;
+            var batchSize = (length + batches - 1) / batches;
+            var m0 = mertens.Evaluate(x1 - 1);
+            var x = x1;
+            while (x < x2)
+            {
+                m0 = EvaluateBatch(x, Math.Min(x + batchSize - 1, x2), values, m, m0);
+                x += batchSize;
+            }
+        }
+
+        private long EvaluateBatch(long x1, long x2, sbyte[] values, long[] m, long m0)
+        {
             var x = x2;
+            mobius.GetValues(x1, x2 + 1, values);
             if (!simple)
                 x = S1(x1, x, values);
             x = S3(x1, x, values);
 
-            var s = mertens.Evaluate(x1 - 1);
+            var s = m0;
             var kmax = x2 - x1;
             for (var k = 0; k <= kmax; k++)
             {
@@ -170,6 +184,7 @@ namespace Decompose.Numerics
                 m[k] = s;
             }
             UpdateMx(m, x1, x2);
+            return m[x2 - x1];
         }
 
         private void EvaluateParallel(long x1, long x2)
