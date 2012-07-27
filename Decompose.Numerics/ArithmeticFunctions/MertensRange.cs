@@ -36,7 +36,7 @@ namespace Decompose.Numerics
         {
             if (n <= 0)
                 return 0;
-            if (n >= nmax)
+            if (n > nmax)
                 throw new ArgumentException("n");
             var imax = Math.Max(1, n / u);
             var mx = new long[imax + 1];
@@ -68,11 +68,11 @@ namespace Decompose.Numerics
         private void UpdateMx(long[] mx, long n, long imax, long i)
         {
             var ni = n / i;
+            var sqrt = IntegerMath.FloorSquareRoot(ni);
             var s = (long)0;
 
-            var sqrt = IntegerMath.FloorSquareRoot(ni);
-            var jmax = DownToOdd(sqrt);
             var jmin = UpToOdd(imax / i + 1);
+            var jmax = DownToOdd(sqrt);
             s += JSum(ni, jmin, ref jmax);
             for (var j = jmin; j <= jmax; j += 2)
                 s += m[ni / j];
@@ -136,6 +136,8 @@ namespace Decompose.Numerics
 
         private long KSum(long n, long k1, ref long k)
         {
+            if (k == 0)
+                return 0;
             var s = (long)0;
             var beta = n / (k + 1);
             var eps = n % (k + 1);

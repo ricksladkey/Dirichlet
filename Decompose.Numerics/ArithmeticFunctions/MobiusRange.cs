@@ -109,7 +109,7 @@ namespace Decompose.Numerics
             // Acquire resources.
             Data data;
             if (!queue.TryDequeue(out data))
-                data = new Data(primes.Length);
+                data = new Data(Math.Max(1, primes.Length));
             var products = data.Products;
             var offsets = data.Offsets;
             var offsetsSquared = data.OffsetsSquared;
@@ -196,7 +196,7 @@ namespace Decompose.Numerics
                 var abs = (p + neg) ^ neg; // abs = |p|
                 var flip = (abs - k) >> 63; // flip = -1 if abs < k, zero otherwise
                 values[k - kmin] = (sbyte)(((neg - pos) ^ flip) - flip); // values[k] = pos - neg if flip = -1, neg - pos otherwise
-                Debug.Assert(values[k - kmin] == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
+                Debug.Assert(k - kmin == 0 || values[k - kmin] == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
             }
         }
     }

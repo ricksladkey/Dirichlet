@@ -53,11 +53,9 @@ namespace Decompose.Numerics
             xi = new long[imax + 1];
             mx = new long[imax + 1];
 
-            // Initialize xi and mx.
+            // Initialize xi (mx already initialized to zeros).
             for (var i = 1; i <= imax; i++)
                 xi[i] = Xi(i);
-            for (var i = 1; i <= imax; i++)
-                mx[i] = 1;
 
             if (threads <= 1)
             {
@@ -97,17 +95,17 @@ namespace Decompose.Numerics
             {
                 var x = xi[i];
                 var sqrt = IntegerMath.FloorSquareRoot(x);
-                var jmin = Math.Max(2, FirstDivisorNotAbove(x, x2));
-                var jmax = Math.Min(sqrt, LastDivisorNotBelow(x, x1));
+                var jmin = UpToOdd(Math.Max(2, FirstDivisorNotAbove(x, x2)));
+                var jmax = DownToOdd(Math.Min(sqrt, LastDivisorNotBelow(x, x1)));
                 var kmin = Math.Max(1, x1);
                 var kmax = Math.Min(x2, x / sqrt - 1);
                 var s = (long)0;
-                for (var j = jmin; j <= jmax; j++)
+                for (var j = jmin; j <= jmax; j += 2)
                     s += m[x / j - x1];
-                var current = x / kmin;
+                var current = T1Odd(x / kmin);
                 for (var k = kmin; k <= kmax; k++)
                 {
-                    var next = x / (k + 1);
+                    var next = T1Odd(x / (k + 1));
                     s += (current - next) * m[k - x1];
                     current = next;
                 }
@@ -121,13 +119,27 @@ namespace Decompose.Numerics
             for (var i = imax; i >= 1; i--)
             {
                 var xi = Xi(i);
-                var jmax = IntegerMath.FloorSquareRoot(xi);
-                var jmin = Math.Max(2, FirstDivisorNotAbove(xi, xmax));
+                var jmax = DownToOdd(Math.Max(2, FirstDivisorNotAbove(xi, xmax)) - 1);
                 var s = (long)0;
-                for (var j = (long)2; j < jmin; j++)
+                for (var j = (long)3; j <= jmax; j += 2)
                     s += mx[j * j * i];
                 mx[i] -= s;
             }
+        }
+
+        private long UpToOdd(long a)
+        {
+            return a | 1;
+        }
+
+        private long DownToOdd(long a)
+        {
+            return a - (~a & 1);
+        }
+
+        private long T1Odd(long a)
+        {
+            return (a + (a & 1)) >> 1;
         }
 
         private long FirstDivisorNotAbove(long xi, long x)
