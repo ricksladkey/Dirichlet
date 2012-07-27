@@ -10,15 +10,16 @@ namespace Decompose.Numerics
 {
     public class MertensRange
     {
+        private long nmax;
         private MobiusRange mobius;
         private long u;
         private long[] m;
 
-        public MertensRange(MobiusRange mobius)
+        public MertensRange(MobiusRange mobius, long nmax)
         {
             this.mobius = mobius;
+            this.nmax = nmax;
 
-            var nmax = mobius.Size - 1;
             u = (long)IntegerMath.FloorPower((BigInteger)nmax, 2, 3);
             m = new long[u + 1];
             var values = new sbyte[u + 1];
@@ -35,6 +36,8 @@ namespace Decompose.Numerics
         {
             if (n <= 0)
                 return 0;
+            if (n >= nmax)
+                throw new ArgumentException("n");
             var imax = Math.Max(1, n / u);
             var mx = new long[imax + 1];
             var threads = mobius.Threads;

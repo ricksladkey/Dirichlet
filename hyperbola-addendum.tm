@@ -958,11 +958,15 @@
     <tformat|<table|<row|<cell|<big|sum><rsub|j=a><rsup|n>f<around*|(|<around*|\<lfloor\>|<frac|n|j>|\<rfloor\>>|)>>|<cell|=>|<cell|<big|sum><rsub|j=a><rsup|<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>>f<around*|(|<around*|\<lfloor\>|<frac|n|j>|\<rfloor\>>|)>+<big|sum><rsub|j=1><rsup|<around*|\<lfloor\>|n/<around*|\<lfloor\>|<sqrt|n>|\<rfloor\>>|\<rfloor\>>-1><around*|(|<around*|\<lfloor\>|<frac|n|j>|\<rfloor\>>-<around*|\<lfloor\>|<frac|n|j+1>|\<rfloor\>>|)>*f<around*|(|j|)>>>>>
   </eqnarray*>
 
+  Identity for Mertens function over odd divisors to save roughly a factor of
+  three
+
   <\eqnarray*>
     <tformat|<table|<row|<cell|<big|sum><rsub|m\<leq\>n,m
     odd>M<around*|(|<frac|n|m>|)>>|<cell|=>|<cell|0<space|1em><around*|(|n\<geq\>2|)>>>|<row|<cell|M<around*|(|n|)>>|<cell|=>|<cell|-<big|sum><rsub|3\<leq\>k\<leq\>n,j
     odd>M<around*|(|<frac|n|j>|)>>>|<row|<cell|>|<cell|=>|<cell|-<big|sum><rsub|3\<leq\>m\<leq\><sqrt|n>,j
-    odd>M<around*|(|<frac|n|j>|)>>>|<row|<cell|>|<cell|->|<cell|<big|sum><rsub|1\<leq\>k\<less\><sqrt|n>><around*|(|T<rsub|1,odd><around*|(|<frac|n|k>|)>-T<rsub|1,odd><around*|(|<frac|n|k+1>|)>|)>*M<around*|(|k|)>>>>>
+    odd>M<around*|(|<frac|n|j>|)>>>|<row|<cell|>|<cell|->|<cell|<big|sum><rsub|1\<leq\>k\<less\><sqrt|n>><around*|(|T<rsub|1,odd><around*|(|<frac|n|k>|)>-T<rsub|1,odd><around*|(|<frac|n|k+1>|)>|)>*M<around*|(|k|)>>>|<row|<cell|T<rsub|1,odd><around*|(|<frac|n|k>|)>-T<rsub|1,odd><around*|(|<frac|n|k+1>|)>>|<cell|=>|<cell|<around*|\<lfloor\>|<frac|\<delta\><rsub|1><around*|(|x|)>+\<beta\><around*|(|x|)>
+    mod 2|2>|\<rfloor\>>>>>>
   </eqnarray*>
 
   <\eqnarray*>
