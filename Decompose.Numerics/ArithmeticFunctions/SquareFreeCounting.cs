@@ -100,8 +100,10 @@ namespace Decompose.Numerics
                 var kmin = Math.Max(1, x1);
                 var kmax = Math.Min(x2, x / sqrt - 1);
                 var s = (long)0;
+                s += JSum(x, jmin, ref jmax, m, x1);
                 for (var j = jmin; j <= jmax; j += 2)
                     s += m[x / j - x1];
+                s += KSum(x, kmin, ref kmax, m, x1);
                 var current = T1Odd(x / kmin);
                 for (var k = kmin; k <= kmax; k++)
                 {
@@ -111,6 +113,98 @@ namespace Decompose.Numerics
                 }
                 Interlocked.Add(ref mx[i], -s);
             }
+        }
+
+        private long JSum(long n, long j1, ref long j, long[] m, long x1)
+        {
+            var s = (long)0;
+            var beta = n / (j + 2);
+            var eps = n % (j + 2);
+            var delta = n / j - beta;
+            var gamma = 2 * beta - j * delta;
+            while (j >= j1)
+            {
+                eps += gamma;
+                if (eps >= j)
+                {
+                    ++delta;
+                    gamma -= j;
+                    eps -= j;
+                    if (eps >= j)
+                    {
+                        ++delta;
+                        gamma -= j;
+                        eps -= j;
+                        if (eps >= j)
+                            break;
+                    }
+                }
+                else if (eps < 0)
+                {
+                    --delta;
+                    gamma += j;
+                    eps += j;
+                }
+                gamma += 4 * delta;
+                beta += delta;
+
+                Debug.Assert(eps == n % j);
+                Debug.Assert(beta == n / j);
+                Debug.Assert(delta == beta - n / (j + 2));
+                Debug.Assert(gamma == 2 * beta - (BigInteger)(j - 2) * delta);
+
+                s += m[beta - x1];
+                j -= 2;
+            }
+            return s;
+        }
+
+        private long KSum(long n, long k1, ref long k, long[] m, long x1)
+        {
+            if (k == 0)
+                return 0;
+            var s = (long)0;
+            var beta = n / (k + 1);
+            var eps = n % (k + 1);
+            var delta = n / k - beta;
+            var gamma = beta - k * delta;
+            while (k >= k1)
+            {
+                eps += gamma;
+                if (eps >= k)
+                {
+                    ++delta;
+                    gamma -= k;
+                    eps -= k;
+                    if (eps >= k)
+                    {
+                        ++delta;
+                        gamma -= k;
+                        eps -= k;
+                        if (eps >= k)
+                            break;
+                    }
+                }
+                else if (eps < 0)
+                {
+                    --delta;
+                    gamma += k;
+                    eps += k;
+                }
+                gamma += 2 * delta;
+                beta += delta;
+
+                Debug.Assert(eps == n % k);
+                Debug.Assert(beta == n / k);
+                Debug.Assert(delta == beta - n / (k + 1));
+                Debug.Assert(gamma == beta - (BigInteger)(k - 1) * delta);
+
+                // Equivalent to:
+                // s += (T1Odd(beta) - T1Odd(beta - delta)) * m[k];
+                s += ((delta + (beta & 1)) >> 1) * m[k - x1];
+                --k;
+            }
+            return s;
         }
 
         private void ComputeMx()
