@@ -274,7 +274,7 @@ namespace Decompose.Numerics
                     gamma += x;
                     eps += x;
                 }
-                gamma += delta + delta;
+                gamma += 2 * delta;
                 beta += delta;
                 alphax -= alpha + 1;
                 if (alphax <= beta)

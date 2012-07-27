@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Numerics;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
@@ -65,19 +66,115 @@ namespace Decompose.Numerics
         {
             var ni = n / i;
             var s = (long)0;
-            var jmax = IntegerMath.FloorSquareRoot(ni);
-            var kmax = ni / jmax;
-            var jmin = imax / i;
-            for (var j = UpToOdd(jmin + 1); j <= jmax; j += 2)
+
+            var sqrt = IntegerMath.FloorSquareRoot(ni);
+            var jmax = DownToOdd(sqrt);
+            var jmin = UpToOdd(imax / i + 1);
+            s += JSum(ni, jmin, ref jmax);
+            for (var j = jmin; j <= jmax; j += 2)
                 s += m[ni / j];
+
+            var kmax = ni / sqrt - 1;
+            s += KSum(ni, 1, ref kmax);
             var current = T1Odd(ni);
-            for (var k = 1; k < kmax; k++)
+            for (var k = 1; k <= kmax; k++)
             {
                 var next = T1Odd(ni / (k + 1));
                 s += (current - next) * m[k];
                 current = next;
             }
+
             mx[i] = -s;
+        }
+
+        private long JSum(long n, long j1, ref long j)
+        {
+            var s = (long)0;
+            var beta = n / (j + 2);
+            var eps = n % (j + 2);
+            var delta = n / j - beta;
+            var gamma = 2 * beta - j * delta;
+            while (j >= j1)
+            {
+                eps += gamma;
+                if (eps >= j)
+                {
+                    ++delta;
+                    gamma -= j;
+                    eps -= j;
+                    if (eps >= j)
+                    {
+                        ++delta;
+                        gamma -= j;
+                        eps -= j;
+                        if (eps >= j)
+                            break;
+                    }
+                }
+                else if (eps < 0)
+                {
+                    --delta;
+                    gamma += j;
+                    eps += j;
+                }
+                gamma += 4 * delta;
+                beta += delta;
+
+                Debug.Assert(eps == n % j);
+                Debug.Assert(beta == n / j);
+                Debug.Assert(delta == beta - n / (j + 2));
+                Debug.Assert(gamma == 2 * beta - (BigInteger)(j - 2) * delta);
+
+                s += m[beta];
+                j -= 2;
+            }
+            return s;
+        }
+
+        private long KSum(long n, long k1, ref long k)
+        {
+            var s = (long)0;
+            var beta = n / (k + 1);
+            var eps = n % (k + 1);
+            var delta = n / k - beta;
+            var gamma = beta - k * delta;
+            while (k >= k1)
+            {
+                eps += gamma;
+                if (eps >= k)
+                {
+                    ++delta;
+                    gamma -= k;
+                    eps -= k;
+                    if (eps >= k)
+                    {
+                        ++delta;
+                        gamma -= k;
+                        eps -= k;
+                        if (eps >= k)
+                            break;
+                    }
+                }
+                else if (eps < 0)
+                {
+                    --delta;
+                    gamma += k;
+                    eps += k;
+                }
+                gamma += 2 * delta;
+                beta += delta;
+
+                Debug.Assert(eps == n % k);
+                Debug.Assert(beta == n / k);
+                Debug.Assert(delta == beta - n / (k + 1));
+                Debug.Assert(gamma == beta - (BigInteger)(k - 1) * delta);
+
+                // Equivalent to:
+                // s += (T1Odd(beta) - T1Odd(beta - delta)) * m[k];
+                s += ((delta + (beta & 1)) >> 1) * m[k];
+                --k;
+            }
+            return s;
         }
 
         private void ComputeMx(long[] mx, long imax)
@@ -94,7 +191,7 @@ namespace Decompose.Numerics
 
         private long UpToOdd(long a)
         {
-            return a + (~a & 1);
+            return a | 1;
         }
 
         private long DownToOdd(long a)
