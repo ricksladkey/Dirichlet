@@ -95,8 +95,8 @@ namespace Decompose.Numerics
             {
                 var x = xi[i];
                 var sqrt = IntegerMath.FloorSquareRoot(x);
-                var jmin = UpToOdd(Math.Max(2, FirstDivisorNotAbove(x, x2)));
-                var jmax = DownToOdd(Math.Min(sqrt, LastDivisorNotBelow(x, x1)));
+                var jmin = UpToOdd(Math.Max(3, x / (x2 + 1) + 1));
+                var jmax = DownToOdd(Math.Min(sqrt, x / x1));
                 var kmin = Math.Max(1, x1);
                 var kmax = Math.Min(x2, x / sqrt - 1);
                 var s = (long)0;
@@ -213,7 +213,7 @@ namespace Decompose.Numerics
             for (var i = imax; i >= 1; i--)
             {
                 var xi = Xi(i);
-                var jmax = DownToOdd(Math.Max(2, FirstDivisorNotAbove(xi, xmax)) - 1);
+                var jmax = DownToOdd(xi / (xmax + 1));
                 var s = (long)0;
                 for (var j = (long)3; j <= jmax; j += 2)
                     s += mx[j * j * i];
@@ -234,30 +234,6 @@ namespace Decompose.Numerics
         private long T1Odd(long a)
         {
             return (a + (a & 1)) >> 1;
-        }
-
-        private long FirstDivisorNotAbove(long xi, long x)
-        {
-            // Return the largest value of j such that xi / j <= x.
-            if (x <= 1)
-                return xi;
-            var j = (xi + x - 1) / x;
-            if (j > 1 && xi / (j - 1) <= x)
-                --j;
-            Debug.Assert(j == 1 || xi / (j - 1) > x);
-            Debug.Assert(xi / j <= x);
-            return j;
-        }
-
-        private long LastDivisorNotBelow(long xi, long x)
-        {
-            // Return the smallest value of j such that xi / j >= x.
-            var j = xi / x;
-            if (j > 1 && xi / (j + 1) >= x)
-                ++j;
-            Debug.Assert(j == 0 || xi / j >= x);
-            Debug.Assert(xi / (j + 1) < x);
-            return j;
         }
 
         private void Evaluate(long x1, long x2, sbyte[] values, long[] m)

@@ -970,11 +970,24 @@
   </eqnarray*>
 
   <\eqnarray*>
+    <tformat|<table|<row|<cell|M<around*|(|<sqrt|<frac|n|m>>|)>>|<cell|=>|<cell|-<big|sum><rsub|3\<leq\>j\<leq\><sqrt|n/m|4>,j
+    odd>M<around*|(|<sqrt|<frac|n|j<rsup|2>*m>>|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
     <tformat|<table|<row|<cell|M<rprime|'><around*|(|k|)>>|<cell|=>|<cell|M<around*|(|<sqrt|<frac|n|k>>|)>=M<around*|(|m|)>>>|<row|<cell|>|<cell|=>|<cell|1-<big|sum><rsub|j\<geq\>2>M<around*|(|<sqrt|<frac|n|j<rsup|2>*k>>|)>>>|<row|<cell|>|<cell|=>|<cell|1-<big|sum><rsub|j\<geq\>2,d>M<rprime|'><around*|(|j<rsup|2>k|)>>>|<row|<cell|>|<cell|=>|<cell|1-<big|sum><rsup|<around*|\<lfloor\>|<sqrt|m>|\<rfloor\>>><rsub|j=2>M<rprime|'><around*|(|j<rsup|2>k|)>-<big|sum><rsup|<around*|\<lfloor\>|m/<around*|\<lfloor\>|<sqrt|m>|\<rfloor\>>|\<rfloor\>>-1><rsub|j=1><around*|(|<around*|\<lfloor\>|<frac|m|j>|\<rfloor\>>-<around*|\<lfloor\>|<frac|m|j+1>|\<rfloor\>>|)>*M<around*|(|j|)>>>>>
   </eqnarray*>
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|<around*|\<lfloor\>|<frac|x<rsub|i>|j>|\<rfloor\>>>|<cell|\<leq\>>|<cell|x<rsub|max>\<less\><around*|\<lfloor\>|<frac|x<rsub|i>|<around*|(|j-1|)>>|\<rfloor\>>>>|<row|<cell|<around*|\<lfloor\>|<frac|x<rsub|i>|<around*|(|j+1|)>>|\<rfloor\>>>|<cell|\<leq\>>|<cell|x<rsub|max>\<less\><around*|\<lfloor\>|<frac|x<rsub|i>|j>|\<rfloor\>>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<around*|\<lfloor\>|<frac|x|j>|\<rfloor\>>>|<cell|\<leq\>>|<cell|x<rsub|max>>>|<row|<cell|<frac|x<rsub|>|j>>|<cell|\<less\>>|<cell|x<rsub|max>+1>>|<row|<cell|<frac|x|x<rsub|max>+1>>|<cell|\<less\>>|<cell|j>>|<row|<cell|<around*|\<lfloor\>|<frac|x|x<rsub|max>+1>|\<rfloor\>>>|<cell|\<leq\>>|<cell|j-1>>|<row|<cell|<around*|\<lfloor\>|<frac|x|x<rsub|max>+1>|\<rfloor\>>+1>|<cell|\<leq\>>|<cell|j>>|<row|<cell|FirstDivisorNotAbove<around*|(|x,x<rsub|max>|)>>|<cell|=>|<cell|<around*|\<lfloor\>|x/<around*|(|x<rsub|max>+1|)>|\<rfloor\>>+1>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<around*|\<lfloor\>|<frac|x|j>|\<rfloor\>>>|<cell|\<geq\>>|<cell|x<rsub|min>>>|<row|<cell|<frac|x|j>>|<cell|\<geq\>>|<cell|x<rsub|min>>>|<row|<cell|<frac|x|x<rsub|min>>>|<cell|\<geq\>>|<cell|j>>|<row|<cell|<around*|\<lfloor\>|<frac|x|x<rsub|min>>|\<rfloor\>>>|<cell|\<geq\>>|<cell|j>>|<row|<cell|LastDivisorNotBelow<around*|(|x,x<rsub|min>|)>>|<cell|=>|<cell|<around*|\<lfloor\>|x/x<rsub|min>|\<rfloor\>>>>>>
   </eqnarray*>
 </body>
 
