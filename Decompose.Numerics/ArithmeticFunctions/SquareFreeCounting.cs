@@ -15,12 +15,6 @@ namespace Decompose.Numerics
 {
     public class SquareFreeCounting
     {
-        private struct WorkItem
-        {
-            public long Min;
-            public long Max;
-        }
-
         private const long maximumBatchSize = (long)1 << 24;
         private const long tmax = (long)1 << 62;
         private const long tmin = -tmax;
@@ -34,9 +28,11 @@ namespace Decompose.Numerics
         private long xmax;
         private BigInteger sum;
         private MobiusRange mobius;
-        private MertensRange mertens;
         private long[] xi;
         private long[] mx;
+        private long m0;
+        private sbyte[] values;
+        private long[] m;
 
         public SquareFreeCounting(int threads, bool simple)
         {
@@ -53,7 +49,6 @@ namespace Decompose.Numerics
             imax = (long)IntegerMath.FloorRoot(n, 5) / C1;
             xmax = imax != 0 ? Xi(imax) : (long)IntegerMath.FloorPower(n, 1, 2);
             mobius = new MobiusRange(xmax + 1, 0);
-            mertens = new MertensRange(mobius, Xi(1));
             xi = new long[imax + 1];
             mx = new long[imax + 1];
 
@@ -61,33 +56,92 @@ namespace Decompose.Numerics
             for (var i = 1; i <= imax; i++)
                 xi[i] = Xi(i);
 
-            var values = new sbyte[maximumBatchSize];
-            var m = new long[maximumBatchSize];
-            var m0 = (long)0;
+            values = new sbyte[maximumBatchSize];
+            m = new long[maximumBatchSize];
+            m0 = (long)0;
             for (var x = (long)1; x <= xmax; x += maximumBatchSize)
-                m0 = EvaluateBatch(x, Math.Min(xmax, x + maximumBatchSize - 1), values, m, m0);
+                m0 = EvaluateBatch(x, Math.Min(xmax, x + maximumBatchSize - 1));
 
             EvaluateTail();
             return sum;
         }
 
-        private long EvaluateBatch(long x1, long x2, sbyte[] values, long[] m, long m0)
+        private long EvaluateBatch(long x1, long x2)
         {
-            var x = x2;
-            mobius.GetValues(x1, x2 + 1, values);
-            if (!simple)
-                x = S1(x1, x, values);
-            x = S3(x1, x, values);
-
-            var s = m0;
-            var kmax = x2 - x1;
-            for (var k = 0; k <= kmax; k++)
+            if (threads <= 1)
             {
-                s += values[k];
-                m[k] = s;
+                mobius.GetValues(x1, x2 + 1, values);
+                var x = x2;
+                if (!simple)
+                    x = S1(x1, x, values, x1);
+                x = S3(x1, x, values, x1);
+
+                var s = m0;
+                var kmax = x2 - x1;
+                for (var k = 0; k <= kmax; k++)
+                {
+                    s += values[k];
+                    m[k] = s;
+                }
+                UpdateMx(x1, x2, 1, 1);
+                return s;
             }
-            UpdateMx(m, x1, x2);
-            return s;
+            else
+            {
+                var tasks = new Task[threads];
+                var length = (x2 - x1 + 1 + threads - 1) / threads;
+                for (var thread = 0; thread < threads; thread++)
+                {
+                    var xstart = x1 + thread * length;
+                    var xend = Math.Min(x2, xstart + length - 1);
+                    tasks[thread] = Task.Factory.StartNew(() =>
+                        {
+                            mobius.GetValues(xstart, xend + 1, values, x1);
+                            var x = xend;
+                            if (!simple)
+                                x = S1(xstart, x, values, x1);
+                            x = S3(xstart, x, values, x1);
+                            var s = 0;
+                            var kmin = xstart - x1;
+                            var kmax = xend - x1;
+                            for (var k = kmin; k <= kmax; k++)
+                            {
+                                s += values[k];
+                                m[k] = s;
+                            }
+                        });
+                }
+                Task.WaitAll(tasks);
+
+                var mabs = new long[threads];
+                mabs[0] = m0;
+                for (var thread = 1; thread < threads; thread++)
+                    mabs[thread] = mabs[thread - 1] + m[thread * length - 1];
+
+                for (var thread = 0; thread < threads; thread++)
+                {
+                    var index = thread;
+                    var xstart = x1 + thread * length;
+                    var xend = Math.Min(x2, xstart + length - 1);
+                    tasks[thread] = Task.Factory.StartNew(() =>
+                        {
+                            var abs = mabs[index];
+                            var kmin = xstart - x1;
+                            var kmax = xend - x1;
+                            for (var k = kmin; k <= kmax; k++)
+                                m[k] += abs;
+                        });
+                }
+                Task.WaitAll(tasks);
+
+                for (var thread = 0; thread < threads; thread++)
+                {
+                    var offset = thread + 1;
+                    tasks[thread] = Task.Factory.StartNew(() => UpdateMx(x1, x2, offset, threads));
+                }
+                Task.WaitAll(tasks);
+            }
+            return m[x2 - x1];
         }
 
         private void EvaluateTail()
@@ -104,7 +158,7 @@ namespace Decompose.Numerics
             AddToSum(s);
         }
 
-        private long S1(long x1, long x2, sbyte[] values)
+        private long S1(long x1, long x2, sbyte[] values, long offset)
         {
             if (n / x2 > betaMax)
                 return x2;
@@ -163,7 +217,7 @@ namespace Decompose.Numerics
                 Debug.Assert(gamma == beta - (BigInteger)(x - 1) * delta);
                 Debug.Assert(alpha == n / ((BigInteger)x * x));
 
-                var mu = values[x - x1];
+                var mu = values[x - offset];
                 if (mu == -1)
                     t -= alpha;
                 else if (mu == 1)
@@ -188,7 +242,7 @@ namespace Decompose.Numerics
             return x;
         }
 
-        private long S3(long x1, long x2, sbyte[] values)
+        private long S3(long x1, long x2, sbyte[] values, long offset)
         {
             var nRep = (UInt128)n;
             var s = nRep;
@@ -196,7 +250,7 @@ namespace Decompose.Numerics
             var dx = 2 * (ulong)x1 + 1;
             for (var x = x1; x <= x2; x++)
             {
-                var mu = values[x - x1];
+                var mu = values[x - offset];
                 if (mu == 1)
                     s += nRep / xx;
                 else if (mu == -1)
@@ -214,10 +268,10 @@ namespace Decompose.Numerics
             return (long)IntegerMath.FloorSquareRoot(n / i);
         }
 
-        private void UpdateMx(long[] m, long x1, long x2)
+        private void UpdateMx(long x1, long x2, long offset, long increment)
         {
             // Add the contributions to each mx from all the small m values.
-            for (var i = 1; i <= imax; i++)
+            for (var i = offset; i <= imax; i += increment)
             {
                 var x = xi[i];
                 var sqrt = IntegerMath.FloorSquareRoot(x);
@@ -226,10 +280,10 @@ namespace Decompose.Numerics
                 var kmin = Math.Max(1, x1);
                 var kmax = Math.Min(x2, x / sqrt - 1);
                 var s = (long)0;
-                s += JSum(x, jmin, ref jmax, m, x1);
+                s += JSum(x, jmin, ref jmax, x1);
                 for (var j = jmin; j <= jmax; j += 2)
                     s += m[x / j - x1];
-                s += KSum(x, kmin, ref kmax, m, x1);
+                s += KSum(x, kmin, ref kmax, x1);
                 var current = T1Odd(x / kmin);
                 for (var k = kmin; k <= kmax; k++)
                 {
@@ -241,7 +295,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private long JSum(long n, long j1, ref long j, long[] m, long x1)
+        private long JSum(long n, long j1, ref long j, long x1)
         {
             var s = (long)0;
             var beta = n / (j + 2);
@@ -285,7 +339,7 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private long KSum(long n, long k1, ref long k, long[] m, long x1)
+        private long KSum(long n, long k1, ref long k, long x1)
         {
             if (k == 0)
                 return 0;

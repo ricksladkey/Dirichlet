@@ -48,6 +48,11 @@ namespace Decompose.Numerics
 
         public void GetValues(long kmin, long kmax, sbyte[] values)
         {
+            GetValues(kmin, kmax, values, kmin);
+        }
+
+        public void GetValues(long kmin, long kmax, sbyte[] values, long offset)
+        {
             // Determine the number of primes appropriate for values up to kmax.
             var plimit = (int)Math.Ceiling(Math.Sqrt(kmax));
             var pmax = primes.Length;
@@ -56,7 +61,7 @@ namespace Decompose.Numerics
 
             if (threads == 0)
             {
-                ProcessRange(pmax, kmin, kmax, kmin, values);
+                ProcessRange(pmax, kmin, kmax, values, offset);
                 if (kmin <= 1)
                     values[1 - kmin] = 1;
                 return;
@@ -70,7 +75,7 @@ namespace Decompose.Numerics
             {
                 var kstart = (long)thread * batchSize + kmin;
                 var kend = Math.Min(kstart + batchSize, kmax);
-                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(pmax, kstart, kend, kmin, values));
+                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(pmax, kstart, kend, values, offset));
             }
             Task.WaitAll(tasks);
             if (kmin <= 1)
@@ -104,7 +109,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private void ProcessRange(int pmax, long kstart, long kend, long kmin, sbyte[] values)
+        private void ProcessRange(int pmax, long kstart, long kend, sbyte[] values, long kmin)
         {
             // Acquire resources.
             Data data;
@@ -140,7 +145,7 @@ namespace Decompose.Numerics
             {
                 var length = (int)Math.Min(blockSize, kend - k);
                 SieveBlock(pmax, k, length, products, offsets, offsetsSquared);
-                AddValues(k, length, products, kmin, values);
+                AddValues(k, length, products, values, kmin);
             }
 
             // Release resources.
@@ -181,7 +186,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private void AddValues(long k0, int length, long[] products, long kmin, sbyte[] values)
+        private void AddValues(long k0, int length, long[] products, sbyte[] values, long kmin)
         {
             // Each product that is square-free can have at most one more
             // prime factor.  It has that factor if the absolute value of
