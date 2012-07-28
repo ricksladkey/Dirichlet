@@ -1,4 +1,6 @@
-﻿using System;
+﻿#undef TIMER
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,6 +9,7 @@ using System.Diagnostics;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace Decompose.Numerics
 {
@@ -22,6 +25,7 @@ namespace Decompose.Numerics
         private const long tmax = (long)1 << 62;
         private const long tmin = -tmax;
         private const long C1 = 2;
+        private const long betaMax = (long)1 << 62;
 
         private int threads;
         private bool simple;
@@ -69,6 +73,102 @@ namespace Decompose.Numerics
             return sum;
         }
 
+        private void Evaluate(long x1, long x2, sbyte[] values, long[] m)
+        {
+#if TIMER
+            var timer = new ThreadStopwatch();
+            timer.Restart();
+#endif
+            var length = x2 - x1 + 1;
+            var batches = (length + m.Length - 1) / m.Length;
+            var batchSize = (length + batches - 1) / batches;
+            var m0 = mertens.Evaluate(x1 - 1);
+            var x = x1;
+            while (x <= x2)
+            {
+                m0 = EvaluateBatch(x, Math.Min(x + batchSize - 1, x2), values, m, m0);
+                x += batchSize;
+            }
+#if TIMER
+            Console.WriteLine("x1 = {0:F3}, length = {1:F3}, elapsed = {2:F3} msec",
+                (double)x1, (double)(x2 - x1 + 1), (double)timer.ElapsedTicks / ThreadStopwatch.Frequency * 1000);
+#endif
+        }
+
+        private long EvaluateBatch(long x1, long x2, sbyte[] values, long[] m, long m0)
+        {
+            var x = x2;
+            mobius.GetValues(x1, x2 + 1, values);
+            if (!simple)
+                x = S1(x1, x, values);
+            x = S3(x1, x, values);
+
+            var s = m0;
+            var kmax = x2 - x1;
+            for (var k = 0; k <= kmax; k++)
+            {
+                s += values[k];
+                m[k] = s;
+            }
+            UpdateMx(m, x1, x2);
+            return s;
+        }
+
+        private void EvaluateParallel(long x1, long x2)
+        {
+            // Create consumers.
+            var queue = new BlockingCollection<WorkItem>();
+            var consumers = threads;
+            var tasks = new Task[consumers];
+            for (var consumer = 0; consumer < consumers; consumer++)
+            {
+                var thread = consumer;
+                tasks[consumer] = Task.Factory.StartNew(() => ConsumeItems(thread, queue));
+            }
+
+            // Produce work items.
+            ProduceItems(queue, x1, x2);
+
+            // Wait for completion.
+            queue.CompleteAdding();
+            Task.WaitAll(tasks);
+        }
+
+        private void ProduceItems(BlockingCollection<WorkItem> queue, long imin, long imax)
+        {
+#if false
+            BatchRange(queue, imin, imax);
+#else
+            var split1 = (long)IntegerMath.FloorPower(n, 1, 5);
+            var split2 = (long)IntegerMath.FloorPower(n, 1, 4);
+            BatchRange(queue, imin, split1);
+            BatchRange(queue, split1 + 1, split2);
+            BatchRange(queue, split2 + 1, imax);
+#endif
+        }
+
+        private void BatchRange(BlockingCollection<WorkItem> queue, long imin, long imax)
+        {
+            var batchSize = (imax - imin + 1 + threads - 1) / threads;
+            for (var i = imin; i <= imax; i += batchSize)
+                queue.Add(new WorkItem { Min = i, Max = Math.Min(i + batchSize - 1, imax) });
+        }
+
+        private void ConsumeItems(int thread, BlockingCollection<WorkItem> queue)
+        {
+            var values = new sbyte[maximumBatchSize];
+            var m = new long[maximumBatchSize];
+            var item = default(WorkItem);
+            try
+            {
+                while (queue.TryTake(out item, Timeout.Infinite))
+                    Evaluate(item.Min, item.Max, values, m);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
         private void EvaluateTail()
         {
             // Finialize mx.
@@ -82,6 +182,111 @@ namespace Decompose.Numerics
 
             AddToSum(s);
         }
+
+        private long S1(long x1, long x2, sbyte[] values)
+        {
+            if (n / x2 > betaMax)
+                return x2;
+
+            var s = (UInt128)n;
+            var t = (long)0;
+            var x = x2;
+            var beta = (long)(n / (x + 1));
+            var eps = (long)(n % (x + 1));
+            var delta = (long)(n / x - beta);
+            var gamma = (long)beta - x * delta;
+            var alpha = beta / (x + 1);
+            var alphax = (alpha + 1) * (x + 1);
+            while (x >= x1)
+            {
+                eps += gamma;
+                if (eps >= x)
+                {
+                    ++delta;
+                    gamma -= x;
+                    eps -= x;
+                    if (eps >= x)
+                    {
+                        ++delta;
+                        gamma -= x;
+                        eps -= x;
+                        if (eps >= x)
+                            break;
+                    }
+                }
+                else if (eps < 0)
+                {
+                    --delta;
+                    gamma += x;
+                    eps += x;
+                }
+                gamma += 2 * delta;
+                beta += delta;
+                alphax -= alpha + 1;
+                if (alphax <= beta)
+                {
+                    ++alpha;
+                    alphax += x;
+                    if (alphax <= beta)
+                    {
+                        ++alpha;
+                        alphax += x;
+                        if (alphax <= beta)
+                            break;
+                    }
+                }
+
+                Debug.Assert(eps == n % x);
+                Debug.Assert(beta == n / x);
+                Debug.Assert(delta == beta - n / (x + 1));
+                Debug.Assert(gamma == beta - (BigInteger)(x - 1) * delta);
+                Debug.Assert(alpha == n / ((BigInteger)x * x));
+
+                var mu = values[x - x1];
+                if (mu == -1)
+                    t -= alpha;
+                else if (mu == 1)
+                    t += alpha;
+                if (t > tmax)
+                {
+                    s += (ulong)t;
+                    t = 0;
+                }
+                else if (t < tmin)
+                {
+                    s -= (ulong)-t;
+                    t = 0;
+                }
+                --x;
+            }
+            if (t > 0)
+                s += (ulong)t;
+            else if (t < 0)
+                s -= (ulong)-t;
+            AddToSum(s - n);
+            return x;
+        }
+
+        private long S3(long x1, long x2, sbyte[] values)
+        {
+            var nRep = (UInt128)n;
+            var s = nRep;
+            var xx = (ulong)x1 * (ulong)x1;
+            var dx = 2 * (ulong)x1 + 1;
+            for (var x = x1; x <= x2; x++)
+            {
+                var mu = values[x - x1];
+                if (mu == 1)
+                    s += nRep / xx;
+                else if (mu == -1)
+                    s -= nRep / xx;
+                xx += dx;
+                dx += 2;
+            }
+            AddToSum(s - n);
+            return x1 - 1;
+        }
+
 
         private long Xi(long i)
         {
@@ -234,193 +439,6 @@ namespace Decompose.Numerics
         private long T1Odd(long a)
         {
             return (a + (a & 1)) >> 1;
-        }
-
-        private void Evaluate(long x1, long x2, sbyte[] values, long[] m)
-        {
-            var length = x2 - x1 + 1;
-            var batches = (length + m.Length - 1) / m.Length;
-            var batchSize = (length + batches - 1) / batches;
-            var m0 = mertens.Evaluate(x1 - 1);
-            var x = x1;
-            while (x <= x2)
-            {
-                m0 = EvaluateBatch(x, Math.Min(x + batchSize - 1, x2), values, m, m0);
-                x += batchSize;
-            }
-        }
-
-        private long EvaluateBatch(long x1, long x2, sbyte[] values, long[] m, long m0)
-        {
-            var x = x2;
-            mobius.GetValues(x1, x2 + 1, values);
-            if (!simple)
-                x = S1(x1, x, values);
-            x = S3(x1, x, values);
-
-            var s = m0;
-            var kmax = x2 - x1;
-            for (var k = 0; k <= kmax; k++)
-            {
-                s += values[k];
-                m[k] = s;
-            }
-            UpdateMx(m, x1, x2);
-            return s;
-        }
-
-        private void EvaluateParallel(long x1, long x2)
-        {
-            // Create consumers.
-            var queue = new BlockingCollection<WorkItem>();
-            var consumers = threads;
-            var tasks = new Task[consumers];
-            for (var consumer = 0; consumer < consumers; consumer++)
-            {
-                var thread = consumer;
-                tasks[consumer] = Task.Factory.StartNew(() => ConsumeItems(thread, queue));
-            }
-
-            // Produce work items.
-            ProduceItems(queue, x1, x2);
-
-            // Wait for completion.
-            queue.CompleteAdding();
-            Task.WaitAll(tasks);
-        }
-
-        private void ProduceItems(BlockingCollection<WorkItem> queue, long imin, long imax)
-        {
-#if false
-            var split = (long)IntegerMath.FloorPower(n, 4, 15);
-            BatchRange(queue, imin, split, maximumBatchSize / 10);
-            BatchRange(queue, split + 1, imax, maximumBatchSize);
-#else
-            BatchRange(queue, imin, imax, maximumBatchSize);
-#endif
-        }
-
-        private void BatchRange(BlockingCollection<WorkItem> queue, long imin, long imax, long batchSizeLimit)
-        {
-            var batchSize = Math.Min(batchSizeLimit, (imax - imin + 1 + threads - 1) / threads);
-            for (var i = imin; i <= imax; i += batchSize)
-                queue.Add(new WorkItem { Min = i, Max = Math.Min(i + batchSize - 1, imax) });
-        }
-
-        private void ConsumeItems(int thread, BlockingCollection<WorkItem> queue)
-        {
-            var values = new sbyte[maximumBatchSize];
-            var m = new long[maximumBatchSize];
-            var item = default(WorkItem);
-            try
-            {
-                while (queue.TryTake(out item, Timeout.Infinite))
-                    Evaluate(item.Min, item.Max, values, m);
-            }
-            catch (OperationCanceledException)
-            {
-            }
-        }
-
-        private long S1(long x1, long x2, sbyte[] values)
-        {
-            var s = (UInt128)n;
-            var t = (long)0;
-            var x = x2;
-            var beta = (long)(n / (x + 1));
-            var eps = (long)(n % (x + 1));
-            var delta = (long)(n / x - beta);
-            var gamma = (long)beta - x * delta;
-            var alpha = beta / (x + 1);
-            var alphax = (alpha + 1) * (x + 1);
-            while (x >= x1)
-            {
-                eps += gamma;
-                if (eps >= x)
-                {
-                    ++delta;
-                    gamma -= x;
-                    eps -= x;
-                    if (eps >= x)
-                    {
-                        ++delta;
-                        gamma -= x;
-                        eps -= x;
-                        if (eps >= x)
-                            break;
-                    }
-                }
-                else if (eps < 0)
-                {
-                    --delta;
-                    gamma += x;
-                    eps += x;
-                }
-                gamma += 2 * delta;
-                beta += delta;
-                alphax -= alpha + 1;
-                if (alphax <= beta)
-                {
-                    ++alpha;
-                    alphax += x;
-                    if (alphax <= beta)
-                    {
-                        ++alpha;
-                        alphax += x;
-                        if (alphax <= beta)
-                            break;
-                    }
-                }
-
-                Debug.Assert(eps == n % x);
-                Debug.Assert(beta == n / x);
-                Debug.Assert(delta == beta - n / (x + 1));
-                Debug.Assert(gamma == beta - (BigInteger)(x - 1) * delta);
-                Debug.Assert(alpha == n / ((BigInteger)x * x));
-
-                var mu = values[x - x1];
-                if (mu == -1)
-                    t -= alpha;
-                else if (mu == 1)
-                    t += alpha;
-                if (t > tmax)
-                {
-                    s += (ulong)t;
-                    t = 0;
-                }
-                else if (t < tmin)
-                {
-                    s -= (ulong)-t;
-                    t = 0;
-                }
-                --x;
-            }
-            if (t > 0)
-                s += (ulong)t;
-            else if (t < 0)
-                s -= (ulong)-t;
-            AddToSum(s - n);
-            return x;
-        }
-
-        private long S3(long x1, long x2, sbyte[] values)
-        {
-            var nRep = (UInt128)n;
-            var s = nRep;
-            var xx = (ulong)x1 * (ulong)x1;
-            var dx = 2 * (ulong)x1 + 1;
-            for (var x = x1; x <= x2; x++)
-            {
-                var mu = values[x - x1];
-                if (mu == 1)
-                    s += nRep / xx;
-                else if (mu == -1)
-                    s -= nRep / xx;
-                xx += dx;
-                dx += 2;
-            }
-            AddToSum(s - n);
-            return x1 - 1;
         }
 
         private void AddToSum(BigInteger s)

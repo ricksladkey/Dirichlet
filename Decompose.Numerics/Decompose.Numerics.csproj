@@ -167,6 +167,7 @@
     <Compile Include="SquareRoot\SqrtByBits.cs" />
     <Compile Include="SquareRoot\SqrtNewtonsMethod.cs" />
     <Compile Include="Primality\TrialDivisionPrimality.cs" />
+    <Compile Include="System\ThreadStopWatch.cs" />
     <Compile Include="Unused.cs" />
     <Compile Include="Collections\Word64BitMatrix.cs" />
   </ItemGroup>
