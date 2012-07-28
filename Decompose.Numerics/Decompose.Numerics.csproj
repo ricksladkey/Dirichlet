@@ -61,6 +61,7 @@
     <Compile Include="ArithmeticFunctions\SimpleMobiusCollection.cs" />
     <Compile Include="ArithmeticFunctions\SimplerMobiusCollection.cs" />
     <Compile Include="ArithmeticFunctions\SquareFreeCounting.cs" />
+    <Compile Include="ArithmeticFunctions\SquareFreeCountingParallelX.cs" />
     <Compile Include="Collections\BitMatrixHelper.cs" />
     <Compile Include="Collections\ByColSetBitMatrix.cs" />
     <Compile Include="Collections\Graph.cs" />

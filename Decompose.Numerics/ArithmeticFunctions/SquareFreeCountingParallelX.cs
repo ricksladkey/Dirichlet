@@ -13,7 +13,7 @@ using System.Runtime.InteropServices;
 
 namespace Decompose.Numerics
 {
-    public class SquareFreeCounting
+    public class SquareFreeCountingParallelX
     {
         private struct WorkItem
         {
@@ -38,7 +38,7 @@ namespace Decompose.Numerics
         private long[] xi;
         private long[] mx;
 
-        public SquareFreeCounting(int threads, bool simple)
+        public SquareFreeCountingParallelX(int threads, bool simple)
         {
             this.threads = threads;
             this.simple = simple;
@@ -61,14 +61,38 @@ namespace Decompose.Numerics
             for (var i = 1; i <= imax; i++)
                 xi[i] = Xi(i);
 
-            var values = new sbyte[maximumBatchSize];
-            var m = new long[maximumBatchSize];
-            var m0 = (long)0;
-            for (var x = (long)1; x <= xmax; x += maximumBatchSize)
-                m0 = EvaluateBatch(x, Math.Min(xmax, x + maximumBatchSize - 1), values, m, m0);
-
+            if (threads <= 1)
+            {
+                var values = new sbyte[maximumBatchSize];
+                var m = new long[maximumBatchSize];
+                Evaluate(1, xmax, values, m);
+            }
+            else
+                EvaluateParallel(1, xmax);
             EvaluateTail();
             return sum;
+        }
+
+        private void Evaluate(long x1, long x2, sbyte[] values, long[] m)
+        {
+#if TIMER
+            var timer = new ThreadStopwatch();
+            timer.Restart();
+#endif
+            var length = x2 - x1 + 1;
+            var batches = (length + m.Length - 1) / m.Length;
+            var batchSize = (length + batches - 1) / batches;
+            var m0 = mertens.Evaluate(x1 - 1);
+            var x = x1;
+            while (x <= x2)
+            {
+                m0 = EvaluateBatch(x, Math.Min(x + batchSize - 1, x2), values, m, m0);
+                x += batchSize;
+            }
+#if TIMER
+            Console.WriteLine("x1 = {0:F3}, length = {1:F3}, elapsed = {2:F3} msec",
+                (double)x1, (double)(x2 - x1 + 1), (double)timer.ElapsedTicks / ThreadStopwatch.Frequency * 1000);
+#endif
         }
 
         private long EvaluateBatch(long x1, long x2, sbyte[] values, long[] m, long m0)
@@ -88,6 +112,61 @@ namespace Decompose.Numerics
             }
             UpdateMx(m, x1, x2);
             return s;
+        }
+
+        private void EvaluateParallel(long x1, long x2)
+        {
+            // Create consumers.
+            var queue = new BlockingCollection<WorkItem>();
+            var consumers = threads;
+            var tasks = new Task[consumers];
+            for (var consumer = 0; consumer < consumers; consumer++)
+            {
+                var thread = consumer;
+                tasks[consumer] = Task.Factory.StartNew(() => ConsumeItems(thread, queue));
+            }
+
+            // Produce work items.
+            ProduceItems(queue, x1, x2);
+
+            // Wait for completion.
+            queue.CompleteAdding();
+            Task.WaitAll(tasks);
+        }
+
+        private void ProduceItems(BlockingCollection<WorkItem> queue, long imin, long imax)
+        {
+#if false
+            BatchRange(queue, imin, imax);
+#else
+            var split1 = (long)IntegerMath.FloorPower(n, 1, 5);
+            var split2 = (long)IntegerMath.FloorPower(n, 1, 4);
+            BatchRange(queue, imin, split1);
+            BatchRange(queue, split1 + 1, split2);
+            BatchRange(queue, split2 + 1, imax);
+#endif
+        }
+
+        private void BatchRange(BlockingCollection<WorkItem> queue, long imin, long imax)
+        {
+            var batchSize = (imax - imin + 1 + threads - 1) / threads;
+            for (var i = imin; i <= imax; i += batchSize)
+                queue.Add(new WorkItem { Min = i, Max = Math.Min(i + batchSize - 1, imax) });
+        }
+
+        private void ConsumeItems(int thread, BlockingCollection<WorkItem> queue)
+        {
+            var values = new sbyte[maximumBatchSize];
+            var m = new long[maximumBatchSize];
+            var item = default(WorkItem);
+            try
+            {
+                while (queue.TryTake(out item, Timeout.Infinite))
+                    Evaluate(item.Min, item.Max, values, m);
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
 
         private void EvaluateTail()
