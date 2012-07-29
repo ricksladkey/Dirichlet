@@ -238,7 +238,7 @@ namespace Decompose.Numerics
                 var jmin = UpToOdd(Math.Max(3, x / (x2 + 1) + 1));
                 var jmax = DownToOdd(Math.Min(sqrt, x / x1));
                 var kmin = Math.Max(1, x1);
-                var kmax = Math.Min(x2, x / sqrt - 1);
+                var kmax = Math.Min(x / sqrt - 1, x2);
                 var s = (long)0;
                 s += JSum(x, jmin, ref jmax, x1);
                 for (var j = jmin; j <= jmax; j += 2)
@@ -251,7 +251,7 @@ namespace Decompose.Numerics
                     s += (current - next) * m[k - x1];
                     current = next;
                 }
-                Interlocked.Add(ref mx[i], -s);
+                mx[i] -= s;
             }
         }
 
