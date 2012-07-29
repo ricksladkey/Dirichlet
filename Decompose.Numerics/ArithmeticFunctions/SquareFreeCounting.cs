@@ -18,7 +18,7 @@ namespace Decompose.Numerics
         private const long maximumBatchSize = (long)1 << 24;
         private const long tmax = (long)1 << 62;
         private const long tmin = -tmax;
-        private const long C1 = 2;
+        private const long C1 = 1;
         private const long betaMax = (long)1 << 62;
 
         private int threads;
@@ -48,7 +48,7 @@ namespace Decompose.Numerics
             sum = 0;
             imax = (long)IntegerMath.FloorRoot(n, 5) / C1;
             xmax = imax != 0 ? Xi(imax) : (long)IntegerMath.FloorPower(n, 1, 2);
-            mobius = new MobiusRange(xmax + 1, 0);
+            mobius = new MobiusRange(xmax + 1, threads);
             xi = new long[imax + 1];
             mx = new long[imax + 1];
 
@@ -88,6 +88,7 @@ namespace Decompose.Numerics
             }
             else
             {
+                mobius.GetValues(x1, x2 + 1, values, x1);
                 var tasks = new Task[threads];
                 var length = (x2 - x1 + 1 + threads - 1) / threads;
                 for (var thread = 0; thread < threads; thread++)
@@ -96,7 +97,6 @@ namespace Decompose.Numerics
                     var xend = Math.Min(x2, xstart + length - 1);
                     tasks[thread] = Task.Factory.StartNew(() =>
                         {
-                            mobius.GetValues(xstart, xend + 1, values, x1);
                             var x = xend;
                             if (!simple)
                                 x = S1(xstart, x, values, x1);

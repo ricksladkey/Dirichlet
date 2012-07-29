@@ -24,7 +24,7 @@ namespace Decompose.Numerics
         private const long maximumBatchSize = (long)1 << 24;
         private const long tmax = (long)1 << 62;
         private const long tmin = -tmax;
-        private const long C1 = 2;
+        private const long C1 = 1;
         private const long betaMax = (long)1 << 62;
 
         private int threads;
