@@ -1,6 +1,4 @@
-﻿#undef TIMER
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -68,27 +66,17 @@ namespace Decompose.Numerics
 
         private long EvaluateBatch(long x1, long x2)
         {
+            mobius.GetValues(x1, x2 + 1, values, x1, m, m0);
             if (threads <= 1)
             {
-                mobius.GetValues(x1, x2 + 1, values);
                 var x = x2;
                 if (!simple)
                     x = S1(x1, x, values, x1);
                 x = S3(x1, x, values, x1);
-
-                var s = m0;
-                var kmax = x2 - x1;
-                for (var k = 0; k <= kmax; k++)
-                {
-                    s += values[k];
-                    m[k] = s;
-                }
                 UpdateMx(x1, x2, 1, 1);
-                return s;
             }
             else
             {
-                mobius.GetValues(x1, x2 + 1, values, x1);
                 var tasks = new Task[threads];
                 var length = (x2 - x1 + 1 + threads - 1) / threads;
                 for (var thread = 0; thread < threads; thread++)
@@ -101,35 +89,6 @@ namespace Decompose.Numerics
                             if (!simple)
                                 x = S1(xstart, x, values, x1);
                             x = S3(xstart, x, values, x1);
-                            var s = 0;
-                            var kmin = xstart - x1;
-                            var kmax = xend - x1;
-                            for (var k = kmin; k <= kmax; k++)
-                            {
-                                s += values[k];
-                                m[k] = s;
-                            }
-                        });
-                }
-                Task.WaitAll(tasks);
-
-                var mabs = new long[threads];
-                mabs[0] = m0;
-                for (var thread = 1; thread < threads; thread++)
-                    mabs[thread] = mabs[thread - 1] + m[thread * length - 1];
-
-                for (var thread = 0; thread < threads; thread++)
-                {
-                    var index = thread;
-                    var xstart = x1 + thread * length;
-                    var xend = Math.Min(x2, xstart + length - 1);
-                    tasks[thread] = Task.Factory.StartNew(() =>
-                        {
-                            var abs = mabs[index];
-                            var kmin = xstart - x1;
-                            var kmax = xend - x1;
-                            for (var k = kmin; k <= kmax; k++)
-                                m[k] += abs;
                         });
                 }
                 Task.WaitAll(tasks);

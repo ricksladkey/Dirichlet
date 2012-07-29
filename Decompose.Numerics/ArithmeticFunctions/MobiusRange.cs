@@ -48,10 +48,15 @@ namespace Decompose.Numerics
 
         public void GetValues(long kmin, long kmax, sbyte[] values)
         {
-            GetValues(kmin, kmax, values, kmin);
+            GetValues(kmin, kmax, values, kmin, null, 0);
         }
 
         public void GetValues(long kmin, long kmax, sbyte[] values, long offset)
+        {
+            GetValues(kmin, kmax, values, offset, null, 0);
+        }
+
+        public void GetValues(long kmin, long kmax, sbyte[] values, long offset, long[] sums, long m0)
         {
             // Determine the number of primes appropriate for values up to kmax.
             var plimit = (int)Math.Ceiling(Math.Sqrt(kmax));
@@ -61,7 +66,7 @@ namespace Decompose.Numerics
 
             if (threads == 0)
             {
-                ProcessRange(pmax, kmin, kmax, values, offset);
+                ProcessRange(pmax, kmin, kmax, values, offset, sums, m0);
                 if (kmin <= 1)
                     values[1 - kmin] = 1;
                 return;
@@ -75,11 +80,35 @@ namespace Decompose.Numerics
             {
                 var kstart = (long)thread * batchSize + kmin;
                 var kend = Math.Min(kstart + batchSize, kmax);
-                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(pmax, kstart, kend, values, offset));
+                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(pmax, kstart, kend, values, offset, sums, 0));
             }
             Task.WaitAll(tasks);
             if (kmin <= 1)
                 values[1 - kmin] = 1;
+
+            if (sums == null)
+                return;
+
+            var mabs = new long[threads];
+            mabs[0] = m0;
+            for (var thread = 1; thread < threads; thread++)
+                mabs[thread] = mabs[thread - 1] + sums[(long)thread * batchSize - 1];
+
+            for (var thread = 0; thread < threads; thread++)
+            {
+                var index = thread;
+                var kstart = (long)thread * batchSize + kmin;
+                var kend = Math.Min(kstart + batchSize, kmax);
+                tasks[thread] = Task.Factory.StartNew(() =>
+                    {
+                        var abs = mabs[index];
+                        var klo = kstart - offset;
+                        var khi = kend - offset;
+                        for (var k = klo; k < khi; k++)
+                            sums[k] += abs;
+                    });
+            }
+            Task.WaitAll(tasks);
         }
 
 
@@ -109,7 +138,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private void ProcessRange(int pmax, long kstart, long kend, sbyte[] values, long kmin)
+        private void ProcessRange(int pmax, long kstart, long kend, sbyte[] values, long kmin, long[] sums, long m0)
         {
             // Acquire resources.
             Data data;
@@ -141,11 +170,14 @@ namespace Decompose.Numerics
             }
 
             // Process the whole range in block-sized batches.
+            var abs = m0;
             for (var k = kstart; k < kend; k += blockSize)
             {
                 var length = (int)Math.Min(blockSize, kend - k);
                 SieveBlock(pmax, k, length, products, offsets, offsetsSquared);
-                AddValues(k, length, products, values, kmin);
+                AddValues(k, length, products, values, kmin, sums, abs);
+                if (sums != null)
+                    abs = sums[k + length - 1 - kmin];
             }
 
             // Release resources.
@@ -186,22 +218,42 @@ namespace Decompose.Numerics
             }
         }
 
-        private void AddValues(long k0, int length, long[] products, sbyte[] values, long kmin)
+        private void AddValues(long k0, int length, long[] products, sbyte[] values, long kmin, long[] sums, long m0)
         {
             // Each product that is square-free can have at most one more
             // prime factor.  It has that factor if the absolute value of
             // the product is less than the full value.
             var k = k0;
-            for (var i = 0; i < length; i++, k++)
+            if (sums == null)
             {
-                // Look ma, no branching.
-                var p = products[i];
-                var pos = -p >> 63; // pos = -1 if p > 0, zero otherwise
-                var neg = p >> 63; // neg = -1 if p is < 0, zero otherwise
-                var abs = (p + neg) ^ neg; // abs = |p|
-                var flip = (abs - k) >> 63; // flip = -1 if abs < k, zero otherwise
-                values[k - kmin] = (sbyte)(((neg - pos) ^ flip) - flip); // values[k] = pos - neg if flip = -1, neg - pos otherwise
-                Debug.Assert(k - kmin == 0 || values[k - kmin] == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
+                for (var i = 0; i < length; i++, k++)
+                {
+                    // Look ma, no branching.
+                    var p = products[i];
+                    var pos = -p >> 63; // pos = -1 if p > 0, zero otherwise
+                    var neg = p >> 63; // neg = -1 if p is < 0, zero otherwise
+                    var abs = (p + neg) ^ neg; // abs = |p|
+                    var flip = (abs - k) >> 63; // flip = -1 if abs < k, zero otherwise
+                    values[k - kmin] = (sbyte)(((neg - pos) ^ flip) - flip); // values[k] = pos - neg if flip = -1, neg - pos otherwise
+                    Debug.Assert(k - kmin == 0 || values[k - kmin] == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
+                }
+            }
+            else
+            {
+                for (var i = 0; i < length; i++, k++)
+                {
+                    // Look ma, no branching.
+                    var p = products[i];
+                    var pos = -p >> 63; // pos = -1 if p > 0, zero otherwise
+                    var neg = p >> 63; // neg = -1 if p is < 0, zero otherwise
+                    var abs = (p + neg) ^ neg; // abs = |p|
+                    var flip = (abs - k) >> 63; // flip = -1 if abs < k, zero otherwise
+                    var value = ((neg - pos) ^ flip) - flip; // values[k] = pos - neg if flip = -1, neg - pos otherwise
+                    values[k - kmin] = (sbyte)value;
+                    m0 += value;
+                    sums[k - kmin] = m0;
+                    Debug.Assert(k - kmin == 0 || value == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
+                }
             }
         }
     }
