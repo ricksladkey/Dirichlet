@@ -15,6 +15,11 @@ namespace Decompose.Numerics
         private long u;
         private long[] m;
 
+        public MertensRange(long nmax, int threads)
+            : this(new MobiusRange((long)IntegerMath.FloorPower((BigInteger)nmax, 2, 3) + 1, threads), nmax)
+        {
+        }
+
         public MertensRange(MobiusRange mobius, long nmax)
         {
             this.mobius = mobius;
@@ -22,14 +27,7 @@ namespace Decompose.Numerics
 
             u = (long)IntegerMath.FloorPower((BigInteger)nmax, 2, 3);
             m = new long[u + 1];
-            var values = new sbyte[u + 1];
-            mobius.GetValues(0, u + 1, values);
-            var t = (long)0;
-            for (var i = 0; i <= u; i++)
-            {
-                t += values[i];
-                m[i] = t;
-            }
+            mobius.GetValues(0, u + 1, new sbyte[u + 1], 0, m, 0);
         }
 
         public long Evaluate(long n)
@@ -42,22 +40,15 @@ namespace Decompose.Numerics
             var mx = new long[imax + 1];
             var threads = mobius.Threads;
             if (threads <= 1)
-            {
-                for (var i = 1; i <= imax; i += 2)
-                    UpdateMx(mx, n, imax, i);
-            }
+                UpdateMx(mx, n, 1, imax, 2);
             else
             {
                 var tasks = new Task[threads];
                 for (var thread = 0; thread < threads; thread++)
                 {
-                    var offset = 2 * thread + 1;
+                    var imin = 2 * thread + 1;
                     var increment = 2 * threads;
-                    tasks[thread] = Task.Factory.StartNew(() =>
-                        {
-                            for (var i = offset; i <= imax; i += increment)
-                                UpdateMx(mx, n, imax, i);
-                        });
+                    tasks[thread] = Task.Factory.StartNew(() => UpdateMx(mx, n, imin, imax, increment));
                 }
                 Task.WaitAll(tasks);
             }
@@ -65,29 +56,32 @@ namespace Decompose.Numerics
             return mx[1];
         }
 
-        private void UpdateMx(long[] mx, long n, long imax, long i)
+        private void UpdateMx(long[] mx, long n, long imin, long imax, long increment)
         {
-            var ni = n / i;
-            var sqrt = IntegerMath.FloorSquareRoot(ni);
-            var s = (long)0;
-
-            var jmin = UpToOdd(imax / i + 1);
-            var jmax = DownToOdd(sqrt);
-            s += JSum(ni, jmin, ref jmax);
-            for (var j = jmin; j <= jmax; j += 2)
-                s += m[ni / j];
-
-            var kmax = ni / sqrt - 1;
-            s += KSum(ni, 1, ref kmax);
-            var current = T1Odd(ni);
-            for (var k = 1; k <= kmax; k++)
+            for (var i = imin; i <= imax; i += increment)
             {
-                var next = T1Odd(ni / (k + 1));
-                s += (current - next) * m[k];
-                current = next;
-            }
+                var ni = n / i;
+                var sqrt = IntegerMath.FloorSquareRoot(ni);
+                var s = (long)0;
 
-            mx[i] = -s;
+                var jmin = UpToOdd(imax / i + 1);
+                var jmax = DownToOdd(sqrt);
+                s += JSum(ni, jmin, ref jmax);
+                for (var j = jmin; j <= jmax; j += 2)
+                    s += m[ni / j];
+
+                var kmax = ni / sqrt - 1;
+                s += KSum(ni, 1, ref kmax);
+                var current = T1Odd(ni);
+                for (var k = 1; k <= kmax; k++)
+                {
+                    var next = T1Odd(ni / (k + 1));
+                    s += (current - next) * m[k];
+                    current = next;
+                }
+
+                mx[i] = -s;
+            }
         }
 
         private long JSum(long n, long j1, ref long j)
@@ -201,7 +195,7 @@ namespace Decompose.Numerics
 
         private long DownToOdd(long a)
         {
-            return a - (~a & 1);
+            return (a - 1) | 1;
         }
 
         private long T1Odd(long a)

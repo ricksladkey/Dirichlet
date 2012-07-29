@@ -433,7 +433,7 @@ namespace Sandbox
 
         static void ParityTest()
         {
-#if true
+#if false
             var algorithm = new SquareFreeCounting(8, false);
             var timer = new Stopwatch();
             for (var i = 18; i <= 24; i++)
@@ -447,14 +447,13 @@ namespace Sandbox
             }
 #endif
 
-#if false
+#if true
             var timer = new Stopwatch();
             for (var i = 1; i <= 12; i++)
             {
                 var n = IntegerMath.Power((long)10, i);
-                var range = (long)IntegerMath.CeilingPower((BigInteger)n, 2, 3);
                 timer.Restart();
-                var mertens = new MertensRange(new MobiusRange(range + 1, 8), n + 1);
+                var mertens = new MertensRange(n + 1, 8);
                 var elapsed1 = (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000 / 10;
                 timer.Restart();
                 var sum1 = mertens.Evaluate(n);

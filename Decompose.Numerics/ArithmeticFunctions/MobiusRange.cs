@@ -73,6 +73,7 @@ namespace Decompose.Numerics
             }
 
             // Choose batch size such that: batchSize*threads >= length and batchSize is even.
+            // Note that Mertens base value for a batch is unknown because of parallelism.
             var tasks = new Task[threads];
             var length = kmax - kmin;
             var batchSize = ((length + threads - 1) / threads + 1) & ~1;
@@ -89,11 +90,17 @@ namespace Decompose.Numerics
             if (sums == null)
                 return;
 
+            // Collect and sum Mertens function totals for each batch.
             var mabs = new long[threads];
             mabs[0] = m0;
             for (var thread = 1; thread < threads; thread++)
-                mabs[thread] = mabs[thread - 1] + sums[(long)thread * batchSize - 1];
+            {
+                var last = (long)thread * batchSize - 1;
+                if (last < sums.Length)
+                    mabs[thread] = mabs[thread - 1] + sums[last];
+            }
 
+            // Convert relative Mertens function values into absolute Mertens values.
             for (var thread = 0; thread < threads; thread++)
             {
                 var index = thread;
@@ -170,14 +177,11 @@ namespace Decompose.Numerics
             }
 
             // Process the whole range in block-sized batches.
-            var abs = m0;
             for (var k = kstart; k < kend; k += blockSize)
             {
                 var length = (int)Math.Min(blockSize, kend - k);
                 SieveBlock(pmax, k, length, products, offsets, offsetsSquared);
-                AddValues(k, length, products, values, kmin, sums, abs);
-                if (sums != null)
-                    abs = sums[k + length - 1 - kmin];
+                m0 = AddValues(k, length, products, values, kmin, sums, m0);
             }
 
             // Release resources.
@@ -218,7 +222,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private void AddValues(long k0, int length, long[] products, sbyte[] values, long kmin, long[] sums, long m0)
+        private long AddValues(long k0, int length, long[] products, sbyte[] values, long kmin, long[] sums, long m0)
         {
             // Each product that is square-free can have at most one more
             // prime factor.  It has that factor if the absolute value of
@@ -255,6 +259,7 @@ namespace Decompose.Numerics
                     Debug.Assert(k - kmin == 0 || value == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
                 }
             }
+            return m0;
         }
     }
 }
