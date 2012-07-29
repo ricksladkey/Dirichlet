@@ -67,7 +67,7 @@ namespace Decompose.Numerics
             if (threads == 0)
             {
                 ProcessRange(pmax, kmin, kmax, values, offset, sums, m0);
-                if (kmin <= 1)
+                if (values != null && kmin <= 1)
                     values[1 - kmin] = 1;
                 return;
             }
@@ -84,7 +84,7 @@ namespace Decompose.Numerics
                 tasks[thread] = Task.Factory.StartNew(() => ProcessRange(pmax, kstart, kend, values, offset, sums, 0));
             }
             Task.WaitAll(tasks);
-            if (kmin <= 1)
+            if (values != null && kmin <= 1)
                 values[1 - kmin] = 1;
 
             if (sums == null)
@@ -240,6 +240,22 @@ namespace Decompose.Numerics
                     var flip = (abs - k) >> 63; // flip = -1 if abs < k, zero otherwise
                     values[k - kmin] = (sbyte)(((neg - pos) ^ flip) - flip); // values[k] = pos - neg if flip = -1, neg - pos otherwise
                     Debug.Assert(k - kmin == 0 || values[k - kmin] == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
+                }
+            }
+            else if (values == null)
+            {
+                for (var i = 0; i < length; i++, k++)
+                {
+                    // Look ma, no branching.
+                    var p = products[i];
+                    var pos = -p >> 63; // pos = -1 if p > 0, zero otherwise
+                    var neg = p >> 63; // neg = -1 if p is < 0, zero otherwise
+                    var abs = (p + neg) ^ neg; // abs = |p|
+                    var flip = (abs - k) >> 63; // flip = -1 if abs < k, zero otherwise
+                    var value = ((neg - pos) ^ flip) - flip; // values[k] = pos - neg if flip = -1, neg - pos otherwise
+                    m0 += value;
+                    sums[k - kmin] = m0;
+                    Debug.Assert(k - kmin == 0 || value == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
                 }
             }
             else

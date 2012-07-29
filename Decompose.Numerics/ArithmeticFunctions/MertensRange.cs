@@ -33,7 +33,7 @@ namespace Decompose.Numerics
             u = (long)IntegerMath.FloorPower((BigInteger)nmax, 2, 3);
             ulo = Math.Min(u, maximumBatchSize);
             mlo = new long[ulo];
-            mobius.GetValues(1, ulo + 1, new sbyte[ulo], 1, mlo, 0);
+            mobius.GetValues(1, ulo + 1, null, 1, mlo, 0);
         }
 
         public long Evaluate(long n)
@@ -47,14 +47,13 @@ namespace Decompose.Numerics
             ProcessBatch(mx, n, imax, mlo, 1, ulo);
             if (ulo < u)
             {
-                var values = new sbyte[maximumBatchSize];
                 var mhi = new long[maximumBatchSize];
                 var m0 = mlo[ulo - 1];
                 for (var x = ulo + 1; x <= u; x += maximumBatchSize)
                 {
                     var xstart = x;
                     var xend = Math.Min(xstart + maximumBatchSize - 1, u);
-                    mobius.GetValues(xstart, xend + 1, values, xstart, mhi, m0);
+                    mobius.GetValues(xstart, xend + 1, null, xstart, mhi, m0);
                     ProcessBatch(mx, n, imax, mhi, xstart, xend);
                     m0 = mhi[xend - xstart];
                 }
