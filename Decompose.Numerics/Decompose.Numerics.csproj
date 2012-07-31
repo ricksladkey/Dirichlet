@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArithmeticFunctions\DivisorRange.cs" />
     <Compile Include="ArithmeticFunctions\DivisorsCollection.cs" />
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunction.cs" />
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunction2.cs" />
@@ -52,6 +53,8 @@
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunctionOddGnuMP.cs" />
     <Compile Include="ArithmeticFunctions\IDivisorSummatoryFunction.cs" />
     <Compile Include="ArithmeticFunctions\MertensRange.cs" />
+    <Compile Include="ArithmeticFunctions\MertensRangeSmall.cs" />
+    <Compile Include="ArithmeticFunctions\MertensRangeSmallDR.cs" />
     <Compile Include="ArithmeticFunctions\MobiusCollection.cs" />
     <Compile Include="ArithmeticFunctions\MobiusRange.cs" />
     <Compile Include="ArithmeticFunctions\PrimeCountingMod2.cs" />

@@ -24,7 +24,6 @@ namespace Decompose.Numerics
         private bool simple;
         private bool odd;
         private BigInteger n;
-        private long root6;
         private UInt128 sum;
 
         public DivisionFreeDivisorSummatoryFunction(int threads, bool simple, bool odd)
@@ -67,10 +66,7 @@ namespace Decompose.Numerics
         {
             var x = x2;
             if (!simple)
-            {
                 x = odd ? S1Odd(x1, x) : S1(x1, x);
-                //x = S2(x1, x);
-            }
             x = odd ? S3Odd(x1, x) : S3(x1, x);
         }
 
@@ -206,57 +202,6 @@ namespace Decompose.Numerics
                 --x;
             }
             var s = (UInt128)t;
-            AddToSum(ref s);
-            return x;
-        }
-
-        private long S2(long x1, long x2)
-        {
-            var s = (UInt128)0;
-            var t = (ulong)0;
-            var x = x2;
-            var beta = (ulong)(n / (x + 1));
-            var eps = (long)(n % (x + 1));
-            var delta = (long)(n / x - beta);
-            var gamma = (long)beta - x * delta;
-            var alpha = (UInt128)beta;
-            beta = 0;
-            var xmin = IntegerMath.Max(x1, root6);
-            var count = (ulong)0;
-            while (x >= xmin)
-            {
-                eps += gamma;
-                var delta2 = eps >= 0 ? eps / x : (eps - x + 1) / x;
-                delta += delta2;
-                var a = x * delta2;
-                eps -= a;
-                gamma += 2 * delta - a;
-                beta += (ulong)delta;
-                ++count;
-
-                Debug.Assert(eps == n % x);
-                Debug.Assert((alpha + beta) == n / x);
-                Debug.Assert(delta == (alpha + beta) - n / (x + 1));
-                Debug.Assert(gamma == (BigInteger)(alpha + beta) - ((x - 1) * delta));
-
-                t += beta;
-                if (t > tmax)
-                {
-                    s += t;
-                    t = 0;
-                }
-
-                if (beta > tmax)
-                {
-                    s += count * alpha;
-                    alpha += beta;
-                    beta = 0;
-                    count = 0;
-                }
-
-                --x;
-            }
-            s += t + count * alpha;
             AddToSum(ref s);
             return x;
         }

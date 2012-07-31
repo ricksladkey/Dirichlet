@@ -235,14 +235,16 @@ namespace Decompose.Numerics
             {
                 var x = xi[i];
                 var sqrt = IntegerMath.FloorSquareRoot(x);
+                var s = (long)0;
+
                 var jmin = UpToOdd(Math.Max(3, x / (x2 + 1) + 1));
                 var jmax = DownToOdd(Math.Min(sqrt, x / x1));
-                var kmin = Math.Max(1, x1);
-                var kmax = Math.Min(x / sqrt - 1, x2);
-                var s = (long)0;
                 s += JSum(x, jmin, ref jmax, x1);
                 for (var j = jmin; j <= jmax; j += 2)
                     s += m[x / j - x1];
+
+                var kmin = Math.Max(1, x1);
+                var kmax = Math.Min(x / sqrt - 1, x2);
                 s += KSum(x, kmin, ref kmax, x1);
                 var current = T1Odd(x / kmin);
                 for (var k = kmin; k <= kmax; k++)
@@ -251,6 +253,7 @@ namespace Decompose.Numerics
                     s += (current - next) * m[k - x1];
                     current = next;
                 }
+
                 mx[i] -= s;
             }
         }

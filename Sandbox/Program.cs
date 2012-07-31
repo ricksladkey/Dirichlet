@@ -434,9 +434,25 @@ namespace Sandbox
         static void ParityTest()
         {
 #if false
+            var n = 100;
+            var algorithm = new DivisorRange(n + 1, 0);
+            var divisor = new int[n + 1];
+            algorithm.GetValues(0, n + 1, divisor);
+            for (var x = 1; x <= n; x++)
+            {
+                var tau = divisor[x];
+                if (tau != IntegerMath.NumberOfDivisors(x))
+                {
+                    Debugger.Break();
+                    Console.WriteLine();
+                }
+            }
+#endif
+
+#if false
             var algorithm = new SquareFreeCounting(8, false);
             var timer = new Stopwatch();
-            for (var i = 18; i <= 24; i++)
+            for (var i = 23; i <= 23; i++)
             {
                 var n = IntegerMath.Power((BigInteger)10, i);
                 var sum1 = SquareFreeCounting.PowerOfTen(i);
@@ -449,7 +465,7 @@ namespace Sandbox
 
 #if true
             var timer = new Stopwatch();
-            for (var i = 1; i <= 18; i++)
+            for (var i = 14; i <= 14; i++)
             {
                 var n = IntegerMath.Power((long)10, i);
                 timer.Restart();
@@ -461,6 +477,26 @@ namespace Sandbox
                 output.WriteLine("elapsed1 = {0:F3} msec, elapsed2 = {1:F3}", elapsed1, elapsed2);
                 var sum2 = MertensRange.PowerOfTen(i);
                 Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
+            }
+#endif
+
+#if false
+            var algorithm1 = new DivisionFreeDivisorSummatoryFunction(8, false, true);
+            var algorithm2 = new PrimeCountingOddMod3(8);
+            var timer = new Stopwatch();
+            timer.Restart();
+            for (var i = 16; i <= 20; i++)
+            {
+                timer.Restart();
+                for (var iterations = 0; iterations < 1; iterations++)
+                {
+                    var n = IntegerMath.Power((BigInteger)10, i);
+                    var p1 = PrimeCounting.PiPowerOfTen(i) % 3;
+                    var p2 = algorithm2.Evaluate(n);
+                    if (iterations == 0)
+                        Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}", i, p1, p2);
+                }
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
 
@@ -743,26 +779,6 @@ namespace Sandbox
                 var s2 = algorithm2.Evaluate(n);
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
                 Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
-            }
-#endif
-
-#if false
-            var algorithm1 = new DivisionFreeDivisorSummatoryFunction(8, false, true);
-            var algorithm2 = new PrimeCountingOddMod3(8);
-            var timer = new Stopwatch();
-            timer.Restart();
-            for (var i = 16; i <= 20; i++)
-            {
-                timer.Restart();
-                for (var iterations = 0; iterations < 1; iterations++)
-                {
-                    var n = IntegerMath.Power((BigInteger)10, i);
-                    var p1 = PrimeCounting.PiPowerOfTen(i) % 3;
-                    var p2 = algorithm2.Evaluate(n);
-                    if (iterations == 0)
-                        Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}", i, p1, p2);
-                }
-                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
 

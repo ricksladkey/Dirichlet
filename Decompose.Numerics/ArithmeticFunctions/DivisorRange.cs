@@ -3,39 +3,47 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Decompose.Numerics
 {
-    public class MobiusRange
+    public class DivisorRange
     {
         private class Data
         {
             public long[] Products;
+            public int[] Divisors;
             public int[] Offsets;
             public long[] OffsetsSquared;
+            public Queue<int>[] Queues;
 
             public Data(int length)
             {
                 Products = new long[blockSize];
+                Divisors = new int[blockSize];
                 Offsets = new int[length];
                 OffsetsSquared = new long[length];
+                for (var i = 0; i < maxQueues; i++)
+                    Queues[i] = new Queue<int>();
             }
         }
 
         private const int blockSize = 1 << 16;
+        private const int maxQueues = 32;
 
         private long size;
         private int threads;
         private int[] primes;
         private int cycleLimit;
         private int cycleSize;
-        private long[] cycle;
+        private long[] cycleProducts;
+        private int[] cycleDivisors;
         private ConcurrentQueue<Data> queue;
 
         public long Size { get { return size; } }
         public int Threads { get { return threads; } }
 
-        public MobiusRange(long size, int threads)
+        public DivisorRange(long size, int threads)
         {
             this.size = size;
             this.threads = threads;
@@ -46,17 +54,17 @@ namespace Decompose.Numerics
             queue = new ConcurrentQueue<Data>();
         }
 
-        public void GetValues(long kmin, long kmax, sbyte[] values)
+        public void GetValues(long kmin, long kmax, int[] values)
         {
             GetValues(kmin, kmax, values, kmin, null, 0);
         }
 
-        public void GetValues(long kmin, long kmax, sbyte[] values, long offset)
+        public void GetValues(long kmin, long kmax, int[] values, long offset)
         {
             GetValues(kmin, kmax, values, offset, null, 0);
         }
 
-        public void GetValues(long kmin, long kmax, sbyte[] values, long offset, long[] sums, long m0)
+        public void GetValues(long kmin, long kmax, int[] values, long offset, long[] sums, long m0)
         {
             // Determine the number of primes appropriate for values up to kmax.
             var plimit = (int)Math.Ceiling(Math.Sqrt(kmax));
@@ -73,6 +81,7 @@ namespace Decompose.Numerics
             }
 
             // Choose batch size such that: batchSize*threads >= length and batchSize is even.
+            // Note that Mertens base value for a batch is unknown because of parallelism.
             var tasks = new Task[threads];
             var length = kmax - kmin;
             var batchSize = ((length + threads - 1) / threads + 1) & ~1;
@@ -80,7 +89,7 @@ namespace Decompose.Numerics
             {
                 var kstart = (long)thread * batchSize + kmin;
                 var kend = Math.Min(kstart + batchSize, kmax);
-                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(pmax, kstart, kend, values, offset, sums, m0));
+                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(pmax, kstart, kend, values, offset, sums, 0));
             }
             Task.WaitAll(tasks);
             if (values != null && kmin <= 1)
@@ -91,32 +100,32 @@ namespace Decompose.Numerics
 
             // Collect and sum Mertens function totals for each batch.
             var mabs = new long[threads];
-            mabs[0] = 0;
+            mabs[0] = m0;
             for (var thread = 1; thread < threads; thread++)
             {
                 var last = (long)thread * batchSize - 1;
                 if (last < sums.Length)
-                    mabs[thread] = mabs[thread - 1] + sums[last] - m0;
+                    mabs[thread] = mabs[thread - 1] + sums[last];
             }
 
             // Convert relative Mertens function values into absolute Mertens values.
-            for (var thread = 1; thread < threads; thread++)
+            for (var thread = 0; thread < threads; thread++)
             {
                 var index = thread;
                 var kstart = (long)thread * batchSize + kmin;
                 var kend = Math.Min(kstart + batchSize, kmax);
-                tasks[thread] = Task.Factory.StartNew(() => BumpRange(mabs[index], kstart, kend, offset, sums));
+                tasks[thread] = Task.Factory.StartNew(() =>
+                {
+                    var abs = mabs[index];
+                    var klo = kstart - offset;
+                    var khi = kend - offset;
+                    for (var k = klo; k < khi; k++)
+                        sums[k] += abs;
+                });
             }
             Task.WaitAll(tasks);
         }
 
-        private void BumpRange(long abs, long kstart, long kend, long offset, long[] sums)
-        {
-            var klo = (int)(kstart - offset);
-            var khi = (int)(kend - offset);
-            for (var k = klo; k < khi; k++)
-                sums[k] += abs;
-        }
 
         private void CreateCycle()
         {
@@ -127,30 +136,29 @@ namespace Decompose.Numerics
             for (var i = 0; i < cycleLimit; i++)
             {
                 var p = (int)primes[i];
-                cycleSize *= p * p;
+                cycleSize *= p;
             }
-            cycle = new long[cycleSize];
+            cycleProducts = new long[cycleSize];
             for (var i = 0; i < cycleSize; i++)
-                cycle[i] = 1;
+                cycleProducts[i] = 1;
             for (var i = 0; i < cycleLimit; i++)
             {
                 var p = primes[i];
                 var pMinus = -p;
                 for (var k = 0; k < cycleSize; k += p)
-                    cycle[k] *= pMinus;
+                    cycleProducts[k] *= pMinus;
                 var pSquared = (long)p * p;
-                for (var k = (long)0; k < cycleSize; k += pSquared)
-                    cycle[k] = 0;
             }
         }
 
-        private void ProcessRange(int pmax, long kstart, long kend, sbyte[] values, long kmin, long[] sums, long m0)
+        private void ProcessRange(int pmax, long kstart, long kend, int[] values, long kmin, long[] sums, long m0)
         {
             // Acquire resources.
             Data data;
             if (!queue.TryDequeue(out data))
                 data = new Data(Math.Max(1, primes.Length));
             var products = data.Products;
+            var divisors = data.Divisors;
             var offsets = data.Offsets;
             var offsetsSquared = data.OffsetsSquared;
 
@@ -179,21 +187,21 @@ namespace Decompose.Numerics
             for (var k = kstart; k < kend; k += blockSize)
             {
                 var length = (int)Math.Min(blockSize, kend - k);
-                SieveBlock(pmax, k, length, products, offsets, offsetsSquared);
-                m0 = AddValues(k, length, products, values, kmin, sums, m0);
+                SieveBlock(pmax, k, length, products, divisors, offsets, offsetsSquared);
+                m0 = AddValues(k, length, products, divisors, values, kmin, sums, m0);
             }
 
             // Release resources.
             queue.Enqueue(data);
         }
 
-        private void SieveBlock(int pmax, long k0, int length, long[] products, int[] offsets, long[] offsetsSquared)
+        private void SieveBlock(int pmax, long k0, int length, long[] products, int[] divisors, int[] offsets, long[] offsetsSquared)
         {
             var cycleOffset = offsets[0];
-            Array.Copy(cycle, cycleSize - cycleOffset, products, 0, Math.Min(length, cycleOffset));
+            Array.Copy(cycleProducts, cycleSize - cycleOffset, products, 0, Math.Min(length, cycleOffset));
             while (cycleOffset < length)
             {
-                Array.Copy(cycle, 0, products, cycleOffset, Math.Min(cycleSize, length - cycleOffset));
+                Array.Copy(cycleProducts, 0, products, cycleOffset, Math.Min(cycleSize, length - cycleOffset));
                 cycleOffset += cycleSize;
             }
             offsets[0] = cycleOffset - length;
@@ -201,27 +209,44 @@ namespace Decompose.Numerics
             for (var i = cycleLimit; i < pmax; i++)
             {
                 var p = primes[i];
-                var pMinus = -p;
                 int k;
                 for (k = offsets[i]; k < length; k += p)
-                    products[k] *= pMinus;
+                {
+                    products[k] *= p;
+                    divisors[k] *= 2;
+                }
                 offsets[i] = k - length;
-                long kk = offsetsSquared[i];
+                var kk = offsetsSquared[i];
                 if (kk < length)
                 {
-                    var pSquared = (long)p * p;
+                    var power = (long)p * p;
                     do
                     {
-                        products[kk] = 0;
-                        kk += pSquared;
+                        products[kk] *= p;
+                        divisors[kk] = divisors[kk] / 2 * 3;
+                        kk += power;
                     }
                     while (kk < length);
+                    var a = 2;
+                    while (true)
+                    {
+                        for (var kkk = kk; kkk < length; kkk += power)
+                        {
+                            products[kkk] *= p;
+                            divisors[kkk] = divisors[kkk] / a * (a + 1);
+                        }
+                        kk *= p;
+                        if (kk >= length)
+                            break;
+                        a++;
+                        power *= p;
+                    }
                 }
                 offsetsSquared[i] = kk - length;
             }
         }
 
-        private long AddValues(long k0, int length, long[] products, sbyte[] values, long kmin, long[] sums, long m0)
+        private long AddValues(long k0, int length, long[] products, int[] divisors, int[] values, long kmin, long[] sums, long m0)
         {
             // Each product that is square-free can have at most one more
             // prime factor.  It has that factor if the absolute value of
@@ -231,47 +256,33 @@ namespace Decompose.Numerics
             {
                 for (var i = 0; i < length; i++, k++)
                 {
-                    // Look ma, no branching.
-                    var p = products[i];
-                    var pos = -p >> 63; // pos = -1 if p > 0, zero otherwise
-                    var neg = p >> 63; // neg = -1 if p is < 0, zero otherwise
-                    var abs = (p + neg) ^ neg; // abs = |p|
-                    var flip = (abs - k) >> 63; // flip = -1 if abs < k, zero otherwise
-                    values[k - kmin] = (sbyte)(((neg - pos) ^ flip) - flip); // value = pos - neg if flip = -1, neg - pos otherwise
-                    Debug.Assert(k - kmin == 0 || values[k - kmin] == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
+                    var value = divisors[i];
+                    if (products[i] < k)
+                        value *= 2;
+                    values[k - kmin] = value;
                 }
             }
             else if (values == null)
             {
                 for (var i = 0; i < length; i++, k++)
                 {
-                    // Look ma, no branching.
-                    var p = products[i];
-                    var pos = -p >> 63; // pos = -1 if p > 0, zero otherwise
-                    var neg = p >> 63; // neg = -1 if p is < 0, zero otherwise
-                    var abs = (p + neg) ^ neg; // abs = |p|
-                    var flip = (abs - k) >> 63; // flip = -1 if abs < k, zero otherwise
-                    var value = ((neg - pos) ^ flip) - flip; // value = pos - neg if flip = -1, neg - pos otherwise
+                    var value = divisors[i];
+                    if (products[i] < k)
+                        value *= 2;
                     m0 += value;
                     sums[k - kmin] = m0;
-                    Debug.Assert(k - kmin == 0 || value == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
                 }
             }
             else
             {
                 for (var i = 0; i < length; i++, k++)
                 {
-                    // Look ma, no branching.
-                    var p = products[i];
-                    var pos = -p >> 63; // pos = -1 if p > 0, zero otherwise
-                    var neg = p >> 63; // neg = -1 if p is < 0, zero otherwise
-                    var abs = (p + neg) ^ neg; // abs = |p|
-                    var flip = (abs - k) >> 63; // flip = -1 if abs < k, zero otherwise
-                    var value = ((neg - pos) ^ flip) - flip; // value = pos - neg if flip = -1, neg - pos otherwise
-                    values[k - kmin] = (sbyte)value;
+                    var value = divisors[i];
+                    if (products[i] < k)
+                        value *= 2;
+                    values[k - kmin] = (int)value;
                     m0 += value;
                     sums[k - kmin] = m0;
-                    Debug.Assert(k - kmin == 0 || value == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
                 }
             }
             return m0;
