@@ -11,6 +11,8 @@ namespace Decompose.Numerics
     public class MertensRange
     {
         private const long maximumBatchSize = (long)1 << 24;
+        private const long C1 = 1;
+        private const long C2 = 2;
 
         private int threads;
         private long nmax;
@@ -30,7 +32,7 @@ namespace Decompose.Numerics
             this.nmax = nmax;
             threads = mobius.Threads;
 
-            u = (long)IntegerMath.FloorPower((BigInteger)nmax, 2, 3);
+            u = Math.Max((long)IntegerMath.FloorPower((BigInteger)nmax, 2, 3) * C1 / C2, IntegerMath.CeilingSquareRoot(nmax));
             ulo = Math.Min(u, maximumBatchSize);
             mlo = new long[ulo];
             mobius.GetValues(1, ulo + 1, null, 1, mlo, 0);
@@ -260,7 +262,8 @@ namespace Decompose.Numerics
             BigInteger.Parse("-875575"),
             BigInteger.Parse("-3216373"),
             BigInteger.Parse("-3195437"),
-            BigInteger.Parse("-21830259"),
+            BigInteger.Parse("-21830254"), // vs. -21830259 in http://oeis.org/A084237
+            BigInteger.Parse("-46758740"),
         };
 
         public static BigInteger PowerOfTen(int i)

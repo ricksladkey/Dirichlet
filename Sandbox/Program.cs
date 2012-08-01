@@ -433,6 +433,88 @@ namespace Sandbox
 
         static void ParityTest()
         {
+#if true
+            var timer = new Stopwatch();
+            for (var i = 15; i <= 15; i++)
+            {
+                var n = IntegerMath.Power((long)10, i);
+                timer.Restart();
+                var mertens = new MertensRangeDR(n + 1, 8);
+                var elapsed1 = (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000;
+                timer.Restart();
+                var sum1 = mertens.Evaluate(n);
+                var elapsed2 = (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000;
+                output.WriteLine("elapsed1 = {0:F3} msec, elapsed2 = {1:F3}", elapsed1, elapsed2);
+                var sum2 = i <= 17 ? MertensRange.PowerOfTen(i) : 0;
+                Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
+            }
+#endif
+
+#if false
+            for (var i = 1; i <= 7; i++)
+            {
+                var x = IntegerMath.Power(10, i);
+                var u = IntegerMath.FloorRoot(x, 3);
+                var sum1 = 0;
+                for (var m = 1; m <= u; m += 2)
+                {
+                    var mu = IntegerMath.Mobius(m);
+                    if (mu == 0)
+                        continue;
+                    var xm = x / m;
+                    var nmin = (u / m + 1) | 1;
+                    var nmax = (xm - 1) | 1;
+                    var s = 0;
+                    for (var n = nmin; n <= nmax; n += 2)
+                        s += IntegerMath.Mertens(xm / n);
+                    sum1 += mu * s;
+                }
+                sum1 = -sum1;
+                var sum2 = IntegerMath.Mertens(x);
+                Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
+            }
+#endif
+
+#if false
+            for (var i = 1; i <= 7; i++)
+            {
+                var x = IntegerMath.Power(10, i);
+                var u = IntegerMath.FloorRoot(x, 3);
+                var sum1 = 0;
+                for (var m = 1; m <= u; m += 2)
+                {
+                    var nmax = u / m;
+                    var xm = x / m;
+                    var s = 0;
+                    for (var n = 1; n <= nmax; n += 2)
+                        s += IntegerMath.Mertens(xm / n);
+                    sum1 += IntegerMath.Mobius(m) * s;
+                }
+                var sum2 = IntegerMath.Mertens(x);
+                Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
+            }
+#endif
+
+#if false
+            for (var i = 1; i <= 5; i++)
+            {
+                var x = IntegerMath.Power(10, i);
+                var u = IntegerMath.FloorRoot(x, 3);
+                var sum1 = 0;
+                for (var m = 1; m <= u; m++)
+                {
+                    var nmax = u / m;
+                    var xm = x / m;
+                    var s = 0;
+                    for (var n = 1; n <= nmax; n += 2)
+                        s += IntegerMath.Mertens(xm / n);
+                    sum1 += IntegerMath.Mobius(m) * s;
+                }
+                var sum2 = IntegerMath.Mertens(x) - IntegerMath.Mertens(x / 2);
+                Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
+            }
+#endif
+
 #if false
             var n = 100;
             var algorithm = new DivisorRange(n + 1, 0);
@@ -450,6 +532,25 @@ namespace Sandbox
 #endif
 
 #if false
+            var pp = (long)IntegerMath.Primorial((BigInteger)7);
+            for (var i = 1; i <= 7; i++)
+            {
+                var x = IntegerMath.Power(10, i);
+                var sum = 0;
+                var count = 0;
+                for (var n = 1; n <= x; n++)
+                {
+                    if (IntegerMath.GreatestCommonDivisor(n, pp) == 1)
+                    {
+                        sum += IntegerMath.Mertens(x / n);
+                        ++count;
+                    }
+                }
+                Console.WriteLine("i = {0}, sum = {1}, % = {2}", i, sum, (double)count / x * 100);
+            }
+#endif
+
+#if false
             var algorithm = new SquareFreeCounting(8, false);
             var timer = new Stopwatch();
             for (var i = 23; i <= 23; i++)
@@ -459,23 +560,6 @@ namespace Sandbox
                 timer.Restart();
                 var sum2 = algorithm.Evaluate(n);
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-                Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
-            }
-#endif
-
-#if true
-            var timer = new Stopwatch();
-            for (var i = 14; i <= 14; i++)
-            {
-                var n = IntegerMath.Power((long)10, i);
-                timer.Restart();
-                var mertens = new MertensRange(n + 1, 8);
-                var elapsed1 = (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000;
-                timer.Restart();
-                var sum1 = mertens.Evaluate(n);
-                var elapsed2 = (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000;
-                output.WriteLine("elapsed1 = {0:F3} msec, elapsed2 = {1:F3}", elapsed1, elapsed2);
-                var sum2 = MertensRange.PowerOfTen(i);
                 Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
             }
 #endif
