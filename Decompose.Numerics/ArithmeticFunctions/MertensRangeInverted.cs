@@ -86,23 +86,7 @@ namespace Decompose.Numerics
                 }
                 Task.WaitAll(tasks);
             }
-
-            Console.WriteLine("imax = {0}", imax);
-            var kmin = Math.Max(1, x1);
-            var kmax = Math.Min(sqrt, x2);
-            for (var k = kmin; k <= kmax; k++)
-            {
-                var ilast = IntegerMath.Min(imax, n / (k * k));
-                var nk1 = n / k;
-                var nk2 = n / (k + 1);
-                if (nk2 / ilast < IntegerMath.FloorSquareRoot(n / ilast))
-                    --ilast;
-                var s = (long)0;
-                for (var i = 1; i <= ilast; i += 2)
-                    s += IntegerMath.Mobius(i) * (T1Odd(nk1 / i) - T1Odd(nk2 / i));
-                sum2 += m[k - x1] * s;
-            }
-            Console.WriteLine("sum2 = {0}", sum2);
+            UpdateMxSmall(mx, n, imax, m, x1, x2);
         }
 
         private void UpdateMx(long[] mx, long n, long[] m, long x1, long x2, long imin, long imax, long increment)
@@ -122,6 +106,24 @@ namespace Decompose.Numerics
                 s += JSum2(x, jmin, jmax, m, x1);
 
                 mx[i] += s;
+            }
+        }
+
+        private void UpdateMxSmall(long[] mx, long n, long imax, long[] m, long x1, long x2)
+        {
+            var kmin = Math.Max(1, x1);
+            var kmax = Math.Min(sqrt, x2);
+            for (var k = kmin; k <= kmax; k++)
+            {
+                var ilast = IntegerMath.Min(imax, n / (k * k));
+                var nk1 = n / k;
+                var nk2 = n / (k + 1);
+                while (ilast > 0 && nk2 / ilast < IntegerMath.FloorSquareRoot(n / ilast))
+                    --ilast;
+                var s = (long)0;
+                for (var i = 1; i <= ilast; i += 2)
+                    s += values[i - 1] * (T1Odd(nk1 / i) - T1Odd(nk2 / i));
+                sum2 += m[k - x1] * s;
             }
         }
 

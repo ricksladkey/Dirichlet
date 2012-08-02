@@ -450,11 +450,11 @@ namespace Sandbox
         {
 #if true
             var timer = new Stopwatch();
-            for (var i = 1; i <= 2; i++)
+            for (var i = 12; i <= 12; i++)
             {
                 var n = IntegerMath.Power((long)10, i);
                 timer.Restart();
-                var mertens = new MertensRangeDR(n + 1, 8);
+                var mertens = new MertensRangeInverted(n + 1, 8);
                 var sum1 = mertens.Evaluate(n);
                 output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
                 var sum2 = i <= 18 ? MertensRange.PowerOfTen(i) : 0;
@@ -463,10 +463,10 @@ namespace Sandbox
 #endif
 
 #if false
-            for (var power = 1; power <= 2; power++)
+            for (var power = 3; power <= 7; power++)
             {
                 var n = IntegerMath.Power(10, power);
-                var imax = IntegerMath.FloorRoot(n, 3);
+                var imax = IntegerMath.FloorRoot(n, 3) * 2;
                 var sqrt = IntegerMath.FloorSquareRoot(n);
                 var sum1 = 0;
                 for (var k = 1; k <= sqrt; k++)
@@ -474,11 +474,18 @@ namespace Sandbox
                     var ilast = IntegerMath.Min(imax, n / (k * k));
                     var nk1 = n / k;
                     var nk2 = n / (k + 1);
-                    if (nk2 / ilast < IntegerMath.FloorSquareRoot(n / ilast))
+                    while (ilast > 0 && nk2 / ilast < IntegerMath.FloorSquareRoot(n / ilast))
                         --ilast;
                     var s = 0;
                     for (var i = 1; i <= ilast; i += 2)
+                    {
+                        var nki2 = nk2 / i;
+                        var sqrtni = IntegerMath.FloorSquareRoot(n / i);
+                        var max = Math.Max(sqrtni, nki2);
+                        if (max != nki2)
+                            Debugger.Break();
                         s += IntegerMath.Mobius(i) * (T1Odd(nk1 / i) - T1Odd(nk2 / i));
+                    }
                     sum1 += IntegerMath.Mertens(k) * s;
                 }
                 var sum2 = 0;
