@@ -431,47 +431,111 @@ namespace Sandbox
             P(map, -sign, depth, a0, b0, a + 1, b + 1);
         }
 
+        static int UpToOdd(int a)
+        {
+            return a | 1;
+        }
+
+        static int DownToOdd(int a)
+        {
+            return (a - 1) | 1;
+        }
+
+        static int T1Odd(int a)
+        {
+            return (a + (a & 1)) >> 1;
+        }
+
         static void ParityTest()
         {
 #if true
             var timer = new Stopwatch();
-            for (var i = 15; i <= 15; i++)
+            for (var i = 1; i <= 2; i++)
             {
                 var n = IntegerMath.Power((long)10, i);
                 timer.Restart();
                 var mertens = new MertensRangeDR(n + 1, 8);
-                var elapsed1 = (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000;
-                timer.Restart();
                 var sum1 = mertens.Evaluate(n);
-                var elapsed2 = (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000;
-                output.WriteLine("elapsed1 = {0:F3} msec, elapsed2 = {1:F3}", elapsed1, elapsed2);
-                var sum2 = i <= 17 ? MertensRange.PowerOfTen(i) : 0;
+                output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                var sum2 = i <= 18 ? MertensRange.PowerOfTen(i) : 0;
                 Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
             }
 #endif
 
 #if false
-            for (var i = 1; i <= 7; i++)
+            for (var power = 1; power <= 2; power++)
             {
-                var x = IntegerMath.Power(10, i);
-                var u = IntegerMath.FloorRoot(x, 3);
+                var n = IntegerMath.Power(10, power);
+                var imax = IntegerMath.FloorRoot(n, 3);
+                var sqrt = IntegerMath.FloorSquareRoot(n);
                 var sum1 = 0;
-                for (var m = 1; m <= u; m += 2)
+                for (var k = 1; k <= sqrt; k++)
                 {
-                    var mu = IntegerMath.Mobius(m);
+                    var ilast = IntegerMath.Min(imax, n / (k * k));
+                    var nk1 = n / k;
+                    var nk2 = n / (k + 1);
+                    if (nk2 / ilast < IntegerMath.FloorSquareRoot(n / ilast))
+                        --ilast;
+                    var s = 0;
+                    for (var i = 1; i <= ilast; i += 2)
+                        s += IntegerMath.Mobius(i) * (T1Odd(nk1 / i) - T1Odd(nk2 / i));
+                    sum1 += IntegerMath.Mertens(k) * s;
+                }
+                var sum2 = 0;
+                for (var i = 1; i <= imax; i += 2)
+                {
+                    var ni = n / i;
+                    var jmin = (IntegerMath.FloorSquareRoot(ni) + 1) | 1;
+                    var s = 0;
+                    for (var j = jmin; j <= ni; j += 2)
+                        s += IntegerMath.Mertens(ni / j);
+                    sum2 += IntegerMath.Mobius(i) * s;
+                }
+                var sum3 = 0;
+                for (var i = 1; i <= imax; i += 2)
+                {
+                    var x = n / i;
+                    var sqrtx = IntegerMath.FloorSquareRoot(x);
+                    var s = 0;
+
+                    var kmin = 1;
+                    var kmax = x / sqrtx - 1;
+                    var current = T1Odd(x);
+                    for (var k = kmin; k <= kmax; k++)
+                    {
+                        var next = T1Odd(x / (k + 1));
+                        s += (current - next) * IntegerMath.Mertens(k);
+                        current = next;
+                    }
+                    sum3 += IntegerMath.Mobius(i) * s;
+                }
+                Console.WriteLine("imax = {0}", imax);
+                Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}", power, sum1, sum2, sum3);
+            }
+#endif
+
+#if false
+            for (var power = 1; power <= 7; power++)
+            {
+                var n = IntegerMath.Power(10, power);
+                var imax = IntegerMath.FloorRoot(n, 3);
+                var sum1 = 0;
+                for (var i = 1; i <= imax; i += 2)
+                {
+                    var mu = IntegerMath.Mobius(i);
                     if (mu == 0)
                         continue;
-                    var xm = x / m;
-                    var nmin = (u / m + 1) | 1;
-                    var nmax = (xm - 1) | 1;
+                    var ni = n / i;
+                    var jmin = (imax / i + 1) | 1;
+                    var jmax = (ni - 1) | 1;
                     var s = 0;
-                    for (var n = nmin; n <= nmax; n += 2)
-                        s += IntegerMath.Mertens(xm / n);
+                    for (var j = jmin; j <= jmax; j += 2)
+                        s += IntegerMath.Mertens(ni / j);
                     sum1 += mu * s;
                 }
                 sum1 = -sum1;
-                var sum2 = IntegerMath.Mertens(x);
-                Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
+                var sum2 = IntegerMath.Mertens(n);
+                Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", power, sum1, sum2);
             }
 #endif
 

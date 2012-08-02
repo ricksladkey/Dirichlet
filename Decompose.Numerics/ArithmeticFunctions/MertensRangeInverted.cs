@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class MertensRangeDR
+    public class MertensRangeInverted
     {
         private const long maximumBatchSize = (long)1 << 26;
         private const long minimumLowSize = (long)1 << 22;
@@ -22,19 +22,23 @@ namespace Decompose.Numerics
         private long u;
         private sbyte[] values;
         private long[] mlo;
+        private long sum2;
+        private long sqrt;
 
-        public MertensRangeDR(long nmax, int threads)
+        public MertensRangeInverted(long nmax, int threads)
             : this(new MobiusRange((long)IntegerMath.FloorPower((BigInteger)nmax, 2, 3) + 1, threads), nmax)
         {
         }
 
-        public MertensRangeDR(MobiusRange mobius, long nmax)
+        public MertensRangeInverted(MobiusRange mobius, long nmax)
         {
             this.mobius = mobius;
             this.nmax = nmax;
             threads = mobius.Threads;
 
-            u = Math.Max((long)IntegerMath.FloorPower((BigInteger)nmax, 2, 3) * C1 / C2, IntegerMath.CeilingSquareRoot(nmax));
+            sum2 = 0;
+            var sqrt = IntegerMath.FloorSquareRoot(nmax);
+            u = Math.Max((long)IntegerMath.FloorPower((BigInteger)nmax, 2, 3) * C1 / C2, sqrt + 1);
             ulo = Math.Max(Math.Min(u, maximumBatchSize), minimumLowSize);
             mlo = new long[ulo];
             values = new sbyte[ulo];
@@ -47,6 +51,7 @@ namespace Decompose.Numerics
                 return 0;
             if (n > nmax)
                 throw new ArgumentException("n");
+            sqrt = IntegerMath.FloorSquareRoot(n);
             var imax = Math.Max(1, n / u);
             var mx = new long[imax + 1];
             ProcessBatch(mx, n, imax, mlo, 1, ulo);
@@ -81,6 +86,23 @@ namespace Decompose.Numerics
                 }
                 Task.WaitAll(tasks);
             }
+
+            Console.WriteLine("imax = {0}", imax);
+            var kmin = Math.Max(1, x1);
+            var kmax = Math.Min(sqrt, x2);
+            for (var k = kmin; k <= kmax; k++)
+            {
+                var ilast = IntegerMath.Min(imax, n / (k * k));
+                var nk1 = n / k;
+                var nk2 = n / (k + 1);
+                if (nk2 / ilast < IntegerMath.FloorSquareRoot(n / ilast))
+                    --ilast;
+                var s = (long)0;
+                for (var i = 1; i <= ilast; i += 2)
+                    s += IntegerMath.Mobius(i) * (T1Odd(nk1 / i) - T1Odd(nk2 / i));
+                sum2 += m[k - x1] * s;
+            }
+            Console.WriteLine("sum2 = {0}", sum2);
         }
 
         private void UpdateMx(long[] mx, long n, long[] m, long x1, long x2, long imin, long imax, long increment)
@@ -99,12 +121,7 @@ namespace Decompose.Numerics
                 s += JSum1(x, jmin, ref jmax, m, x1);
                 s += JSum2(x, jmin, jmax, m, x1);
 
-                var kmin = Math.Max(1, x1);
-                var kmax = Math.Min(x / sqrt - 1, x2);
-                s += KSum1(x, kmin, ref kmax, m, x1);
-                s += KSum2(x, kmin, kmax, m, x1);
-
-                mx[i] -= s;
+                mx[i] += s;
             }
         }
 
@@ -226,7 +243,7 @@ namespace Decompose.Numerics
             var s = (long)0;
             for (var i = 1; i <= imax; i += 2)
                 s += values[i - 1] * mx[i];
-            return s;
+            return -(s + sum2);
         }
 
         private long UpToOdd(long a)
