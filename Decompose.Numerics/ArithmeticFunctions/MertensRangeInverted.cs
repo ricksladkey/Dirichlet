@@ -5,6 +5,7 @@ using System.Text;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Threading;
 
 namespace Decompose.Numerics
 {
@@ -74,24 +75,50 @@ namespace Decompose.Numerics
         private void ProcessBatch(long[] mx, long n, long imax, long[] m, long x1, long x2)
         {
             if (threads <= 1)
-                UpdateMx(mx, n, m, x1, x2, 1, imax, 2);
+                UpdateMx(mx, n, m, x1, x2, imax, 0, 1);
             else
             {
                 var tasks = new Task[threads];
                 for (var thread = 0; thread < threads; thread++)
                 {
-                    var imin = 2 * thread + 1;
-                    var increment = 2 * threads;
-                    tasks[thread] = Task.Factory.StartNew(() => UpdateMx(mx, n, m, x1, x2, imin, imax, increment));
+                    var min = thread;
+                    var increment = threads;
+                    tasks[thread] = Task.Factory.StartNew(() => UpdateMx(mx, n, m, x1, x2, imax, min, increment));
                 }
                 Task.WaitAll(tasks);
             }
-            UpdateMxSmall(mx, n, imax, m, x1, x2);
         }
 
-        private void UpdateMx(long[] mx, long n, long[] m, long x1, long x2, long imin, long imax, long increment)
+        private void UpdateMx(long[] mx, long n, long[] m, long x1, long x2, long imax, long min, long increment)
         {
-            for (var i = imin; i <= imax; i += increment)
+            UpdateMxSmall(mx, n, m, x1, x2, imax, min, increment);
+            UpdateMxLarge(mx, n, m, x1, x2, imax, 2 * min + 1, 2 * increment);
+        }
+
+        private void UpdateMxSmall(long[] mx, long n, long[] m, long x1, long x2, long imax, long min, long increment)
+        {
+            var kmin = Math.Max(1, x1) + min;
+            var kmax = Math.Min(sqrt, x2);
+            var s1 = (long)0;
+            for (var k = kmin; k <= kmax; k += increment)
+            {
+                var ilast = IntegerMath.Min(imax, n / (k * k));
+                var nk1 = n / k;
+                var nk2 = n / (k + 1);
+                while (ilast > 0 && nk2 / ilast < IntegerMath.FloorSquareRoot(n / ilast))
+                    --ilast;
+                ilast = DownToOdd(ilast);
+                var s2 = (long)0;
+                s2 += ISum1(nk1, nk2, 1, ref ilast);
+                s2 += ISum2(nk1, nk2, 1, ilast);
+                s1 += m[k - x1] * s2;
+            }
+            Interlocked.Add(ref sum2, s1);
+        }
+
+        private void UpdateMxLarge(long[] mx, long n, long[] m, long x1, long x2, long imax, long min, long increment)
+        {
+            for (var i = min; i <= imax; i += increment)
             {
                 if (values[i - 1] == 0)
                     continue;
@@ -109,22 +136,12 @@ namespace Decompose.Numerics
             }
         }
 
-        private void UpdateMxSmall(long[] mx, long n, long imax, long[] m, long x1, long x2)
+        private long ISum2(long nk1, long nk2, long imin, long ilast)
         {
-            var kmin = Math.Max(1, x1);
-            var kmax = Math.Min(sqrt, x2);
-            for (var k = kmin; k <= kmax; k++)
-            {
-                var ilast = IntegerMath.Min(imax, n / (k * k));
-                var nk1 = n / k;
-                var nk2 = n / (k + 1);
-                while (ilast > 0 && nk2 / ilast < IntegerMath.FloorSquareRoot(n / ilast))
-                    --ilast;
-                var s = (long)0;
-                for (var i = 1; i <= ilast; i += 2)
-                    s += values[i - 1] * (T1Odd(nk1 / i) - T1Odd(nk2 / i));
-                sum2 += m[k - x1] * s;
-            }
+            var s = (long)0;
+            for (var i = 1; i <= ilast; i += 2)
+                s += values[i - 1] * (T1Odd(nk1 / i) - T1Odd(nk2 / i));
+            return s;
         }
 
         private long JSum2(long x, long jmin, long jmax, long[] m, long x1)
@@ -144,6 +161,76 @@ namespace Decompose.Numerics
                 var next = T1Odd(x / (k + 1));
                 s += (current - next) * m[k - x1];
                 current = next;
+            }
+            return s;
+        }
+
+        private long ISum1(long nk1, long nk2, long imin, ref long i)
+        {
+            if (i <= 0)
+                return 0;
+
+            var s = (long)0;
+            var beta1 = nk1 / (i + 2);
+            var eps1 = nk1 % (i + 2);
+            var delta1 = nk1 / i - beta1;
+            var gamma1 = 2 * beta1 - i * delta1;
+            var beta2 = nk2 / (i + 2);
+            var eps2 = nk2 % (i + 2);
+            var delta2 = nk2 / i - beta2;
+            var gamma2 = 2 * beta2 - i * delta2;
+            while (i >= imin)
+            {
+                eps1 += gamma1;
+                if (eps1 >= i)
+                {
+                    ++delta1;
+                    gamma1 -= i;
+                    eps1 -= i;
+                    if (eps1 >= i)
+                    {
+                        ++delta1;
+                        gamma1 -= i;
+                        eps1 -= i;
+                        if (eps1 >= i)
+                            break;
+                    }
+                }
+                else if (eps1 < 0)
+                {
+                    --delta1;
+                    gamma1 += i;
+                    eps1 += i;
+                }
+                gamma1 += 4 * delta1;
+                beta1 += delta1;
+
+                eps2 += gamma2;
+                if (eps2 >= i)
+                {
+                    ++delta2;
+                    gamma2 -= i;
+                    eps2 -= i;
+                    if (eps2 >= i)
+                    {
+                        ++delta2;
+                        gamma2 -= i;
+                        eps2 -= i;
+                        if (eps2 >= i)
+                            break;
+                    }
+                }
+                else if (eps2 < 0)
+                {
+                    --delta2;
+                    gamma2 += i;
+                    eps2 += i;
+                }
+                gamma2 += 4 * delta2;
+                beta2 += delta2;
+
+                s += values[i - 1] * (T1Odd(beta1) - T1Odd(beta2));
+                i -= 2;
             }
             return s;
         }
