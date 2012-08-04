@@ -52,8 +52,9 @@
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunctionOdd.cs" />
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunctionOddGnuMP.cs" />
     <Compile Include="ArithmeticFunctions\IDivisorSummatoryFunction.cs" />
-    <Compile Include="ArithmeticFunctions\MertensRange.cs" />
-    <Compile Include="ArithmeticFunctions\MertensRangeDR.cs" />
+    <Compile Include="ArithmeticFunctions\MertensFunction.cs" />
+    <Compile Include="ArithmeticFunctions\MertensFunctionBasic.cs" />
+    <Compile Include="ArithmeticFunctions\MertensFunctionDR.cs" />
     <Compile Include="ArithmeticFunctions\MertensRangeInverted.cs" />
     <Compile Include="ArithmeticFunctions\MertensRangeSmall.cs" />
     <Compile Include="ArithmeticFunctions\MertensRangeSmallDR.cs" />

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Decompose.Numerics
 {
-    public class MertensRangeDR
+    public class MertensFunctionDR
     {
         private const long maximumBatchSize = (long)1 << 26;
         private const long C1 = 1;
@@ -21,7 +21,7 @@ namespace Decompose.Numerics
         private long[] m;
         private long sum;
 
-        public MertensRangeDR(int threads)
+        public MertensFunctionDR(int threads)
         {
             this.threads = threads;
         }

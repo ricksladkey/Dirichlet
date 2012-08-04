@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class MertensRange
+    public class MertensFunctionBasic
     {
         private const long maximumBatchSize = (long)1 << 24;
         private const long C1 = 1;
@@ -22,7 +22,7 @@ namespace Decompose.Numerics
         private long[] m;
         private long[] mx;
 
-        public MertensRange(int threads)
+        public MertensFunctionBasic(int threads)
         {
             this.threads = threads;
         }

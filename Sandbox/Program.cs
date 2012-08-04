@@ -454,10 +454,10 @@ namespace Sandbox
             {
                 var n = IntegerMath.Power((long)10, i);
                 timer.Restart();
-                var mertens = new MertensRange(8);
+                var mertens = new MertensFunctionBasic(8);
                 var sum1 = mertens.Evaluate(n);
                 output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-                var sum2 = i <= 18 ? MertensRange.PowerOfTen(i) : 0;
+                var sum2 = i <= 18 ? MertensFunctionBasic.PowerOfTen(i) : 0;
                 Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
             }
 #endif
