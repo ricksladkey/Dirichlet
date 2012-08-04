@@ -283,6 +283,7 @@ namespace Decompose.Numerics
         {
             if (k == 0)
                 return 0;
+
             var s = (long)0;
             var beta = n / (k + 1);
             var eps = n % (k + 1);

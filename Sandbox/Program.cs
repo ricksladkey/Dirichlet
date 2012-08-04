@@ -450,15 +450,45 @@ namespace Sandbox
         {
 #if true
             var timer = new Stopwatch();
-            for (var i = 12; i <= 12; i++)
+            for (var i = 14; i <= 14; i++)
             {
                 var n = IntegerMath.Power((long)10, i);
                 timer.Restart();
-                var mertens = new MertensRangeInverted(n + 1, 8);
+                var mertens = new MertensRangeDR(8);
                 var sum1 = mertens.Evaluate(n);
                 output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
                 var sum2 = i <= 18 ? MertensRange.PowerOfTen(i) : 0;
                 Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
+            }
+#endif
+
+#if false
+            for (var power = 1; power <= 20; power++)
+            {
+                var n = IntegerMath.Power(2, power) - 1;
+                var imax = IntegerMath.FloorRoot(n, 3);
+                var sum1 = 0;
+                for (var i = 1; i <= imax; i++)
+                {
+                    if (i % 2 == 0)
+                        continue;
+                    if (i % 3 != 0)
+                        continue;
+                    var mu = IntegerMath.Mobius(i);
+                    if (mu == 0)
+                        continue;
+                    var ni = n / i;
+                    var jmin = 1;
+                    var jmax = (imax / i - 1) | 1;
+                    var s = 0;
+                    for (var j = jmin; j <= jmax; j += 2)
+                        s += IntegerMath.Mertens(ni / j);
+                    sum1 += mu * s;
+                }
+                var sum2 = (long)0;
+                for (var k = 3; k <= imax; k *= 3)
+                    sum2 -= IntegerMath.Mertens(n / k);
+                Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", power, sum1, sum2);
             }
 #endif
 
