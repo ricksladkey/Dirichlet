@@ -8,9 +8,10 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class MertensRangeSmall
+    public class MertensRangeDR
     {
         private const long maximumBatchSize = (long)1 << 26;
+        private const long minimumLowSize = (long)1 << 22;
         private const long C1 = 1;
         private const long C2 = 2;
 
@@ -19,23 +20,25 @@ namespace Decompose.Numerics
         private MobiusRange mobius;
         private long ulo;
         private long u;
+        private sbyte[] values;
         private long[] mlo;
 
-        public MertensRangeSmall(long nmax, int threads)
+        public MertensRangeDR(long nmax, int threads)
             : this(new MobiusRange((long)IntegerMath.FloorPower((BigInteger)nmax, 2, 3) + 1, threads), nmax)
         {
         }
 
-        public MertensRangeSmall(MobiusRange mobius, long nmax)
+        public MertensRangeDR(MobiusRange mobius, long nmax)
         {
             this.mobius = mobius;
             this.nmax = nmax;
             threads = mobius.Threads;
 
             u = Math.Max((long)IntegerMath.FloorPower((BigInteger)nmax, 2, 3) * C1 / C2, IntegerMath.CeilingSquareRoot(nmax));
-            ulo = Math.Min(u, maximumBatchSize);
+            ulo = Math.Max(Math.Min(u, maximumBatchSize), minimumLowSize);
             mlo = new long[ulo];
-            mobius.GetValues(1, ulo + 1, null, 1, mlo, 0);
+            values = new sbyte[ulo];
+            mobius.GetValues(1, ulo + 1, values, 1, mlo, 0);
         }
 
         public long Evaluate(long n)
@@ -60,8 +63,7 @@ namespace Decompose.Numerics
                     m0 = mhi[xend - xstart];
                 }
             }
-            ComputeMx(mx, imax);
-            return mx[1];
+            return ComputeMx(mx, imax);
         }
 
         private void ProcessBatch(long[] mx, long n, long imax, long[] m, long x1, long x2)
@@ -85,6 +87,9 @@ namespace Decompose.Numerics
         {
             for (var i = imin; i <= imax; i += increment)
             {
+                if (values[i - 1] == 0)
+                    continue;
+
                 var x = n / i;
                 var sqrt = IntegerMath.FloorSquareRoot(x);
                 var s = (long)0;
@@ -216,16 +221,12 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private void ComputeMx(long[] mx, long imax)
+        private long ComputeMx(long[] mx, long imax)
         {
-            for (var i = DownToOdd(imax); i >= 1; i -= 2)
-            {
-                var s = (long)0;
-                var ijmax = imax / i * i;
-                for (var ij = 2 * i; ij <= ijmax; ij += i)
-                    s += mx[ij];
-                mx[i] -= s;
-            }
+            var s = (long)0;
+            for (var i = 1; i <= imax; i += 2)
+                s += values[i - 1] * mx[i];
+            return s;
         }
 
         private long UpToOdd(long a)

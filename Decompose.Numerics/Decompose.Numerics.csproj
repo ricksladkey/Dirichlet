@@ -56,8 +56,8 @@
     <Compile Include="ArithmeticFunctions\MertensFunctionBasic.cs" />
     <Compile Include="ArithmeticFunctions\MertensFunctionDR.cs" />
     <Compile Include="ArithmeticFunctions\MertensRangeInverted.cs" />
-    <Compile Include="ArithmeticFunctions\MertensRangeSmall.cs" />
-    <Compile Include="ArithmeticFunctions\MertensRangeSmallDR.cs" />
+    <Compile Include="ArithmeticFunctions\MertensRangeBasic.cs" />
+    <Compile Include="ArithmeticFunctions\MertensRangeDR.cs" />
     <Compile Include="ArithmeticFunctions\MobiusCollection.cs" />
     <Compile Include="ArithmeticFunctions\MobiusRange.cs" />
     <Compile Include="ArithmeticFunctions\PrimeCountingMod2.cs" />
