@@ -34,7 +34,7 @@ namespace Decompose.Numerics
         private long xmax;
         private BigInteger sum;
         private MobiusRange mobius;
-        private MertensRange mertens;
+        private MertensRangeSmallDR mertens;
         private long[] xi;
         private long[] mx;
 
@@ -53,7 +53,7 @@ namespace Decompose.Numerics
             imax = (long)IntegerMath.FloorRoot(n, 5) / C1;
             xmax = imax != 0 ? Xi(imax) : (long)IntegerMath.FloorPower(n, 1, 2);
             mobius = new MobiusRange(xmax + 1, 0);
-            mertens = new MertensRange(mobius, Xi(1));
+            mertens = new MertensRangeSmallDR(mobius, Xi(1));
             xi = new long[imax + 1];
             mx = new long[imax + 1];
 

@@ -15,59 +15,48 @@ namespace Decompose.Numerics
         private const long C2 = 2;
 
         private int threads;
-        private long nmax;
         private MobiusRange mobius;
-        private long ulo;
+        private long n;
         private long u;
-        private long[] mlo;
+        private long imax;
+        private long[] m;
+        private long[] mx;
 
-        public MertensRange(long nmax, int threads)
-            : this(new MobiusRange((long)IntegerMath.FloorPower((BigInteger)nmax, 2, 3) + 1, threads), nmax)
+        public MertensRange(int threads)
         {
-        }
-
-        public MertensRange(MobiusRange mobius, long nmax)
-        {
-            this.mobius = mobius;
-            this.nmax = nmax;
-            threads = mobius.Threads;
-
-            u = Math.Max((long)IntegerMath.FloorPower((BigInteger)nmax, 2, 3) * C1 / C2, IntegerMath.CeilingSquareRoot(nmax));
-            ulo = Math.Min(u, maximumBatchSize);
-            mlo = new long[ulo];
-            mobius.GetValues(1, ulo + 1, null, 1, mlo, 0);
+            this.threads = threads;
         }
 
         public long Evaluate(long n)
         {
             if (n <= 0)
                 return 0;
-            if (n > nmax)
-                throw new ArgumentException("n");
-            var imax = Math.Max(1, n / u);
-            var mx = new long[imax + 1];
-            ProcessBatch(mx, n, imax, mlo, 1, ulo);
-            if (ulo < u)
+
+            this.n = n;
+            u = Math.Max((long)IntegerMath.FloorPower((BigInteger)n, 2, 3) * C1 / C2, IntegerMath.CeilingSquareRoot(n));
+            imax = n / u;
+            this.mobius = new MobiusRange(u + 1, threads);
+            var batchSize = Math.Min(u, maximumBatchSize);
+            m = new long[batchSize];
+            mx = new long[imax + 1];
+
+            var m0 = (long)0;
+            for (var x = (long)1; x <= u; x += maximumBatchSize)
             {
-                var mhi = new long[maximumBatchSize];
-                var m0 = mlo[ulo - 1];
-                for (var x = ulo + 1; x <= u; x += maximumBatchSize)
-                {
-                    var xstart = x;
-                    var xend = Math.Min(xstart + maximumBatchSize - 1, u);
-                    mobius.GetValues(xstart, xend + 1, null, xstart, mhi, m0);
-                    ProcessBatch(mx, n, imax, mhi, xstart, xend);
-                    m0 = mhi[xend - xstart];
-                }
+                var xstart = x;
+                var xend = Math.Min(xstart + maximumBatchSize - 1, u);
+                mobius.GetValues(xstart, xend + 1, null, xstart, m, m0);
+                m0 = m[xend - xstart];
+                ProcessBatch(xstart, xend);
             }
-            ComputeMx(mx, imax);
+            ComputeMx();
             return mx[1];
         }
 
-        private void ProcessBatch(long[] mx, long n, long imax, long[] m, long x1, long x2)
+        private void ProcessBatch(long x1, long x2)
         {
             if (threads <= 1)
-                UpdateMx(mx, n, m, x1, x2, 1, imax, 2);
+                UpdateMx(x1, x2, 1, 2);
             else
             {
                 var tasks = new Task[threads];
@@ -75,13 +64,13 @@ namespace Decompose.Numerics
                 {
                     var imin = 2 * thread + 1;
                     var increment = 2 * threads;
-                    tasks[thread] = Task.Factory.StartNew(() => UpdateMx(mx, n, m, x1, x2, imin, imax, increment));
+                    tasks[thread] = Task.Factory.StartNew(() => UpdateMx(x1, x2, imin, increment));
                 }
                 Task.WaitAll(tasks);
             }
         }
 
-        private void UpdateMx(long[] mx, long n, long[] m, long x1, long x2, long imin, long imax, long increment)
+        private void UpdateMx(long x1, long x2, long imin, long increment)
         {
             for (var i = imin; i <= imax; i += increment)
             {
@@ -91,19 +80,19 @@ namespace Decompose.Numerics
 
                 var jmin = UpToOdd(Math.Max(imax / i + 1, x / (x2 + 1) + 1));
                 var jmax = DownToOdd(Math.Min(sqrt, x / x1));
-                s += JSum1(x, jmin, ref jmax, m, x1);
-                s += JSum2(x, jmin, jmax, m, x1);
+                s += JSum1(x, jmin, ref jmax, x1);
+                s += JSum2(x, jmin, jmax, x1);
 
                 var kmin = Math.Max(1, x1);
                 var kmax = Math.Min(x / sqrt - 1, x2);
-                s += KSum1(x, kmin, ref kmax, m, x1);
-                s += KSum2(x, kmin, kmax, m, x1);
+                s += KSum1(x, kmin, ref kmax, x1);
+                s += KSum2(x, kmin, kmax, x1);
 
                 mx[i] -= s;
             }
         }
 
-        private long JSum2(long x, long jmin, long jmax, long[] m, long x1)
+        private long JSum2(long x, long jmin, long jmax, long x1)
         {
             var s = (long)0;
             for (var j = jmin; j <= jmax; j += 2)
@@ -111,7 +100,7 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private long KSum2(long x, long kmin, long kmax, long[] m, long x1)
+        private long KSum2(long x, long kmin, long kmax, long x1)
         {
             var s = (long)0;
             var current = T1Odd(x);
@@ -124,12 +113,12 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private long JSum1(long n, long j1, ref long j, long[] m, long offset)
+        private long JSum1(long x, long j1, ref long j, long offset)
         {
             var s = (long)0;
-            var beta = n / (j + 2);
-            var eps = n % (j + 2);
-            var delta = n / j - beta;
+            var beta = x / (j + 2);
+            var eps = x % (j + 2);
+            var delta = x / j - beta;
             var gamma = 2 * beta - j * delta;
             while (j >= j1)
             {
@@ -157,9 +146,9 @@ namespace Decompose.Numerics
                 gamma += 4 * delta;
                 beta += delta;
 
-                Debug.Assert(eps == n % j);
-                Debug.Assert(beta == n / j);
-                Debug.Assert(delta == beta - n / (j + 2));
+                Debug.Assert(eps == x % j);
+                Debug.Assert(beta == x / j);
+                Debug.Assert(delta == beta - x / (j + 2));
                 Debug.Assert(gamma == 2 * beta - (BigInteger)(j - 2) * delta);
 
                 s += m[beta - offset];
@@ -168,14 +157,14 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private long KSum1(long n, long k1, ref long k, long[] m, long offset)
+        private long KSum1(long x, long k1, ref long k, long offset)
         {
             if (k == 0)
                 return 0;
             var s = (long)0;
-            var beta = n / (k + 1);
-            var eps = n % (k + 1);
-            var delta = n / k - beta;
+            var beta = x / (k + 1);
+            var eps = x % (k + 1);
+            var delta = x / k - beta;
             var gamma = beta - k * delta;
             while (k >= k1)
             {
@@ -203,9 +192,9 @@ namespace Decompose.Numerics
                 gamma += 2 * delta;
                 beta += delta;
 
-                Debug.Assert(eps == n % k);
-                Debug.Assert(beta == n / k);
-                Debug.Assert(delta == beta - n / (k + 1));
+                Debug.Assert(eps == x % k);
+                Debug.Assert(beta == x / k);
+                Debug.Assert(delta == beta - x / (k + 1));
                 Debug.Assert(gamma == beta - (BigInteger)(k - 1) * delta);
 
                 // Equivalent to:
@@ -216,7 +205,7 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private void ComputeMx(long[] mx, long imax)
+        private void ComputeMx()
         {
             for (var i = DownToOdd(imax); i >= 1; i -= 2)
             {

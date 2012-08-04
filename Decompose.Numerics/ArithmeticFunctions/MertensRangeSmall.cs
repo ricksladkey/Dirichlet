@@ -10,10 +10,16 @@ namespace Decompose.Numerics
 {
     public class MertensRangeSmall
     {
+        private const long maximumBatchSize = (long)1 << 26;
+        private const long C1 = 1;
+        private const long C2 = 2;
+
+        private int threads;
         private long nmax;
         private MobiusRange mobius;
+        private long ulo;
         private long u;
-        private long[] m;
+        private long[] mlo;
 
         public MertensRangeSmall(long nmax, int threads)
             : this(new MobiusRange((long)IntegerMath.FloorPower((BigInteger)nmax, 2, 3) + 1, threads), nmax)
@@ -24,10 +30,12 @@ namespace Decompose.Numerics
         {
             this.mobius = mobius;
             this.nmax = nmax;
+            threads = mobius.Threads;
 
-            u = (long)IntegerMath.FloorPower((BigInteger)nmax, 2, 3);
-            m = new long[u + 1];
-            mobius.GetValues(0, u + 1, new sbyte[u + 1], 0, m, 0);
+            u = Math.Max((long)IntegerMath.FloorPower((BigInteger)nmax, 2, 3) * C1 / C2, IntegerMath.CeilingSquareRoot(nmax));
+            ulo = Math.Min(u, maximumBatchSize);
+            mlo = new long[ulo];
+            mobius.GetValues(1, ulo + 1, null, 1, mlo, 0);
         }
 
         public long Evaluate(long n)
@@ -38,9 +46,28 @@ namespace Decompose.Numerics
                 throw new ArgumentException("n");
             var imax = Math.Max(1, n / u);
             var mx = new long[imax + 1];
-            var threads = mobius.Threads;
+            ProcessBatch(mx, n, imax, mlo, 1, ulo);
+            if (ulo < u)
+            {
+                var mhi = new long[maximumBatchSize];
+                var m0 = mlo[ulo - 1];
+                for (var x = ulo + 1; x <= u; x += maximumBatchSize)
+                {
+                    var xstart = x;
+                    var xend = Math.Min(xstart + maximumBatchSize - 1, u);
+                    mobius.GetValues(xstart, xend + 1, null, xstart, mhi, m0);
+                    ProcessBatch(mx, n, imax, mhi, xstart, xend);
+                    m0 = mhi[xend - xstart];
+                }
+            }
+            ComputeMx(mx, imax);
+            return mx[1];
+        }
+
+        private void ProcessBatch(long[] mx, long n, long imax, long[] m, long x1, long x2)
+        {
             if (threads <= 1)
-                UpdateMx(mx, n, 1, imax, 2);
+                UpdateMx(mx, n, m, x1, x2, 1, imax, 2);
             else
             {
                 var tasks = new Task[threads];
@@ -48,43 +75,56 @@ namespace Decompose.Numerics
                 {
                     var imin = 2 * thread + 1;
                     var increment = 2 * threads;
-                    tasks[thread] = Task.Factory.StartNew(() => UpdateMx(mx, n, imin, imax, increment));
+                    tasks[thread] = Task.Factory.StartNew(() => UpdateMx(mx, n, m, x1, x2, imin, imax, increment));
                 }
                 Task.WaitAll(tasks);
             }
-            ComputeMx(mx, imax);
-            return mx[1];
         }
 
-        private void UpdateMx(long[] mx, long n, long imin, long imax, long increment)
+        private void UpdateMx(long[] mx, long n, long[] m, long x1, long x2, long imin, long imax, long increment)
         {
             for (var i = imin; i <= imax; i += increment)
             {
-                var ni = n / i;
-                var sqrt = IntegerMath.FloorSquareRoot(ni);
+                var x = n / i;
+                var sqrt = IntegerMath.FloorSquareRoot(x);
                 var s = (long)0;
 
-                var jmin = UpToOdd(imax / i + 1);
-                var jmax = DownToOdd(sqrt);
-                s += JSum(ni, jmin, ref jmax);
-                for (var j = jmin; j <= jmax; j += 2)
-                    s += m[ni / j];
+                var jmin = UpToOdd(Math.Max(imax / i + 1, x / (x2 + 1) + 1));
+                var jmax = DownToOdd(Math.Min(sqrt, x / x1));
+                s += JSum1(x, jmin, ref jmax, m, x1);
+                s += JSum2(x, jmin, jmax, m, x1);
 
-                var kmax = ni / sqrt - 1;
-                s += KSum(ni, 1, ref kmax);
-                var current = T1Odd(ni);
-                for (var k = 1; k <= kmax; k++)
-                {
-                    var next = T1Odd(ni / (k + 1));
-                    s += (current - next) * m[k];
-                    current = next;
-                }
+                var kmin = Math.Max(1, x1);
+                var kmax = Math.Min(x / sqrt - 1, x2);
+                s += KSum1(x, kmin, ref kmax, m, x1);
+                s += KSum2(x, kmin, kmax, m, x1);
 
-                mx[i] = -s;
+                mx[i] -= s;
             }
         }
 
-        private long JSum(long n, long j1, ref long j)
+        private long JSum2(long x, long jmin, long jmax, long[] m, long x1)
+        {
+            var s = (long)0;
+            for (var j = jmin; j <= jmax; j += 2)
+                s += m[x / j - x1];
+            return s;
+        }
+
+        private long KSum2(long x, long kmin, long kmax, long[] m, long x1)
+        {
+            var s = (long)0;
+            var current = T1Odd(x);
+            for (var k = kmin; k <= kmax; k++)
+            {
+                var next = T1Odd(x / (k + 1));
+                s += (current - next) * m[k - x1];
+                current = next;
+            }
+            return s;
+        }
+
+        private long JSum1(long n, long j1, ref long j, long[] m, long offset)
         {
             var s = (long)0;
             var beta = n / (j + 2);
@@ -122,13 +162,13 @@ namespace Decompose.Numerics
                 Debug.Assert(delta == beta - n / (j + 2));
                 Debug.Assert(gamma == 2 * beta - (BigInteger)(j - 2) * delta);
 
-                s += m[beta];
+                s += m[beta - offset];
                 j -= 2;
             }
             return s;
         }
 
-        private long KSum(long n, long k1, ref long k)
+        private long KSum1(long n, long k1, ref long k, long[] m, long offset)
         {
             if (k == 0)
                 return 0;
@@ -170,7 +210,7 @@ namespace Decompose.Numerics
 
                 // Equivalent to:
                 // s += (T1Odd(beta) - T1Odd(beta - delta)) * m[k];
-                s += ((delta + (beta & 1)) >> 1) * m[k];
+                s += ((delta + (beta & 1)) >> 1) * m[k - offset];
                 --k;
             }
             return s;
@@ -201,32 +241,6 @@ namespace Decompose.Numerics
         private long T1Odd(long a)
         {
             return (a + (a & 1)) >> 1;
-        }
-
-        private static BigInteger[] data10 = new BigInteger[]
-        {
-            BigInteger.Parse("0"),
-            BigInteger.Parse("-1"),
-            BigInteger.Parse("1"),
-            BigInteger.Parse("2"),
-            BigInteger.Parse("-23"),
-            BigInteger.Parse("-48"),
-            BigInteger.Parse("212"),
-            BigInteger.Parse("1037"),
-            BigInteger.Parse("1928"),
-            BigInteger.Parse("-222"),
-            BigInteger.Parse("-33722"),
-            BigInteger.Parse("-87856"),
-            BigInteger.Parse("62366"),
-            BigInteger.Parse("599582"),
-            BigInteger.Parse("-875575"),
-            BigInteger.Parse("-3216373"),
-            BigInteger.Parse("-3195437"),
-        };
-
-        public static BigInteger PowerOfTen(int i)
-        {
-            return data10[i];
         }
     }
 }
