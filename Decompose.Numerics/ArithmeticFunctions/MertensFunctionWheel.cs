@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class MertensFunctionBasic
+    public class MertensFunctionWheel
     {
         private const long maximumBatchSize = (long)1 << 26;
         private const long C1 = 1;
@@ -21,8 +21,10 @@ namespace Decompose.Numerics
         private long imax;
         private long[] m;
         private long[] mx;
+        private int[] r;
+        private int lmax;
 
-        public MertensFunctionBasic(int threads)
+        public MertensFunctionWheel(int threads)
         {
             this.threads = threads;
         }
@@ -39,6 +41,14 @@ namespace Decompose.Numerics
             var batchSize = Math.Min(u, maximumBatchSize);
             m = new long[batchSize];
             mx = new long[imax + 1];
+            r = new int[imax + 1];
+
+            lmax = 0;
+            for (var i = 1; i <= imax; i++)
+            {
+                if (i % 2 != 0 && i % 3 != 0)
+                    r[lmax++] = i;
+            }
 
             var m0 = (long)0;
             for (var x = (long)1; x <= u; x += maximumBatchSize)
@@ -56,24 +66,25 @@ namespace Decompose.Numerics
         private void ProcessBatch(long x1, long x2)
         {
             if (threads <= 1)
-                UpdateMx(x1, x2, 1, 2);
+                UpdateMx(x1, x2, 0, 1);
             else
             {
                 var tasks = new Task[threads];
                 for (var thread = 0; thread < threads; thread++)
                 {
-                    var imin = 2 * thread + 1;
-                    var increment = 2 * threads;
-                    tasks[thread] = Task.Factory.StartNew(() => UpdateMx(x1, x2, imin, increment));
+                    var min = thread;
+                    var increment = threads;
+                    tasks[thread] = Task.Factory.StartNew(() => UpdateMx(x1, x2, min, increment));
                 }
                 Task.WaitAll(tasks);
             }
         }
 
-        private void UpdateMx(long x1, long x2, long imin, long increment)
+        private void UpdateMx(long x1, long x2, long min, long increment)
         {
-            for (var i = imin; i <= imax; i += increment)
+            for (var l = min; l < lmax; l += increment)
             {
+                var i = r[l];
                 var x = n / i;
                 var sqrt = IntegerMath.FloorSquareRoot(x);
                 var s = (long)0;
@@ -96,17 +107,20 @@ namespace Decompose.Numerics
         {
             var s = (long)0;
             for (var j = jmin; j <= jmax; j += 2)
-                s += m[x / j - x1];
+            {
+                if (j % 3 != 0)
+                    s += m[x / j - x1];
+            }
             return s;
         }
 
         private long KSum2(long x, long kmin, long kmax, long x1)
         {
             var s = (long)0;
-            var current = T1Odd(x);
+            var current = T1Wheel(x);
             for (var k = kmin; k <= kmax; k++)
             {
-                var next = T1Odd(x / (k + 1));
+                var next = T1Wheel(x / (k + 1));
                 s += (current - next) * m[k - x1];
                 current = next;
             }
@@ -151,7 +165,8 @@ namespace Decompose.Numerics
                 Debug.Assert(delta == beta - x / (j + 2));
                 Debug.Assert(gamma == 2 * beta - (BigInteger)(j - 2) * delta);
 
-                s += m[beta - offset];
+                if (j % 3 != 0)
+                    s += m[beta - offset];
                 j -= 2;
             }
             return s;
@@ -197,9 +212,7 @@ namespace Decompose.Numerics
                 Debug.Assert(delta == beta - x / (k + 1));
                 Debug.Assert(gamma == beta - (BigInteger)(k - 1) * delta);
 
-                // Equivalent to:
-                // s += (T1Odd(beta) - T1Odd(beta - delta)) * m[k];
-                s += ((delta + (beta & 1)) >> 1) * m[k - offset];
+                s += (T1Wheel(beta) - T1Wheel(beta - delta)) * m[k - offset];
                 --k;
             }
             return s;
@@ -207,8 +220,9 @@ namespace Decompose.Numerics
 
         private void ComputeMx()
         {
-            for (var i = DownToOdd(imax); i >= 1; i -= 2)
+            for (var l = lmax - 1; l >= 0; l--)
             {
+                var i = r[l];
                 var s = (long)0;
                 var ijmax = imax / i * i;
                 for (var ij = 2 * i; ij <= ijmax; ij += i)
@@ -227,9 +241,9 @@ namespace Decompose.Numerics
             return (a - 1) | 1;
         }
 
-        private long T1Odd(long a)
+        private long T1Wheel(long a)
         {
-            return (a + (a & 1)) >> 1;
+            return (a + 1) / 3 + (a % 6 == 1 ? 1 : 0);
         }
     }
 }

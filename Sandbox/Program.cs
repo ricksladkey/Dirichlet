@@ -454,7 +454,7 @@ namespace Sandbox
             {
                 var n = IntegerMath.Power((long)10, i);
                 timer.Restart();
-                var mertens = new MertensFunctionBasic(8);
+                var mertens = new MertensFunctionWheel(8);
                 var sum1 = mertens.Evaluate(n);
                 output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
                 var sum2 = i <= 18 ? MertensFunction.PowerOfTen(i) : 0;
