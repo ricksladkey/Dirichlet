@@ -20,11 +20,12 @@ namespace Decompose.Numerics
         private MobiusRange mobius;
         private long n;
         private long u;
-        private long imax;
+        private int imax;
         private long[] m;
         private long[] mx;
         private int[] r;
         private int lmax;
+        private int[][] buckets;
 
 #if false
         private const int wheelSize = 2;
@@ -81,7 +82,7 @@ namespace Decompose.Numerics
                 return m[n - 1];
             }
 
-            imax = n / u;
+            imax = (int)(n / u);
             mobius = new MobiusRange(u + 1, threads);
             var batchSize = Math.Min(u, maximumBatchSize);
             m = new long[batchSize];
@@ -93,6 +94,34 @@ namespace Decompose.Numerics
             {
                 if (wheelInclude[i % wheelSize])
                     r[lmax++] = i;
+            }
+
+            if (threads > 1)
+            {
+                var costs = new double[threads];
+                var bucketLists = new List<int>[threads];
+                for (var thread = 0; thread < threads; thread++)
+                    bucketLists[thread] = new List<int>();
+                for (var l = 0; l < lmax; l++)
+                {
+                    var i = r[l];
+                    var cost = Math.Sqrt(n / i);
+                    var addto = 0;
+                    var mincost = costs[0];
+                    for (var thread = 0; thread < threads; thread++)
+                    {
+                        if (costs[thread] < mincost)
+                        {
+                            mincost = costs[thread];
+                            addto = thread;
+                        }
+                    }
+                    bucketLists[addto].Add(i);
+                    costs[addto] += cost;
+                }
+                buckets = new int[threads][];
+                for (var thread = 0; thread < threads; thread++)
+                    buckets[thread] = bucketLists[thread].ToArray();
             }
 
             var m0 = (long)0;
@@ -111,23 +140,22 @@ namespace Decompose.Numerics
         private void ProcessBatch(long x1, long x2)
         {
             if (threads <= 1)
-                UpdateMx(x1, x2, 0, 1);
+                UpdateMx(x1, x2, r);
             else
             {
                 var tasks = new Task[threads];
                 for (var thread = 0; thread < threads; thread++)
                 {
-                    var min = thread;
-                    var increment = threads;
-                    tasks[thread] = Task.Factory.StartNew(() => UpdateMx(x1, x2, min, increment));
+                    var bucket = thread;
+                    tasks[thread] = Task.Factory.StartNew(() => UpdateMx(x1, x2, buckets[bucket]));
                 }
                 Task.WaitAll(tasks);
             }
         }
 
-        private void UpdateMx(long x1, long x2, long min, long increment)
+        private void UpdateMx(long x1, long x2, int[] r)
         {
-            for (var l = min; l < lmax; l += increment)
+            for (var l = 0; l < r.Length; l++)
             {
                 var i = r[l];
                 var x = n / i;

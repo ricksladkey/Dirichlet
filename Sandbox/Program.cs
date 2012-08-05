@@ -450,7 +450,7 @@ namespace Sandbox
         {
 #if true
             var timer = new Stopwatch();
-            for (var i = 1; i <= 15; i++)
+            for (var i = 15; i <= 15; i++)
             {
                 var n = IntegerMath.Power((long)10, i);
                 timer.Restart();
