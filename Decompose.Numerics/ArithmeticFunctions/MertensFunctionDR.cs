@@ -81,15 +81,17 @@ namespace Decompose.Numerics
 
                 var x = n / i;
                 var sqrt = IntegerMath.FloorSquareRoot(x);
+                var xover = Math.Min(sqrt * 7 / 5, x);
+                xover = x / (x / xover);
                 var s2 = (long)0;
 
                 var jmin = UpToOdd(Math.Max(imax / i + 1, x / (x2 + 1) + 1));
-                var jmax = DownToOdd(Math.Min(sqrt, x / x1));
+                var jmax = DownToOdd(Math.Min(xover, x / x1));
                 s2 += JSum1(x, jmin, ref jmax, x1);
                 s2 += JSum2(x, jmin, jmax, x1);
 
                 var kmin = Math.Max(1, x1);
-                var kmax = Math.Min(x / sqrt - 1, x2);
+                var kmax = Math.Min(x / xover - 1, x2);
                 s2 += KSum1(x, kmin, ref kmax, x1);
                 s2 += KSum2(x, kmin, kmax, x1);
 

@@ -87,15 +87,17 @@ namespace Decompose.Numerics
                 var i = r[l];
                 var x = n / i;
                 var sqrt = IntegerMath.FloorSquareRoot(x);
+                var xover = Math.Min(sqrt * 2, x);
+                xover = x / (x / xover);
                 var s = (long)0;
 
                 var jmin = UpToOdd(Math.Max(imax / i + 1, x / (x2 + 1) + 1));
-                var jmax = DownToOdd(Math.Min(sqrt, x / x1));
+                var jmax = DownToOdd(Math.Min(xover, x / x1));
                 s += JSum1(x, jmin, ref jmax, x1);
                 s += JSum2(x, jmin, jmax, x1);
 
                 var kmin = Math.Max(1, x1);
-                var kmax = Math.Min(x / sqrt - 1, x2);
+                var kmax = Math.Min(x / xover - 1, x2);
                 s += KSum1(x, kmin, ref kmax, x1);
                 s += KSum2(x, kmin, kmax, x1);
 
@@ -134,6 +136,7 @@ namespace Decompose.Numerics
             var eps = x % (j + 2);
             var delta = x / j - beta;
             var gamma = 2 * beta - j * delta;
+            var mod = (int)(((j + 3) / 2 % 3 + 1));
             while (j >= j1)
             {
                 eps += gamma;
@@ -165,7 +168,9 @@ namespace Decompose.Numerics
                 Debug.Assert(delta == beta - x / (j + 2));
                 Debug.Assert(gamma == 2 * beta - (BigInteger)(j - 2) * delta);
 
-                if (j % 3 != 0)
+                if (--mod == 0)
+                    mod = 3;
+                else
                     s += m[beta - offset];
                 j -= 2;
             }
@@ -241,9 +246,13 @@ namespace Decompose.Numerics
             return (a - 1) | 1;
         }
 
+        private long[] wheelCount = new long[] { 0, 1, 1, 1, 1, 2 };
+
         private long T1Wheel(long a)
         {
-            return (a + 1) / 3 + (a % 6 == 1 ? 1 : 0);
+            var b = a / 6;
+            var c = a - b * 6;
+            return 2 * b + wheelCount[c];
         }
     }
 }
