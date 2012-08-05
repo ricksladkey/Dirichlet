@@ -8,12 +8,12 @@ namespace Decompose.Numerics
 {
     public static partial class IntegerMath
     {
-        public static int Primorial(int n)
+        public static int PrimorialCount(int n)
         {
-            return (int)Primorial((uint)n);
+            return (int)PrimorialCount((uint)n);
         }
 
-        public static uint Primorial(uint n)
+        public static uint PrimorialCount(uint n)
         {
             var result = (uint)1;
             for (var i = (uint)0; i < n; i++)
@@ -21,12 +21,12 @@ namespace Decompose.Numerics
             return result;
         }
 
-        public static long Primorial(long n)
+        public static long PrimorialCount(long n)
         {
-            return (long)Primorial((ulong)n);
+            return (long)PrimorialCount((ulong)n);
         }
 
-        public static ulong Primorial(ulong n)
+        public static ulong PrimorialCount(ulong n)
         {
             var result = (ulong)1;
             for (var i = (ulong)0; i < n; i++)
@@ -34,15 +34,54 @@ namespace Decompose.Numerics
             return result;
         }
 
-        public static BigInteger Primorial(BigInteger n)
+        public static BigInteger PrimorialCount(BigInteger n)
         {
-            return PrimorialCore((int)n);
+            return PrimorialCountCore((int)n);
         }
 
-        private static BigInteger PrimorialCore(int n)
+        private static BigInteger PrimorialCountCore(int n)
         {
             var result = BigInteger.One;
             for (var i = 0; i < n; i++)
+                result *= primes[i];
+            return result;
+        }
+
+        public static int PrimorialUpTo(int n)
+        {
+            return (int)PrimorialUpTo((uint)n);
+        }
+
+        public static uint PrimorialUpTo(uint n)
+        {
+            var result = (uint)1;
+            for (var i = (uint)0; (uint)primes[i] <= n; i++)
+                result *= (uint)primes[i];
+            return result;
+        }
+
+        public static long PrimorialUpTo(long n)
+        {
+            return (long)PrimorialUpTo((ulong)n);
+        }
+
+        public static ulong PrimorialUpTo(ulong n)
+        {
+            var result = (ulong)1;
+            for (var i = (ulong)0; (ulong)primes[i] <= n; i++)
+                result *= (ulong)primes[i];
+            return result;
+        }
+
+        public static BigInteger PrimorialUpTo(BigInteger n)
+        {
+            return PrimorialUpToCore((int)n);
+        }
+
+        private static BigInteger PrimorialUpToCore(int n)
+        {
+            var result = BigInteger.One;
+            for (var i = 0; primes[i] <= n; i++)
                 result *= primes[i];
             return result;
         }

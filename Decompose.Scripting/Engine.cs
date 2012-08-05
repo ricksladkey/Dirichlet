@@ -282,7 +282,7 @@ namespace Decompose.Scripting
 
         public BigInteger Primorial(Rational a)
         {
-            return IntegerMath.Primorial((BigInteger)a);
+            return IntegerMath.PrimorialCount((BigInteger)a);
         }
 
         public Rational NextPrime(Rational a)

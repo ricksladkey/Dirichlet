@@ -13,6 +13,8 @@ namespace Decompose.Numerics
         private const long maximumBatchSize = (long)1 << 26;
         private const long C1 = 1;
         private const long C2 = 2;
+        private const long C3 = 2;
+        private const long C4 = 1;
 
         private int threads;
         private MobiusRange mobius;
@@ -24,9 +26,43 @@ namespace Decompose.Numerics
         private int[] r;
         private int lmax;
 
+#if false
+        private const int wheelSize = 2;
+        private const int wheelCount = 1;
+#endif
+#if false
+        private const int wheelSize = 6;
+        private const int wheelCount = 2;
+#endif
+#if false
+        private const int wheelSize = 30;
+        private const int wheelCount = 8;
+#endif
+#if true
+        private const int wheelSize = 210;
+        private const int wheelCount = 48;
+#endif
+
+        private int[] wheelSubtotal;
+        private bool[] wheelInclude;
+
+
         public MertensFunctionWheel(int threads)
         {
             this.threads = threads;
+            var subtotal = new List<int>();
+            var total = 0;
+            for (var i = 0; i < wheelSize; i++)
+            {
+                if (IntegerMath.GreatestCommonDivisor(i, wheelSize) == 1)
+                    ++total;
+                subtotal.Add(total);
+            }
+            wheelSubtotal = subtotal.ToArray();
+            var include = new List<bool>();
+            for (var i = 0; i < wheelSize; i++)
+                include.Add(IntegerMath.GreatestCommonDivisor(i, wheelSize) == 1);
+            wheelInclude = include.ToArray();
         }
 
         public long Evaluate(long n)
@@ -36,17 +72,26 @@ namespace Decompose.Numerics
 
             this.n = n;
             u = Math.Max((long)IntegerMath.FloorPower((BigInteger)n, 2, 3) * C1 / C2, IntegerMath.CeilingSquareRoot(n));
+
+            if (u <= wheelSize)
+            {
+                mobius = new MobiusRange(n + 1, threads);
+                m = new long[n];
+                mobius.GetValues(1, n + 1, null, 1, m, 0);
+                return m[n - 1];
+            }
+
             imax = n / u;
-            this.mobius = new MobiusRange(u + 1, threads);
+            mobius = new MobiusRange(u + 1, threads);
             var batchSize = Math.Min(u, maximumBatchSize);
             m = new long[batchSize];
             mx = new long[imax + 1];
             r = new int[imax + 1];
 
             lmax = 0;
-            for (var i = 1; i <= imax; i++)
+            for (var i = 1; i <= imax; i += 2)
             {
-                if (i % 2 != 0 && i % 3 != 0)
+                if (wheelInclude[i % wheelSize])
                     r[lmax++] = i;
             }
 
@@ -87,7 +132,7 @@ namespace Decompose.Numerics
                 var i = r[l];
                 var x = n / i;
                 var sqrt = IntegerMath.FloorSquareRoot(x);
-                var xover = Math.Min(sqrt * 2, x);
+                var xover = Math.Min(sqrt * C3 / C4, x);
                 xover = x / (x / xover);
                 var s = (long)0;
 
@@ -110,7 +155,7 @@ namespace Decompose.Numerics
             var s = (long)0;
             for (var j = jmin; j <= jmax; j += 2)
             {
-                if (j % 3 != 0)
+                if (wheelInclude[j % wheelSize])
                     s += m[x / j - x1];
             }
             return s;
@@ -136,7 +181,7 @@ namespace Decompose.Numerics
             var eps = x % (j + 2);
             var delta = x / j - beta;
             var gamma = 2 * beta - j * delta;
-            var mod = (int)(((j + 3) / 2 % 3 + 1));
+            var mod = j % wheelSize;
             while (j >= j1)
             {
                 eps += gamma;
@@ -168,10 +213,11 @@ namespace Decompose.Numerics
                 Debug.Assert(delta == beta - x / (j + 2));
                 Debug.Assert(gamma == 2 * beta - (BigInteger)(j - 2) * delta);
 
-                if (--mod == 0)
-                    mod = 3;
-                else
+                if (wheelInclude[mod])
                     s += m[beta - offset];
+                mod -= 2;
+                if (mod < 0)
+                    mod += wheelSize;
                 j -= 2;
             }
             return s;
@@ -186,6 +232,7 @@ namespace Decompose.Numerics
             var eps = x % (k + 1);
             var delta = x / k - beta;
             var gamma = beta - k * delta;
+            var lastCount = T1Wheel(beta);
             while (k >= k1)
             {
                 eps += gamma;
@@ -217,7 +264,9 @@ namespace Decompose.Numerics
                 Debug.Assert(delta == beta - x / (k + 1));
                 Debug.Assert(gamma == beta - (BigInteger)(k - 1) * delta);
 
-                s += (T1Wheel(beta) - T1Wheel(beta - delta)) * m[k - offset];
+                var count = T1Wheel(beta);
+                s += (count - lastCount) * m[k - offset];
+                lastCount = count;
                 --k;
             }
             return s;
@@ -245,14 +294,11 @@ namespace Decompose.Numerics
         {
             return (a - 1) | 1;
         }
-
-        private long[] wheelCount = new long[] { 0, 1, 1, 1, 1, 2 };
-
         private long T1Wheel(long a)
         {
-            var b = a / 6;
-            var c = a - b * 6;
-            return 2 * b + wheelCount[c];
+            var b = a / wheelSize;
+            var c = (int)(a - b * wheelSize);
+            return wheelCount * b + wheelSubtotal[c];
         }
     }
 }

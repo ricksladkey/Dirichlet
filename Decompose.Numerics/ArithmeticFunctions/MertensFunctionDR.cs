@@ -81,7 +81,7 @@ namespace Decompose.Numerics
 
                 var x = n / i;
                 var sqrt = IntegerMath.FloorSquareRoot(x);
-                var xover = Math.Min(sqrt * 7 / 5, x);
+                var xover = Math.Min(sqrt * 7 / 5, x); // 7/5 ~= sqrt(2)
                 xover = x / (x / xover);
                 var s2 = (long)0;
 

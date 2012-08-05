@@ -450,17 +450,21 @@ namespace Sandbox
         {
 #if true
             var timer = new Stopwatch();
-            for (var i = 13; i <= 15; i++)
+            for (var i = 1; i <= 15; i++)
             {
                 var n = IntegerMath.Power((long)10, i);
                 timer.Restart();
                 var mertens1 = new MertensFunctionWheel(8);
                 var sum1 = mertens1.Evaluate(n);
                 output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#if true
                 timer.Restart();
                 var mertens2 = new MertensFunctionDR(8);
                 var sum2 = mertens2.Evaluate(n);
                 output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#else
+                var sum2 = (long)0;
+#endif
                 var sum3 = i <= 18 ? MertensFunction.PowerOfTen(i) : 0;
                 Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}", i, sum1, sum2, sum3);
             }
