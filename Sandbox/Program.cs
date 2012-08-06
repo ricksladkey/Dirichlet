@@ -450,16 +450,16 @@ namespace Sandbox
         {
 #if true
             var timer = new Stopwatch();
-            for (var i = 1; i <= 15; i++)
+            for (var i = 14; i <= 14; i++)
             {
                 var n = IntegerMath.Power((long)10, i);
                 timer.Restart();
-                var mertens1 = new MertensFunctionWheel(8);
+                var mertens1 = new MertensFunctionDR2(8);
                 var sum1 = mertens1.Evaluate(n);
                 output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-#if true
+#if false
                 timer.Restart();
-                var mertens2 = new MertensFunctionWheel64(8);
+                var mertens2 = new MertensFunctionDR(8);
                 var sum2 = mertens2.Evaluate(n);
                 output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #else
@@ -471,10 +471,59 @@ namespace Sandbox
 #endif
 
 #if false
-            for (var power = 1; power <= 20; power++)
+            var timer = new Stopwatch();
+            var n = DownToOdd(IntegerMath.Power(10, 8));
+            var algorithm1 = new MobiusOddRange(n, 0);
+            var m1 = new long[(n + 2) >> 1];
+            timer.Restart();
+            algorithm1.GetValues(1, n + 2, null, 1, m1, 0);
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            var sum1 = m1[n >> 1];
+            var algorithm2 = new MobiusRange(n, 0);
+            var m2 = new long[n + 1];
+            timer.Restart();
+            algorithm2.GetValues(1, n + 1, null, 1, m2, 0);
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            var sum2 = m2[n - 1];
+            Console.WriteLine("n = {0}, sum1 = {1}, sum2 = {2}", n, sum1, sum2);
+#endif
+
+#if false
+            var n = 1000000;
+            var algorithm = new MobiusOddRange(n + 1, 8);
+            var values = new sbyte[n >> 1];
+            algorithm.GetValues(1, UpToOdd(n), values);
+            for (var i = 1; i <= n; i += 2)
+            {
+                if (values[i >> 1] != IntegerMath.Mobius(i))
+                    Console.WriteLine("values[{0}] = {1}, mu({2}) = {3}", i >> 1, values[i >> 1], i, IntegerMath.Mobius(i));
+            }
+            var m = new long[n >> 1];
+            algorithm.GetValues(1, UpToOdd(n), null, 1, m, 0);
+            var sum = (long)0;
+            for (var i = 1; i <= n; i += 2)
+            {
+                sum += values[i >> 1];
+                if (sum != m[i >> 1])
+                    Console.WriteLine("m[{0}] = {1}, sum(values,1,{2}) = {3}", i >> 1, m[i >> 1], i, sum);
+            }
+#endif
+
+#if false
+            var n = 100;
+            var algorithm = new MobiusOddRange(n + 1, 0);
+            var values = new sbyte[n >> 1];
+            algorithm.GetValues(1, UpToOdd(n), values);
+            for (var i = 1; i <= n; i += 2)
+                Console.WriteLine("values[{0}] = {1}, mu({2}) = {3}", i >> 1, values[i >> 1], i, IntegerMath.Mobius(i));
+#endif
+
+#if false
+            for (var power = 4; power <= 4; power++)
             {
                 var n = IntegerMath.Power(2, power) - 1;
-                var imax = IntegerMath.FloorRoot(n, 3);
+                var u = (int)IntegerMath.FloorPower((BigInteger)n, 2, 3);
+                var imax = n / u;
                 if (imax < 2)
                     continue;
                 var sum1 = 0;
