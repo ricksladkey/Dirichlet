@@ -117,7 +117,7 @@ namespace Decompose.Numerics
             {
                 var i = r[l];
                 var ni = nRep / (uint)i;
-                var large = ni > 100;
+                var large = ni > long.MaxValue;
                 var cost = Math.Sqrt((double)n / i) * (large ? C5 : 1);
                 var addto = 0;
                 var mincost = costs[0];
