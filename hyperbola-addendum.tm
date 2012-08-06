@@ -1013,7 +1013,8 @@
   Adapt Deliglese and Rivat algorithm for odd-only method.
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|<big|sum><rsub|m\<leq\>u>\<mu\><around*|(|m|)>*<big|sum><rsub|n\<leq\>x/m,n
+    <tformat|<cwith|19|19|1|-1|cell-background|pastel
+    cyan>|<table|<row|<cell|<big|sum><rsub|m\<leq\>u>\<mu\><around*|(|m|)>*<big|sum><rsub|n\<leq\>x/m,n
     odd>M<around*|(|<frac|x/m|n>|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>u>\<mu\><around*|(|m|)>*\<cdot\>0=0>>|<row|<cell|<big|sum><rsub|m\<leq\>u>\<mu\><around*|(|m|)>*<big|sum><rsub|n\<leq\>u/m,n
     odd>M<around*|(|<frac|x/m|n>|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>u>\<mu\><around*|(|m|)>*<big|sum><rsub|n\<leq\>u/m>M<around*|(|<frac|x/m|n>|)>>>|<row|<cell|>|<cell|->|<cell|<big|sum><rsub|m\<leq\>u>\<mu\><around*|(|m|)>*<big|sum><rsub|n\<leq\>u/m,n
     even>M<around*|(|<frac|x/m|n>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|x|)>-<big|sum><rsub|m\<leq\>u>\<mu\><around*|(|m|)>*<big|sum><rsub|n\<leq\>u/<around*|(|2*m|)>>M<around*|(|<frac|x/<around*|(|2*m|)>|n>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|x|)>-<big|sum><rsub|m\<leq\>u/2>\<mu\><around*|(|m|)>*<big|sum><rsub|n\<leq\><around*|(|u/2|)>/m>M<around*|(|<frac|<around*|(|x/2|)>/m|n>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|x|)>-M<around*|(|<frac|x|2>|)>>>|<row|<cell|<big|sum><rsub|m\<leq\>u,m
@@ -1037,6 +1038,33 @@
     odd>M<around*|(|<frac|x/m|n>|)>>|<cell|=>|<cell|0>>|<row|<cell|M<around*|(|x|)>>|<cell|=>|<cell|-<big|sum><rsub|m\<leq\>u,m
     odd>\<mu\><around*|(|m|)>*<big|sum><rsub|u/m\<less\>n\<leq\>x/m,n
     odd>M<around*|(|<frac|x/m|n>|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|m\<leq\>u,m
+    odd>\<mu\><around*|(|m|)>*<big|sum><rsub|n\<leq\>u/m,n
+    odd>M<rsub|><around*|(|<frac|x/m|n>|)>>|<cell|=>|<cell|<big|sum><rsub|l\<leq\>u,l
+    odd>M<around*|(|<frac|x|l>|)>*<big|sum><rsub|m<around*|\||l|\<nobracket\>>>\<mu\><around*|(|m|)>>>|<row|<cell|>|<cell|=>|<cell|1\<cdot\>M<around*|(|<frac|x|1>|)>+<big|sum><rsub|l\<leq\>u,l
+    odd>M<around*|(|<frac|x|l>|)>\<cdot\>0>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|x|)>>>|<row|<cell|<big|sum><rsub|m\<leq\>u,m
+    odd>\<mu\><around*|(|m|)>*<big|sum><rsub|n\<leq\>u/m,n
+    odd>M<rsub|odd><rsub|><around*|(|<frac|x/m|n>|)>>|<cell|=>|<cell|<big|sum><rsub|l\<leq\>u,l
+    odd>M<rsub|odd><around*|(|<frac|x|l>|)>*<big|sum><rsub|m<around*|\||l|\<nobracket\>>>\<mu\><around*|(|m|)>>>|<row|<cell|>|<cell|=>|<cell|M<rsub|odd><around*|(|x|)>>>|<row|<cell|<big|sum><rsub|m\<leq\>u,m
+    odd>\<mu\><around*|(|m|)>*<big|sum><rsub|n\<leq\>x/m,n
+    odd>M<rsub|odd><around*|(|<frac|x/m|n>|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>u,m
+    odd>\<mu\><around*|(|m|)>\<cdot\>1>>|<row|<cell|>|<cell|=>|<cell|M<rsub|odd><around*|(|u|)>>>|<row|<cell|<big|sum><rsub|m\<leq\>u>\<mu\><around*|(|m|)>*<big|sum><rsub|n\<leq\>u/m,n
+    odd>M<rsub|odd><around*|(|<frac|x/m|n>|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>u>\<mu\><around*|(|m|)>*<big|sum><rsub|n\<leq\>u/m>M<rsub|odd><around*|(|<frac|x/m|n>|)>>>|<row|<cell|>|<cell|->|<cell|<big|sum><rsub|m\<leq\>u>\<mu\><around*|(|m|)>*<big|sum><rsub|n\<leq\>u/m,n
+    even>M<rsub|odd><around*|(|<frac|x/m|n>|)>>>|<row|<cell|>|<cell|=>|<cell|M<rsub|odd><around*|(|x|)>-M<rsub|odd><around*|(|<frac|x|2>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|x|)>>>|<row|<cell|<big|sum><rsub|m\<leq\>u>\<mu\><around*|(|m|)>*<big|sum><rsub|n\<leq\>x/m,n
+    odd>M<rsub|odd><around*|(|<frac|x/m|n>|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>u>\<mu\><around*|(|m|)>\<cdot\>1>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|u|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|M<rsub|odd><around*|(|x|)>>|<cell|=>|<cell|M<rsub|odd><around*|(|u|)>-<big|sum><rsub|m\<leq\>u,m
+    odd>\<mu\><around*|(|m|)>*<big|sum><rsub|u/m\<less\>n\<leq\>x/m,n
+    odd>M<rsub|odd><around*|(|<frac|x/m|n>|)>>>|<row|<cell|M<rsub|><around*|(|x|)>>|<cell|=>|<cell|M<around*|(|u|)>-<big|sum><rsub|m\<leq\>u>\<mu\><around*|(|m|)>*<big|sum><rsub|u/m\<less\>n\<leq\>x/m,n
+    odd>M<rsub|odd><around*|(|<frac|x/m|n>|)><space|1em><around*|(|*u
+    \<geq\>2|)>>>|<row|<cell|M<rsub|><around*|(|x|)>>|<cell|=>|<cell|M<rsub|odd><around*|(|u|)>-M<rsub|odd><around*|(|<frac|u|2>|)>-<big|sum><rsub|m\<leq\>u>\<mu\><around*|(|m|)>*<big|sum><rsub|u/m\<less\>n\<leq\>x/m,n
+    odd>M<rsub|odd><around*|(|<frac|x/m|n>|)><space|1em><around*|(|*u
+    \<geq\>2|)>>>>>
   </eqnarray*>
 
   Note that if <math|u> is zero, the term is also zero.
@@ -1080,8 +1108,6 @@
     odd>M<around*|(|<frac|n|i*j>|)>>>|<row|<cell|S<rsub|2,odd><around*|(|n,i<rsub|max>|)>>|<cell|=>|<cell|<big|sum><rsub|k\<leq\><sqrt|n>>M<around*|(|k|)>*<big|sum><rsub|i\<leq\>min<around*|(|i<rsub|max>,n/k<rsup|2>|)>,i
     odd>\<mu\><around*|(|i|)>*<around*|(|T<rsub|1,odd><around*|(|<frac|n/k|i>|)>-T<rsub|1,odd><around*|(|<frac|n/<around*|(|k+1|)>|i>|)>|)>>>>>
   </eqnarray*>
-
-  \;
 </body>
 
 <\initial>

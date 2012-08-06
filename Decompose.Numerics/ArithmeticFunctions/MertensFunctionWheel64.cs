@@ -8,28 +8,24 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class MertensFunctionWheel
+    public class MertensFunctionWheel64
     {
         private const long maximumBatchSize = (long)1 << 26;
-        private const long tmax = (long)1 << 62;
-        private const long tmin = -tmax;
         private const long C1 = 1;
         private const long C2 = 2;
         private const long C3 = 2;
         private const long C4 = 1;
-        private const long C5 = 10;
 
         private int threads;
         private MobiusRange mobius;
-        private BigInteger n;
-        private BigInteger nRep;
+        private long n;
         private long u;
         private int imax;
         private long[] m;
-        private BigInteger[] mx;
+        private long[] mx;
         private int[] r;
-        private int[][] bucketsSmall;
-        private int[][] bucketsLarge;
+        private int lmax;
+        private int[][] buckets;
 
 #if false
         private const int wheelSize = 2;
@@ -56,7 +52,7 @@ namespace Decompose.Numerics
         private bool[] wheelInclude;
 
 
-        public MertensFunctionWheel(int threads)
+        public MertensFunctionWheel64(int threads)
         {
             this.threads = threads;
             var subtotal = new List<int>();
@@ -74,30 +70,30 @@ namespace Decompose.Numerics
             wheelInclude = include.ToArray();
         }
 
-        public BigInteger Evaluate(BigInteger n)
+        public long Evaluate(long n)
         {
             if (n <= 0)
                 return 0;
 
             this.n = n;
-            this.nRep = (BigInteger)n;
-            u = (long)IntegerMath.Max(IntegerMath.FloorPower(n, 2, 3) * C1 / C2, IntegerMath.CeilingSquareRoot(n));
+            u = Math.Max((long)IntegerMath.FloorPower((BigInteger)n, 2, 3) * C1 / C2, IntegerMath.CeilingSquareRoot(n));
 
             if (u <= wheelSize)
             {
-                mobius = new MobiusRange((long)n + 1, threads);
-                m = new long[(long)n];
-                mobius.GetValues(1, (long)n + 1, null, 1, m, 0);
-                return m[(long)n - 1];
+                mobius = new MobiusRange(n + 1, threads);
+                m = new long[n];
+                mobius.GetValues(1, n + 1, null, 1, m, 0);
+                return m[n - 1];
             }
 
             imax = (int)(n / u);
             mobius = new MobiusRange(u + 1, threads);
             var batchSize = Math.Min(u, maximumBatchSize);
             m = new long[batchSize];
-            mx = new BigInteger[imax + 1];
+            mx = new long[imax + 1];
             r = new int[imax + 1];
-            var lmax = 0;
+
+            lmax = 0;
             for (var i = 1; i <= imax; i += 2)
             {
                 if (wheelInclude[i % wheelSize])
@@ -105,42 +101,33 @@ namespace Decompose.Numerics
             }
             Array.Resize(ref r, lmax);
 
-            var buckets = Math.Max(1, threads);
-            var costs = new double[buckets];
-            var bucketListsLarge = new List<int>[buckets];
-            for (var bucket = 0; bucket < buckets; bucket++)
-                bucketListsLarge[bucket] = new List<int>();
-            var bucketListsSmall = new List<int>[buckets];
-            for (var bucket = 0; bucket < buckets; bucket++)
-                bucketListsSmall[bucket] = new List<int>();
-            for (var l = 0; l < lmax; l++)
+            if (threads > 1)
             {
-                var i = r[l];
-                var ni = nRep / (uint)i;
-                var large = ni > 100;
-                var cost = Math.Sqrt((double)n / i) * (large ? C5 : 1);
-                var addto = 0;
-                var mincost = costs[0];
-                for (var bucket = 0; bucket < buckets; bucket++)
+                var costs = new double[threads];
+                var bucketLists = new List<int>[threads];
+                for (var thread = 0; thread < threads; thread++)
+                    bucketLists[thread] = new List<int>();
+                for (var l = 0; l < lmax; l++)
                 {
-                    if (costs[bucket] < mincost)
+                    var i = r[l];
+                    var cost = Math.Sqrt(n / i);
+                    var addto = 0;
+                    var mincost = costs[0];
+                    for (var thread = 0; thread < threads; thread++)
                     {
-                        mincost = costs[bucket];
-                        addto = bucket;
+                        if (costs[thread] < mincost)
+                        {
+                            mincost = costs[thread];
+                            addto = thread;
+                        }
                     }
+                    bucketLists[addto].Add(i);
+                    costs[addto] += cost;
                 }
-                if (large)
-                    bucketListsLarge[addto].Add(i);
-                else
-                    bucketListsSmall[addto].Add(i);
-                costs[addto] += cost;
+                buckets = new int[threads][];
+                for (var thread = 0; thread < threads; thread++)
+                    buckets[thread] = bucketLists[thread].ToArray();
             }
-            bucketsLarge = new int[buckets][];
-            for (var bucket = 0; bucket < buckets; bucket++)
-                bucketsLarge[bucket] = bucketListsLarge[bucket].ToArray();
-            bucketsSmall = new int[buckets][];
-            for (var bucket = 0; bucket < buckets; bucket++)
-                bucketsSmall[bucket] = bucketListsSmall[bucket].ToArray();
 
             var m0 = (long)0;
             for (var x = (long)1; x <= u; x += maximumBatchSize)
@@ -158,56 +145,29 @@ namespace Decompose.Numerics
         private void ProcessBatch(long x1, long x2)
         {
             if (threads <= 1)
-                UpdateMx(x1, x2, 1);
+                UpdateMx(x1, x2, r);
             else
             {
                 var tasks = new Task[threads];
                 for (var thread = 0; thread < threads; thread++)
                 {
                     var bucket = thread;
-                    tasks[thread] = Task.Factory.StartNew(() => UpdateMx(x1, x2, bucket));
+                    tasks[thread] = Task.Factory.StartNew(() => UpdateMx(x1, x2, buckets[bucket]));
                 }
                 Task.WaitAll(tasks);
             }
         }
 
-        private void UpdateMx(long x1, long x2, int bucket)
+        private void UpdateMx(long x1, long x2, int[] r)
         {
-            UpdateMxLarge(x1, x2, bucketsLarge[bucket]);
-            UpdateMxSmall(x1, x2, bucketsSmall[bucket]);
-        }
-
-        private void UpdateMxLarge(long x1, long x2, int[] r)
-        {
+#if TIMER
+            var timer = new ThreadStopwatch();
+            timer.Restart();
+#endif
             for (var l = 0; l < r.Length; l++)
             {
                 var i = r[l];
-                var x = nRep / (uint)i;
-                var sqrt = (long)IntegerMath.FloorSquareRoot(x);
-                var xover = (long)IntegerMath.Min(sqrt * C3 / C4, x);
-                xover = (long)(x / (x / (ulong)xover));
-                var s = (BigInteger)0;
-
-                var jmin = UpToOdd(IntegerMath.Max(imax / i + 1, (long)IntegerMath.Min(xover + 1, x / ((ulong)x2 + 1) + 1)));
-                var jmax = DownToOdd((long)IntegerMath.Min(xover, x / (ulong)x1));
-                s += JSum1(x, jmin, ref jmax, x1);
-                s += JSum2(x, jmin, jmax, x1);
-
-                var kmin = IntegerMath.Max(1, x1);
-                var kmax = (long)IntegerMath.Min(x / (ulong)xover - 1, x2);
-                s += KSum1(x, kmin, ref kmax, x1);
-                s += KSum2(x, kmin, kmax, x1);
-
-                mx[i] -= s;
-            }
-        }
-
-        private void UpdateMxSmall(long x1, long x2, int[] r)
-        {
-            for (var l = 0; l < r.Length; l++)
-            {
-                var i = r[l];
-                var x = (long)(nRep / (uint)i);
+                var x = n / i;
                 var sqrt = IntegerMath.FloorSquareRoot(x);
                 var xover = Math.Min(sqrt * C3 / C4, x);
                 xover = x / (x / xover);
@@ -225,6 +185,10 @@ namespace Decompose.Numerics
 
                 mx[i] -= s;
             }
+#if TIMER
+            Console.WriteLine("x1 = {0:F3}, length = {1:F3}, elapsed = {2:F3} msec",
+                (double)x1, (double)(x2 - x1 + 1), (double)timer.ElapsedTicks / ThreadStopwatch.Frequency * 1000);
+#endif
         }
 
         private long JSum2(long x, long jmin, long jmax, long x1)
@@ -349,141 +313,12 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private long JSum2(BigInteger x, long jmin, long jmax, long x1)
-        {
-            var s = (long)0;
-            for (var j = jmin; j <= jmax; j += 2)
-            {
-                if (wheelInclude[j % wheelSize])
-                    s += m[(long)(x / (ulong)j) - x1];
-            }
-            return s;
-        }
-
-        private BigInteger KSum2(BigInteger x, long kmin, long kmax, long x1)
-        {
-            var s = (BigInteger)0;
-            var current = T1Wheel(x);
-            for (var k = kmin; k <= kmax; k++)
-            {
-                var next = T1Wheel(x / (ulong)(k + 1));
-                s += (current - next) * m[k - x1];
-                current = next;
-            }
-            return s;
-        }
-
-        private BigInteger JSum1(BigInteger x, long j1, ref long j, long offset)
-        {
-            var s = (long)0;
-            var beta = (long)(x / ((ulong)j + 2));
-            var eps = (long)(x % ((ulong)j + 2));
-            var delta = (long)(x / (ulong)j) - beta;
-            var gamma = 2 * beta - j * delta;
-            var mod = j % wheelSize;
-            while (j >= j1)
-            {
-                eps += gamma;
-                if (eps >= j)
-                {
-                    ++delta;
-                    gamma -= j;
-                    eps -= j;
-                    if (eps >= j)
-                    {
-                        ++delta;
-                        gamma -= j;
-                        eps -= j;
-                        if (eps >= j)
-                            break;
-                    }
-                }
-                else if (eps < 0)
-                {
-                    --delta;
-                    gamma += j;
-                    eps += j;
-                }
-                gamma += 4 * delta;
-                beta += delta;
-
-                Debug.Assert(eps == (BigInteger)x % j);
-                Debug.Assert(beta == (BigInteger)x / j);
-                Debug.Assert(delta == beta - (BigInteger)x / (j + 2));
-                Debug.Assert(gamma == 2 * beta - (BigInteger)(j - 2) * delta);
-
-                if (wheelInclude[mod])
-                    s += m[beta - offset];
-                mod -= 2;
-                if (mod < 0)
-                    mod += wheelSize;
-                j -= 2;
-            }
-            return s;
-        }
-
-        private BigInteger KSum1(BigInteger x, long k1, ref long k, long offset)
-        {
-            if (k == 0)
-                return 0;
-            var s = (BigInteger)0;
-            var t = (long)0;
-            var beta = (long)(x / (k + 1));
-            var eps = (long)(x % (k + 1));
-            var delta = (long)(x / k - beta);
-            var gamma = (long)(beta - k * delta);
-            var lastCount = T1Wheel(beta);
-            while (k >= k1)
-            {
-                eps += gamma;
-                if (eps >= k)
-                {
-                    ++delta;
-                    gamma -= k;
-                    eps -= k;
-                    if (eps >= k)
-                    {
-                        ++delta;
-                        gamma -= k;
-                        eps -= k;
-                        if (eps >= k)
-                            break;
-                    }
-                }
-                else if (eps < 0)
-                {
-                    --delta;
-                    gamma += k;
-                    eps += k;
-                }
-                gamma += 2 * delta;
-                beta += delta;
-
-                Debug.Assert(eps == (BigInteger)x % k);
-                Debug.Assert(beta == (BigInteger)x / k);
-                Debug.Assert(delta == beta - (BigInteger)x / (k + 1));
-                Debug.Assert(gamma == beta - (BigInteger)(k - 1) * delta);
-
-                var count = T1Wheel(beta);
-                t += (count - lastCount) * m[k - offset];
-                if (t > tmax || t < tmin)
-                {
-                    s += t;
-                    t = 0;
-                }
-                lastCount = count;
-                --k;
-            }
-            s += t;
-            return s;
-        }
-
         private void ComputeMx()
         {
-            for (var l = r.Length - 1; l >= 0; l--)
+            for (var l = lmax - 1; l >= 0; l--)
             {
                 var i = r[l];
-                var s = (BigInteger)0;
+                var s = (long)0;
                 for (var ij = 2 * i; ij <= imax; ij += i)
                     s += mx[ij];
                 mx[i] -= s;
@@ -505,13 +340,6 @@ namespace Decompose.Numerics
             var b = a / wheelSize;
             var c = (int)(a - b * wheelSize);
             return wheelCount * b + wheelSubtotal[c];
-        }
-
-        private BigInteger T1Wheel(BigInteger a)
-        {
-            var b = a / wheelSize;
-            var c = (int)(a - b * wheelSize);
-            return (uint)wheelCount * b + (uint)wheelSubtotal[c];
         }
     }
 }

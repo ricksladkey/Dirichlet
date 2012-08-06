@@ -139,7 +139,7 @@ namespace Decompose.Numerics
         private long ISum2(long nk1, long nk2, long imin, long ilast)
         {
             var s = (long)0;
-            for (var i = 1; i <= ilast; i += 2)
+            for (var i = imin; i <= ilast; i += 2)
                 s += values[i - 1] * (T1Odd(nk1 / i) - T1Odd(nk2 / i));
             return s;
         }

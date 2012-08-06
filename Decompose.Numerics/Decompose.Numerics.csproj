@@ -56,6 +56,7 @@
     <Compile Include="ArithmeticFunctions\MertensFunctionBasic.cs" />
     <Compile Include="ArithmeticFunctions\MertensFunctionDR.cs" />
     <Compile Include="ArithmeticFunctions\MertensFunctionWheel.cs" />
+    <Compile Include="ArithmeticFunctions\MertensFunctionWheel64.cs" />
     <Compile Include="ArithmeticFunctions\MertensRangeInverted.cs" />
     <Compile Include="ArithmeticFunctions\MertensRangeBasic.cs" />
     <Compile Include="ArithmeticFunctions\MertensRangeDR.cs" />

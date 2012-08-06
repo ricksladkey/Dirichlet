@@ -450,7 +450,7 @@ namespace Sandbox
         {
 #if true
             var timer = new Stopwatch();
-            for (var i = 15; i <= 15; i++)
+            for (var i = 1; i <= 15; i++)
             {
                 var n = IntegerMath.Power((long)10, i);
                 timer.Restart();
@@ -459,7 +459,7 @@ namespace Sandbox
                 output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #if true
                 timer.Restart();
-                var mertens2 = new MertensFunctionDR(8);
+                var mertens2 = new MertensFunctionWheel64(8);
                 var sum2 = mertens2.Evaluate(n);
                 output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #else
@@ -468,6 +468,44 @@ namespace Sandbox
                 var sum3 = i <= 18 ? MertensFunction.PowerOfTen(i) : 0;
                 Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}", i, sum1, sum2, sum3);
             }
+#endif
+
+#if false
+            for (var power = 1; power <= 20; power++)
+            {
+                var n = IntegerMath.Power(2, power) - 1;
+                var imax = IntegerMath.FloorRoot(n, 3);
+                if (imax < 2)
+                    continue;
+                var sum1 = 0;
+                for (var i = 1; i <= imax; i++)
+                {
+                    var mu = IntegerMath.Mobius(i);
+                    if (mu == 0)
+                        continue;
+                    var ni = n / i;
+                    var jmin = (imax / i + 1) | 1;
+                    var jmax = ni;
+                    var s = 0;
+                    for (var j = jmin; j <= jmax; j += 2)
+                        s += IntegerMath.MertensOdd(ni / j);
+                    sum1 += mu * s;
+                }
+                sum1 = IntegerMath.MertensOdd(imax) - IntegerMath.MertensOdd(imax / 2) - sum1;
+                var sum2 = IntegerMath.Mertens(n);
+                Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", power, sum1, sum2);
+            }
+#endif
+
+#if false
+            var n = 10000;
+            var count = 0;
+            for (var i = 1; i <= n; i += 2)
+            {
+                if (IntegerMath.Mobius(i) != 0)
+                    ++count;
+            }
+            Console.WriteLine("n = {0}, % = {1}", n, (double)count / n * 2 * 100);
 #endif
 
 #if false
