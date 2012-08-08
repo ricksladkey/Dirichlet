@@ -948,7 +948,7 @@
   </eqnarray*>
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|<big|sum><rsub|k\<leq\>n<rsup|1/5>>T<around*|(|k|)>*<around*|(|M<around*|(|<sqrt|<frac|n|k>>|)>-M<around*|(|<sqrt|<frac|n|k+1>>|)>|)>>|<cell|=>|<cell|T<around*|(|1|)>*M<around*|(|<sqrt|n>|)>>>|<row|<cell|>|<cell|->|<cell|T<around*|(|1|)>*M<around*|(|<sqrt|<frac|n|2>>|)>+T<around*|(|2|)>*M<around*|(|<sqrt|<frac|n|2>>|)>>>|<row|<cell|>|<cell|->|<cell|\<ldots\>>>|<row|<cell|>|<cell|->|<cell|T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|<sqrt|n>|)>>>|<row|<cell|>|<cell|+>|<cell|<around*|(|T<around*|(|2|)>-T<around*|(|1|)>|)>*M<around*|(|<sqrt|<frac|n|2>>|)>>>|<row|<cell|>|<cell|+>|<cell|\<ldots\>>>|<row|<cell|>|<cell|->|<cell|T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|<sqrt|n>|)>+\<tau\><around*|(|2|)>*M<around*|(|<sqrt|<frac|n|2>>|)>+\<ldots\>-T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)><with|font-series|bold|>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|k\<less\>n<rsup|1/5>>\<tau\><around*|(|k|)>*M<around*|(|<sqrt|<frac|n|k>>|)>+M<around*|(|<sqrt|n>|)>-T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|k\<less\>n<rsup|1/5>>\<tau\><around*|(|k|)>*M<rprime|'><around*|(|k|)>+M<rprime|'><around*|(|1|)>-T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>>>
+    <tformat|<table|<row|<cell|<big|sum><rsub|k\<leq\>n<rsup|1/5>>T<around*|(|k|)>*<around*|(|M<around*|(|<sqrt|<frac|n|k>>|)>-M<around*|(|<sqrt|<frac|n|k+1>>|)>|)>>|<cell|=>|<cell|T<around*|(|1|)>*M<around*|(|<sqrt|n>|)>>>|<row|<cell|>|<cell|->|<cell|T<around*|(|1|)>*M<around*|(|<sqrt|<frac|n|2>>|)>+T<around*|(|2|)>*M<around*|(|<sqrt|<frac|n|2>>|)>>>|<row|<cell|>|<cell|->|<cell|\<ldots\>>>|<row|<cell|>|<cell|->|<cell|T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|<sqrt|n>|)>>>|<row|<cell|>|<cell|+>|<cell|<around*|(|T<around*|(|2|)>-T<around*|(|1|)>|)>*M<around*|(|<sqrt|<frac|n|2>>|)>>>|<row|<cell|>|<cell|+>|<cell|\<ldots\>>>|<row|<cell|>|<cell|->|<cell|T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|<sqrt|n>|)>+\<tau\><around*|(|2|)>*M<around*|(|<sqrt|<frac|n|2>>|)>+\<ldots\>-T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)><with|font-series|bold|>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|k\<less\>n<rsup|1/5>>\<tau\><around*|(|k|)>*M<around*|(|<sqrt|<frac|n|k>>|)>-T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|k\<less\>n<rsup|1/5>>\<tau\><around*|(|k|)>*M<rprime|'><around*|(|k|)>-T<around*|(|n<rsup|1/5>|)>*M<around*|(|n<rsup|2/5>|)>>>>>
   </eqnarray*>
 
   Calculating a function over a sequence of integers with ascending divisors
@@ -967,6 +967,13 @@
     odd>M<around*|(|<frac|n|j>|)>>>|<row|<cell|>|<cell|=>|<cell|-<big|sum><rsub|3\<leq\>m\<leq\><sqrt|n>,j
     odd>M<around*|(|<frac|n|j>|)>>>|<row|<cell|>|<cell|->|<cell|<big|sum><rsub|1\<leq\>k\<less\><sqrt|n>><around*|(|T<rsub|1,odd><around*|(|<frac|n|k>|)>-T<rsub|1,odd><around*|(|<frac|n|k+1>|)>|)>*M<around*|(|k|)>>>|<row|<cell|T<rsub|1,odd><around*|(|<frac|n|k>|)>-T<rsub|1,odd><around*|(|<frac|n|k+1>|)>>|<cell|=>|<cell|<around*|\<lfloor\>|<frac|\<delta\><rsub|1><around*|(|x|)>+\<beta\><around*|(|x|)>
     mod 2|2>|\<rfloor\>>>>>>
+  </eqnarray*>
+
+  Derivation of Stieltjes formula with <math|T<rsub|1,odd><around*|(|n|)>> as
+  a proxy for <math|<big|sum><rsub|k=1><rsup|n><around*|(|-1|)><rsup|k+1>>.
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|1\<leq\>k\<less\><sqrt|n>><around*|(|T<rsub|1,odd><around*|(|<frac|n|k>|)>-T<rsub|1,odd><around*|(|<frac|n|k+1>|)>|)>*M<around*|(|k|)>>|<cell|=>|<cell|<around*|(|T<rsub|1,odd><around*|(|<frac|n|1>|)>-T<rsub|1,odd><around*|(|<frac|n|2>|)>|)>*M<around*|(|1|)>>>|<row|<cell|>|<cell|+>|<cell|<around*|(|T<rsub|1,odd><around*|(|<frac|n|2>|)>-T<rsub|1,odd><around*|(|<frac|n|3>|)>|)>*M<around*|(|2|)>>>|<row|<cell|>|<cell|+>|<cell|\<ldots\>.>>|<row|<cell|>|<cell|+>|<cell|<around*|(|T<rsub|1,odd><around*|(|<frac|n|k<rsub|max>>|)>-T<rsub|1,odd><around*|(|<frac|n|k<rsub|max>+1>|)>|)>*M<around*|(|k<rsub|max>|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|1|)>*T<rsub|1,odd><around*|(|<frac|n|1>|)>>>|<row|<cell|>|<cell|+>|<cell|\<mu\><around*|(|2|)>*T<rsub|1,odd><around*|(|<frac|n|2>|)>>>|<row|<cell|>|<cell|+>|<cell|\<ldots\>>>|<row|<cell|>|<cell|->|<cell|T<rsub|1,odd><around*|(|<frac|n|k<rsub|max>+1>|)>*M<around*|(|k<rsub|max>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|1\<leq\>k\<leq\><sqrt|n>>\<mu\><around*|(|k|)>*T<rsub|1,odd><around*|(|<frac|n|k>|)>>>|<row|<cell|>|<cell|->|<cell|T<rsub|1,odd><around*|(|<frac|n|<sqrt|n>+1>|)>*M<around*|(|<sqrt|n>|)>>>>>
   </eqnarray*>
 
   <\eqnarray*>
@@ -1058,13 +1065,31 @@
   </eqnarray*>
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|M<rsub|odd><around*|(|x|)>>|<cell|=>|<cell|M<rsub|odd><around*|(|u|)>-<big|sum><rsub|m\<leq\>u,m
+    <tformat|<cwith|1|1|1|-1|cell-background|pastel
+    cyan>|<cwith|3|3|1|-1|cell-background|pastel
+    cyan>|<table|<row|<cell|M<rsub|odd><around*|(|x|)>>|<cell|=>|<cell|M<rsub|odd><around*|(|u|)>-<big|sum><rsub|m\<leq\>u,m
     odd>\<mu\><around*|(|m|)>*<big|sum><rsub|u/m\<less\>n\<leq\>x/m,n
     odd>M<rsub|odd><around*|(|<frac|x/m|n>|)>>>|<row|<cell|M<rsub|><around*|(|x|)>>|<cell|=>|<cell|M<around*|(|u|)>-<big|sum><rsub|m\<leq\>u>\<mu\><around*|(|m|)>*<big|sum><rsub|u/m\<less\>n\<leq\>x/m,n
     odd>M<rsub|odd><around*|(|<frac|x/m|n>|)><space|1em><around*|(|*u
     \<geq\>2|)>>>|<row|<cell|M<rsub|><around*|(|x|)>>|<cell|=>|<cell|M<rsub|odd><around*|(|u|)>-M<rsub|odd><around*|(|<frac|u|2>|)>-<big|sum><rsub|m\<leq\>u>\<mu\><around*|(|m|)>*<big|sum><rsub|u/m\<less\>n\<leq\>x/m,n
     odd>M<rsub|odd><around*|(|<frac|x/m|n>|)><space|1em><around*|(|*u
-    \<geq\>2|)>>>>>
+    \<geq\>2|)>>>|<row|<cell|M<around*|(|x|)>-M<rsub|odd><around*|(|x|)>>|<cell|=>|<cell|-M<rsub|odd><around*|(|<frac|u|2>|)>-<big|sum><rsub|m\<leq\>u,m
+    even>\<mu\><around*|(|m|)>*<big|sum><rsub|u/m\<less\>n\<leq\>x/m,n
+    odd>M<rsub|odd><around*|(|<frac|x/m|n>|)>>>|<row|<cell|M<rsub|odd><around*|(|<frac|x|2>|)>>|<cell|=>|<cell|M<rsub|odd><around*|(|<frac|u|2>|)>+<big|sum><rsub|m\<leq\>u,m
+    even>\<mu\><around*|(|m|)>*<big|sum><rsub|u/m\<less\>n\<leq\>x/m,n
+    odd>M<rsub|odd><around*|(|<frac|x/m|n>|)>>>|<row|<cell|>|<cell|=>|<cell|
+    M<rsub|odd><around*|(|<frac|u|2>|)>+<big|sum><rsub|m\<leq\>u/2>\<mu\><around*|(|2*m|)>*<big|sum><rsub|u/<around*|(|m/2|)>\<less\>n\<leq\>x/<around*|(|m/2|)>,n
+    odd>M<rsub|odd><around*|(|<frac|x/<around*|(|m/2|)>|n>|)>>>|<row|<cell|>|<cell|=>|<cell|
+    M<rsub|odd><around*|(|<frac|u|2>|)>-<big|sum><rsub|m\<leq\>u/2,m
+    odd>\<mu\><around*|(|m|)>*<big|sum><rsub|<around*|(|u/2|)>/m\<less\>n\<leq\><around*|(|x/2|)>/m,n
+    odd>M<rsub|odd><around*|(|<frac|<around*|(|x/2|)>/m|n>|)>>>>>
+  </eqnarray*>
+
+  Try to use Stieltjes formula to simplify KSum:
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|m\<leq\>n><around*|(|-1|)><rsup|m+1>*M<around*|(|<frac|n|m>|)>>|<cell|=>|<cell|-1<space|1em><around*|(|n\<geq\>2|)>>>|<row|<cell|M<around*|(|n|)>>|<cell|=>|<cell|-1-<big|sum><rsub|2\<leq\>m\<leq\>n><around*|(|-1|)><rsup|m+1>*M<around*|(|<frac|n|m>|)>>>|<row|<cell|z<around*|(|x|)>>|<cell|=>|<cell|<around*|\<lfloor\>|x|\<rfloor\>>
+    mod 2>>|<row|<cell|<big|sum><rsub|m\<leq\><sqrt|n>><around*|(|-1|)><rsup|m+1>M<around*|(|<frac|n|m>|)>>|<cell|=>|<cell|-1+M<around*|(|<sqrt|n>|)>*z<around*|(|<sqrt|n>|)>-<big|sum><rsub|m\<leq\><sqrt|n>>z<around*|(|<frac|n|m>|)>*\<mu\><around*|(|m|)>>>|<row|<cell|<big|sum><rsub|<sqrt|n>\<less\>m\<leq\>n><around*|(|-1|)><rsup|m+1>*M<around*|(|<frac|n|m>|)>>|<cell|=>|<cell|-M<around*|(|<sqrt|n>|)>*z<around*|(|<sqrt|n>|)>+<big|sum><rsub|m\<leq\><sqrt|n>>z<around*|(|<frac|n|m>|)>*\<mu\><around*|(|m|)>>>>>
   </eqnarray*>
 
   Note that if <math|u> is zero, the term is also zero.
@@ -1108,6 +1133,8 @@
     odd>M<around*|(|<frac|n|i*j>|)>>>|<row|<cell|S<rsub|2,odd><around*|(|n,i<rsub|max>|)>>|<cell|=>|<cell|<big|sum><rsub|k\<leq\><sqrt|n>>M<around*|(|k|)>*<big|sum><rsub|i\<leq\>min<around*|(|i<rsub|max>,n/k<rsup|2>|)>,i
     odd>\<mu\><around*|(|i|)>*<around*|(|T<rsub|1,odd><around*|(|<frac|n/k|i>|)>-T<rsub|1,odd><around*|(|<frac|n/<around*|(|k+1|)>|i>|)>|)>>>>>
   </eqnarray*>
+
+  \;
 </body>
 
 <\initial>

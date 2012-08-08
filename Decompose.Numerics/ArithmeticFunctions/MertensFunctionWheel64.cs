@@ -246,7 +246,10 @@ namespace Decompose.Numerics
                     gamma += j;
                     eps += j;
                 }
-                gamma += 4 * delta;
+                gamma += delta;
+                gamma += delta;
+                gamma += delta;
+                gamma += delta;
                 beta += delta;
 
                 Debug.Assert(eps == x % j);
@@ -297,7 +300,8 @@ namespace Decompose.Numerics
                     gamma += k;
                     eps += k;
                 }
-                gamma += 2 * delta;
+                gamma += delta;
+                gamma += delta;
                 beta += delta;
 
                 Debug.Assert(eps == x % k);

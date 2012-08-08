@@ -51,7 +51,7 @@ namespace Decompose.Numerics
             xi = new long[imax + 1];
             mx = new long[imax + 1];
 
-            // Initialize xi (mx already initialized to zeros).
+            // Initialize xi.
             for (var i = 1; i <= imax; i++)
                 xi[i] = Xi(i);
 
@@ -155,7 +155,8 @@ namespace Decompose.Numerics
                     gamma += x;
                     eps += x;
                 }
-                gamma += 2 * delta;
+                gamma += delta;
+                gamma += delta;
                 beta += delta;
                 alphax -= alpha + 1;
                 if (alphax <= beta)
@@ -177,11 +178,7 @@ namespace Decompose.Numerics
                 Debug.Assert(gamma == beta - (BigInteger)(x - 1) * delta);
                 Debug.Assert(alpha == n / ((BigInteger)x * x));
 
-                var mu = values[x - offset];
-                if (mu == -1)
-                    t -= alpha;
-                else if (mu == 1)
-                    t += alpha;
+                t += (int)alpha * values[x - offset];
                 if (t > tmax)
                 {
                     s += (ulong)t;
@@ -288,7 +285,10 @@ namespace Decompose.Numerics
                     gamma += j;
                     eps += j;
                 }
-                gamma += 4 * delta;
+                gamma += delta;
+                gamma += delta;
+                gamma += delta;
+                gamma += delta;
                 beta += delta;
 
                 Debug.Assert(eps == n % j);
@@ -334,7 +334,8 @@ namespace Decompose.Numerics
                     gamma += k;
                     eps += k;
                 }
-                gamma += 2 * delta;
+                gamma += delta;
+                gamma += delta;
                 beta += delta;
 
                 Debug.Assert(eps == n % k);

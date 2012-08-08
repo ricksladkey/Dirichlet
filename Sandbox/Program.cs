@@ -450,9 +450,9 @@ namespace Sandbox
         {
 #if true
             var timer = new Stopwatch();
-            for (var i = 12; i <= 18; i++)
+            for (var i = 14; i <= 14; i++)
             {
-                var n = IntegerMath.Power((long)10, i);
+                var n = IntegerMath.Power((BigInteger)10, i);
                 timer.Restart();
                 var mertens1 = new MertensFunctionWheel(8);
                 var sum1 = mertens1.Evaluate(n);
@@ -460,17 +460,55 @@ namespace Sandbox
 #if true
                 timer.Restart();
                 var mertens2 = new MertensFunctionWheel64(8);
-                var sum2 = mertens2.Evaluate(n);
-                output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                var sum2 = mertens2.Evaluate((long)n);
+                output.WriteLine("elapsed2 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #else
                 var sum2 = (long)0;
 #endif
-#if true
-                var sum3 = i <= 18 ? MertensFunction.PowerOfTen(i) : 0;
-#else
-                var sum3 = IntegerMath.MertensOdd((int)n);
-#endif
+                var sum3 = i <= 19 ? MertensFunction.PowerOfTen(i) : 0;
                 Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}", i, sum1, sum2, sum3);
+            }
+#endif
+
+#if false
+            var timer = new Stopwatch();
+#if true
+            {
+                var i = 24;
+                var n = IntegerMath.Power((BigInteger)10, i);
+                var algorithm = new SquareFreeCounting(8, false);
+                timer.Restart();
+                var sum1 = algorithm.Evaluate(n);
+                output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                var sum2 = SquareFreeCounting.PowerOfTen(i);
+                Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
+            }
+#endif
+#if true
+            {
+                var i = 14.8;
+                var n = (long)Math.Pow(10, i);
+                timer.Restart();
+                var mertens1 = new MertensFunctionWheel64(8);
+                var sum1 = mertens1.Evaluate(n);
+                output.WriteLine("elapsed2 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                Console.WriteLine("i = {0}, sum1 = {1}", i, sum1);
+            }
+#endif
+#endif
+
+#if false
+            for (var power = 1; power <= 7; power++)
+            {
+                var n = IntegerMath.Power(10, power);
+                var sqrt = IntegerMath.FloorSquareRoot(n);
+                var sum1 = 0;
+                for (var m = 1; m <= sqrt; m++)
+                    sum1 += IntegerMath.Power(-1, m + 1) * IntegerMath.Mertens(n / m);
+                var sum2 = -1 + IntegerMath.Mertens(sqrt) * (sqrt % 2);
+                for (var m = 1; m <= sqrt; m++)
+                    sum2 -= n / m % 2 * IntegerMath.Mobius(m);
+                Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", power, sum1, sum2);
             }
 #endif
 
@@ -753,7 +791,7 @@ namespace Sandbox
 #if false
             var algorithm = new SquareFreeCounting(8, false);
             var timer = new Stopwatch();
-            for (var i = 23; i <= 23; i++)
+            for (var i = 24; i <= 24; i++)
             {
                 var n = IntegerMath.Power((BigInteger)10, i);
                 var sum1 = SquareFreeCounting.PowerOfTen(i);

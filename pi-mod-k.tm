@@ -350,7 +350,8 @@
 
   <section|Simplifying Summation Expressions>
 
-  We observe for small values of <math|n> that
+  Although it is not a significant part of the computation, we observe for
+  small values of <math|n> that
 
   <\eqnarray*>
     <tformat|<table|<row|<cell|<around*|(|<big|sum><rsub|d\<leq\><sqrt|n|3>,d
