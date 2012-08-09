@@ -11,12 +11,14 @@ namespace Decompose.Numerics
         private class Data
         {
             public long[] Products;
+            public sbyte[] Values;
             public int[] Offsets;
             public long[] OffsetsSquared;
 
             public Data(int length)
             {
                 Products = new long[blockSize];
+                Values = new sbyte[blockSize];
                 Offsets = new int[length];
                 OffsetsSquared = new long[length];
             }
@@ -58,15 +60,11 @@ namespace Decompose.Numerics
 
         public void GetValues(long kmin, long kmax, sbyte[] values, long offset, long[] sums, long m0)
         {
-            // Determine the number of primes appropriate for values up to kmax.
-            var plimit = (int)Math.Ceiling(Math.Sqrt(kmax));
-            var pmax = primes.Length;
-            while (pmax > 0 && primes[pmax - 1] > plimit)
-                --pmax;
+            var pmax = GetPMax(kmax);
 
             if (threads == 0)
             {
-                ProcessRange(pmax, kmin, kmax, values, offset, sums, m0);
+                ProcessRange(pmax, kmin, kmax, values, offset, sums, m0, null);
                 if (values != null && kmin <= 1)
                     values[1 - kmin] = 1;
                 return;
@@ -80,11 +78,9 @@ namespace Decompose.Numerics
             {
                 var kstart = (long)thread * batchSize + kmin;
                 var kend = Math.Min(kstart + batchSize, kmax);
-                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(pmax, kstart, kend, values, offset, sums, m0));
+                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(pmax, kstart, kend, values, offset, sums, m0, null));
             }
             Task.WaitAll(tasks);
-            if (values != null && kmin <= 1)
-                values[1 - kmin] = 1;
 
             if (sums == null)
                 return;
@@ -108,6 +104,21 @@ namespace Decompose.Numerics
                 tasks[thread] = Task.Factory.StartNew(() => BumpRange(mabs[index], kstart, kend, offset, sums));
             }
             Task.WaitAll(tasks);
+        }
+
+        public void GetValues(long kmin, long kmax, long m0, Action<long, long, sbyte[]> action)
+        {
+            ProcessRange(GetPMax(kmax), kmin, kmax, null, -1, null, m0, action);
+        }
+
+        private int GetPMax(long kmax)
+        {
+            // Determine the number of primes appropriate for values up to kmax.
+            var plimit = (int)Math.Ceiling(Math.Sqrt(kmax));
+            var pmax = primes.Length;
+            while (pmax > 0 && primes[pmax - 1] > plimit)
+                --pmax;
+            return pmax;
         }
 
         private void BumpRange(long abs, long kstart, long kend, long offset, long[] sums)
@@ -144,7 +155,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private void ProcessRange(int pmax, long kstart, long kend, sbyte[] values, long kmin, long[] sums, long m0)
+        private void ProcessRange(int pmax, long kstart, long kend, sbyte[] values, long kmin, long[] sums, long m0, Action<long, long, sbyte[]> action)
         {
             // Acquire resources.
             Data data;
@@ -153,6 +164,8 @@ namespace Decompose.Numerics
             var products = data.Products;
             var offsets = data.Offsets;
             var offsetsSquared = data.OffsetsSquared;
+            if (action != null)
+                values = data.Values;
 
             // Determine the initial cycle offset.
             var cycleOffset = cycleSize - (int)(kstart % cycleSize);
@@ -179,8 +192,19 @@ namespace Decompose.Numerics
             for (var k = kstart; k < kend; k += blockSize)
             {
                 var length = (int)Math.Min(blockSize, kend - k);
+                var offset = kmin == -1 ? k : kmin;
                 SieveBlock(pmax, k, length, products, offsets, offsetsSquared);
-                m0 = AddValues(k, length, products, values, kmin, sums, m0);
+                m0 = AddValues(k, length, products, values, offset, sums, m0);
+
+#if false
+                // Fix up one.
+                if (values != null && offset <= 1)
+                    values[1 - kmin] = 1;
+#endif
+
+                // Perform action, if any.
+                if (action != null)
+                    action(k, k + length, values);
             }
 
             // Release resources.

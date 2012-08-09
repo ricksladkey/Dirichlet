@@ -58,6 +58,11 @@ namespace Decompose.Numerics
         private const int wheelSize = 2 * 3 * 5 * 7 * 11 * 13 * 17;
         private const int wheelCount = (2 - 1) * (3 - 1) * (5 - 1) * (7 - 1) * (11 - 1) * (13 - 1) * (17 - 1);
 #endif
+#if false
+        private const int wheelSize = 2 * 3 * 5 * 7 * 11 * 13 * 17 * 19;
+        private const int wheelCount = (2 - 1) * (3 - 1) * (5 - 1) * (7 - 1) * (11 - 1) * (13 - 1) * (17 - 1) * (19 - 1);
+#endif
+        private const int wheelSize2 = wheelSize >> 1;
 
         private int[] wheelSubtotal;
         private bool[] wheelInclude;
@@ -67,8 +72,8 @@ namespace Decompose.Numerics
         {
             this.threads = threads;
             wheelSubtotal = new int[wheelSize];
-            wheelInclude = new bool[wheelSize];
-            wheelNext = new int[wheelSize];
+            wheelInclude = new bool[wheelSize >> 1];
+            wheelNext = new int[wheelSize >> 1];
             var total = 0;
             var first = -1;
             for (var i = 0; i < wheelSize; i++)
@@ -81,13 +86,14 @@ namespace Decompose.Numerics
                     ++total;
                 }
                 wheelSubtotal[i] = total;
-                wheelInclude[i] = include;
+                wheelInclude[i >> 1] = include;
             }
             Debug.Assert(total == wheelCount);
-            var next = first;
-            for (var i = wheelSize - 1; i >= 0; i--)
+            var next = first - 1;
+            for (var i = (wheelSize >> 1) - 1; i >= 0; i--)
             {
-                wheelNext[i] = ++next;
+                next += 2;
+                wheelNext[i] = next;
                 if (wheelInclude[i])
                     next = 0;
             }
@@ -113,7 +119,7 @@ namespace Decompose.Numerics
             var lmax = 0;
             for (var i = 1; i <= imax; i += 2)
             {
-                if (wheelInclude[i % wheelSize])
+                if (wheelInclude[(i % wheelSize) >> 1])
                     r[lmax++] = i;
             }
             Array.Resize(ref r, lmax);
@@ -248,7 +254,7 @@ namespace Decompose.Numerics
             while (j <= jmax)
             {
                 s += m[x / j - x1];
-                var skip = wheelNext[mod];
+                var skip = wheelNext[mod >> 1];
                 j += skip;
                 mod += skip;
                 if (mod >= wheelSize)
@@ -277,7 +283,7 @@ namespace Decompose.Numerics
             var eps = x % (j + 2);
             var delta = x / j - beta;
             var gamma = 2 * beta - j * delta;
-            var mod = j % wheelSize;
+            var mod = (j % wheelSize) >> 1;
             while (j >= j1)
             {
                 eps += gamma;
@@ -311,9 +317,8 @@ namespace Decompose.Numerics
 
                 if (wheelInclude[mod])
                     s += m[beta - offset];
-                mod -= 2;
-                if (mod < 0)
-                    mod += wheelSize;
+                if (--mod < 0)
+                    mod += wheelSize2;
                 j -= 2;
             }
             return s;
@@ -377,7 +382,7 @@ namespace Decompose.Numerics
             while (j <= jmax)
             {
                 s += m[(int)(x / (ulong)j - x1)];
-                var skip = wheelNext[mod];
+                var skip = wheelNext[mod >> 1];
                 j += skip;
                 mod += skip;
                 if (mod >= wheelSize)
@@ -406,7 +411,7 @@ namespace Decompose.Numerics
             var eps = (long)(x % ((ulong)j + 2));
             var delta = (long)(x / (ulong)j) - beta;
             var gamma = 2 * beta - j * delta;
-            var mod = j % wheelSize;
+            var mod = (j % wheelSize) >> 1;
             while (j >= j1)
             {
                 eps += gamma;
@@ -440,9 +445,8 @@ namespace Decompose.Numerics
 
                 if (wheelInclude[mod])
                     s += m[beta - offset];
-                mod -= 2;
-                if (mod < 0)
-                    mod += wheelSize;
+                if (--mod < 0)
+                    mod += wheelSize2;
                 j -= 2;
             }
             return s;
@@ -529,8 +533,8 @@ namespace Decompose.Numerics
 
         private long UpToWheel(long a)
         {
-            var mod = a % wheelSize;
-            return wheelInclude[mod] ? a : a + wheelNext[mod];
+            var b = (a % wheelSize) >> 1;
+            return wheelInclude[b] ? a : a + wheelNext[b];
         }
 
         private long T1Wheel(long a)

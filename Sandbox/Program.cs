@@ -9,6 +9,8 @@ using System.Numerics;
 using System.Reflection;
 using Decompose.Numerics;
 using BigInt = Gnu.MP.Integer;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace Sandbox
 {
@@ -449,24 +451,62 @@ namespace Sandbox
         static void ParityTest()
         {
 #if true
-            var timer = new Stopwatch();
-            for (var i = 14; i <= 14; i++)
+            var threads = 1;
+            for (var i = 13; i <= 13; i++)
             {
-                var n = IntegerMath.Power((BigInteger)10, i);
-                timer.Restart();
-                var mertens1 = new MertensFunctionWheel(8);
-                var sum1 = mertens1.Evaluate(n);
-                output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                for (var loop = 0; loop < 3; loop++)
+                {
+                    var n = IntegerMath.Power((BigInteger)10, i);
+                    var mertens1 = new MertensFunctionWheel(threads);
+                    var sum1 = EvaluateAndTime(() => mertens1.Evaluate((long)n));
 #if true
-                timer.Restart();
-                var mertens2 = new MertensFunctionWheel64(8);
-                var sum2 = mertens2.Evaluate((long)n);
-                output.WriteLine("elapsed2 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                    var mertens2 = new MertensFunctionWheel64(threads);
+                    var sum2 = EvaluateAndTime(() => mertens2.Evaluate((long)n));
 #else
-                var sum2 = (long)0;
+                    var sum2 = (long)0;
 #endif
-                var sum3 = i <= 19 ? MertensFunction.PowerOfTen(i) : 0;
-                Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}", i, sum1, sum2, sum3);
+                    var sum3 = i <= 19 ? MertensFunction.PowerOfTen(i) : 0;
+                    Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}", i, sum1, sum2, sum3);
+                }
+            }
+#endif
+
+#if false
+            var threads = 8;
+            var timer = new Stopwatch();
+            for (var power = 10; power <= 10; power++)
+            {
+                var n = IntegerMath.Power((long)10, power);
+                var algorithm1 = new MobiusRange(n + 1, threads);
+                var sum1 = (long)0;
+                timer.Restart();
+                var batchSize = (n + threads - 1) / threads;
+                var tasks = new Task[threads];
+                for (var thread = 0; thread < threads; thread++)
+                {
+                    var kmin = 1 + thread * batchSize;
+                    var kmax = Math.Min(kmin + batchSize, n + 1);
+                    tasks[thread] = Task.Factory.StartNew(() =>
+                        algorithm1.GetValues(kmin, kmax, 0, (k1, k2, values) =>
+                        {
+                            var s = 0;
+                            int length = (int)(k2 - k1);
+                            for (var i = 0; i < length; i++)
+                                s += values[i];
+                            Interlocked.Add(ref sum1, s);
+                        }));
+                }
+                Task.WaitAll(tasks);
+                output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#if false
+                var algorithm2 = new MertensFunctionDR(threads);
+                timer.Restart();
+                var sum2 = algorithm2.Evaluate(n);
+                output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#else
+                var sum2 = 0;
+#endif
+                Console.WriteLine("power = {0}, sum1 = {1}, sum2 = {2}", power, sum1, sum2);
             }
 #endif
 

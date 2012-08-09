@@ -411,7 +411,7 @@
     <tformat|<table|<row|<cell|<big|sum><rsub|m\<leq\>n,m
     even>M<around*|(|<frac|n|m>|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>n/2>M<around*|(|<frac|n|2*m>|)>=<big|sum><rsub|m\<leq\>n/2>M<around*|(|<frac|n/2|m>|)>=1,n\<geq\>2>>|<row|<cell|<big|sum><rsub|m\<leq\>n,m
     odd>M<around*|(|<frac|n|m>|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>n>M<around*|(|<frac|n|m>|)>-<big|sum><rsub|m\<leq\>n,m
-    even>M<around*|(|<frac|n|m>|)>=1-1=0,n\<geq\>2>>|<row|<cell|<big|sum><rsub|m\<leq\>n><around*|(|-1|)><rsup|m+1>*M<around*|(|<frac|n|m>|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>n>M<around*|(|<frac|n|m>|)>-2*<big|sum><rsub|m\<leq\>n/2>M<around*|(|<frac|n/2|m>|)>=1-2=-1,n\<geq\>2>>>>
+    even>M<around*|(|<frac|n|m>|)>=1-1=0,n\<geq\>3>>|<row|<cell|<big|sum><rsub|m\<leq\>n><around*|(|-1|)><rsup|m+1>*M<around*|(|<frac|n|m>|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>n>M<around*|(|<frac|n|m>|)>-2*<big|sum><rsub|m\<leq\>n/2>M<around*|(|<frac|n/2|m>|)>=1-2=-1,n\<geq\>2>>>>
   </eqnarray*>
 
   Finally, we can apply these identities to obtain identities for the
