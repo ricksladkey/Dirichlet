@@ -450,7 +450,7 @@ namespace Sandbox
 
         static void ParityTest()
         {
-#if true
+#if false
             var threads = 1;
             for (var i = 13; i <= 13; i++)
             {
@@ -510,13 +510,13 @@ namespace Sandbox
             }
 #endif
 
-#if false
+#if true
             var timer = new Stopwatch();
 #if true
             {
                 var i = 24;
                 var n = IntegerMath.Power((BigInteger)10, i);
-                var algorithm = new SquareFreeCounting(8, false);
+                var algorithm = new SquareFreeCounting(0, false);
                 timer.Restart();
                 var sum1 = algorithm.Evaluate(n);
                 output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
@@ -524,7 +524,7 @@ namespace Sandbox
                 Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
             }
 #endif
-#if true
+#if false
             {
                 var i = 14.8;
                 var n = (long)Math.Pow(10, i);
