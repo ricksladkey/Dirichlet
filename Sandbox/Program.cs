@@ -474,7 +474,7 @@ namespace Sandbox
 #if false
             var threads = 8;
             var timer = new Stopwatch();
-            for (var power = 10; power <= 10; power++)
+            for (var power = 9; power <= 9; power++)
             {
                 var n = IntegerMath.Power((long)10, power);
                 var algorithm1 = new MobiusRange(n + 1, threads);
