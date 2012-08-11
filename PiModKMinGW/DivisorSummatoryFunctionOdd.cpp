@@ -2,7 +2,7 @@
 
 DivisorSummatoryFunctionOdd::DivisorSummatoryFunctionOdd()
 {
-    C1 = 300;
+    C1 = 250;
     C2 = 5;
     nslow = (Integer)1 << 92;
     nsmall = (Integer)1 << 60;
