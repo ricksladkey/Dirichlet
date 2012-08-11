@@ -6,7 +6,7 @@ void Compute()
 {
     DivisorSummatoryFunctionOdd algorithm;
     CStopWatch timer;
-    for (int i = 1; i <= 20; i++)
+    for (int i = 1; i <= 24; i++)
     {
         Integer n = Power(Integer(10), i);
         Integer x2 = FloorSquareRoot(n);

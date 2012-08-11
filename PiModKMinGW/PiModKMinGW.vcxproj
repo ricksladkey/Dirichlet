@@ -68,6 +68,7 @@
     <NMakeCleanCommandLine>make clean</NMakeCleanCommandLine>
     <NMakeReBuildCommandLine>make clean &amp;&amp; make all</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <IncludePath>c:\cygwin\usr\local\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <NMakeBuildCommandLine>make all</NMakeBuildCommandLine>
@@ -82,6 +83,7 @@
     <NMakeCleanCommandLine>make clean</NMakeCleanCommandLine>
     <NMakeReBuildCommandLine>make clean &amp;&amp; make all</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <IncludePath>c:\cygwin\usr\local\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
