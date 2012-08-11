@@ -76,33 +76,45 @@ static inline Integer Power(Integer a, int b)
     return result;
 }
 
+static inline UInt64 FloorSquareRoot(Integer a, mpz_t reg1, mpz_t reg2)
+{
+    Integer2mpz(a, reg1);
+    mpz_sqrt(reg2, reg1);
+    return mpz_get_ux(reg2);
+}
+
 static inline UInt64 FloorSquareRoot(Integer a)
 {
-    mpz_t aRep, resultRep;
-    mpz_init(aRep);
-    mpz_init(resultRep);
-    Integer2mpz(a, aRep);
-    mpz_sqrt(resultRep, aRep);
-    UInt64 result = mpz_get_ux(resultRep);
-    mpz_clear(aRep);
-    mpz_clear(resultRep);
+    mpz_t reg1, reg2;
+    mpz_init(reg1);
+    mpz_init(reg2);
+    Integer2mpz(a, reg2);
+    UInt64 result = FloorSquareRoot(a, reg1, reg2);
+    mpz_clear(reg1);
+    mpz_clear(reg2);
+    return result;
+}
+
+static inline UInt64 CeilingSquareRoot(Integer a, mpz_t reg1, mpz_t reg2, mpz_t reg3)
+{
+    Integer2mpz(a, reg1);
+    mpz_sqrtrem(reg2, reg3, reg1);
+    UInt64 result = mpz_get_ux(reg2);
+    if (mpz_sgn(reg3) > 0)
+        ++result;
     return result;
 }
 
 static inline UInt64 CeilingSquareRoot(Integer a)
 {
-    mpz_t aRep, resultRep, remRep;
-    mpz_init(aRep);
-    mpz_init(resultRep);
-    mpz_init(remRep);
-    Integer2mpz(a, aRep);
-    mpz_sqrtrem(resultRep, remRep, aRep);
-    UInt64 result = mpz_get_ux(resultRep);
-    if (mpz_sgn(remRep) > 0)
-        ++result;
-    mpz_clear(aRep);
-    mpz_clear(resultRep);
-    mpz_clear(remRep);
+    mpz_t reg1, reg2, reg3;
+    mpz_init(reg1);
+    mpz_init(reg2);
+    mpz_init(reg3);
+    UInt64 result = CeilingSquareRoot(a, reg1, reg2, reg3);
+    mpz_clear(reg1);
+    mpz_clear(reg2);
+    mpz_clear(reg3);
     return result;
 }
 

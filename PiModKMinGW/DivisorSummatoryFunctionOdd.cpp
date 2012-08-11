@@ -169,7 +169,7 @@ Integer DivisorSummatoryFunctionOdd::ProcessRegionManual(Integer w,  Integer a1,
     Integer t5 = t1 * (1 + c1) - a1 + b1 - t4 * c2;
     Integer t6 = Square(t2 + 2) - t4 * n;
 
-#if 1
+#if 0
     Integer u = (Integer)1;
     while (true)
     {
@@ -183,37 +183,21 @@ Integer DivisorSummatoryFunctionOdd::ProcessRegionManual(Integer w,  Integer a1,
         ++u;
     }
 #else
-    mpz_ptr sRep = s.get_mpz_t();
-    mpz_ptr t1Rep = t1.get_mpz_t();
-    mpz_ptr t3Rep = t3.get_mpz_t();
-    mpz_ptr t4Rep = t4.get_mpz_t();
-    mpz_ptr t5Rep = t5.get_mpz_t();
-    mpz_ptr t6Rep = t6.get_mpz_t();
-    mpz_t t7Rep, t8Rep, t9Rep;
-    mpz_init(t7Rep);
-    mpz_init(t8Rep);
-    mpz_init(t9Rep);
-
     Integer u = (Integer)1;
+    mpz_t reg1, reg2, reg3;
+    mpz_init(reg1); mpz_init(reg2); mpz_init(reg3);
     while (true)
     {
-        mpz_sqrtrem(t7Rep, t8Rep, t6Rep);
-        if (mpz_cmp_ui(t8Rep, 0) != 0)
-            mpz_add_ui(t7Rep, t7Rep, 1);
-        mpz_sub(t9Rep, t5Rep, t7Rep);
-        mpz_div(t7Rep, t9Rep, t4Rep);
-        mpz_add(sRep, sRep, t7Rep);
+        Assert((t5 - CeilingSquareRoot(t6)) / t4 == VFloor(u, a1, b1, c1, a2, b2, c2));
+        s += (t5 - CeilingSquareRoot(t6, reg1, reg2, reg3)) / t4;
         if (u >= umax)
             break;
-        mpz_add(t5Rep, t5Rep, t1Rep);
-        mpz_add(t6Rep, t6Rep, t3Rep);
-        mpz_add_ui(t3Rep, t3Rep, 8);
+        t5 += t1;
+        t6 += t3;
+        t3 += 8;
         ++u;
     }
-
-    mpz_clear(t7Rep);
-    mpz_clear(t8Rep);
-    mpz_clear(t9Rep);
+    mpz_clear(reg1); mpz_clear(reg2); mpz_clear(reg3);
 #endif
 
     Assert(s == ProcessRegionHorizontal(w, 0, a1, b1, c1, a2, b2, c2));
