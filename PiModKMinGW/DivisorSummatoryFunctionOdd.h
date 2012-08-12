@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "BlockingCollection.h"
 
 class DivisorSummatoryFunctionOdd
 {
@@ -7,6 +8,10 @@ public:
     struct Region
     {
     public:
+
+        Region()
+        {
+        }
 
         Region(Integer w, Integer h, Integer a1, Integer b1, Integer c1, Integer a2, Integer b2, Integer c2)
         {
@@ -36,8 +41,9 @@ public:
     Integer nsmall;
     UInt64 tmax;
 
+    int threads;
     Integer n;
-    std::stack<Region> regions;
+    BlockingCollection<Region> queue;
 
     DivisorSummatoryFunctionOdd();
     Integer Evaluate(Integer n);

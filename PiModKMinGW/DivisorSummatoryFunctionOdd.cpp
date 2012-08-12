@@ -46,10 +46,9 @@ Integer DivisorSummatoryFunctionOdd::Evaluate(Integer n, Integer xfirst, Integer
             break;
         s += Triangle(c4 - c2 - x0) - Triangle(c4 - c2 - x5) + Triangle(c5 - c2 - x5);
         s += ProcessRegion(a1 * x2 + y2 - c5, a2 * x5 + y5 - c2, a1, 1, c5, a2, 1, c2);
-        while (regions.size() > 0)
+        while (queue.GetSize() > 0)
         {
-            Region r = regions.top();
-            regions.pop();
+            Region r = queue.Take();
             s += ProcessRegion(r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2);
         }
         a2 = a1;
@@ -114,32 +113,12 @@ Integer DivisorSummatoryFunctionOdd::ProcessRegion(Integer w, Integer h, Integer
             s += Triangle(v6 - 1) - Triangle(v6 - u5) + Triangle(u7 - u5);
         else
             s += Triangle(v6 - 1);
-#if 0
-        regions.push(Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
-        w -= u7;
-        h = v5;
-        a1 = a3;
-        b1 = b3;
-        c1 += c2 + u7;
-#endif
-#if 1
-        regions.push(Region(w - u7, v5, a3, b3, c1 + c2 + u7, a2, b2, c2));
+        queue.Add(Region(w - u7, v5, a3, b3, c1 + c2 + u7, a2, b2, c2));
         w = u4;
         h -= v6;
         a2 = a3;
         b2 = b3;
         c2 += c1 + v6;
-#endif
-#if 0
-        regions.push(Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
-        regions.push(Region(w - u7, v5, a3, b3, c1 + c2 + u7, a2, b2, c2));
-        return s;
-#endif
-#if 0
-        s += ProcessRegion(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6);
-        s += ProcessRegion(w - u7, v5, a3, b3, c1 + c2 + u7, a2, b2, c2);
-        return s;
-#endif
 #if DEBUG
         printf("ProcessRegion: s = %s\n", Integer2mpz(s).get_str().c_str());
 #endif
@@ -148,11 +127,7 @@ Integer DivisorSummatoryFunctionOdd::ProcessRegion(Integer w, Integer h, Integer
 
 Integer DivisorSummatoryFunctionOdd::ProcessRegionManual(Integer w,  Integer h,  Integer a1,  Integer b1,  Integer c1,  Integer a2,  Integer b2,  Integer c2)
 {
-#if 0
-    return w < h ? ProcessRegionHorizontal(w, h, a1, b1, c1, a2, b2, c2) : ProcessRegionVertical(w, h, a1, b1, c1, a2, b2, c2);
-#else
     return w < h ? ProcessRegionManual(w, a1, b1, c1, a2, b2, c2) : ProcessRegionManual(h, b2, a2, c2, b1, a1, c1);
-#endif
 }
 
 Integer DivisorSummatoryFunctionOdd::ProcessRegionManual(Integer w,  Integer a1,  Integer b1,  Integer c1,  Integer a2,  Integer b2,  Integer c2)
@@ -169,20 +144,6 @@ Integer DivisorSummatoryFunctionOdd::ProcessRegionManual(Integer w,  Integer a1,
     Integer t5 = t1 * (1 + c1) - a1 + b1 - t4 * c2;
     Integer t6 = Square(t2 + 2) - t4 * n;
 
-#if 0
-    Integer u = (Integer)1;
-    while (true)
-    {
-        Assert((t5 - CeilingSquareRoot(t6)) / t4 == VFloor(u, a1, b1, c1, a2, b2, c2));
-        s += (t5 - CeilingSquareRoot(t6)) / t4;
-        if (u >= umax)
-            break;
-        t5 += t1;
-        t6 += t3;
-        t3 += 8;
-        ++u;
-    }
-#else
     Integer u = (Integer)1;
     mpz_t reg1, reg2, reg3;
     mpz_init(reg1); mpz_init(reg2); mpz_init(reg3);
@@ -198,7 +159,6 @@ Integer DivisorSummatoryFunctionOdd::ProcessRegionManual(Integer w,  Integer a1,
         ++u;
     }
     mpz_clear(reg1); mpz_clear(reg2); mpz_clear(reg3);
-#endif
 
     Assert(s == ProcessRegionHorizontal(w, 0, a1, b1, c1, a2, b2, c2));
 #if DEBUG

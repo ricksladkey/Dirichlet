@@ -31,6 +31,9 @@
     <ClCompile Include="PiModK.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="threadqueue.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DivisorSummatoryFunctionOdd.h">
@@ -46,6 +49,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BlockingCollection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="threadqueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
