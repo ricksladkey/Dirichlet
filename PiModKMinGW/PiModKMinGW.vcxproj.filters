@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="readme.txt" />
+    <None Include="Makefile" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DivisorSummatoryFunctionOdd.cpp">

@@ -88,6 +88,7 @@
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="Makefile" />
     <None Include="readme.txt" />
   </ItemGroup>
   <ItemGroup>

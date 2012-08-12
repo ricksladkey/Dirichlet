@@ -86,12 +86,9 @@ static inline UInt64 FloorSquareRoot(Integer a, mpz_t reg1, mpz_t reg2)
 static inline UInt64 FloorSquareRoot(Integer a)
 {
     mpz_t reg1, reg2;
-    mpz_init(reg1);
-    mpz_init(reg2);
-    Integer2mpz(a, reg2);
+    mpz_init(reg1); mpz_init(reg2);
     UInt64 result = FloorSquareRoot(a, reg1, reg2);
-    mpz_clear(reg1);
-    mpz_clear(reg2);
+    mpz_clear(reg1); mpz_clear(reg2);
     return result;
 }
 
@@ -108,13 +105,9 @@ static inline UInt64 CeilingSquareRoot(Integer a, mpz_t reg1, mpz_t reg2, mpz_t 
 static inline UInt64 CeilingSquareRoot(Integer a)
 {
     mpz_t reg1, reg2, reg3;
-    mpz_init(reg1);
-    mpz_init(reg2);
-    mpz_init(reg3);
+    mpz_init(reg1); mpz_init(reg2); mpz_init(reg3);
     UInt64 result = CeilingSquareRoot(a, reg1, reg2, reg3);
-    mpz_clear(reg1);
-    mpz_clear(reg2);
-    mpz_clear(reg3);
+    mpz_clear(reg1); mpz_clear(reg2); mpz_clear(reg3);
     return result;
 }
 
