@@ -35,19 +35,47 @@ public:
         Integer c2;
     };
 
+    struct Range
+    {
+    public:
+        Range()
+        {
+        }
+
+        Range(Integer min, Integer max)
+        {
+            Min = min;
+            Max = max;
+        }
+        Integer Min;
+        Integer Max;
+    };
+
     Integer C1;
     Integer C2;
     Integer nslow;
     Integer nsmall;
     UInt64 tmax;
+    Int64 maximumBatchSize;
 
     int threads;
     Integer n;
-    BlockingCollection<Region> queue;
+    Integer sum;
+    int unprocessed;
+    Integer xmanual;
+    ManualResetEvent finished;
+    BlockingCollection<Region> regions;
+    BlockingCollection<Range> ranges;
 
-    DivisorSummatoryFunctionOdd();
+    DivisorSummatoryFunctionOdd(int threads);
     Integer Evaluate(Integer n);
     Integer Evaluate(Integer n, Integer x0, Integer xmax);
+
+    static void *ConsumeRegions(void *data);
+    void ConsumeRegions();
+    void Enqueue(Region r);
+    Integer Processed(Integer result);
+    Integer EvaluateInternal(Integer n, Integer xfirst, Integer xlast);
 
     Integer ProcessRegion(Integer w, Integer h, Integer a1, Integer b1, Integer c1, Integer a2, Integer b2, Integer c2);
     Integer ProcessRegionManual(Integer w, Integer h, Integer a1, Integer b1, Integer c1, Integer a2, Integer b2, Integer c2);
@@ -107,6 +135,16 @@ public:
     {
         return (n / (2 * x - 1) + 1) / 2;
     }
+
+    void AddToSum(Integer s)
+    {
+        sum += s;
+    }
+
+    void S1Parallel(Integer xmin, Integer xmax);
+    void ProduceRanges(Integer imin, Integer imax);
+    static void *ConsumeRanges(void *data);
+    void ConsumeRanges();
 
     Integer S1(Integer n, Integer x1, Integer x2);
     Integer S1Fast(Integer n, Int64 x1, Int64 x2);

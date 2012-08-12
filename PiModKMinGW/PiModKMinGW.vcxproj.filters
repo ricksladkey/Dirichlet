@@ -57,5 +57,14 @@
     <ClInclude Include="threadqueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Interlocked.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IntegerMath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResetEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

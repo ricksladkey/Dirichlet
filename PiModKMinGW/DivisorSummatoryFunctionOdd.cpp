@@ -1,12 +1,14 @@
 #include "stdafx.h"
 
-DivisorSummatoryFunctionOdd::DivisorSummatoryFunctionOdd()
+DivisorSummatoryFunctionOdd::DivisorSummatoryFunctionOdd(int threads)
 {
+    this->threads = threads;
     C1 = 250;
     C2 = 5;
     nslow = (Integer)1 << 92;
     nsmall = (Integer)1 << 60;
     tmax = (UInt64)1 << 62;
+    maximumBatchSize = (Int64)1 << 28;
 }
 
 Integer DivisorSummatoryFunctionOdd::Evaluate(Integer n)
@@ -16,7 +18,74 @@ Integer DivisorSummatoryFunctionOdd::Evaluate(Integer n)
     return 2 * s - xmax * xmax;
 }
 
-Integer DivisorSummatoryFunctionOdd::Evaluate(Integer n, Integer xfirst, Integer xlast)
+Integer DivisorSummatoryFunctionOdd::Evaluate(Integer n, Integer x0, Integer xmax)
+{
+    sum = 0;
+    if (threads == 0)
+    {
+        AddToSum(EvaluateInternal(n, x0, xmax));
+        AddToSum(S1(n, 2 * x0 - 1, 2 * xmanual - 3));
+        return sum;
+    }
+
+    // Create consumers.
+    int consumers = threads;
+    pthread_t *tasks = new pthread_t[consumers];
+    for (int consumer = 0; consumer < consumers; consumer++)
+    {
+        int rc = pthread_create(&tasks[consumer], NULL, ConsumeRegions, this);
+        if (rc != 0)
+            fprintf(stderr, "failed to create thread\n");
+    }
+
+    // Produce work items.
+    unprocessed = 1;
+    finished.Reset();
+    AddToSum(Processed(EvaluateInternal(n, x0, xmax)));
+    finished.Wait();
+    regions.CompleteAdding();
+
+    // Add manual portion.
+    S1Parallel(2 * x0 - 1, 2 * xmanual - 3);
+
+    // Wait for completion.
+    for (int consumer = 0; consumer < consumers; consumer++)
+        pthread_join(tasks[consumer], NULL);
+    delete[] tasks;
+
+    return sum;
+}
+
+void *DivisorSummatoryFunctionOdd::ConsumeRegions(void *data)
+{
+    ((DivisorSummatoryFunctionOdd *)data)->ConsumeRegions();
+    return 0;
+}
+
+void DivisorSummatoryFunctionOdd::ConsumeRegions()
+{
+    Integer s = 0;
+    Region r;
+    while (regions.TryTake(r))
+        s += ProcessRegion(r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2);
+    AddToSum(s);
+}
+
+void DivisorSummatoryFunctionOdd::Enqueue(Region r)
+{
+    Interlocked::Add(unprocessed, 1);
+    regions.Add(r);
+}
+
+Integer DivisorSummatoryFunctionOdd::Processed(Integer result)
+{
+    int value = Interlocked::Add(unprocessed, -1);
+    if (value == 0)
+        finished.Set();
+    return result;
+}
+
+Integer DivisorSummatoryFunctionOdd::EvaluateInternal(Integer n, Integer xfirst, Integer xlast)
 {
     this->n = n;
     Integer x0 = T1(xfirst + 1);
@@ -45,12 +114,17 @@ Integer DivisorSummatoryFunctionOdd::Evaluate(Integer n, Integer xfirst, Integer
         if (x4 < xmin)
             break;
         s += Triangle(c4 - c2 - x0) - Triangle(c4 - c2 - x5) + Triangle(c5 - c2 - x5);
-        s += ProcessRegion(a1 * x2 + y2 - c5, a2 * x5 + y5 - c2, a1, 1, c5, a2, 1, c2);
-        while (queue.GetSize() > 0)
+        if (threads == 0)
         {
-            Region r = queue.Take();
-            s += ProcessRegion(r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2);
+            s += ProcessRegion(a1 * x2 + y2 - c5, a2 * x5 + y5 - c2, a1, 1, c5, a2, 1, c2);
+            while (regions.GetSize() > 0)
+            {
+                Region r = regions.Take();
+                s += ProcessRegion(r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2);
+            }
         }
+        else
+            Enqueue(Region(a1 * x2 + y2 - c5, a2 * x5 + y5 - c2, a1, 1, c5, a2, 1, c2));
         a2 = a1;
         x2 = x4;
         y2 = y4;
@@ -59,7 +133,7 @@ Integer DivisorSummatoryFunctionOdd::Evaluate(Integer n, Integer xfirst, Integer
     s += (xmax - x0 + 1) * ymin + Triangle(xmax - x0);
     Integer rest = x2 - x0;
     s -= y2 * rest + a2 * Triangle(rest);
-    s += S1(n, 2 * x0 - 1, 2 * x2 - 3);
+    xmanual = x2;
     return s;
 }
 
@@ -93,7 +167,7 @@ Integer DivisorSummatoryFunctionOdd::ProcessRegion(Integer w, Integer h, Integer
         Integer ab2 = 2 * a1 * b1;
         Integer u4 = UTan(ab1, abba, ab2, a3b3, c1);
         if (u4 <= 0)
-            return s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2);
+            return Processed(s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2));
         Integer u5 = u4 + 1;
         Integer v4, v5;
         VFloor2(u4, a1, b1, c1, c2, abba, ab2, v4, v5);
@@ -108,20 +182,29 @@ Integer DivisorSummatoryFunctionOdd::ProcessRegion(Integer w, Integer h, Integer
         Integer v6 = u4 + v4;
         Integer u7 = u5 + v5;
         if (u4 <= C2 || v5 <= C2 || v6 >= h || u7 >= w)
-            return s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2);
+            return Processed(s + ProcessRegionManual(w, h, a1, b1, c1, a2, b2, c2));
         if (v6 != u7)
             s += Triangle(v6 - 1) - Triangle(v6 - u5) + Triangle(u7 - u5);
         else
             s += Triangle(v6 - 1);
-        queue.Add(Region(w - u7, v5, a3, b3, c1 + c2 + u7, a2, b2, c2));
-        w = u4;
-        h -= v6;
-        a2 = a3;
-        b2 = b3;
-        c2 += c1 + v6;
 #if DEBUG
         printf("ProcessRegion: s = %s\n", Integer2mpz(s).get_str().c_str());
 #endif
+        if (threads == 0)
+        {
+            Enqueue(Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
+            w -= u7;
+            h = v5;
+            a1 = a3;
+            b1 = b3;
+            c1 += c2 + u7;
+        }
+        else
+        {
+            Enqueue(Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
+            Enqueue(Region(w - u7, v5, a3, b3, c1 + c2 + u7, a2, b2, c2));
+            return Processed(s);
+        }
     }
 }
 
@@ -181,6 +264,47 @@ Integer DivisorSummatoryFunctionOdd::ProcessRegionVertical(Integer w, Integer h,
     for (Integer v = (Integer)1; v < h; v++)
         s += UFloor(v, a1, b1, c1, a2, b2, c2);
     return s;
+}
+
+void DivisorSummatoryFunctionOdd::S1Parallel(Integer xmin, Integer xmax)
+{
+    // Create consumers.
+    int consumers = threads;
+    pthread_t *tasks = new pthread_t[consumers];
+    for (int consumer = 0; consumer < consumers; consumer++)
+    {
+        int rc = pthread_create(&tasks[consumer], NULL, ConsumeRanges, this);
+        if (rc != 0)
+            fprintf(stderr, "failed to create thread\n");
+    }
+
+    // Produce work items.
+    ProduceRanges(xmin, xmax);
+
+    // Wait for completion.
+    ranges.CompleteAdding();
+    for (int consumer = 0; consumer < consumers; consumer++)
+        pthread_join(tasks[consumer], NULL);
+    delete[] tasks;
+}
+
+void DivisorSummatoryFunctionOdd::ProduceRanges(Integer imin, Integer imax)
+{
+    int batchSize = Min(maximumBatchSize, (imax - imin + 1 + threads - 1) / threads);
+    for (Integer i = imin; i <= imax; i += batchSize)
+        ranges.Add(Range(i, Min(i + batchSize - 1, imax)));
+}
+
+void *DivisorSummatoryFunctionOdd::ConsumeRanges(void *data)
+{
+    ((DivisorSummatoryFunctionOdd *)data)->ConsumeRanges();
+}
+
+void DivisorSummatoryFunctionOdd::ConsumeRanges()
+{
+    Range r;
+    while (ranges.TryTake(r))
+        AddToSum(S1(n, r.Min, r.Max));
 }
 
 Integer DivisorSummatoryFunctionOdd::S1(Integer n, Integer x1, Integer x2)

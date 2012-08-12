@@ -41,7 +41,7 @@ public:
     {
         thread_queue_add(queue, new T(item), 0);
     }
-    void SetIsCompleted()
+    void CompleteAdding()
     {
         thread_queue_complete_adding(queue);
     }
