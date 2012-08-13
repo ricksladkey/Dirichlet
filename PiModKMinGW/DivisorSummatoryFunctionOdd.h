@@ -64,8 +64,8 @@ public:
     int unprocessed;
     Integer xmanual;
     ManualResetEvent finished;
-    BlockingCollection<Region> regions;
-    BlockingCollection<Range> ranges;
+    BlockingCollection<Region> *regions;
+    BlockingCollection<Range> *ranges;
 
     DivisorSummatoryFunctionOdd(int threads);
     Integer Evaluate(Integer n);

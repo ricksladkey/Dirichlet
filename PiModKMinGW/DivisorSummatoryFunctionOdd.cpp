@@ -20,6 +20,7 @@ Integer DivisorSummatoryFunctionOdd::Evaluate(Integer n)
 
 Integer DivisorSummatoryFunctionOdd::Evaluate(Integer n, Integer x0, Integer xmax)
 {
+    regions = new BlockingCollection<Region>();
     sum = 0;
     if (threads == 0)
     {
@@ -43,7 +44,7 @@ Integer DivisorSummatoryFunctionOdd::Evaluate(Integer n, Integer x0, Integer xma
     finished.Reset();
     AddToSum(Processed(EvaluateInternal(n, x0, xmax)));
     finished.Wait();
-    regions.CompleteAdding();
+    regions->CompleteAdding();
 
     // Add manual portion.
     S1Parallel(2 * x0 - 1, 2 * xmanual - 3);
@@ -52,6 +53,7 @@ Integer DivisorSummatoryFunctionOdd::Evaluate(Integer n, Integer x0, Integer xma
     for (int consumer = 0; consumer < consumers; consumer++)
         pthread_join(tasks[consumer], NULL);
     delete[] tasks;
+    delete regions;
 
     return sum;
 }
@@ -66,7 +68,7 @@ void DivisorSummatoryFunctionOdd::ConsumeRegions()
 {
     Integer s = 0;
     Region r;
-    while (regions.TryTake(r))
+    while (regions->TryTake(r))
         s += ProcessRegion(r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2);
     AddToSum(s);
 }
@@ -74,7 +76,7 @@ void DivisorSummatoryFunctionOdd::ConsumeRegions()
 void DivisorSummatoryFunctionOdd::Enqueue(Region r)
 {
     Interlocked::Add(unprocessed, 1);
-    regions.Add(r);
+    regions->Add(r);
 }
 
 Integer DivisorSummatoryFunctionOdd::Processed(Integer result)
@@ -117,9 +119,9 @@ Integer DivisorSummatoryFunctionOdd::EvaluateInternal(Integer n, Integer xfirst,
         if (threads == 0)
         {
             s += ProcessRegion(a1 * x2 + y2 - c5, a2 * x5 + y5 - c2, a1, 1, c5, a2, 1, c2);
-            while (regions.GetSize() > 0)
+            while (regions->GetSize() > 0)
             {
-                Region r = regions.Take();
+                Region r = regions->Take();
                 s += ProcessRegion(r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2);
             }
         }
@@ -269,6 +271,7 @@ Integer DivisorSummatoryFunctionOdd::ProcessRegionVertical(Integer w, Integer h,
 void DivisorSummatoryFunctionOdd::S1Parallel(Integer xmin, Integer xmax)
 {
     // Create consumers.
+    ranges = new BlockingCollection<Range>();
     int consumers = threads;
     pthread_t *tasks = new pthread_t[consumers];
     for (int consumer = 0; consumer < consumers; consumer++)
@@ -282,17 +285,18 @@ void DivisorSummatoryFunctionOdd::S1Parallel(Integer xmin, Integer xmax)
     ProduceRanges(xmin, xmax);
 
     // Wait for completion.
-    ranges.CompleteAdding();
+    ranges->CompleteAdding();
     for (int consumer = 0; consumer < consumers; consumer++)
         pthread_join(tasks[consumer], NULL);
     delete[] tasks;
+    delete ranges;
 }
 
 void DivisorSummatoryFunctionOdd::ProduceRanges(Integer imin, Integer imax)
 {
     int batchSize = Min(maximumBatchSize, (imax - imin + 1 + threads - 1) / threads);
     for (Integer i = imin; i <= imax; i += batchSize)
-        ranges.Add(Range(i, Min(i + batchSize - 1, imax)));
+        ranges->Add(Range(i, Min(i + batchSize - 1, imax)));
 }
 
 void *DivisorSummatoryFunctionOdd::ConsumeRanges(void *data)
@@ -303,7 +307,7 @@ void *DivisorSummatoryFunctionOdd::ConsumeRanges(void *data)
 void DivisorSummatoryFunctionOdd::ConsumeRanges()
 {
     Range r;
-    while (ranges.TryTake(r))
+    while (ranges->TryTake(r))
         AddToSum(S1(n, r.Min, r.Max));
 }
 

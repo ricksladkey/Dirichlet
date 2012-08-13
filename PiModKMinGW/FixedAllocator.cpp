@@ -2,23 +2,68 @@
 
 #include "FixedAllocator.h"
 
-#define MIXED 0
+#include <pthread.h>
 
-const int max_entries = 1 << 15;
-const int fixed_size = 32;
+#define USE_FIXED_ALLOCATOR 0
+#define MIXED 0
+#define REENTRANT 0
+#define USE_LOCK 0
+#define USE_COMPARE_EXCHANGE 0
+#define USE_SPINLOCK 0
+
+static const int max_entries = 1 << 15;
+static const int fixed_size = 32;
 struct entry
 {
     entry* next;
     char memory[fixed_size];
 };
-entry entries[max_entries];
-entry* head = 0;
+static entry entries[max_entries];
+static entry* head = 0;
+#if REENTRANT
+#if USE_SPINLOCK
+static pthread_spinlock_t mutex;
+#else
+static pthread_mutex_t mutex;
+#endif
+#endif
+
+static inline void lock()
+{
+#if REENTRANT
+#if USE_SPINLOCK
+    pthread_spin_lock(&mutex);
+#else
+    pthread_mutex_lock(&mutex);
+#endif
+#endif
+}
+
+static inline void unlock()
+{
+#if REENTRANT
+#if USE_SPINLOCK
+    pthread_spin_unlock(&mutex);
+#else
+    pthread_mutex_unlock(&mutex);
+#endif
+#endif
+}
 
 void init_func()
 {
+#if REENTRANT
+#if USE_SPINLOCK
+    pthread_spin_init(&mutex, PTHREAD_PROCESS_PRIVATE);
+#else
+    pthread_mutex_init(&mutex, NULL);
+#endif
+#endif
+#if USE_FIXED_ALLOCATOR
     for (int i = 0; i < max_entries; i++)
         free_func(entries[i].memory, fixed_size);
     mp_set_memory_functions(alloc_func, realloc_func, free_func);
+#endif
 }
 
 void exit_func()
@@ -32,8 +77,21 @@ void* alloc_func(size_t size)
     if (size > fixed_size)
         return malloc(size);
 #endif
-    entry* e = head;
-    head = head->next;
+    entry* e;
+#if USE_LOCK
+    lock();
+#endif
+#if USE_COMPARE_EXCHANGE
+    do
+        e = head;
+    while (Interlocked::CompareExchange(head, e->next, e) != e);
+#else
+    e = head;
+    head = e->next;
+#endif
+#if USE_LOCK
+    unlock();
+#endif
     return e->memory;
 }
 
@@ -71,7 +129,18 @@ void free_func(void* p, size_t size)
         return free(p);
 #endif
     entry* e = (entry*)((UInt64)p - sizeof(((entry*)0)->next));
+#if USE_LOCK
+    lock();
+#endif
+#if USE_COMPARE_EXCHANGE
+    do
+        e->next = head;
+    while (Interlocked::CompareExchange(head, e, e->next) != e->next);
+#else
     e->next = head;
     head = e;
+#endif
+#if USE_LOCK
+    unlock();
+#endif
 }
-
