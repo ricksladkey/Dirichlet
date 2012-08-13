@@ -1,5 +1,7 @@
 #include "threadqueue.h"
+#include <stack>
 
+#if 1
 template<class T>
 class BlockingCollection
 {
@@ -46,3 +48,40 @@ public:
         thread_queue_complete_adding(queue);
     }
 };
+#else
+template<class T>
+class BlockingCollection
+{
+private:
+    std::stack<T> collection;
+public:
+    BlockingCollection()
+    {
+    }
+    ~BlockingCollection()
+    {
+    }
+    int GetSize()
+    {
+        return collection.size();
+    }
+    T Take()
+    {
+        T item = collection.top();
+        collection.pop();
+        return item;
+    }
+    bool TryTake(T &item)
+    {
+        item = collection.top();
+        collection.pop();
+    }
+    void Add(const T &item)
+    {
+        collection.push(item);
+    }
+    void CompleteAdding()
+    {
+    }
+};
+#endif

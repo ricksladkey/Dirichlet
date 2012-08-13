@@ -4,12 +4,15 @@
 
 #include <pthread.h>
 
-#define USE_FIXED_ALLOCATOR 0
+#define VERBOSE 0
+#define USE_FIXED_ALLOCATOR 1
 #define MIXED 0
 #define REENTRANT 0
 #define USE_LOCK 0
 #define USE_COMPARE_EXCHANGE 0
 #define USE_SPINLOCK 0
+#define VALIDATE 0
+#define USE_TLS 1
 
 static const int max_entries = 1 << 15;
 static const int fixed_size = 32;
@@ -18,8 +21,11 @@ struct entry
     entry* next;
     char memory[fixed_size];
 };
-static entry entries[max_entries];
+#if USE_TLS
+static __thread entry* head = 0;
+#else
 static entry* head = 0;
+#endif
 #if REENTRANT
 #if USE_SPINLOCK
 static pthread_spinlock_t mutex;
@@ -52,6 +58,16 @@ static inline void unlock()
 
 void init_func()
 {
+#if VERBOSE
+    printf("USE_FIXED_ALLOCATOR = %d\n", USE_FIXED_ALLOCATOR);
+    printf("MIXED = %d\n", MIXED);
+    printf("REENTRANT = %d\n", REENTRANT);
+    printf("USE_LOCK = %d\n", USE_LOCK);
+    printf("USE_COMPARE_EXCHANGE = %d\n", USE_COMPARE_EXCHANGE);
+    printf("USE_SPINLOCK = %d\n", USE_SPINLOCK);
+    printf("VALIDATE = %d\n", VALIDATE);
+    printf("USE_TLS = %d\n", USE_TLS);
+#endif
 #if REENTRANT
 #if USE_SPINLOCK
     pthread_spin_init(&mutex, PTHREAD_PROCESS_PRIVATE);
@@ -59,11 +75,7 @@ void init_func()
     pthread_mutex_init(&mutex, NULL);
 #endif
 #endif
-#if USE_FIXED_ALLOCATOR
-    for (int i = 0; i < max_entries; i++)
-        free_func(entries[i].memory, fixed_size);
     mp_set_memory_functions(alloc_func, realloc_func, free_func);
-#endif
 }
 
 void exit_func()
@@ -76,7 +88,19 @@ void* alloc_func(size_t size)
 #if MIXED
     if (size > fixed_size)
         return malloc(size);
+#else
+#if VALIDATE
+    if (size > 16)
+        printf("size = %d\n", size);
+    if (size > fixed_size)
+    {
+        fprintf(stderr, "oversized allocation: %d\n", size);
+        exit(1);
+    }
 #endif
+#endif
+    if (head == 0)
+        return (void *)((entry *)malloc(sizeof(entry)))->memory;
     entry* e;
 #if USE_LOCK
     lock();
@@ -118,6 +142,16 @@ void* realloc_func(void* p, size_t old_size, size_t new_size)
         free(p);
         return q;
     }
+#else
+#if VALIDATE
+    if (new_size > 16)
+        printf("size = %d\n", new_size);
+    if (new_size > fixed_size)
+    {
+        fprintf(stderr, "oversized allocation: %d\n", new_size);
+        exit(1);
+    }
+#endif
 #endif
     return p;
 }

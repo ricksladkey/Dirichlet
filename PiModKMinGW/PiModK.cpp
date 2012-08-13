@@ -4,10 +4,10 @@
 
 void Compute()
 {
+    DivisorSummatoryFunctionOdd algorithm(8);
+    CStopWatch timer;
     for (int i = 1; i <= 24; i++)
     {
-        DivisorSummatoryFunctionOdd algorithm(0);
-        CStopWatch timer;
         Integer n = Power(Integer(10), i);
         Integer x2 = FloorSquareRoot(n);
         timer.startTimer();
