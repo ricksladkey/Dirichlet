@@ -79,6 +79,13 @@ namespace Decompose.Numerics
             return r0.GetBitCount() + r1.GetBitCount() + r2.GetBitCount() + r3.GetBitCount();
         }
 
+        public static explicit operator UInt128(double a)
+        {
+            if (a < 0)
+                throw new InvalidCastException();
+            return (ulong)a;
+        }
+
         public static explicit operator UInt128(int a)
         {
             if (a < 0)
@@ -123,6 +130,14 @@ namespace Decompose.Numerics
             c.r2 = (uint)a23;
             c.r3 = (uint)(a23 >> 32);
             return c;
+        }
+
+        public static explicit operator double(UInt128 a)
+        {
+            if ((a.r3 | a.r2) == 0)
+                return (ulong)a;
+            var shift = a.GetBitLength() - 64;
+            return (double)(ulong)(a >> shift) * ((long)1 << shift);
         }
 
         public static explicit operator int(UInt128 a)
@@ -275,6 +290,36 @@ namespace Decompose.Numerics
             return a.CompareTo(b) < 0;
         }
 
+        public static bool operator <(UInt128 a, int b)
+        {
+            return a.CompareTo(b) < 0;
+        }
+
+        public static bool operator <(int a, UInt128 b)
+        {
+            return b.CompareTo(a) > 0;
+        }
+
+        public static bool operator <(UInt128 a, uint b)
+        {
+            return a.CompareTo(b) < 0;
+        }
+
+        public static bool operator <(uint a, UInt128 b)
+        {
+            return b.CompareTo(a) > 0;
+        }
+
+        public static bool operator <(UInt128 a, long b)
+        {
+            return a.CompareTo(b) < 0;
+        }
+
+        public static bool operator <(long a, UInt128 b)
+        {
+            return b.CompareTo(a) > 0;
+        }
+
         public static bool operator <(UInt128 a, ulong b)
         {
             return a.CompareTo(b) < 0;
@@ -288,6 +333,36 @@ namespace Decompose.Numerics
         public static bool operator <=(UInt128 a, UInt128 b)
         {
             return a.CompareTo(b) <= 0;
+        }
+
+        public static bool operator <=(UInt128 a, int b)
+        {
+            return a.CompareTo(b) <= 0;
+        }
+
+        public static bool operator <=(int a, UInt128 b)
+        {
+            return b.CompareTo(a) >= 0;
+        }
+
+        public static bool operator <=(UInt128 a, uint b)
+        {
+            return a.CompareTo(b) <= 0;
+        }
+
+        public static bool operator <=(uint a, UInt128 b)
+        {
+            return b.CompareTo(a) >= 0;
+        }
+
+        public static bool operator <=(UInt128 a, long b)
+        {
+            return a.CompareTo(b) <= 0;
+        }
+
+        public static bool operator <=(long a, UInt128 b)
+        {
+            return b.CompareTo(a) >= 0;
         }
 
         public static bool operator <=(UInt128 a, ulong b)
@@ -305,6 +380,36 @@ namespace Decompose.Numerics
             return a.CompareTo(b) > 0;
         }
 
+        public static bool operator >(UInt128 a, int b)
+        {
+            return a.CompareTo(b) > 0;
+        }
+
+        public static bool operator >(int a, UInt128 b)
+        {
+            return b.CompareTo(a) < 0;
+        }
+
+        public static bool operator >(UInt128 a, uint b)
+        {
+            return a.CompareTo(b) > 0;
+        }
+
+        public static bool operator >(uint a, UInt128 b)
+        {
+            return b.CompareTo(a) < 0;
+        }
+
+        public static bool operator >(UInt128 a, long b)
+        {
+            return a.CompareTo(b) > 0;
+        }
+
+        public static bool operator >(long a, UInt128 b)
+        {
+            return b.CompareTo(a) < 0;
+        }
+
         public static bool operator >(UInt128 a, ulong b)
         {
             return a.CompareTo(b) > 0;
@@ -318,6 +423,36 @@ namespace Decompose.Numerics
         public static bool operator >=(UInt128 a, UInt128 b)
         {
             return a.CompareTo(b) >= 0;
+        }
+
+        public static bool operator >=(UInt128 a, int b)
+        {
+            return a.CompareTo(b) >= 0;
+        }
+
+        public static bool operator >=(int a, UInt128 b)
+        {
+            return b.CompareTo(a) <= 0;
+        }
+
+        public static bool operator >=(UInt128 a, uint b)
+        {
+            return a.CompareTo(b) >= 0;
+        }
+
+        public static bool operator >=(uint a, UInt128 b)
+        {
+            return b.CompareTo(a) <= 0;
+        }
+
+        public static bool operator >=(UInt128 a, long b)
+        {
+            return a.CompareTo(b) >= 0;
+        }
+
+        public static bool operator >=(long a, UInt128 b)
+        {
+            return b.CompareTo(a) <= 0;
         }
 
         public static bool operator >=(UInt128 a, ulong b)
@@ -369,6 +504,27 @@ namespace Decompose.Numerics
             if (r1 != other.r1)
                 return r1.CompareTo(other.r1);
             return r0.CompareTo(other.r0);
+        }
+
+        public int CompareTo(int other)
+        {
+            if (r3 != 0 || r2 != 0 || other < 0)
+                return 1;
+            return ((uint)this).CompareTo((uint)other);
+        }
+
+        public int CompareTo(uint other)
+        {
+            if (r3 != 0 || r2 != 0)
+                return 1;
+            return ((uint)this).CompareTo(other);
+        }
+
+        public int CompareTo(long other)
+        {
+            if (r3 != 0 || r2 != 0 || other < 0)
+                return 1;
+            return ((ulong)this).CompareTo((ulong)other);
         }
 
         public int CompareTo(ulong other)

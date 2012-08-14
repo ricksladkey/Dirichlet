@@ -13,7 +13,8 @@ namespace Decompose.Numerics
 
         private const int maxRepShift = 53;
         private static readonly long maxRep = (long)1 << maxRepShift;
-        private static readonly BigInteger maxRepSquared = (BigInteger)maxRep * maxRep;
+        private static readonly BigInteger maxRepSquaredBigInteger = (BigInteger)maxRep * (BigInteger)maxRep;
+        private static readonly UInt128 maxRepSquaredUInt128 = (UInt128)maxRep * (UInt128)maxRep;
 
         public static int FloorSquareRoot(int n)
         {
@@ -65,19 +66,46 @@ namespace Decompose.Numerics
 
         public static UInt128 FloorSquareRoot(UInt128 a)
         {
-            return (UInt128)FloorSquareRoot((BigInteger)a);
+            if (a <= maxRep)
+                return (UInt128)Math.Floor(Math.Sqrt((double)a));
+            else if (a <= maxRepSquaredUInt128)
+            {
+                var s = (UInt128)Math.Floor(Math.Sqrt((double)a));
+                var s2 = s * s;
+                if (a < s2)
+                    --s;
+                else if (a - s2 > (s << 1)) // r >= 2 * s + 1
+                    ++s;
+                Debug.Assert(FloorSquareRoot<BigInteger>(a) == s);
+                return s;
+            }
+            return (UInt128)FloorSquareRoot<BigInteger>(a);
         }
 
         public static UInt128 CeilingSquareRoot(UInt128 a)
         {
-            return (UInt128)CeilingSquareRoot((BigInteger)a);
+            if (a <= maxRep)
+                return (UInt128)Math.Ceiling(Math.Sqrt((double)a));
+            else if (a <= maxRepSquaredBigInteger)
+            {
+                var s = (UInt128)Math.Ceiling(Math.Sqrt((double)a));
+                var s2 = s * s;
+                var r = s * s - a;
+                if (s2 < a)
+                    ++s;
+                else if (s2 - a > (s << 1)) // r >= 2 * s + 1
+                    --s;
+                Debug.Assert(CeilingSquareRoot<BigInteger>(a) == s);
+                return s;
+            }
+            return (UInt128)CeilingSquareRoot<BigInteger>(a);
         }
 
         public static BigInteger FloorSquareRoot(BigInteger a)
         {
             if (a <= maxRep)
                 return (BigInteger)Math.Floor(Math.Sqrt((double)a));
-            else if (a <= maxRepSquared)
+            else if (a <= maxRepSquaredBigInteger)
             {
                 var s = (BigInteger)Math.Floor(Math.Sqrt((double)a));
                 var r = a - s * s;
@@ -95,7 +123,7 @@ namespace Decompose.Numerics
         {
             if (a <= maxRep)
                 return (BigInteger)Math.Ceiling(Math.Sqrt((double)a));
-            else if (a <= maxRepSquared)
+            else if (a <= maxRepSquaredBigInteger)
             {
                 var s = (BigInteger)Math.Ceiling(Math.Sqrt((double)a));
                 var r = s * s - a;

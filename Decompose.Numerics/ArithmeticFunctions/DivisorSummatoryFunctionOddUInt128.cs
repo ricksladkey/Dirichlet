@@ -16,7 +16,7 @@ namespace Decompose.Numerics
     {
         private struct Region
         {
-            public Region(UInt128 w, UInt128 h, UInt128 a1, UInt128 b1, UInt128 c1, UInt128 a2, UInt128 b2, UInt128 c2)
+            public Region(ulong w, ulong h, UInt128 a1, UInt128 b1, UInt128 c1, UInt128 a2, UInt128 b2, UInt128 c2)
             {
                 this.w = w;
                 this.h = h;
@@ -28,8 +28,8 @@ namespace Decompose.Numerics
                 this.c2 = c2;
             }
 
-            public UInt128 w;
-            public UInt128 h;
+            public ulong w;
+            public ulong h;
             public UInt128 a1;
             public UInt128 b1;
             public UInt128 c1;
@@ -168,7 +168,7 @@ namespace Decompose.Numerics
                 s += Triangle(c4 - c2 - x0) - Triangle(c4 - c2 - x5) + Triangle(c5 - c2 - x5);
                 if (threads == 0)
                 {
-                    s += ProcessRegion(0, a1 * x2 + y2 - c5, a2 * x5 + y5 - c2, a1, 1, c5, a2, 1, c2);
+                    s += ProcessRegion(0, (ulong)(a1 * x2 + y2 - c5), (ulong)(a2 * x5 + y5 - c2), a1, 1, c5, a2, 1, c2);
                     while (queue.Count > 0)
                     {
                         var r = queue.Take();
@@ -176,7 +176,7 @@ namespace Decompose.Numerics
                     }
                 }
                 else
-                    Enqueue(new Region(a1 * x2 + y2 - c5, a2 * x5 + y5 - c2, a1, 1, c5, a2, 1, c2));
+                    Enqueue(new Region((ulong)(a1 * x2 + y2 - c5), (ulong)(a2 * x5 + y5 - c2), a1, 1, c5, a2, 1, c2));
                 a2 = a1;
                 x2 = x4;
                 y2 = y4;
@@ -189,7 +189,7 @@ namespace Decompose.Numerics
             return s;
         }
 
-        public UInt128 ProcessRegion(int thread, UInt128 w, UInt128 h, UInt128 a1, UInt128 b1, UInt128 c1, UInt128 a2, UInt128 b2, UInt128 c2)
+        public UInt128 ProcessRegion(int thread, ulong w, ulong h, UInt128 a1, UInt128 b1, UInt128 c1, UInt128 a2, UInt128 b2, UInt128 c2)
         {
 #if DIAG
             Console.WriteLine("ProcessRegion: w = {0}, h = {1}, a1/b1 = {2}/{3}, a2/b2 = {4}/{5}, c1 = {6}, c2 = {7}", w, h, a1, b1, a2, b2, c1, c2);
@@ -221,7 +221,7 @@ namespace Decompose.Numerics
                 if (u4 <= 0)
                     return Processed(s + ProcessRegionManual(thread, w, h, a1, b1, c1, a2, b2, c2));
                 var u5 = u4 + 1;
-                UInt128 v4, v5;
+                ulong v4, v5;
                 VFloor2(u4, a1, b1, c1, c2, abba, ab2, out v4, out v5);
                 Debug.Assert(v4 == VFloor(u4, a1, b1, c1, a2, b2, c2));
                 Debug.Assert(v5 == VFloor(u5, a1, b1, c1, a2, b2, c2));
@@ -240,7 +240,7 @@ namespace Decompose.Numerics
 #endif
                 if (threads == 0)
                 {
-                    Enqueue(new Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
+                    Enqueue(new Region((ulong)u4, (ulong)(h - v6), a1, b1, c1, a3, b3, c1 + c2 + v6));
                     w -= u7;
                     h = v5;
                     a1 = a3;
@@ -256,19 +256,19 @@ namespace Decompose.Numerics
             }
         }
 
-        public UInt128 ProcessRegionManual(int thread, UInt128 w, UInt128 h, UInt128 a1, UInt128 b1, UInt128 c1, UInt128 a2, UInt128 b2, UInt128 c2)
+        public UInt128 ProcessRegionManual(int thread, ulong w, ulong h, UInt128 a1, UInt128 b1, UInt128 c1, UInt128 a2, UInt128 b2, UInt128 c2)
         {
             return w < h ? ProcessRegionManual(thread, w, a1, b1, c1, a2, b2, c2) : ProcessRegionManual(thread, h, b2, a2, c2, b1, a1, c1);
         }
 
 #if false
-        public UInt128 ProcessRegionManual(int thread, UInt128 w, UInt128 a1, UInt128 b1, UInt128 c1, UInt128 a2, UInt128 b2, UInt128 c2)
+        public UInt128 ProcessRegionManual(int thread, ulong w, UInt128 a1, UInt128 b1, UInt128 c1, UInt128 a2, UInt128 b2, UInt128 c2)
         {
             if (w <= 1)
                 return 0;
 
             var s = (UInt128)0;
-            var umax = (long)w - 1;
+            var umax = (ulong)w - 1;
             var t1 = (a1 * b2 + b1 * a2) << 1;
             var t2 = (c1 << 1) - a1 - b1;
             var t3 = (t2 << 2) + 12;
@@ -276,7 +276,7 @@ namespace Decompose.Numerics
             var t5 = t1 * (1 + c1) - a1 + b1 - t4 * c2;
             var t6 = IntegerMath.Square(t2 + 2) - t4 * n;
 
-            var u = (long)1;
+            var u = (ulong)1;
             while (true)
             {
                 Debug.Assert((t5 - IntegerMath.CeilingSquareRoot(t6)) / t4 == VFloor(u, a1, b1, c1, a2, b2, c2));
@@ -298,7 +298,7 @@ namespace Decompose.Numerics
 #endif
 
 #if true
-        public UInt128 ProcessRegionManual(int thread, UInt128 w, UInt128 a1, UInt128 b1, UInt128 c1, UInt128 a2, UInt128 b2, UInt128 c2)
+        public UInt128 ProcessRegionManual(int thread, ulong w, UInt128 a1, UInt128 b1, UInt128 c1, UInt128 a2, UInt128 b2, UInt128 c2)
         {
             if (w <= 1)
                 return 0;
@@ -376,30 +376,30 @@ namespace Decompose.Numerics
             return (((b2 * uu - b1 * vv) << 1) - 1) * (((a1 * vv - a2 * uu) << 1) - 1);
         }
 
-        public UInt128 UTan(UInt128 ab1, UInt128 abba, UInt128 ab2, UInt128 a3b3, UInt128 c1)
+        public ulong UTan(UInt128 ab1, UInt128 abba, UInt128 ab2, UInt128 a3b3, UInt128 c1)
         {
-            return (ab1 + IntegerMath.FloorSquareRoot(IntegerMath.Square(abba + ab2) * n / a3b3) - (c1 << 1)) / 2;
+            return (ulong)((ab1 + IntegerMath.FloorSquareRoot(IntegerMath.Square(abba + ab2) * n / a3b3) - (c1 << 1)) / 2);
         }
 
-        public UInt128 UFloor(UInt128 v, UInt128 a1, UInt128 b1, UInt128 c1, UInt128 a2, UInt128 b2, UInt128 c2)
+        public ulong UFloor(UInt128 v, UInt128 a1, UInt128 b1, UInt128 c1, UInt128 a2, UInt128 b2, UInt128 c2)
         {
-            return (2 * (a1 * b2 + b1 * a2) * (v + c2) + a2 - b2 - IntegerMath.CeilingSquareRoot(IntegerMath.Square(2 * (v + c2) - a2 - b2) - 4 * a2 * b2 * n)) / (4 * a2 * b2) - c1;
+            return (ulong)((2 * (a1 * b2 + b1 * a2) * (v + c2) + a2 - b2 - IntegerMath.CeilingSquareRoot(IntegerMath.Square(2 * (v + c2) - a2 - b2) - 4 * a2 * b2 * n)) / (4 * a2 * b2) - c1);
         }
 
-        public UInt128 VFloor(UInt128 u, UInt128 a1, UInt128 b1, UInt128 c1, UInt128 a2, UInt128 b2, UInt128 c2)
+        public ulong VFloor(UInt128 u, UInt128 a1, UInt128 b1, UInt128 c1, UInt128 a2, UInt128 b2, UInt128 c2)
         {
-            return (2 * (a1 * b2 + b1 * a2) * (u + c1) - a1 + b1 - IntegerMath.CeilingSquareRoot(IntegerMath.Square(2 * (u + c1) - a1 - b1) - 4 * a1 * b1 * n)) / (4 * a1 * b1) - c2;
+            return (ulong)((2 * (a1 * b2 + b1 * a2) * (u + c1) - a1 + b1 - IntegerMath.CeilingSquareRoot(IntegerMath.Square(2 * (u + c1) - a1 - b1) - 4 * a1 * b1 * n)) / (4 * a1 * b1) - c2);
         }
 
-        public void VFloor2(UInt128 u1, UInt128 a1, UInt128 b1, UInt128 c1, UInt128 c2, UInt128 abba, UInt128 ab2, out UInt128 v1, out UInt128 v2)
+        public void VFloor2(UInt128 u1, UInt128 a1, UInt128 b1, UInt128 c1, UInt128 c2, UInt128 abba, UInt128 ab2, out ulong v1, out ulong v2)
         {
             var uu = (u1 + c1) << 1;
             var t1 = ab2 << 1;
             var t2 = abba * uu - a1 + b1 - t1 * c2;
             var t3 = uu - a1 - b1;
             var t4 = IntegerMath.Square(t3) - t1 * n;
-            v1 = (t2 - IntegerMath.CeilingSquareRoot(t4)) / t1;
-            v2 = (t2 + (abba << 1) - IntegerMath.CeilingSquareRoot((t4 + ((t3 + 1) << 2)))) / t1;
+            v1 = (ulong)((t2 - IntegerMath.CeilingSquareRoot(t4)) / t1);
+            v2 = (ulong)((t2 + (abba << 1) - IntegerMath.CeilingSquareRoot((t4 + ((t3 + 1) << 2)))) / t1);
         }
 
         public static UInt128 Triangle(UInt128 a)
