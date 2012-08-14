@@ -238,15 +238,20 @@ namespace Decompose.Numerics
         public static UInt128 operator *(ulong a, UInt128 b)
         {
             UInt128 c;
-            Multiply(out c, (uint)a, (uint)(a >> 32), b.r0, b.r1);
+            if ((b.r3 | b.r2) != 0)
+            {
+                UInt128 aa = a;
+                Multiply(out c, ref aa, ref b);
+            }
+            else
+                Multiply(out c, (uint)a, (uint)(a >> 32), b.r0, b.r1);
+            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
             return c;
         }
         
         public static UInt128 operator *(UInt128 a, ulong b)
         {
-            UInt128 c;
-            Multiply(out c, a.r0, a.r1, (uint)b, (uint)(b >> 32));
-            return c;
+            return b * a;
         }
         
         public static UInt128 operator *(UInt128 a, UInt128 b)
@@ -255,9 +260,11 @@ namespace Decompose.Numerics
             if ((a.r2 | a.r3 | b.r2 | b.r3) != 0)
             {
                 Multiply(out c, ref a, ref b);
-                return c;
+                Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
             }
-            Multiply(out c, a.r0, a.r1, b.r0, b.r1);
+            else
+                Multiply(out c, a.r0, a.r1, b.r0, b.r1);
+            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
             return c;
         }
         
