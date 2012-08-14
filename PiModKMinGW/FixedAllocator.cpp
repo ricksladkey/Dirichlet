@@ -5,7 +5,7 @@
 #include <pthread.h>
 
 #define VERBOSE 0
-#define USE_FIXED_ALLOCATOR 1
+#define USE_FIXED_ALLOCATOR 0
 #define MIXED 0
 #define REENTRANT 0
 #define USE_LOCK 0

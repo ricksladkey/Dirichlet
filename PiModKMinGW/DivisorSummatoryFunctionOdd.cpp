@@ -9,6 +9,12 @@ DivisorSummatoryFunctionOdd::DivisorSummatoryFunctionOdd(int threads)
     nsmall = (Integer)1 << 60;
     tmax = (UInt64)1 << 62;
     maximumBatchSize = (Int64)1 << 28;
+    pthread_mutex_init(&lock, NULL);
+}
+
+DivisorSummatoryFunctionOdd::~DivisorSummatoryFunctionOdd()
+{
+    pthread_mutex_destroy(&lock);
 }
 
 Integer DivisorSummatoryFunctionOdd::Evaluate(Integer n)

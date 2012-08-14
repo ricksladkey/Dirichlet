@@ -35,6 +35,14 @@ namespace Decompose.Numerics
             return (UInt128)BigInteger.Parse(value);
         }
 
+        public UInt128(uint r0, uint r1, uint r2, uint r3)
+        {
+            this.r0 = r0;
+            this.r1 = r1;
+            this.r2 = r2;
+            this.r3 = r3;
+        }
+
         public uint LeastSignificantWord
         {
             get { return r0; }
@@ -229,6 +237,11 @@ namespace Decompose.Numerics
         public static UInt128 operator *(UInt128 a, UInt128 b)
         {
             UInt128 c;
+            if ((a.r2 | a.r3 | b.r2 | b.r3) != 0)
+            {
+                Multiply(out c, ref a, ref b);
+                return c;
+            }
             Multiply(out c, a.r0, a.r1, b.r0, b.r1);
             return c;
         }
@@ -617,6 +630,28 @@ namespace Decompose.Numerics
             carry = w.r1 + (ulong)u1 * v0;
             w.r1 = (uint)carry;
             carry = (carry >> 32) + w.r2 + (ulong)u1 * v1;
+            w.r2 = (uint)carry;
+            w.r3 = (uint)(carry >> 32);
+        }
+
+        private static void Multiply(out UInt128 w, ref UInt128 u, ref UInt128 v)
+        {
+            var u0 = u.r0;
+            var u1 = u.r1;
+            var u2 = u.r2;
+            var v0 = v.r0;
+            var v1 = v.r1;
+            var v2 = v.r2;
+            var carry = (ulong)u0 * v0;
+            w.r0 = (uint)carry;
+            carry = (carry >> 32) + (ulong)u0 * v1;
+            w.r1 = (uint)carry;
+            w.r2 = (uint)(carry >> 32);
+            carry = w.r1 + (ulong)u1 * v0;
+            w.r1 = (uint)carry;
+            carry = (carry >> 32) + w.r2 + (ulong)u1 * v1 +
+                (ulong)u2 * v0 + (ulong)u0 * v2 +
+                (((ulong)u1 * v2 + (ulong)u2 * v1) << 32);
             w.r2 = (uint)carry;
             w.r3 = (uint)(carry >> 32);
         }

@@ -25,6 +25,11 @@ namespace Decompose.Numerics
             return a * a;
         }
 
+        public static UInt128 Square(UInt128 a)
+        {
+            return a * a;
+        }
+
         public static BigInteger Square(BigInteger a)
         {
             return a * a;

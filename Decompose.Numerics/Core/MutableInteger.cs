@@ -304,6 +304,19 @@ namespace Decompose.Numerics
             return new BigInteger(bytes);
         }
 
+        public static implicit operator UInt128(MutableInteger a)
+        {
+            var last = a.last;
+            if (last >= 4 || a.sign == -1)
+                throw new InvalidCastException();
+            CheckValid(a);
+            var r0 = a.bits[0];
+            var r1 = last >= 1 ? a.bits[1] : 0;
+            var r2 = last >= 2 ? a.bits[2] : 0;
+            var r3 = last >= 3 ? a.bits[3] : 0;
+            return new UInt128(r0, r1, r2, r3);
+        }
+
         public override string ToString()
         {
             return ((BigInteger)this).ToString();

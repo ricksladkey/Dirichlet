@@ -11,9 +11,13 @@
 #include <tchar.h>
 #include <assert.h>
 
+#include <stack>
+
 #include "Interlocked.h"
 #include "ResetEvent.h"
 #include "IntegerMath.h"
+#include "hr_time.h"
+#include "DivisorSummatoryFunctionOdd.h"
 
 #ifdef _DEBUG
 #define Assert(value) \
@@ -32,6 +36,3 @@ static inline void ReportFailure(const char *value, const char *file, int line)
 #else
 #define Assert(value)
 #endif
-
-#include "hr_time.h"
-#include "DivisorSummatoryFunctionOdd.h"

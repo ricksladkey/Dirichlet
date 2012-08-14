@@ -1,5 +1,4 @@
 #include "threadqueue.h"
-#include <stack>
 
 #if 1
 template<class T>

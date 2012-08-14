@@ -450,6 +450,29 @@ namespace Sandbox
 
         static void ParityTest()
         {
+#if true
+            var threads = 8;
+            for (int i = 21; i <= 21; i++)
+            {
+                var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
+                var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads);
+                var n = IntegerMath.Power((BigInteger)10, i);
+                var xmax = IntegerMath.FloorSquareRoot(n);
+#if false
+                var xmin = IntegerMath.Min(600 * IntegerMath.CeilingRoot(2 * n, 3), xmax);
+#else
+                var xmin = 1;
+#endif
+#if false
+                var s1 = EvaluateAndTime(() => algorithm1.Evaluate(n, xmin, xmax));
+#else
+                var s1 = 0;
+#endif
+                var s2 = EvaluateAndTime(() => algorithm2.Evaluate(n, xmin, xmax));
+                Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
+            }
+#endif
+
 #if false
             var threads = 1;
             for (var i = 13; i <= 13; i++)
@@ -510,7 +533,7 @@ namespace Sandbox
             }
 #endif
 
-#if true
+#if false
             var timer = new Stopwatch();
 #if true
             {
@@ -1096,29 +1119,6 @@ namespace Sandbox
                 }
                 Console.WriteLine("");
                 Console.WriteLine("n = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}", n, sum1, sum2, sum3);
-            }
-#endif
-
-#if false
-            var threads = 8;
-            for (int i = 22; i <= 22; i++)
-            {
-                var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
-                var algorithm2 = new DivisorSummatoryFunctionOdd(threads);
-                var n = IntegerMath.Power((BigInteger)10, i);
-                var xmax = IntegerMath.FloorSquareRoot(n);
-#if false
-                var xmin = IntegerMath.Min(600 * IntegerMath.CeilingRoot(2 * n, 3), xmax);
-#else
-                var xmin = 1;
-#endif
-#if false
-                var s1 = EvaluateAndTime(() => algorithm1.Evaluate(n, xmin, xmax));
-#else
-                var s1 = 0;
-#endif
-                var s2 = EvaluateAndTime(() => algorithm2.Evaluate(n, xmin, xmax));
-                Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
             }
 #endif
 

@@ -66,8 +66,11 @@ public:
     ManualResetEvent finished;
     BlockingCollection<Region> *regions;
     BlockingCollection<Range> *ranges;
+    pthread_mutex_t lock;
 
     DivisorSummatoryFunctionOdd(int threads);
+    ~DivisorSummatoryFunctionOdd();
+
     Integer Evaluate(Integer n);
     Integer Evaluate(Integer n, Integer x0, Integer xmax);
 
@@ -138,7 +141,12 @@ public:
 
     void AddToSum(Integer s)
     {
-        sum += s;
+        if (s != 0)
+        {
+            pthread_mutex_lock(&lock);
+            sum += s;
+            pthread_mutex_unlock(&lock);
+        }
     }
 
     void S1Parallel(Integer xmin, Integer xmax);
