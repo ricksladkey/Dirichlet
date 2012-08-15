@@ -65,8 +65,11 @@ namespace Decompose.Numerics
         public uint R2 { get { return r2; } }
         public uint R3 { get { return r3; } }
 
-        public bool IsZero { get { return (r3 | r2 | r1 | r0) == 0; } }
-        public bool IsOne { get { return ((r3 | r2 | r1) ^ r0) == 1; } }
+        public ulong S0 { get { return s0; } }
+        public ulong S1 { get { return s1; } }
+
+        public bool IsZero { get { return (s0 | s1) == 0; } }
+        public bool IsOne { get { return (s1 ^ s0) == 1; } }
         public bool IsPowerOfTwo { get { return (this & (this - 1)).IsZero; } }
         public bool IsEven { get { return (r0 & 1) == 0; } }
 
@@ -88,7 +91,7 @@ namespace Decompose.Numerics
 
         public int GetBitCount()
         {
-            return r0.GetBitCount() + r1.GetBitCount() + r2.GetBitCount() + r3.GetBitCount();
+            return s0.GetBitCount() + s1.GetBitCount();
         }
 
         public static explicit operator UInt128(double a)
@@ -119,34 +122,30 @@ namespace Decompose.Numerics
             if (a < 0)
                 throw new InvalidCastException();
             var c = default(UInt128);
-            c.r0 = (uint)a;
-            c.r1 = (uint)(a >> 32);
+            c.s0 = (ulong)a;
             return c;
         }
 
         public static implicit operator UInt128(ulong a)
         {
             var c = default(UInt128);
-            c.r0 = (uint)a;
-            c.r1 = (uint)(a >> 32);
+            c.s0 = a;
             return c;
         }
 
         public static explicit operator UInt128(BigInteger a)
         {
-            var a01 = (ulong)(a & ulong.MaxValue);
-            var a23 = (ulong)(a >> 64);
+            var s0 = (ulong)(a & ulong.MaxValue);
+            var s1 = (ulong)(a >> 64);
             var c = default(UInt128);
-            c.r0 = (uint)a01;
-            c.r1 = (uint)(a01 >> 32);
-            c.r2 = (uint)a23;
-            c.r3 = (uint)(a23 >> 32);
+            c.s0 = s0;
+            c.s1 = s1;
             return c;
         }
 
         public static explicit operator double(UInt128 a)
         {
-            if ((a.r3 | a.r2) == 0)
+            if (a.s1 == 0)
                 return (ulong)a;
             var shift = a.GetBitLength() - 64;
             return (double)(ulong)(a >> shift) * ((long)1 << shift);
@@ -164,17 +163,17 @@ namespace Decompose.Numerics
 
         public static explicit operator long(UInt128 a)
         {
-            return (long)((ulong)a.r1 << 32 | a.r0);
+            return (long)a.s0;
         }
 
         public static explicit operator ulong(UInt128 a)
         {
-            return (ulong)a.r1 << 32 | a.r0;
+            return a.s0;
         }
 
         public static implicit operator BigInteger(UInt128 a)
         {
-            return (BigInteger)((ulong)a.r3 << 32 | a.r2) << 64 | (ulong)a.r1 << 32 | a.r0;
+            return (BigInteger)a.s1 << 64 | a.s0;
         }
 
         public static UInt128 operator <<(UInt128 a, int b)
@@ -222,60 +221,44 @@ namespace Decompose.Numerics
         public static UInt128 operator +(UInt128 a, UInt128 b)
         {
             UInt128 c;
-#if false
-            Add(out c, ref a, ref b);
-#else
             c.r0 = c.r1 = c.r2 = c.r3 = 0;
             c.s0 = a.s0 + b.s0;
             c.s1 = a.s1 + b.s1;
             if (c.s0 < a.s0 && c.s0 < b.s0)
                 ++c.s1;
-#endif
             return c;
         }
 
         public static UInt128 operator ++(UInt128 a)
         {
             UInt128 c;
-#if false
-            Add(out c, ref a, ref one);
-#else
             c.r0 = c.r1 = c.r2 = c.r3 = 0;
             c.s0 = a.s0 + 1;
             c.s1 = a.s1;
             if (a.s0 == uint.MaxValue)
                 ++c.s1;
-#endif
             return c;
         }
 
         public static UInt128 operator -(UInt128 a, UInt128 b)
         {
             UInt128 c;
-#if false
-            Subtract(out c, ref a, ref b);
-#else
             c.r0 = c.r1 = c.r2 = c.r3 = 0;
             c.s0 = a.s0 - b.s0;
             c.s1 = a.s1 - b.s1;
             if (a.s0 < b.s0)
                 --c.s1;
-#endif
             return c;
         }
 
         public static UInt128 operator --(UInt128 a)
         {
             UInt128 c;
-#if false
-            Subtract(out c, ref a, ref one);
-#else
             c.r0 = c.r1 = c.r2 = c.r3 = 0;
             c.s0 = a.s0 - 1;
             c.s1 = a.s1;
             if (a.s0 == 0)
                 --c.s1;
-#endif
             return c;
         }
 
@@ -333,7 +316,7 @@ namespace Decompose.Numerics
 
         public static UInt128 operator %(UInt128 a, UInt128 b)
         {
-            return Modulus(ref a, (ulong)b.r1 << 32 | b.r0);
+            return Modulus(ref a, b.s0);
         }
 
         public static bool operator <(UInt128 a, UInt128 b)
@@ -548,51 +531,47 @@ namespace Decompose.Numerics
 
         public int CompareTo(UInt128 other)
         {
-            if (r3 != other.r3)
-                return r3.CompareTo(other.r3);
-            if (r2 != other.r2)
-                return r2.CompareTo(other.r2);
-            if (r1 != other.r1)
-                return r1.CompareTo(other.r1);
-            return r0.CompareTo(other.r0);
+            if (s1 != other.s1)
+                return s1.CompareTo(other.s1);
+            return s0.CompareTo(other.s0);
         }
 
         public int CompareTo(int other)
         {
-            if (r3 != 0 || r2 != 0 || other < 0)
+            if (s1 != 0 || other < 0)
                 return 1;
             return ((uint)this).CompareTo((uint)other);
         }
 
         public int CompareTo(uint other)
         {
-            if (r3 != 0 || r2 != 0)
+            if (s1 != 0)
                 return 1;
             return ((uint)this).CompareTo(other);
         }
 
         public int CompareTo(long other)
         {
-            if (r3 != 0 || r2 != 0 || other < 0)
+            if (s1 != 0 || other < 0)
                 return 1;
             return ((ulong)this).CompareTo((ulong)other);
         }
 
         public int CompareTo(ulong other)
         {
-            if (r3 != 0 || r2 != 0)
+            if (s1 != 0)
                 return 1;
             return ((ulong)this).CompareTo(other);
         }
 
         public bool Equals(UInt128 other)
         {
-            return r0 == other.r0 && r1 == other.r1 && r2 == other.r2 && r3 == other.r3;
+            return s0 == other.s0 && s1 == other.s1;
         }
 
         public bool Equals(ulong other)
         {
-            return r0 == (uint)other && r1 == (uint)(other >> 32) && r2 == 0 && r3 == 0;
+            return s0 == other && s1 == 0;
         }
 
         public override bool Equals(object obj)
@@ -604,7 +583,7 @@ namespace Decompose.Numerics
 
         public override int GetHashCode()
         {
-            return r0.GetHashCode() ^ r1.GetHashCode() ^ r2.GetHashCode() ^ r3.GetHashCode();
+            return s0.GetHashCode() ^ s1.GetHashCode();
         }
 
         public static UInt128 Multiply(ulong a, ulong b)
