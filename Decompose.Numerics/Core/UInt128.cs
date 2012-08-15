@@ -55,6 +55,13 @@ namespace Decompose.Numerics
             this.r3 = r3;
         }
 
+        public UInt128(ulong s0, ulong s1)
+        {
+            this.r0 = this.r1 = this.r2 = this.r3 = 0;
+            this.s0 = s0;
+            this.s1 = s1;
+        }
+
         public uint LeastSignificantWord
         {
             get { return r0; }
@@ -105,9 +112,7 @@ namespace Decompose.Numerics
         {
             if (a < 0)
                 throw new InvalidCastException();
-            var c = default(UInt128);
-            c.r0 = (uint)a;
-            return c;
+            return new UInt128((uint)a, 0, 0, 0);
         }
 
         public static implicit operator UInt128(uint a)
@@ -119,26 +124,19 @@ namespace Decompose.Numerics
         {
             if (a < 0)
                 throw new InvalidCastException();
-            var c = default(UInt128);
-            c.s0 = (ulong)a;
-            return c;
+            return new UInt128((ulong)a, 0);
         }
 
         public static implicit operator UInt128(ulong a)
         {
-            var c = default(UInt128);
-            c.s0 = a;
-            return c;
+            return new UInt128(a, 0);
         }
 
         public static explicit operator UInt128(BigInteger a)
         {
             var s0 = (ulong)(a & ulong.MaxValue);
             var s1 = (ulong)(a >> 64);
-            var c = default(UInt128);
-            c.s0 = s0;
-            c.s1 = s1;
-            return c;
+            return new UInt128(s0, s1);
         }
 
         public static explicit operator double(UInt128 a)
@@ -603,7 +601,9 @@ namespace Decompose.Numerics
         {
             if (s1 != 0)
                 return 1;
-            return ((ulong)this).CompareTo(other);
+            if (s0 < other)
+                return -1;
+            return (int)(s0 - other);
         }
 
         public bool Equals(UInt128 other)
@@ -639,7 +639,7 @@ namespace Decompose.Numerics
         {
             UInt128 c = default(UInt128);
             c.s1 = a.s1 << 1 | a.s0 >> 63;
-            c.s0 = a.r0 << 1;
+            c.s0 = a.s0 << 1;
             return c;
         }
 

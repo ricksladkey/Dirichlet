@@ -474,25 +474,77 @@ namespace Sandbox
 #endif
 
 #if false
-            var sum1 = EvaluateAndTime(() =>
+            {
+                var sum1 = EvaluateAndTime(() =>
+                {
+                    var a = (UInt128)10;
+                    a = UInt128.Square(UInt128.Square(a));
+                    Console.WriteLine("a = {0}", a);
+                    var s = (UInt128)0;
+                    for (var i = 0; i < 100000000; i++)
+                        s += UInt128.Double(a);
+                    return s;
+                });
+                var sum2 = EvaluateAndTime(() =>
+                {
+                    var a = (UInt128)10;
+                    a = UInt128.Square(UInt128.Square(a));
+                    Console.WriteLine("a = {0}", a);
+                    var s = (UInt128)0;
+                    for (var i = 0; i < 100000000; i++)
+                        s += a << 1;
+                    return s;
+                });
+                Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);
+            }
+#endif
+
+#if false
+            {
+                var sum1 = EvaluateAndTime(() =>
+                    {
+                        var a = (ulong)10;
+                        Console.WriteLine("a = {0}", a);
+                        var s = (UInt128)0;
+                        for (var i = 0; i < 100000000; i++)
+                            s += UInt128.Square(a);
+                        return s;
+                    });
+                var sum2 = EvaluateAndTime(() =>
+                    {
+                        var a = (ulong)10;
+                        Console.WriteLine("a = {0}", a);
+                        var s = (UInt128)0;
+                        for (var i = 0; i < 100000000; i++)
+                            s += UInt128.Multiply(a, a);
+                        return s;
+                    });
+                Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);
+            }
+#endif
+
+#if false
+            {
+                var sum1 = EvaluateAndTime(() =>
                 {
                     var a = (ulong)10;
                     Console.WriteLine("a = {0}", a);
                     var s = (UInt128)0;
                     for (var i = 0; i < 100000000; i++)
-                        s += UInt128.Square(a);
+                        s += a << 10;
                     return s;
                 });
-            var sum2 = EvaluateAndTime(() =>
+                var sum2 = EvaluateAndTime(() =>
                 {
-                    var a = (ulong)10;
+                    var a = (UInt128)10;
                     Console.WriteLine("a = {0}", a);
                     var s = (UInt128)0;
                     for (var i = 0; i < 100000000; i++)
-                        s += UInt128.Multiply(a, a);
+                        s += a << 10;
                     return s;
                 });
-            Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);
+                Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);
+            }
 #endif
 
 #if false
