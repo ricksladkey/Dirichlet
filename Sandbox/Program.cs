@@ -476,23 +476,22 @@ namespace Sandbox
 #if false
             var sum1 = EvaluateAndTime(() =>
                 {
-                    var a = (UInt128)100;
-                    a = UInt128.Square(UInt128.Square(a));
+                    var a = (ulong)10;
                     Console.WriteLine("a = {0}", a);
                     var s = (UInt128)0;
                     for (var i = 0; i < 100000000; i++)
-                        s += UInt128.Double(a);
+                        s += UInt128.Square(a);
                     return s;
                 });
             var sum2 = EvaluateAndTime(() =>
-            {
-                var a = (UInt128)100;
-                a = UInt128.Square(UInt128.Square(a));
-                var s = (UInt128)0;
-                for (var i = 0; i < 100000000; i++)
-                    s += a << 1;
-                return s;
-            });
+                {
+                    var a = (ulong)10;
+                    Console.WriteLine("a = {0}", a);
+                    var s = (UInt128)0;
+                    for (var i = 0; i < 100000000; i++)
+                        s += UInt128.Multiply(a, a);
+                    return s;
+                });
             Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);
 #endif
 

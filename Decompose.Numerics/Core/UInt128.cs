@@ -91,7 +91,7 @@ namespace Decompose.Numerics
 
         public int GetBitCount()
         {
-            return s0.GetBitCount() + s1.GetBitCount();
+            return r0.GetBitCount() + r1.GetBitCount() + r2.GetBitCount() + r3.GetBitCount();
         }
 
         public static explicit operator UInt128(double a)
@@ -112,9 +112,7 @@ namespace Decompose.Numerics
 
         public static implicit operator UInt128(uint a)
         {
-            var c = default(UInt128);
-            c.r0 = a;
-            return c;
+            return new UInt128(a, 0, 0, 0);
         }
 
         public static explicit operator UInt128(long a)
@@ -229,6 +227,28 @@ namespace Decompose.Numerics
             return c;
         }
 
+        public static UInt128 operator +(UInt128 a, ulong b)
+        {
+            UInt128 c;
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = a.s0 + b;
+            c.s1 = a.s1;
+            if (c.s0 < a.s0 && c.s0 < b)
+                ++c.s1;
+            return c;
+        }
+
+        public static UInt128 operator +(ulong a, UInt128 b)
+        {
+            UInt128 c;
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = a + b.s0;
+            c.s1 = b.s1;
+            if (c.s0 < a && c.s0 < b.s0)
+                ++c.s1;
+            return c;
+        }
+
         public static UInt128 operator ++(UInt128 a)
         {
             UInt128 c;
@@ -251,6 +271,28 @@ namespace Decompose.Numerics
             return c;
         }
 
+        public static UInt128 operator -(UInt128 a, ulong b)
+        {
+            UInt128 c;
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = a.s0 - b;
+            c.s1 = a.s1;
+            if (a.s0 < b)
+                --c.s1;
+            return c;
+        }
+
+        public static UInt128 operator -(ulong a, UInt128 b)
+        {
+            UInt128 c;
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = a - b.s0;
+            c.s1 = 0 - b.s1;
+            if (a < b)
+                --c.s1;
+            return c;
+        }
+
         public static UInt128 operator --(UInt128 a)
         {
             UInt128 c;
@@ -262,33 +304,33 @@ namespace Decompose.Numerics
             return c;
         }
 
-        public static UInt128 operator *(ulong a, UInt128 b)
+        public static UInt128 operator *(UInt128 a, ulong b)
         {
             UInt128 c;
-            if ((b.r3 | b.r2) != 0)
-            {
-                UInt128 aa = a;
-                Multiply(out c, ref aa, ref b);
-            }
+            if (a.s1 != 0)
+                Multiply(out c, ref a, (uint)b, (uint)(b >> 32));
             else
-                Multiply(out c, (uint)a, (uint)(a >> 32), b.r0, b.r1);
+                Multiply(out c, a.r0, a.r1, (uint)b, (uint)(b >> 32));
             Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
             return c;
         }
 
-        public static UInt128 operator *(UInt128 a, ulong b)
+        public static UInt128 operator *(ulong a, UInt128 b)
         {
-            return b * a;
+            UInt128 c;
+            if (b.s1 != 0)
+                Multiply(out c, ref b, (uint)a, (uint)(a >> 32));
+            else
+                Multiply(out c, b.r0, b.r1, (uint)a, (uint)(a >> 32));
+            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
+            return c;
         }
 
         public static UInt128 operator *(UInt128 a, UInt128 b)
         {
             UInt128 c;
-            if ((a.r2 | a.r3 | b.r2 | b.r3) != 0)
-            {
+            if ((a.s1 | b.s1) != 0)
                 Multiply(out c, ref a, ref b);
-                Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
-            }
             else
                 Multiply(out c, a.r0, a.r1, b.r0, b.r1);
             Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
@@ -668,6 +710,26 @@ namespace Decompose.Numerics
             carry = w.r1 + (ulong)u1 * v0;
             w.r1 = (uint)carry;
             carry = (carry >> 32) + w.r2 + (ulong)u1 * v1;
+            w.r2 = (uint)carry;
+            w.r3 = (uint)(carry >> 32);
+        }
+
+        private static void Multiply(out UInt128 w, ref UInt128 u, uint v0, uint v1)
+        {
+            w.s0 = w.s1 = 0;
+            var u0 = u.r0;
+            var u1 = u.r1;
+            var u2 = u.r2;
+            var carry = (ulong)u0 * v0;
+            w.r0 = (uint)carry;
+            carry = (carry >> 32) + (ulong)u0 * v1;
+            w.r1 = (uint)carry;
+            w.r2 = (uint)(carry >> 32);
+            carry = w.r1 + (ulong)u1 * v0;
+            w.r1 = (uint)carry;
+            carry = (carry >> 32) + w.r2 + (ulong)u1 * v1 +
+                (ulong)u2 * v0 +
+                (((ulong)u.r3 * v0 + (ulong)u2 * v1) << 32);
             w.r2 = (uint)carry;
             w.r3 = (uint)(carry >> 32);
         }
