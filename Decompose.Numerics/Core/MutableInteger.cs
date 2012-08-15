@@ -84,15 +84,19 @@ namespace Decompose.Numerics
         private void CheckLast(int newLast)
         {
             CheckValid();
-            if (bits.Length < newLast + 1)
+            if (bits.Length <= newLast)
                 Resize(newLast + 1);
         }
 
         public void Resize(int length)
         {
+#if false
             var newBits = new uint[length];
             bits.CopyTo(newBits, 0);
             bits = newBits;
+#else
+            Array.Resize(ref bits, length);
+#endif
         }
 
         public MutableInteger Clear()

@@ -12,7 +12,7 @@ namespace Decompose.Numerics
         private static double log2 = Math.Log(2);
 
         private const int maxRepShift = 53;
-        private static readonly long maxRep = (long)1 << maxRepShift;
+        private static readonly ulong maxRep = (ulong)1 << maxRepShift;
         private static readonly BigInteger maxRepSquaredBigInteger = (BigInteger)maxRep * (BigInteger)maxRep;
         private static readonly UInt128 maxRepSquaredUInt128 = (UInt128)maxRep * (UInt128)maxRep;
 
@@ -28,50 +28,50 @@ namespace Decompose.Numerics
 
         public static long FloorSquareRoot(long a)
         {
+            return (long)FloorSquareRoot((ulong)a);
+        }
+
+        public static long CeilingSquareRoot(long a)
+        {
+            return (long)CeilingSquareRoot((ulong)a);
+        }
+
+        public static uint FloorSquareRoot(ulong a)
+        {
             if (a <= maxRep)
-                return (long)Math.Floor(Math.Sqrt((double)a));
-            var s = (long)Math.Floor(Math.Sqrt((double)a));
-            var r = a - s * s;
-            if (r < 0)
+                return (uint)Math.Floor(Math.Sqrt((double)a));
+            var s = (uint)Math.Floor(Math.Sqrt((double)a));
+            var s2 = (ulong)s * s;
+            if (a < s2)
                 --s;
-            else if (r > (s << 1)) // r >= 2 * s + 1
+            else if (a - s2 > (s << 1)) // r >= 2 * s + 1
                 ++s;
             Debug.Assert(FloorSquareRoot<BigInteger>(a) == s);
             return s;
         }
 
-        public static long CeilingSquareRoot(long a)
+        public static uint CeilingSquareRoot(ulong a)
         {
             if (a <= maxRep)
-                return (long)Math.Ceiling(Math.Sqrt((double)a));
-            var s = (long)Math.Ceiling(Math.Sqrt((double)a));
-            var r = s * s - a;
-            if (r < 0)
+                return (uint)Math.Ceiling(Math.Sqrt((double)a));
+            var s = (uint)Math.Ceiling(Math.Sqrt((double)a));
+            var s2 = (ulong)s * s;
+            if (s2 < a)
                 ++s;
-            else if (r > (s << 1)) // r >= 2 * s + 1
+            else if (s2 - a > (s << 1)) // r >= 2 * s + 1
                 --s;
             Debug.Assert(CeilingSquareRoot<BigInteger>(a) == s);
             return s;
         }
 
-        public static ulong FloorSquareRoot(ulong a)
-        {
-            return (ulong)FloorSquareRoot((long)a);
-        }
-
-        public static ulong CeilingSquareRoot(ulong a)
-        {
-            return (ulong)CeilingSquareRoot((long)a);
-        }
-
-        public static UInt128 FloorSquareRoot(UInt128 a)
+        public static ulong FloorSquareRoot(UInt128 a)
         {
             if (a <= maxRep)
-                return (UInt128)Math.Floor(Math.Sqrt((double)a));
+                return (ulong)Math.Floor(Math.Sqrt((double)a));
             else if (a <= maxRepSquaredUInt128)
             {
-                var s = (UInt128)Math.Floor(Math.Sqrt((double)a));
-                var s2 = s * s;
+                var s = (ulong)Math.Floor(Math.Sqrt((double)a));
+                var s2 = UInt128.Square(s);
                 if (a < s2)
                     --s;
                 else if (a - s2 > (s << 1)) // r >= 2 * s + 1
@@ -79,17 +79,17 @@ namespace Decompose.Numerics
                 Debug.Assert(FloorSquareRoot<BigInteger>(a) == s);
                 return s;
             }
-            return (UInt128)FloorSquareRoot<BigInteger>(a);
+            return (ulong)FloorSquareRoot<BigInteger>(a);
         }
 
-        public static UInt128 CeilingSquareRoot(UInt128 a)
+        public static ulong CeilingSquareRoot(UInt128 a)
         {
             if (a <= maxRep)
-                return (UInt128)Math.Ceiling(Math.Sqrt((double)a));
-            else if (a <= maxRepSquaredBigInteger)
+                return (ulong)Math.Ceiling(Math.Sqrt((double)a));
+            else if (a <= maxRepSquaredUInt128)
             {
-                var s = (UInt128)Math.Ceiling(Math.Sqrt((double)a));
-                var s2 = s * s;
+                var s = (ulong)Math.Ceiling(Math.Sqrt((double)a));
+                var s2 = UInt128.Square(s);
                 var r = s * s - a;
                 if (s2 < a)
                     ++s;
@@ -98,7 +98,7 @@ namespace Decompose.Numerics
                 Debug.Assert(CeilingSquareRoot<BigInteger>(a) == s);
                 return s;
             }
-            return (UInt128)CeilingSquareRoot<BigInteger>(a);
+            return (ulong)CeilingSquareRoot<BigInteger>(a);
         }
 
         public static BigInteger FloorSquareRoot(BigInteger a)

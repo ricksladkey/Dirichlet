@@ -38,8 +38,8 @@ namespace Decompose.Numerics
             public UInt128 c2;
         }
 
-        public static readonly UInt128 C1 = 100;
-        public static readonly UInt128 C2 = 30;
+        public static readonly UInt128 C1 = 250;
+        public static readonly UInt128 C2 = 15;
 
         private int threads;
         private UInt128 n;
@@ -261,7 +261,7 @@ namespace Decompose.Numerics
             return w < h ? ProcessRegionManual(thread, w, a1, b1, c1, a2, b2, c2) : ProcessRegionManual(thread, h, b2, a2, c2, b1, a1, c1);
         }
 
-#if false
+#if true
         public UInt128 ProcessRegionManual(int thread, ulong w, UInt128 a1, UInt128 b1, UInt128 c1, UInt128 a2, UInt128 b2, UInt128 c2)
         {
             if (w <= 1)
@@ -297,7 +297,7 @@ namespace Decompose.Numerics
         }
 #endif
 
-#if true
+#if false
         public UInt128 ProcessRegionManual(int thread, ulong w, UInt128 a1, UInt128 b1, UInt128 c1, UInt128 a2, UInt128 b2, UInt128 c2)
         {
             if (w <= 1)

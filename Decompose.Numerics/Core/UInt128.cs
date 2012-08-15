@@ -597,6 +597,13 @@ namespace Decompose.Numerics
             return c;
         }
 
+        public static UInt128 Square(ulong a)
+        {
+            UInt128 c;
+            Square(out c, (uint)a, (uint)(a >> 32));
+            return c;
+        }
+
         public static ulong ModularSum(ulong a, ulong b, ulong modulus)
         {
             var a0 = (uint)a;
@@ -781,6 +788,21 @@ namespace Decompose.Numerics
             w.r2 = (uint)borrow;
             borrow = (ulong)((long)borrow >> 32) + u.r3 - v.r3;
             w.r3 = (uint)borrow;
+        }
+
+        private static void Square(out UInt128 w, uint u0, uint u1)
+        {
+            var carry = (ulong)u0 * u0;
+            w.r0 = (uint)carry;
+            var u0u1 = (ulong)u0 * u1;
+            carry = (carry >> 32) + u0u1;
+            w.r1 = (uint)carry;
+            w.r2 = (uint)(carry >> 32);
+            carry = w.r1 + u0u1;
+            w.r1 = (uint)carry;
+            carry = (carry >> 32) + w.r2 + (ulong)u1 * u1;
+            w.r2 = (uint)carry;
+            w.r3 = (uint)(carry >> 32);
         }
 
         private static void Multiply(out UInt128 w, uint u0, uint u1, uint v0, uint v1)
