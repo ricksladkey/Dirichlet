@@ -33,19 +33,19 @@
 
                 public override IResidue<ulong> Multiply(IResidue<ulong> x)
                 {
-                    r = UInt128.ModularProduct(r, GetRep(x), reducer.modulus);
+                    r = UInt64Helper.ModularProduct(r, GetRep(x), reducer.modulus);
                     return this;
                 }
 
                 public override IResidue<ulong> Add(IResidue<ulong> x)
                 {
-                    r = UInt128.ModularSum(r, GetRep(x), reducer.modulus);
+                    r = UInt64Helper.ModularSum(r, GetRep(x), reducer.modulus);
                     return this;
                 }
 
                 public override IResidue<ulong> Subtract(IResidue<ulong> x)
                 {
-                    r = UInt128.ModularDifference(r, GetRep(x), reducer.modulus);
+                    r = UInt64Helper.ModularDifference(r, GetRep(x), reducer.modulus);
                     return this;
                 }
 

@@ -26,7 +26,7 @@ namespace Decompose.Numerics
         public static ulong ModularDifference(ulong a, ulong b, ulong modulus)
         {
             Debug.Assert(modulus > 0 && a >= 0 && a < modulus && b >= 0 && b < modulus);
-            return UInt128.ModularDifference(a, b, modulus);
+            return UInt64Helper.ModularDifference(a, b, modulus);
         }
 
         public static BigInteger ModularDifference(BigInteger a, BigInteger b, BigInteger modulus)

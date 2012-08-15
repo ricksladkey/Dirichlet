@@ -563,37 +563,20 @@ namespace Decompose.Numerics
             return r0.GetHashCode() ^ r1.GetHashCode() ^ r2.GetHashCode() ^ r3.GetHashCode();
         }
 
-        public static ulong MultiplyHigh(ulong a, ulong b)
-        {
-#if false
-            UInt128 c;
-            Multiply(out c, (uint)a, (uint)(a >> 32), (uint)b, (uint)(b >> 32));
-            return (ulong)c.r3 << 32 | c.r2;
-#endif
-#if true
-            var u0 = (uint)a;
-            var u1 = (uint)(a >> 32);
-            var v0 = (uint)b;
-            var v1 = (uint)(b >> 32);
-            var carry = (((ulong)u0 * v0) >> 32) + (ulong)u0 * v1;
-            return (((uint)carry + (ulong)u1 * v0) >> 32) + (carry >> 32) + (ulong)u1 * v1;
-#endif
-        }
-
-        public static ulong MultiplyHighApprox(ulong a, ulong b)
-        {
-            var u0 = (uint)a;
-            var u1 = (uint)(a >> 32);
-            var v0 = (uint)b;
-            var v1 = (uint)(b >> 32);
-            var carry = (ulong)u0 * v1;
-            return (((uint)carry + (ulong)u1 * v0) >> 32) + (carry >> 32) + (ulong)u1 * v1;
-        }
-
         public static UInt128 Multiply(ulong a, ulong b)
         {
             UInt128 c;
             Multiply(out c, (uint)a, (uint)(a >> 32), (uint)b, (uint)(b >> 32));
+            return c;
+        }
+
+        public static UInt128 Double(UInt128 a)
+        {
+            UInt128 c;
+            c.r3 = a.r3 << 1 | a.r2 >> 31;
+            c.r2 = a.r2 << 1 | a.r1 >> 31;
+            c.r1 = a.r1 << 1 | a.r0 >> 31;
+            c.r0 = a.r0 << 1;
             return c;
         }
 
@@ -604,166 +587,11 @@ namespace Decompose.Numerics
             return c;
         }
 
-        public static ulong ModularSum(ulong a, ulong b, ulong modulus)
+        public static UInt128 Square(UInt128 a)
         {
-            var a0 = (uint)a;
-            var a1 = (uint)(a >> 32);
-            var b0 = (uint)b;
-            var b1 = (uint)(b >> 32);
-            var n0 = (uint)modulus;
-            var n1 = (uint)(modulus >> 32);
-            var carry = (ulong)a0 + b0;
-            var c0 = (uint)carry;
-            carry = (carry >> 32) + a1 + b1;
-            var c1 = (uint)carry;
-            if (carry > n1 || carry == n1 && c0 >= n0)
-            {
-                var borrow = (ulong)c0 - n0;
-                c0 = (uint)borrow;
-                borrow = (ulong)((long)borrow >> 32) + carry - n1;
-                c1 = (uint)borrow;
-            }
-            var c = (ulong)c1 << 32 | c0;
-            Debug.Assert(((BigInteger)a + b) % modulus == c);
+            UInt128 c;
+            Square(out c, a.r0, a.r1);
             return c;
-        }
-        
-        public static ulong ModularDifference(ulong a, ulong b, ulong modulus)
-        {
-            var a0 = (uint)a;
-            var a1 = (uint)(a >> 32);
-            var b0 = (uint)b;
-            var b1 = (uint)(b >> 32);
-            var n0 = (uint)modulus;
-            var n1 = (uint)(modulus >> 32);
-            var borrow = (ulong)a0 - b0;
-            var c0 = (uint)borrow;
-            borrow = (ulong)((long)borrow >> 32) + a1 - b1;
-            var c1 = (uint)borrow;
-            if (borrow >> 32 != 0)
-            {
-                var carry = (ulong)c0 + n0;
-                c0 = (uint)carry;
-                carry = (carry >> 32) + borrow + n1;
-                c1 = (uint)carry;
-            }
-            var c = (ulong)c1 << 32 | c0;
-            Debug.Assert(((BigInteger)a - b + modulus) % modulus == c);
-            return c;
-        }
-        
-        public static ulong ModularProduct(ulong a, ulong b, ulong modulus)
-        {
-            UInt128 product;
-            Multiply(out product, (uint)a, (uint)(a >> 32), (uint)b, (uint)(b >> 32));
-            var c = Modulus(ref product, modulus);
-            Debug.Assert((BigInteger)a * b % modulus == c);
-            return c;
-        }
-        
-        public static ulong ModularPower(ulong value, ulong exponent, ulong modulus)
-        {
-            var result = (ulong)1;
-            while (exponent != 0)
-            {
-                if ((exponent & 1) != 0)
-                    result = ModularProduct(result, value, modulus);
-                if (exponent != 1)
-                    value = ModularProduct(value, value, modulus);
-                exponent >>= 1;
-            }
-            return result;
-        }
-
-        public static ulong Montgomery(ulong u, ulong v, ulong n, uint k0)
-        {
-            var u0 = (uint)u;
-            var u1 = (uint)(u >> 32);
-            var v0 = (uint)v;
-            var v1 = (uint)(v >> 32);
-            var n0 = (uint)n;
-            var n1 = (uint)(n >> 32);
-
-            if (n1 == 0)
-                return Montgomery(u0, v0, n0, k0);
-
-            var carry = (ulong)u0 * v0;
-            var t0 = (uint)carry;
-            carry = (carry >> 32) + (ulong)u1 * v0;
-            var t1 = (uint)carry;
-            var t2 = (uint)(carry >> 32);
-
-            var m = t0 * k0;
-            carry = t0 + (ulong)m * n0;
-            carry = (carry >> 32) + t1 + (ulong)m * n1;
-            t0 = (uint)carry;
-            carry = (carry >> 32) + t2;
-            t1 = (uint)carry;
-            t2 = (uint)(carry >> 32);
-
-            carry = t0 + (ulong)u0 * v1;
-            t0 = (uint)carry;
-            carry = (carry >> 32) + t1 + (ulong)u1 * v1;
-            t1 = (uint)carry;
-            carry = (carry >> 32) + t2;
-            t2 = (uint)carry;
-            var t3 = (uint)(carry >> 32);
-
-            m = t0 * k0;
-            carry = t0 + (ulong)m * n0;
-            carry = (carry >> 32) + t1 + (ulong)m * n1;
-            t0 = (uint)carry;
-            carry = (carry >> 32) + t2;
-            t1 = (uint)carry;
-            t2 = t3 + (uint)(carry >> 32);
-
-            var t = (ulong)t1 << 32 | t0;
-            if (t2 != 0 || t >= n)
-                t -= n;
-            return t;
-        }
-
-        public static uint Montgomery(uint u0, uint v0, uint n0, uint k0)
-        {
-#if false
-            var carry = (ulong)u0 * v0;
-            var t0 = (uint)carry;
-            var t1 = (uint)(carry >> 32);
-
-            var m = (ulong)(t0 * k0);
-            carry = t0 + m * n0;
-            var t = (carry >> 32) + t1;
-
-            if (t >= n0)
-                t -= n0;
-            return (uint)t;
-#endif
-#if false
-            var uv = (ulong)u0 * v0;
-            var mn = (ulong)((uint)uv * k0) * n0;
-            var t = (uv >> 32) + (mn >> 32);
-            if ((ulong)(uint)uv + (uint)mn >> 32 != 0)
-                ++t;
-            if (t >= n0)
-                t -= n0;
-            return (uint)t;
-#endif
-#if false
-            // Only works if n0 <= int.MaxValue.
-            var uv = (ulong)u0 * v0;
-            var mn = (ulong)((uint)uv * k0) * n0;
-            var t = (uv + mn) >> 32;
-            if (t >= n0)
-                t -= n0;
-            return (uint)t;
-#endif
-#if true
-            var uv = (ulong)u0 * v0;
-            var mn = (ulong)(0 - (uint)uv * k0) * n0;
-            if (uv < mn)
-                return (uint)(n0 - ((mn - uv) >> 32));
-            return (uint)((uv - mn) >> 32);
-#endif
         }
 
         private static void Add(out UInt128 w, ref UInt128 u, ref UInt128 v)

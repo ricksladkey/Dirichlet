@@ -20,13 +20,13 @@ namespace Decompose.Numerics
 
         public static long ModularProduct(long a, long b, long modulus)
         {
-            var result = (long)UInt128.ModularProduct((ulong)Math.Abs(a), (ulong)Math.Abs(b), (ulong)modulus);
+            var result = (long)UInt64Helper.ModularProduct((ulong)Math.Abs(a), (ulong)Math.Abs(b), (ulong)modulus);
             return (a < 0) != (b < 0) ? -result : result;
         }
 
         public static ulong ModularProduct(ulong a, ulong b, ulong modulus)
         {
-            return UInt128.ModularProduct(a, b, modulus);
+            return UInt64Helper.ModularProduct(a, b, modulus);
         }
 
         public static BigInteger ModularProduct(BigInteger a, BigInteger b, BigInteger modulus)

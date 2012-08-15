@@ -118,8 +118,8 @@ namespace Decompose.Numerics
 
             private uint Reduce(uint u, uint v)
             {
-                Debug.Assert(UInt128.Montgomery(u, v, modulus, k0) < modulus);
-                return UInt128.Montgomery(u, v, modulus, k0);
+                Debug.Assert(MontgomeryHelper.Reduce(u, v, modulus, k0) < modulus);
+                return MontgomeryHelper.Reduce(u, v, modulus, k0);
             }
         }
 

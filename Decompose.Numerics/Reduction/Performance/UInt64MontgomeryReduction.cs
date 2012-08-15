@@ -73,13 +73,13 @@ namespace Decompose.Numerics
 
                 public override IResidue<ulong> Add(IResidue<ulong> x)
                 {
-                    r = UInt128.ModularSum(r, GetRep(x), reducer.modulus);
+                    r = UInt64Helper.ModularSum(r, GetRep(x), reducer.modulus);
                     return this;
                 }
 
                 public override IResidue<ulong> Subtract(IResidue<ulong> x)
                 {
-                    r = UInt128.ModularDifference(r, GetRep(x), reducer.modulus);
+                    r = UInt64Helper.ModularDifference(r, GetRep(x), reducer.modulus);
                     return this;
                 }
 
@@ -114,7 +114,7 @@ namespace Decompose.Numerics
 
             private ulong Reduce(ulong u, ulong v)
             {
-                return UInt128.Montgomery(u, v, modulus, k0);
+                return MontgomeryHelper.Reduce(u, v, modulus, k0);
             }
         }
 

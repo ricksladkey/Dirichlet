@@ -733,16 +733,16 @@ namespace Decompose.Numerics.Test
                 Assert.AreEqual((BigInteger)a * b, (UInt128)a * b);
                 Assert.AreEqual((BigInteger)a * b % n, (UInt128)a * b % n);
                 Assert.AreEqual((BigInteger)a * b / n, (UInt128)a * b / n);
-                Assert.AreEqual(((BigInteger)a + b) % n, UInt128.ModularSum(a, b, n));
-                Assert.AreEqual((((BigInteger)a - b) % n + n) % n, UInt128.ModularDifference(a, b, n));
-                Assert.AreEqual((BigInteger)a * b % n, UInt128.ModularProduct(a, b, n));
+                Assert.AreEqual(((BigInteger)a + b) % n, UInt64Helper.ModularSum(a, b, n));
+                Assert.AreEqual((((BigInteger)a - b) % n + n) % n, UInt64Helper.ModularDifference(a, b, n));
+                Assert.AreEqual((BigInteger)a * b % n, UInt64Helper.ModularProduct(a, b, n));
             }
             for (int i = 0; i < 1000; i++)
             {
                 var n = random.Next(modulusMax - 1) + 1;
                 var a = random.Next(factorMax) % n;
                 var b = random.Next(factorMax) % n;
-                Assert.AreEqual(BigInteger.ModPow(a, b, n), UInt128.ModularPower(a, b, n));
+                Assert.AreEqual(BigInteger.ModPow(a, b, n), UInt64Helper.ModularPower(a, b, n));
             }
         }
 

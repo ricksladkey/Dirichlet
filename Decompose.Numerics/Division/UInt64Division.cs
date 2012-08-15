@@ -58,13 +58,13 @@ namespace Decompose.Numerics
 
         public ulong Divide(ulong k)
         {
-            var t = UInt128.MultiplyHigh(m, k);
+            var t = UInt64Helper.MultiplyHigh(m, k);
             return (((k - t) >> sh1) + t) >> sh2;
         }
 
         public uint Modulus(ulong k)
         {
-            var t = UInt128.MultiplyHigh(m, k);
+            var t = UInt64Helper.MultiplyHigh(m, k);
             return (uint)(k - ((((k - t) >> sh1) + t) >> sh2) * d);
         }
 
@@ -99,13 +99,13 @@ namespace Decompose.Numerics
 
         public ulong Divide(ulong k)
         {
-            var t = UInt128.MultiplyHigh(mPrime, k);
+            var t = UInt64Helper.MultiplyHigh(mPrime, k);
             return (((k - t) >> sh1) + t) >> sh2;
         }
 
         public uint Modulus(ulong k)
         {
-            var t = UInt128.MultiplyHigh(mPrime, k);
+            var t = UInt64Helper.MultiplyHigh(mPrime, k);
             return (uint)(k - ((((k - t) >> sh1) + t) >> sh2) * d);
         }
 
@@ -137,7 +137,7 @@ namespace Decompose.Numerics
 
         public ulong Divide(ulong k)
         {
-            return UInt128.MultiplyHigh(recip, k);
+            return UInt64Helper.MultiplyHigh(recip, k);
         }
 
         public uint Modulus(ulong k)
@@ -176,12 +176,12 @@ namespace Decompose.Numerics
 
         public ulong Divide(ulong k)
         {
-            return UInt128.MultiplyHigh(mPrime, k) >> shift;
+            return UInt64Helper.MultiplyHigh(mPrime, k) >> shift;
         }
 
         public uint Modulus(ulong k)
         {
-            return (uint)(k -  (UInt128.MultiplyHigh(mPrime, k) >> shift) * d);
+            return (uint)(k - (UInt64Helper.MultiplyHigh(mPrime, k) >> shift) * d);
         }
 
         public bool IsDivisible(ulong k)

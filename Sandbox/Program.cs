@@ -450,9 +450,9 @@ namespace Sandbox
 
         static void ParityTest()
         {
-#if true
+#if false
             var threads = 8;
-            for (int i = 1; i <= 24; i++)
+            for (int i = 22; i <= 22; i++)
             {
                 var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
                 var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads);
@@ -471,6 +471,29 @@ namespace Sandbox
                 var s2 = EvaluateAndTime(() => algorithm2.Evaluate(n, xmin, xmax));
                 Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
             }
+#endif
+
+#if true
+            var sum1 = EvaluateAndTime(() =>
+                {
+                    var a = (UInt128)100;
+                    a = UInt128.Square(UInt128.Square(a));
+                    Console.WriteLine("a = {0}", a);
+                    var s = (UInt128)0;
+                    for (var i = 0; i < 100000000; i++)
+                        s += UInt128.Double(a);
+                    return s;
+                });
+            var sum2 = EvaluateAndTime(() =>
+            {
+                var a = (UInt128)100;
+                a = UInt128.Square(UInt128.Square(a));
+                var s = (UInt128)0;
+                for (var i = 0; i < 100000000; i++)
+                    s += a << 1;
+                return s;
+            });
+            Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);
 #endif
 
 #if false
