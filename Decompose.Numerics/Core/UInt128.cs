@@ -222,28 +222,60 @@ namespace Decompose.Numerics
         public static UInt128 operator +(UInt128 a, UInt128 b)
         {
             UInt128 c;
+#if false
             Add(out c, ref a, ref b);
+#else
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = a.s0 + b.s0;
+            c.s1 = a.s1 + b.s1;
+            if (c.s0 < a.s0 && c.s0 < b.s0)
+                ++c.s1;
+#endif
             return c;
         }
 
         public static UInt128 operator ++(UInt128 a)
         {
             UInt128 c;
+#if false
             Add(out c, ref a, ref one);
+#else
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = a.s0 + 1;
+            c.s1 = a.s1;
+            if (a.s0 == uint.MaxValue)
+                ++c.s1;
+#endif
             return c;
         }
 
         public static UInt128 operator -(UInt128 a, UInt128 b)
         {
             UInt128 c;
+#if false
             Subtract(out c, ref a, ref b);
+#else
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = a.s0 - b.s0;
+            c.s1 = a.s1 - b.s1;
+            if (a.s0 < b.s0)
+                --c.s1;
+#endif
             return c;
         }
 
         public static UInt128 operator --(UInt128 a)
         {
             UInt128 c;
+#if false
             Subtract(out c, ref a, ref one);
+#else
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = a.s0 - 1;
+            c.s1 = a.s1;
+            if (a.s0 == 0)
+                --c.s1;
+#endif
             return c;
         }
 

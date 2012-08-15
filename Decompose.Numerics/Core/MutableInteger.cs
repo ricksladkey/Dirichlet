@@ -90,9 +90,10 @@ namespace Decompose.Numerics
 
         public void Resize(int length)
         {
-#if false
+#if true
             var newBits = new uint[length];
-            bits.CopyTo(newBits, 0);
+            for (var i = 0; i < bits.Length; i++)
+                newBits[i] = bits[i];
             bits = newBits;
 #else
             Array.Resize(ref bits, length);
