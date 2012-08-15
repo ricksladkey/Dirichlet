@@ -90,7 +90,6 @@ namespace Decompose.Numerics
             {
                 var s = (ulong)Math.Ceiling(Math.Sqrt((double)a));
                 var s2 = UInt128.Square(s);
-                var r = s * s - a;
                 if (s2 < a)
                     ++s;
                 else if (s2 - a > (s << 1)) // r >= 2 * s + 1
