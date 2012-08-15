@@ -1,15 +1,26 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace Decompose.Numerics
 {
+    [StructLayout(LayoutKind.Explicit)]
     public struct UInt128 : IComparable<UInt128>, IEquatable<UInt128>
     {
+        [FieldOffset(0)]
         private uint r0;
+        [FieldOffset(4)]
         private uint r1;
+        [FieldOffset(8)]
         private uint r2;
+        [FieldOffset(12)]
         private uint r3;
+
+        [FieldOffset(0)]
+        private ulong s0;
+        [FieldOffset(8)]
+        private ulong s1;
 
         private static UInt128 maxValue = ~(UInt128)0;
         private static UInt128 zero = (UInt128)0;
@@ -37,6 +48,7 @@ namespace Decompose.Numerics
 
         public UInt128(uint r0, uint r1, uint r2, uint r3)
         {
+            this.s0 = this.s1 = 0;
             this.r0 = r0;
             this.r1 = r1;
             this.r2 = r2;
@@ -62,7 +74,7 @@ namespace Decompose.Numerics
         {
             return ((BigInteger)this).ToString();
         }
-        
+
         public int GetBitLength()
         {
             if (r3 != 0)
@@ -73,7 +85,7 @@ namespace Decompose.Numerics
                 return r1.GetBitLength() + 32;
             return r0.GetBitLength();
         }
-        
+
         public int GetBitCount()
         {
             return r0.GetBitCount() + r1.GetBitCount() + r2.GetBitCount() + r3.GetBitCount();
@@ -119,7 +131,7 @@ namespace Decompose.Numerics
             c.r1 = (uint)(a >> 32);
             return c;
         }
-        
+
         public static explicit operator UInt128(BigInteger a)
         {
             var a01 = (ulong)(a & ulong.MaxValue);
@@ -159,12 +171,12 @@ namespace Decompose.Numerics
         {
             return (ulong)a.r1 << 32 | a.r0;
         }
-        
+
         public static implicit operator BigInteger(UInt128 a)
         {
             return (BigInteger)((ulong)a.r3 << 32 | a.r2) << 64 | (ulong)a.r1 << 32 | a.r0;
         }
-        
+
         public static UInt128 operator <<(UInt128 a, int b)
         {
             UInt128 c;
@@ -248,12 +260,12 @@ namespace Decompose.Numerics
             Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
             return c;
         }
-        
+
         public static UInt128 operator *(UInt128 a, ulong b)
         {
             return b * a;
         }
-        
+
         public static UInt128 operator *(UInt128 a, UInt128 b)
         {
             UInt128 c;
@@ -267,26 +279,26 @@ namespace Decompose.Numerics
             Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
             return c;
         }
-        
+
         public static UInt128 operator /(UInt128 a, ulong b)
         {
             UInt128 c;
             Divide(out c, ref a, b);
             return c;
         }
-        
+
         public static UInt128 operator /(UInt128 a, UInt128 b)
         {
             UInt128 c;
             Divide(out c, ref a, (ulong)b);
             return c;
         }
-        
+
         public static ulong operator %(UInt128 a, ulong b)
         {
             return Modulus(ref a, b);
         }
-        
+
         public static UInt128 operator %(UInt128 a, UInt128 b)
         {
             return Modulus(ref a, (ulong)b.r1 << 32 | b.r0);
@@ -572,11 +584,9 @@ namespace Decompose.Numerics
 
         public static UInt128 Double(UInt128 a)
         {
-            UInt128 c;
-            c.r3 = a.r3 << 1 | a.r2 >> 31;
-            c.r2 = a.r2 << 1 | a.r1 >> 31;
-            c.r1 = a.r1 << 1 | a.r0 >> 31;
-            c.r0 = a.r0 << 1;
+            UInt128 c = default(UInt128);
+            c.s1 = a.s1 << 1 | a.s0 >> 63;
+            c.s0 = a.r0 << 1;
             return c;
         }
 
@@ -596,6 +606,7 @@ namespace Decompose.Numerics
 
         private static void Add(out UInt128 w, ref UInt128 u, ref UInt128 v)
         {
+            w.s0 = w.s1 = 0;
             var carry = (ulong)u.r0 + v.r0;
             w.r0 = (uint)carry;
             carry = (carry >> 32) + u.r1 + v.r1;
@@ -608,6 +619,7 @@ namespace Decompose.Numerics
 
         private static void Subtract(out UInt128 w, ref UInt128 u, ref UInt128 v)
         {
+            w.s0 = w.s1 = 0;
             var borrow = (ulong)u.r0 - v.r0;
             w.r0 = (uint)borrow;
             borrow = (ulong)((long)borrow >> 32) + u.r1 - v.r1;
@@ -620,6 +632,7 @@ namespace Decompose.Numerics
 
         private static void Square(out UInt128 w, uint u0, uint u1)
         {
+            w.s0 = w.s1 = 0;
             var carry = (ulong)u0 * u0;
             w.r0 = (uint)carry;
             var u0u1 = (ulong)u0 * u1;
@@ -635,6 +648,7 @@ namespace Decompose.Numerics
 
         private static void Multiply(out UInt128 w, uint u0, uint u1, uint v0, uint v1)
         {
+            w.s0 = w.s1 = 0;
             var carry = (ulong)u0 * v0;
             w.r0 = (uint)carry;
             carry = (carry >> 32) + (ulong)u0 * v1;
@@ -649,6 +663,7 @@ namespace Decompose.Numerics
 
         private static void Multiply(out UInt128 w, ref UInt128 u, ref UInt128 v)
         {
+            w.s0 = w.s1 = 0;
             var u0 = u.r0;
             var u1 = u.r1;
             var u2 = u.r2;
@@ -719,6 +734,7 @@ namespace Decompose.Numerics
 
         private static void Division64(out UInt128 w, ref UInt128 u, ulong v)
         {
+            w.s0 = w.s1 = 0;
             var q = (ulong)u / v;
             w.r3 = 0;
             w.r2 = 0;
@@ -728,6 +744,7 @@ namespace Decompose.Numerics
 
         private static void Division96(out UInt128 w, ref UInt128 u, uint v)
         {
+            w.s0 = w.s1 = 0;
             w.r3 = 0;
             w.r2 = u.r2 / v;
             var u0 = (ulong)(u.r2 - w.r2 * v);
@@ -737,9 +754,10 @@ namespace Decompose.Numerics
             u0u1 = u0 << 32 | u.r0;
             w.r0 = (uint)(u0u1 / v);
         }
-        
+
         private static void Division128(out UInt128 w, ref UInt128 u, uint v)
         {
+            w.s0 = w.s1 = 0;
             w.r3 = u.r3 / v;
             var u0 = (ulong)(u.r3 - w.r3 * v);
             var u0u1 = u0 << 32 | u.r2;
@@ -751,9 +769,10 @@ namespace Decompose.Numerics
             u0u1 = u0 << 32 | u.r0;
             w.r0 = (uint)(u0u1 / v);
         }
-        
+
         private static void Division96(out UInt128 w, ref UInt128 u, ulong v)
         {
+            w.s0 = w.s1 = 0;
             var dneg = ((uint)(v >> 32)).GetBitLength();
             var d = 32 - dneg;
             var vPrime = v << d;
@@ -775,9 +794,10 @@ namespace Decompose.Numerics
             w.r1 = ModDiv(r3, ref r2, ref r1, v1, v2);
             w.r0 = ModDiv(r2, ref r1, ref r0, v1, v2);
         }
-        
+
         private static void Division128(out UInt128 w, ref UInt128 u, ulong v)
         {
+            w.s0 = w.s1 = 0;
             var dneg = ((uint)(v >> 32)).GetBitLength();
             var d = 32 - dneg;
             var vPrime = v << d;
@@ -801,7 +821,7 @@ namespace Decompose.Numerics
             w.r1 = ModDiv(r3, ref r2, ref r1, v1, v2);
             w.r0 = ModDiv(r2, ref r1, ref r0, v1, v2);
         }
-        
+
         private static ulong Modulus96(ref UInt128 u, uint v)
         {
             var u0 = (ulong)(u.r2 % v);
@@ -810,7 +830,7 @@ namespace Decompose.Numerics
             u0u1 = u0 << 32 | u.r0;
             return u0u1 % v;
         }
-        
+
         private static ulong Modulus128(ref UInt128 u, uint v)
         {
             var u0 = (ulong)(u.r3 % v);
@@ -821,7 +841,7 @@ namespace Decompose.Numerics
             u0u1 = u0 << 32 | u.r0;
             return u0u1 % v;
         }
-        
+
         private static ulong Modulus96(ref UInt128 u, ulong v)
         {
             var dneg = ((uint)(v >> 32)).GetBitLength();
@@ -844,7 +864,7 @@ namespace Decompose.Numerics
             ModDiv(r2, ref r1, ref r0, v1, v2);
             return ((ulong)r1 << 32 | r0) >> d;
         }
-        
+
         private static ulong Modulus128(ref UInt128 u, ulong v)
         {
             var dneg = ((uint)(v >> 32)).GetBitLength();
@@ -870,7 +890,7 @@ namespace Decompose.Numerics
             ModDiv(r2, ref r1, ref r0, v1, v2);
             return ((ulong)r1 << 32 | r0) >> d;
         }
-        
+
         private static uint ModDiv(uint u0, ref uint u1, ref uint u2, uint v1, uint v2)
         {
             var u0u1 = (ulong)u0 << 32 | u1;
@@ -908,142 +928,83 @@ namespace Decompose.Numerics
             }
             return (uint)qhat;
         }
-        
+
         private static void LeftShift(out UInt128 w, ref UInt128 u, int d)
         {
-            var dneg = 32 - d;
-            if (d < 32)
+            w.r0 = w.r1 = w.r2 = w.r3 = 0;
+            var dneg = 64 - d;
+            if (d < 64)
             {
                 if (d == 0)
                 {
                     w = u;
                     return;
                 }
-                w.r0 = u.r0 << d;
-                w.r1 = u.r1 << d | u.r0 >> dneg;
-                w.r2 = u.r2 << d | u.r1 >> dneg;
-                w.r3 = u.r3 << d | u.r2 >> dneg;
-                return;
-            }
-            if (d < 64)
-            {
-                if (d == 32)
-                {
-                    w.r0 = 0;
-                    w.r1 = u.r0;
-                    w.r2 = u.r1;
-                    w.r3 = u.r2;
-                    return;
-                }
-                w.r0 = 0;
-                w.r1 = u.r0 << d;
-                w.r2 = u.r1 << d | u.r0 >> dneg;
-                w.r3 = u.r2 << d | u.r1 >> dneg;
-                return;
-            }
-            if (d < 96)
-            {
-                if (d == 64)
-                {
-                    w.r0 = 0;
-                    w.r1 = 0;
-                    w.r2 = u.r0;
-                    w.r3 = u.r1;
-                    return;
-                }
-                w.r0 = 0;
-                w.r1 = 0;
-                w.r2 = u.r0 << d;
-                w.r3 = u.r1 << d | u.r0 >> dneg;
-                return;
-            }
-            if (d == 96)
-            {
-                w.r0 = 0;
-                w.r1 = 0;
-                w.r2 = 0;
-                w.r3 = u.r0;
-                return;
-            }
-            w.r0 = 0;
-            w.r1 = 0;
-            w.r2 = 0;
-            w.r3 = u.r0 << d;
-        }
-
-        private static void RightShift(out UInt128 w, ref UInt128 u, int d)
-        {
-            var dneg = 32 - d;
-            if (d < 32)
-            {
-                if (d == 0)
-                {
-                    w = u;
-                    return;
-                }
-                w.r0 = u.r0 >> d | u.r1 << dneg;
-                w.r1 = u.r1 >> d | u.r2 << dneg;
-                w.r2 = u.r2 >> d | u.r3 << dneg;
-                w.r3 = u.r3 >> d;
-                return;
-            }
-            if (d < 64)
-            {
-                if (d == 32)
-                {
-                    w.r0 = u.r1;
-                    w.r1 = u.r2;
-                    w.r2 = u.r3;
-                    w.r3 = 0;
-                    return;
-                }
-                w.r0 = u.r1 >> d | u.r2 << dneg;
-                w.r1 = u.r2 >> d | u.r3 << dneg;
-                w.r2 = u.r3 >> d;
-                w.r3 = 0;
+                w.s0 = u.s0 << d;
+                w.s1 = u.s1 << d | u.s0 >> dneg;
                 return;
             }
             if (d == 64)
             {
-                w.r0 = u.r2;
-                w.r1 = u.r3;
-                w.r2 = 0;
-                w.r3 = 0;
+                w.s0 = 0;
+                w.s1 = u.s0;
                 return;
             }
-            throw new NotImplementedException();
+            w.s0 = 0;
+            w.s1 = u.s0 << (d - 64);
+        }
+
+        private static void RightShift(out UInt128 w, ref UInt128 u, int d)
+        {
+            w.r0 = w.r1 = w.r2 = w.r3 = 0;
+            var dneg = 64 - d;
+            if (d < 64)
+            {
+                if (d == 0)
+                {
+                    w = u;
+                    return;
+                }
+                w.s0 = u.s0 >> d | u.s1 << dneg;
+                w.s1 = u.s1 >> d;
+                return;
+            }
+            if (d == 64)
+            {
+                w.s0 = u.s1;
+                w.s1 = 0;
+                return;
+            }
+            w.s0 = u.s1 >> (d - 64);
+            w.s1 = 0;
         }
 
         private static void And(out UInt128 w, ref UInt128 u, ref UInt128 v)
         {
-            w.r0 = u.r0 & v.r0;
-            w.r1 = u.r1 & v.r1;
-            w.r2 = u.r2 & v.r2;
-            w.r3 = u.r3 & v.r3;
+            w.r0 = w.r1 = w.r2 = w.r3 = 0;
+            w.s0 = u.s0 & v.s0;
+            w.s1 = u.s1 & v.s1;
         }
 
         private static void Or(out UInt128 w, ref UInt128 u, ref UInt128 v)
         {
-            w.r0 = u.r0 | v.r0;
-            w.r1 = u.r1 | v.r1;
-            w.r2 = u.r2 | v.r2;
-            w.r3 = u.r3 | v.r3;
+            w.r0 = w.r1 = w.r2 = w.r3 = 0;
+            w.s0 = u.s0 | v.s0;
+            w.s1 = u.s1 | v.s1;
         }
 
         private static void ExclusiveOr(out UInt128 w, ref UInt128 u, ref UInt128 v)
         {
-            w.r0 = u.r0 ^ v.r0;
-            w.r1 = u.r1 ^ v.r1;
-            w.r2 = u.r2 ^ v.r2;
-            w.r3 = u.r3 ^ v.r3;
+            w.r0 = w.r1 = w.r2 = w.r3 = 0;
+            w.s0 = u.s0 ^ v.s0;
+            w.s1 = u.s1 ^ v.s1;
         }
 
         private static void Not(out UInt128 w, ref UInt128 u)
         {
-            w.r0 = ~u.r0;
-            w.r1 = ~u.r1;
-            w.r2 = ~u.r2;
-            w.r3 = ~u.r3;
+            w.r0 = w.r1 = w.r2 = w.r3 = 0;
+            w.s0 = ~u.s0;
+            w.s1 = ~u.s1;
         }
     }
 }

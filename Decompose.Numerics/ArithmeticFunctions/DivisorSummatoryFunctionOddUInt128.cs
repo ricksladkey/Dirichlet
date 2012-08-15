@@ -54,7 +54,6 @@ namespace Decompose.Numerics
         public DivisorSummatoryFunctionOddUInt128(int threads)
         {
             this.threads = threads;
-            queue = new BlockingCollection<Region>();
             finished = new ManualResetEventSlim();
             manualAlgorithm = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
             stores = new IStore<MutableInteger>[Math.Max(threads, 1)];
@@ -81,7 +80,9 @@ namespace Decompose.Numerics
 
         public UInt128 Evaluate(UInt128 n, UInt128 x0, UInt128 xmax)
         {
+            queue = new BlockingCollection<Region>();
             sum = 0;
+
             if (threads == 0)
             {
                 AddToSum(EvaluateInternal(n, x0, xmax));
@@ -117,7 +118,7 @@ namespace Decompose.Numerics
         public void ConsumeRegions(int thread)
         {
             var s = (UInt128)0;
-            var r = default(Region);
+            Region r;
             while (queue.TryTake(out r, Timeout.Infinite))
                 s += ProcessRegion(thread, r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2);
             AddToSum(s);
@@ -238,9 +239,10 @@ namespace Decompose.Numerics
 #if DIAG
                 Console.WriteLine("ProcessRegion: s = {0}", s);
 #endif
+#if false
                 if (threads == 0)
                 {
-                    Enqueue(new Region((ulong)u4, (ulong)(h - v6), a1, b1, c1, a3, b3, c1 + c2 + v6));
+                    Enqueue(new Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
                     w -= u7;
                     h = v5;
                     a1 = a3;
@@ -253,6 +255,14 @@ namespace Decompose.Numerics
                     Enqueue(new Region(w - u7, v5, a3, b3, c1 + c2 + u7, a2, b2, c2));
                     return Processed(s);
                 }
+#else
+                Enqueue(new Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
+                w -= u7;
+                h = v5;
+                a1 = a3;
+                b1 = b3;
+                c1 += c2 + u7;
+#endif
             }
         }
 

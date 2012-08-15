@@ -450,9 +450,9 @@ namespace Sandbox
 
         static void ParityTest()
         {
-#if false
+#if true
             var threads = 8;
-            for (int i = 22; i <= 22; i++)
+            for (int i = 1; i <= 24; i++)
             {
                 var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
                 var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads);
@@ -473,7 +473,7 @@ namespace Sandbox
             }
 #endif
 
-#if true
+#if false
             var sum1 = EvaluateAndTime(() =>
                 {
                     var a = (UInt128)100;
