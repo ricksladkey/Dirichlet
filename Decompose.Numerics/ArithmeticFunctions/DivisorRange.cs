@@ -203,8 +203,8 @@ namespace Decompose.Numerics
             {
                 var length = (int)Math.Min(blockSize, kend - k);
                 var offset = kmin == -1 ? k : kmin;
-                SieveBlock(pmax, k, length, products, values, offsets, offsetsSquared);
-                m0 = AddValues(k, length, products, values, offset, sums, m0);
+                SieveBlock(pmax, k, length, products, values, offsets, offsetsSquared, offset);
+                m0 = AddValues(k, length, products, values, sums, offset, m0);
 
                 // Perform action, if any.
                 if (action != null)
@@ -215,15 +215,16 @@ namespace Decompose.Numerics
             queue.Enqueue(data);
         }
 
-        private void SieveBlock(int pmax, long k0, int length, long[] products, int[] values, int[] offsets, long[] offsetsSquared)
+        private void SieveBlock(int pmax, long k0, int length, long[] products, int[] values, int[] offsets, long[] offsetsSquared, long kmin)
         {
+            var koffset = k0 - kmin;
             var cycleOffset = offsets[0];
             Array.Copy(cycleProducts, cycleSize - cycleOffset, products, 0, Math.Min(length, cycleOffset));
-            Array.Copy(cycleValues, cycleSize - cycleOffset, values, 0, Math.Min(length, cycleOffset));
+            Array.Copy(cycleValues, cycleSize - cycleOffset, values, koffset, Math.Min(length, cycleOffset));
             while (cycleOffset < length)
             {
                 Array.Copy(cycleProducts, 0, products, cycleOffset, Math.Min(cycleSize, length - cycleOffset));
-                Array.Copy(cycleValues, 0, values, cycleOffset, Math.Min(cycleSize, length - cycleOffset));
+                Array.Copy(cycleValues, 0, values, koffset + cycleOffset, Math.Min(cycleSize, length - cycleOffset));
                 cycleOffset += cycleSize;
             }
             offsets[0] = cycleOffset - length;
@@ -240,7 +241,7 @@ namespace Decompose.Numerics
                         products[k] <<= 1;
                         quotient >>= 1;
                     }
-                    values[k] = values[k] / 3 * (exponent + 1);
+                    values[k + koffset] = values[k + koffset] / 3 * (exponent + 1);
                 }
                 offsetsSquared[0] = k - length;
             }
@@ -255,7 +256,7 @@ namespace Decompose.Numerics
                         products[k] *= 3;
                         quotient /= 3;
                     }
-                    values[k] = values[k] / 3 * (exponent + 1);
+                    values[k + koffset] = values[k + koffset] / 3 * (exponent + 1);
                 }
                 offsetsSquared[1] = k - length;
             }
@@ -270,7 +271,7 @@ namespace Decompose.Numerics
                         products[k] *= 5;
                         quotient /= 5;
                     }
-                    values[k] = values[k] / 3 * (exponent + 1);
+                    values[k + koffset] = values[k + koffset] / 3 * (exponent + 1);
                 }
                 offsetsSquared[2] = k - length;
             }
@@ -280,7 +281,7 @@ namespace Decompose.Numerics
                 for (k = offsets[i]; k < length; k += p)
                 {
                     products[k] *= p;
-                    values[k] <<= 1;
+                    values[k + koffset] <<= 1;
                 }
                 offsets[i] = k - length;
                 long kk = offsetsSquared[i];
@@ -297,7 +298,7 @@ namespace Decompose.Numerics
                             products[kk] *= p;
                             quotient /= p;
                         }
-                        values[kk] = values[kk] / 2 * (exponent + 1);
+                        values[kk + koffset] = values[kk + koffset] / 2 * (exponent + 1);
                         kk += pSquared;
                     }
                     while (kk < length);
@@ -306,30 +307,29 @@ namespace Decompose.Numerics
             }
         }
 
-        private long AddValues(long k0, int length, long[] products, int[] values, long kmin, long[] sums, long m0)
+        private long AddValues(long k0, int length, long[] products, int[] values, long[] sums, long kmin, long m0)
         {
             // Each product can have at most one more prime factor.
             // It has that factor if the value of the product is
             // less than the full value.
-            var k = k0;
+            var k = (int)(k0 - kmin);
             if (sums == null)
             {
                 for (var i = 0; i < length; i++, k++)
                 {
-                    if (products[i] < k)
-                        values[i] <<= 1;
-                    m0 += values[i];
+                    if (products[i] < k + kmin)
+                        values[k] <<= 1;
+                    m0 += values[k];
                 }
             }
             else
             {
                 for (var i = 0; i < length; i++, k++)
                 {
-                    if (products[i] < k)
-                        values[i] <<= 1;
-                    var value = values[i];
-                    m0 += value;
-                    sums[k - kmin] = m0;
+                    if (products[i] < k + kmin)
+                        values[k] <<= 1;
+                    m0 += values[k];
+                    sums[k] = m0;
                 }
             }
             return m0;

@@ -474,10 +474,17 @@ namespace Sandbox
 #endif
 
 #if true
-            var n = 1000000;
-            var algorithm = new DivisorRange(n + 1, 0);
+            var n = 100000000;
+            var algorithm = new DivisorRange(n + 1, 8);
             var divisor = new int[n + 1];
-            algorithm.GetValues(1, n + 1, divisor);
+            var timer = new Stopwatch();
+            for (var i = 1; i <= 1; i++)
+            {
+                timer.Restart();
+                algorithm.GetValues(1, n + 1, divisor);
+                output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
+#if false
             for (var x = 1; x <= n; x++)
             {
                 var tau = divisor[x - 1];
@@ -487,6 +494,7 @@ namespace Sandbox
                     Console.WriteLine();
                 }
             }
+#endif
 #endif
 
 #if false
