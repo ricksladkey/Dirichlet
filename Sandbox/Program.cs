@@ -474,26 +474,42 @@ namespace Sandbox
 #endif
 
 #if true
-            var n = 100000000;
-            var algorithm = new DivisorRange(n + 1, 8);
-            var divisor = new int[n + 1];
+            var power = 10;
+            var n = IntegerMath.Power(10, power);
+            var batchSize = 1 << 24;
+            var algorithmDivisor = new DivisorRange(n + 1, 8);
+            var algorithmMobius = new MobiusRange(n + 1, 8);
+            var divisor = new int[batchSize];
+            var mobius = new sbyte[batchSize];
             var timer = new Stopwatch();
-            for (var i = 1; i <= 1; i++)
+            timer.Restart();
+            for (var k0 = 1; k0 <= n; k0 += batchSize)
             {
-                timer.Restart();
-                algorithm.GetValues(1, n + 1, divisor);
-                output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-            }
+                var kstart = k0;
+                var kend = Math.Min(n + 1, k0 + batchSize);
+                algorithmDivisor.GetValues(kstart, kend, divisor);
 #if false
-            for (var x = 1; x <= n; x++)
-            {
-                var tau = divisor[x - 1];
-                if (tau != IntegerMath.NumberOfDivisors(x))
+                for (var x = kstart; x < kend; x++)
                 {
-                    Debugger.Break();
-                    Console.WriteLine();
+                    var tau = divisor[x - kstart];
+                    if (tau != IntegerMath.NumberOfDivisors(x))
+                    {
+                        Debugger.Break();
+                        Console.WriteLine();
+                    }
                 }
+#endif
             }
+            output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#if false
+            timer.Restart();
+            for (var k0 = 1; k0 <= n; k0 += batchSize)
+            {
+                var kstart = k0;
+                var kend = Math.Min(n + 1, k0 + batchSize);
+                algorithmMobius.GetValues(kstart, kend, mobius);
+            }
+            output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
 #endif
 

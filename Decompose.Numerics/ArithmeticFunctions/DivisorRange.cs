@@ -24,7 +24,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private const int blockSize = 1 << 16;
+        private const int blockSize = 1 << 14;
 
         private long size;
         private int threads;
@@ -132,7 +132,7 @@ namespace Decompose.Numerics
 
         private void CreateCycle()
         {
-            // Create pre-sieved cycle of the squares of small primes.
+            // Create pre-sieved product and value cycles of small primes and their squares.
             var dmax = 3;
             cycleLimit = Math.Min(primes.Length, dmax);
             cycleSize = 1;
@@ -217,6 +217,7 @@ namespace Decompose.Numerics
 
         private void SieveBlock(int pmax, long k0, int length, long[] products, int[] values, int[] offsets, long[] offsetsSquared, long kmin)
         {
+            // Initialize and pre-sieve product and value arrays from cycles.
             var koffset = k0 - kmin;
             var cycleOffset = offsets[0];
             Array.Copy(cycleProducts, cycleSize - cycleOffset, products, 0, Math.Min(length, cycleOffset));
@@ -229,9 +230,11 @@ namespace Decompose.Numerics
             }
             offsets[0] = cycleOffset - length;
 
-            int k;
+            // Handle small primes.
             if (0 < cycleLimit)
             {
+                // Handle multiples of 2^2.
+                int k;
                 for (k = (int)offsetsSquared[0]; k < length; k += 4)
                 {
                     var quotient = (k + k0) >> 2;
@@ -247,6 +250,8 @@ namespace Decompose.Numerics
             }
             if (1 < cycleLimit)
             {
+                // Handle multiples of 3^2.
+                int k;
                 for (k = (int)offsetsSquared[1]; k < length; k += 9)
                 {
                     var quotient = (k + k0) / 9;
@@ -262,6 +267,8 @@ namespace Decompose.Numerics
             }
             if (2 < cycleLimit)
             {
+                // Handle multiples of 5^2.
+                int k;
                 for (k = (int)offsetsSquared[2]; k < length; k += 25)
                 {
                     var quotient = (k + k0) / 25;
@@ -275,9 +282,11 @@ namespace Decompose.Numerics
                 }
                 offsetsSquared[2] = k - length;
             }
+
             for (var i = cycleLimit; i < pmax; i++)
             {
                 var p = primes[i];
+                int k;
                 for (k = offsets[i]; k < length; k += p)
                 {
                     products[k] *= p;

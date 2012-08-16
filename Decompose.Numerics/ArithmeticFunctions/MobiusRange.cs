@@ -131,7 +131,7 @@ namespace Decompose.Numerics
 
         private void CreateCycle()
         {
-            // Create pre-sieved cycle of the squares of small primes.
+            // Create pre-sieved product and value cycles of small primes and their squares.
             var dmax = 3;
             cycleLimit = Math.Min(primes.Length, dmax);
             cycleSize = 1;
