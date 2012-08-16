@@ -196,12 +196,6 @@ namespace Decompose.Numerics
                 SieveBlock(pmax, k, length, products, offsets, offsetsSquared);
                 m0 = AddValues(k, length, products, values, offset, sums, m0);
 
-#if false
-                // Fix up one.
-                if (values != null && offset <= 1)
-                    values[1 - kmin] = 1;
-#endif
-
                 // Perform action, if any.
                 if (action != null)
                     action(k, k + length, values);
@@ -262,7 +256,7 @@ namespace Decompose.Numerics
                     var abs = (p + neg) ^ neg; // abs = |p|
                     var flip = (abs - k) >> 63; // flip = -1 if abs < k, zero otherwise
                     values[k - kmin] = (sbyte)(((neg - pos) ^ flip) - flip); // value = pos - neg if flip = -1, neg - pos otherwise
-                    Debug.Assert(k - kmin == 0 || values[k - kmin] == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
+                    Debug.Assert(k == 0 || values[k - kmin] == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
                 }
             }
             else if (values == null)
@@ -278,7 +272,7 @@ namespace Decompose.Numerics
                     var value = ((neg - pos) ^ flip) - flip; // value = pos - neg if flip = -1, neg - pos otherwise
                     m0 += value;
                     sums[k - kmin] = m0;
-                    Debug.Assert(k - kmin == 0 || value == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
+                    Debug.Assert(k == 0 || value == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
                 }
             }
             else
@@ -295,7 +289,7 @@ namespace Decompose.Numerics
                     values[k - kmin] = (sbyte)value;
                     m0 += value;
                     sums[k - kmin] = m0;
-                    Debug.Assert(k - kmin == 0 || value == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
+                    Debug.Assert(k == 0 || value == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
                 }
             }
             return m0;

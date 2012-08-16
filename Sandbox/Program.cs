@@ -450,7 +450,7 @@ namespace Sandbox
 
         static void ParityTest()
         {
-#if true
+#if false
             var threads = 8;
             for (int i = 1; i <= 24; i++)
             {
@@ -463,13 +463,29 @@ namespace Sandbox
 #else
                 var xmin = 1;
 #endif
-#if true
+#if false
                 var s1 = EvaluateAndTime(() => algorithm1.Evaluate(n, xmin, xmax));
 #else
                 var s1 = 0;
 #endif
                 var s2 = EvaluateAndTime(() => algorithm2.Evaluate(n, xmin, xmax));
                 Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
+            }
+#endif
+
+#if true
+            var n = 1000000;
+            var algorithm = new DivisorRange(n + 1, 0);
+            var divisor = new int[n + 1];
+            algorithm.GetValues(1, n + 1, divisor);
+            for (var x = 1; x <= n; x++)
+            {
+                var tau = divisor[x - 1];
+                if (tau != IntegerMath.NumberOfDivisors(x))
+                {
+                    Debugger.Break();
+                    Console.WriteLine();
+                }
             }
 #endif
 
@@ -887,22 +903,6 @@ namespace Sandbox
                 }
                 var sum2 = IntegerMath.Mertens(x) - IntegerMath.Mertens(x / 2);
                 Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
-            }
-#endif
-
-#if false
-            var n = 100;
-            var algorithm = new DivisorRange(n + 1, 0);
-            var divisor = new int[n + 1];
-            algorithm.GetValues(0, n + 1, divisor);
-            for (var x = 1; x <= n; x++)
-            {
-                var tau = divisor[x];
-                if (tau != IntegerMath.NumberOfDivisors(x))
-                {
-                    Debugger.Break();
-                    Console.WriteLine();
-                }
             }
 #endif
 
