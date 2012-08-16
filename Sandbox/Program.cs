@@ -474,6 +474,25 @@ namespace Sandbox
 #endif
 
 #if true
+            var algorithm2 = new PrimeCountingOddMod3(8);
+            var timer = new Stopwatch();
+            timer.Restart();
+            for (var i = 1; i <= 20; i++)
+            {
+                timer.Restart();
+                for (var iterations = 0; iterations < 1; iterations++)
+                {
+                    var n = IntegerMath.Power((BigInteger)10, i);
+                    var p1 = PrimeCounting.PiPowerOfTen(i) % 3;
+                    var p2 = algorithm2.Evaluate(n);
+                    if (iterations == 0)
+                        Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}", i, p1, p2);
+                }
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
+#endif
+
+#if false
             var threads = 8;
             var power = 10;
             var n = IntegerMath.Power(10, power);
@@ -979,26 +998,6 @@ namespace Sandbox
                 var sum2 = algorithm.Evaluate(n);
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
                 Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
-            }
-#endif
-
-#if false
-            var algorithm1 = new DivisionFreeDivisorSummatoryFunction(8, false, true);
-            var algorithm2 = new PrimeCountingOddMod3(8);
-            var timer = new Stopwatch();
-            timer.Restart();
-            for (var i = 16; i <= 20; i++)
-            {
-                timer.Restart();
-                for (var iterations = 0; iterations < 1; iterations++)
-                {
-                    var n = IntegerMath.Power((BigInteger)10, i);
-                    var p1 = PrimeCounting.PiPowerOfTen(i) % 3;
-                    var p2 = algorithm2.Evaluate(n);
-                    if (iterations == 0)
-                        Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}", i, p1, p2);
-                }
-                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
 

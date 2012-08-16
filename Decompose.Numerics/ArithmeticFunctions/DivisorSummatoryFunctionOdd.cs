@@ -71,11 +71,14 @@ namespace Decompose.Numerics
 
         public BigInteger Evaluate(BigInteger n, BigInteger x0, BigInteger xmax)
         {
+            if (x0 > xmax)
+                return 0;
+
             sum = 0;
             if (threads == 0)
             {
                 AddToSum(EvaluateInternal(n, x0, xmax));
-                AddToSum(manualAlgorithm.Evaluate(n, 2 * x0 - 1, 2 * xmanual - 3));
+                AddToSum(manualAlgorithm.Evaluate(n, x0, 2 * xmanual - 3));
                 return sum;
             }
 
@@ -96,7 +99,7 @@ namespace Decompose.Numerics
             queue.CompleteAdding();
 
             // Add manual portion.
-            AddToSum(manualAlgorithm.Evaluate(n, 2 * x0 - 1, 2 * xmanual - 3));
+            AddToSum(manualAlgorithm.Evaluate(n, x0, 2 * xmanual - 3));
 
             // Wait for completion.
             Task.WaitAll(tasks);
@@ -127,7 +130,7 @@ namespace Decompose.Numerics
             return result;
         }
 
-        public BigInteger EvaluateInternal(BigInteger n, BigInteger x0, BigInteger xmax)
+        private BigInteger EvaluateInternal(BigInteger n, BigInteger x0, BigInteger xmax)
         {
             this.n = n;
             x0 = T1(x0 + 1);
@@ -153,7 +156,7 @@ namespace Decompose.Numerics
                 var x5 = x4 + 1;
                 var y5 = YFloor(x5);
                 var c5 = a1 * x5 + y5;
-                if (x4 < xmin)
+                if (x4 <= xmin)
                     break;
                 s += Triangle(c4 - c2 - x0) - Triangle(c4 - c2 - x5) + Triangle(c5 - c2 - x5);
                 if (threads == 0)

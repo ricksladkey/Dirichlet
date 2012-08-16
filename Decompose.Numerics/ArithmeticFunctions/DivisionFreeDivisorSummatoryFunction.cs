@@ -301,6 +301,8 @@ namespace Decompose.Numerics
 
         private long S1OddSmall(long x1, long x2)
         {
+            if (x2 < 1)
+                return x1 - 2;
             var t = (ulong)0;
             var x = (x2 & 1) == 0 ? x2 - 1 : x2;
             var beta = (ulong)(n / (x + 2));

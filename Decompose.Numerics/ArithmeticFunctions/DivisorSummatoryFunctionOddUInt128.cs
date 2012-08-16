@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Decompose.Numerics
 {
-    public class DivisorSummatoryFunctionOddUInt128 : IDivisorSummatoryFunction<UInt128>
+    public class DivisorSummatoryFunctionOddUInt128 : IDivisorSummatoryFunction<BigInteger>, IDivisorSummatoryFunction<UInt128>
     {
         private struct Region
         {
@@ -87,6 +87,9 @@ namespace Decompose.Numerics
 
         public UInt128 Evaluate(UInt128 n, UInt128 x0, UInt128 xmax)
         {
+            if (x0 > xmax)
+                return 0;
+
             queue = new BlockingCollection<Region>();
             sum = 0;
 #if RECORD_SIZES
@@ -98,7 +101,7 @@ namespace Decompose.Numerics
             if (threads == 0)
             {
                 AddToSum(EvaluateInternal(n, x0, xmax));
-                AddToSum((UInt128)manualAlgorithm.Evaluate(n, 2 * x0 - 1, 2 * xmanual - 3));
+                AddToSum((UInt128)manualAlgorithm.Evaluate(n, x0, 2 * xmanual - 3));
                 return sum;
             }
 
@@ -119,7 +122,7 @@ namespace Decompose.Numerics
             queue.CompleteAdding();
 
             // Add manual portion.
-            AddToSum((UInt128)manualAlgorithm.Evaluate(n, 2 * x0 - 1, 2 * xmanual - 3));
+            AddToSum((UInt128)manualAlgorithm.Evaluate(n, x0, 2 * xmanual - 3));
 
             // Wait for completion.
             Task.WaitAll(tasks);
@@ -153,7 +156,7 @@ namespace Decompose.Numerics
             return result;
         }
 
-        public UInt128 EvaluateInternal(UInt128 n, UInt128 x0, UInt128 xmax)
+        private UInt128 EvaluateInternal(UInt128 n, UInt128 x0, UInt128 xmax)
         {
             this.n = n;
             x0 = T1(x0 + 1);
@@ -179,7 +182,7 @@ namespace Decompose.Numerics
                 var x5 = x4 + 1;
                 var y5 = YFloor(x5);
                 var c5 = a1 * x5 + y5;
-                if (x4 < xmin)
+                if (x4 <= xmin)
                     break;
                 s += Triangle(c4 - c2 - x0) - Triangle(c4 - c2 - x5) + Triangle(c5 - c2 - x5);
                 if (threads == 0)
