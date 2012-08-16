@@ -452,7 +452,7 @@ namespace Sandbox
         {
 #if true
             var threads = 8;
-            for (int i = 24; i <= 24; i++)
+            for (int i = 1; i <= 24; i++)
             {
                 var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
                 var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads);
@@ -463,7 +463,7 @@ namespace Sandbox
 #else
                 var xmin = 1;
 #endif
-#if false
+#if true
                 var s1 = EvaluateAndTime(() => algorithm1.Evaluate(n, xmin, xmax));
 #else
                 var s1 = 0;

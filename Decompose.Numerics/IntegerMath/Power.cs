@@ -27,7 +27,7 @@ namespace Decompose.Numerics
 
         public static UInt128 Square(UInt128 a)
         {
-            return a * a;
+            return UInt128.Square(a);
         }
 
         public static BigInteger Square(BigInteger a)
@@ -56,6 +56,11 @@ namespace Decompose.Numerics
         }
 
         public static ulong Cube(ulong a)
+        {
+            return a * a * a;
+        }
+
+        public static UInt128 Cube(UInt128 a)
         {
             return a * a * a;
         }

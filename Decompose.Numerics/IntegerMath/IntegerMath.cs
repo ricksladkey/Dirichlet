@@ -34,6 +34,11 @@ namespace Decompose.Numerics
             return 0 - a;
         }
 
+        public static UInt128 TwosComplement(UInt128 a)
+        {
+            return 0 - a;
+        }
+
         public static int Abs(int a)
         {
             return a >= 0 ? a : -a;
@@ -50,6 +55,11 @@ namespace Decompose.Numerics
         }
 
         public static ulong Abs(ulong a)
+        {
+            return a;
+        }
+
+        public static UInt128 Abs(UInt128 a)
         {
             return a;
         }
@@ -79,6 +89,11 @@ namespace Decompose.Numerics
             return a < b ? a : b;
         }
 
+        public static UInt128 Min(UInt128 a, UInt128 b)
+        {
+            return a < b ? a : b;
+        }
+
         public static BigInteger Min(BigInteger a, BigInteger b)
         {
             return BigInteger.Min(a, b);
@@ -104,27 +119,32 @@ namespace Decompose.Numerics
             return a > b ? a : b;
         }
 
+        public static UInt128 Max(UInt128 a, UInt128 b)
+        {
+            return a > b ? a : b;
+        }
+
         public static BigInteger Max(BigInteger a, BigInteger b)
         {
             return BigInteger.Max(a, b);
         }
 
-        public static int QuotientFloor(int a, int b)
+        public static int FloorQuotient(int a, int b)
         {
             return a / b;
         }
 
-        public static BigInteger QuotientFloor(BigInteger a, BigInteger b)
+        public static BigInteger FloorQuotient(BigInteger a, BigInteger b)
         {
             return a / b;
         }
 
-        public static int QuotientCeiling(int a, int b)
+        public static int CeilingQuotient(int a, int b)
         {
             return (a + b - 1) / b;
         }
 
-        public static BigInteger QuotientCeiling(BigInteger a, BigInteger b)
+        public static BigInteger CeilingQuotient(BigInteger a, BigInteger b)
         {
             return (a + b - 1) / b;
         }
@@ -168,6 +188,11 @@ namespace Decompose.Numerics
         }
 
         public static ulong Modulus(ulong n, ulong p)
+        {
+            return n % p;
+        }
+
+        public static UInt128 Modulus(UInt128 n, UInt128 p)
         {
             return n % p;
         }
@@ -242,6 +267,11 @@ namespace Decompose.Numerics
         }
 
         public static bool IsPowerOfTwo(ulong a)
+        {
+            return (a & (a - 1)) == 0;
+        }
+
+        public static bool IsPowerOfTwo(UInt128 a)
         {
             return (a & (a - 1)) == 0;
         }
