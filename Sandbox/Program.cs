@@ -474,11 +474,12 @@ namespace Sandbox
 #endif
 
 #if true
+            var threads = 8;
             var power = 10;
             var n = IntegerMath.Power(10, power);
             var batchSize = 1 << 24;
-            var algorithmDivisor = new DivisorRange(n + 1, 8);
-            var algorithmMobius = new MobiusRange(n + 1, 8);
+            var algorithmDivisor = new DivisorRange(n + 1, threads);
+            var algorithmMobius = new MobiusRange(n + 1, threads);
             var divisor = new int[batchSize];
             var mobius = new sbyte[batchSize];
             var timer = new Stopwatch();
@@ -501,6 +502,24 @@ namespace Sandbox
 #endif
             }
             output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#if false
+            timer.Restart();
+            algorithmDivisor.GetValues(1, n + 1, 0, (kstart, kend, values) =>
+                {
+#if false
+                for (var x = kstart; x < kend; x++)
+                {
+                    var tau = values[x - kstart];
+                    if (tau != IntegerMath.NumberOfDivisors(x))
+                    {
+                        Debugger.Break();
+                        Console.WriteLine();
+                    }
+                }
+#endif
+                });
+            output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
 #if false
             timer.Restart();
             for (var k0 = 1; k0 <= n; k0 += batchSize)

@@ -86,7 +86,7 @@ namespace Decompose.Numerics
             if (sums == null)
                 return;
 
-            // Collect and sum Mertens function totals for each batch.
+            // Collect summatory function totals for each batch.
             var mabs = new long[threads];
             mabs[0] = 0;
             for (var thread = 1; thread < threads; thread++)
@@ -96,7 +96,7 @@ namespace Decompose.Numerics
                     mabs[thread] = mabs[thread - 1] + sums[last] - m0;
             }
 
-            // Convert relative Mertens function values into absolute Mertens values.
+            // Convert relative summatory function values into absolute summatory function.
             for (var thread = 1; thread < threads; thread++)
             {
                 var index = thread;
@@ -283,9 +283,12 @@ namespace Decompose.Numerics
                 offsetsSquared[2] = k - length;
             }
 
+            // Sieve remaining primes.
             for (var i = cycleLimit; i < pmax; i++)
             {
                 var p = primes[i];
+
+                // Handle multiples of p.
                 int k;
                 for (k = offsets[i]; k < length; k += p)
                 {
@@ -293,6 +296,8 @@ namespace Decompose.Numerics
                     values[k + koffset] <<= 1;
                 }
                 offsets[i] = k - length;
+
+                // Handle multiples of p^2.
                 long kk = offsetsSquared[i];
                 if (kk < length)
                 {
