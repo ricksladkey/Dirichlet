@@ -474,7 +474,26 @@ namespace Sandbox
 #endif
 
 #if true
-            var algorithm2 = new PrimeCountingOddMod3(8);
+            var algorithm2 = new PrimeCountingMod2Odd(0);
+            var timer = new Stopwatch();
+            timer.Restart();
+            for (var i = 1; i <= 14; i++)
+            {
+                timer.Restart();
+                for (var iterations = 0; iterations < 1; iterations++)
+                {
+                    var n = IntegerMath.Power((BigInteger)10, i);
+                    var p1 = PrimeCounting.PiPowerOfTen(i) % 2;
+                    var p2 = algorithm2.Evaluate(n);
+                    if (iterations == 0)
+                        Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}", i, p1, p2);
+                }
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
+#endif
+
+#if false
+            var algorithm2 = new PrimeCountingMod3Odd(8);
             var timer = new Stopwatch();
             timer.Restart();
             for (var i = 1; i <= 20; i++)

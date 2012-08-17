@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace Decompose.Numerics
 {
-    public class PrimeCountingOddMod3
+    public class PrimeCountingMod3Odd
     {
         private int threads;
         private MobiusCollection mobius;
         private Dictionary<BigInteger, BigInteger> t3Map;
         private IDivisorSummatoryFunction<BigInteger> [] hyperbolicSum;
 
-        public PrimeCountingOddMod3(int threads)
+        public PrimeCountingMod3Odd(int threads)
         {
             this.threads = threads;
             t3Map = new Dictionary<BigInteger, BigInteger>();
