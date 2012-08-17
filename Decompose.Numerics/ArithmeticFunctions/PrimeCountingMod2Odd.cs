@@ -57,7 +57,7 @@ namespace Decompose.Numerics
             var alpha = beta / (x + 2);
             var alphax = (alpha + 1) * (x + 2);
             var lastalpha = (long)-1;
-            var lastterm = (int)0;
+            var count = 0;
             while (x >= 1)
             {
                 eps += gamma;
@@ -106,20 +106,25 @@ namespace Decompose.Numerics
                 var mu = mobius[(int)x];
                 if (mu != 0)
                 {
-                    var term = lastterm;
                     if (alpha != lastalpha)
                     {
-                        lastterm = term = T2(alpha);
+                        count &= 3;
+                        if (count != 0)
+                        {
+                            s += count * T2(lastalpha);
+                            count = 0;
+                        }
                         lastalpha = alpha;
                     }
-                    if (mu == 1)
-                        s += term;
-                    else
-                        s += 4 - term;
+                    count += mu;
                 }
                 x -= 2;
             }
-            var nRep = (UInt128)n;
+            {
+                count &= 3;
+                if (count != 0)
+                    s += count * T2(lastalpha);
+            }
             var xx = (ulong)x * (ulong)x;
             var dx = 4 * (ulong)x - 4;
             while (x >= 1)
