@@ -477,18 +477,29 @@ namespace Sandbox
             var algorithm2 = new PrimeCountingMod2Odd(0);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 1; i <= 14; i++)
+            for (var i = 1; i <= 16; i++)
             {
                 timer.Restart();
-                for (var iterations = 0; iterations < 1; iterations++)
-                {
-                    var n = IntegerMath.Power((BigInteger)10, i);
-                    var p1 = PrimeCounting.PiPowerOfTen(i) % 2;
-                    var p2 = algorithm2.Evaluate(n);
-                    if (iterations == 0)
-                        Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}", i, p1, p2);
-                }
+                var n = IntegerMath.Power((BigInteger)10, i);
+                var p1 = PrimeCounting.PiPowerOfTen(i) % 2;
+                var p2 = algorithm2.Evaluate(n);
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}", i, p1, p2);
+            }
+#endif
+
+#if false
+            for (var power = 1; power <= 16; power++)
+            {
+                var n = IntegerMath.Power((long)2, power);
+                var sqrt = IntegerMath.FloorSquareRoot(n);
+                var sum = (long)0;
+                for (var d = (long)1; d <= sqrt; d += 2)
+                    sum += IntegerMath.Mobius(d) * IntegerMath.Square((IntegerMath.FloorSquareRoot(n / IntegerMath.Power(d, 2)) + 1) / 2);
+                if (sum % 2 != 1)
+                    Console.WriteLine("not odd\n");
+                sum = (sum - 1) / 2 % 2;
+                Console.WriteLine("power = {0}, sum = {1}", power, sum);
             }
 #endif
 

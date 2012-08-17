@@ -1134,6 +1134,21 @@
     odd>\<mu\><around*|(|i|)>*<around*|(|T<rsub|1,odd><around*|(|<frac|n/k|i>|)>-T<rsub|1,odd><around*|(|<frac|n/<around*|(|k+1|)>|i>|)>|)>>>>>
   </eqnarray*>
 
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<around*|(|1-<frac|1|2>|)>>|<cell|=>|<cell|<frac|1|2>>>|<row|<cell|<around*|(|1-<frac|1|2>|)>*<around*|(|1-<frac|1|3>|)>>|<cell|=>|<cell|<frac|1|2>\<cdot\><frac|2|3>=<frac|1|3>>>|<row|<cell|<around*|(|1-<frac|1|2>|)>*<around*|(|1-<frac|1|3>|)>*<around*|(|1-<frac|1|5>|)>>|<cell|=>|<cell|<frac|1|3>*<frac|4|5>=<frac|4|15>>>|<row|<cell|wheelSize*<big|sum><rsub|p><around*|(|1-<frac|1|p>|)>>|<cell|=>|<cell|wheelCount>>|<row|<cell|>|<cell|=>|<cell|wheelSize*<big|prod><rsub|p><around*|(|<frac|p-1|p>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|p><around*|(|p-1|)>>>>>
+  </eqnarray*>
+
+  Observing that
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<around*|(|<big|sum><rsub|d\<leq\><sqrt|n|>,d
+    odd>\<mu\><around*|(|d|)>*<around*|(|<around*|\<lfloor\>|<frac|<around*|\<lfloor\>|<sqrt|<around*|\<lfloor\>|n/d<rsup|2>|\<rfloor\>>>|\<rfloor\>>+1|2>|\<rfloor\>>|)><rsup|2>-1|)>/2>|<cell|\<equiv\>>|<cell|<choice|<tformat|<cwith|1|-1|1|1|cell-halign|r>|<table|<row|<cell|0>|<cell|if
+    n\<less\>4>>|<row|<cell|1>|<cell|if n\<geq\>4>>>>><space|1em><around*|(|mod
+    2|)>>>>>
+  </eqnarray*>
+
+  Apparently not true!
+
   \;
 </body>
 

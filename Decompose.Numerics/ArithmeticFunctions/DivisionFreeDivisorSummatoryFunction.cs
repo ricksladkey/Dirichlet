@@ -250,7 +250,7 @@ namespace Decompose.Numerics
                 return S1OddSmall(x1, x2);
             var s = (UInt128)0;
             var t = (ulong)0;
-            var x = (x2 & 1) == 0 ? x2 - 1 : x2;
+            var x = (x2 - 1) | 1;
             var beta = (ulong)(n / (x + 2));
             var eps = (long)(n % (x + 2));
             var delta = (long)(n / x - beta);
@@ -304,7 +304,7 @@ namespace Decompose.Numerics
             if (x2 < 1)
                 return x1 - 2;
             var t = (ulong)0;
-            var x = (x2 & 1) == 0 ? x2 - 1 : x2;
+            var x = (x2 - 1) | 1;
             var beta = (ulong)(n / (x + 2));
             var eps = (long)(n % (x + 2));
             var delta = (long)(n / x - beta);
@@ -356,7 +356,7 @@ namespace Decompose.Numerics
             var s = (UInt128)0;
             var tOdd = (ulong)0;
             var nRep = (UInt128)n;
-            var x = (x2 & 1) == 0 ? x2 - 1 : x2;
+            var x = (x2 - 1) | 1;
             while (x >= x1)
             {
                 var beta = nRep / (ulong)x;
@@ -375,7 +375,7 @@ namespace Decompose.Numerics
             var s = (UInt128)0;
             var t = (ulong)0;
             var nRep = (ulong)n;
-            var x = (x2 & 1) == 0 ? x2 - 1 : x2;
+            var x = (x2 - 1) | 1;
             while (x >= x1)
             {
                 var beta = nRep / (ulong)x;

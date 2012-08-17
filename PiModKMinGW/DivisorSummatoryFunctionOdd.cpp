@@ -330,7 +330,7 @@ Integer DivisorSummatoryFunctionOdd::S1Fast(Integer n, Int64 x1, Int64 x2)
         return S1SmallFast(n, x1, x2);
     Integer s = (Integer)0;
     UInt64 t = (UInt64)0;
-    Int64 x = (x2 & 1) == 0 ? x2 - 1 : x2;
+    Int64 x = (x2 - 1) | 1;
     UInt64 beta = Integer(n / Integer(x + 2));
     Int64 eps = Integer(n % Integer(x + 2));
     Int64 delta = Integer(n / Integer(x) - Integer(beta));
@@ -378,7 +378,7 @@ Integer DivisorSummatoryFunctionOdd::S1Fast(Integer n, Int64 x1, Int64 x2)
 Integer DivisorSummatoryFunctionOdd::S1Slow(Integer n, Integer x1, Integer x2)
 {
     Integer s = (Integer)0;
-    for (Integer x = (x2 & 1) == 0 ? x2 - 1 : x2; x >= x1; x -= 2)
+    for (Integer x = (x2 - 1) | 1; x >= x1; x -= 2)
     {
         Integer beta = n / x;
         s += beta + (beta & 1);
@@ -389,7 +389,7 @@ Integer DivisorSummatoryFunctionOdd::S1Slow(Integer n, Integer x1, Integer x2)
 Integer DivisorSummatoryFunctionOdd::S1SmallFast(Integer n, Int64 x1, Int64 x2)
 {
     UInt64 t = (UInt64)0;
-    Int64 x = (x2 & 1) == 0 ? x2 - 1 : x2;
+    Int64 x = (x2 - 1) | 1;
     UInt64 beta = Integer(n / Integer(x + 2));
     Int64 eps = Integer(n % Integer(x + 2));
     Int64 delta = Integer(n / Integer(x) - Integer(beta));
@@ -432,7 +432,7 @@ Integer DivisorSummatoryFunctionOdd::S1SmallFast(Integer n, Int64 x1, Int64 x2)
 Integer DivisorSummatoryFunctionOdd::S1SmallSlow(UInt64 n, Int64 x1, Int64 x2)
 {
     UInt64 s = (UInt64)0;
-    for (Int64 x = (x2 & 1) == 0 ? x2 - 1 : x2; x >= x1; x -= 2)
+    for (Int64 x = (x2 - 1) | 1; x >= x1; x -= 2)
     {
         UInt64 beta = n / x;
         s += beta + (beta & 1);

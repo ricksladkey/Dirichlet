@@ -193,6 +193,26 @@ namespace Decompose.Numerics
             return c;
         }
 
+        public static UInt128 operator &(UInt128 a, uint b)
+        {
+            return a.r0 & b;
+        }
+
+        public static UInt128 operator &(uint a, UInt128 b)
+        {
+            return a & b.r0;
+        }
+
+        public static UInt128 operator &(UInt128 a, ulong b)
+        {
+            return a.s0 & b;
+        }
+
+        public static UInt128 operator &(ulong a, UInt128 b)
+        {
+            return a & b.r0;
+        }
+
         public static UInt128 operator |(UInt128 a, UInt128 b)
         {
             UInt128 c;
