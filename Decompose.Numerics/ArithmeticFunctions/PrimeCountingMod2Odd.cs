@@ -10,15 +10,15 @@ namespace Decompose.Numerics
     {
         private int threads;
         private sbyte[] mobius;
-        private DivisionFreeDivisorSummatoryFunction[] hyperbolicSum;
+        private IDivisorSummatoryFunction<BigInteger>[] hyperbolicSum;
 
         public PrimeCountingMod2Odd(int threads)
         {
             this.threads = threads;
             var count = Math.Max(threads, 1);
-            hyperbolicSum = new DivisionFreeDivisorSummatoryFunction[count];
+            hyperbolicSum = new DivisorSummatoryFunctionOddUInt128[count];
             for (var i = 0; i < count; i++)
-                hyperbolicSum[i] = new DivisionFreeDivisorSummatoryFunction(0, false, true);
+                hyperbolicSum[i] = new DivisorSummatoryFunctionOddUInt128(0);
         }
 
         public int Evaluate(BigInteger n)
@@ -157,11 +157,14 @@ namespace Decompose.Numerics
             return result;
         }
 
+        private const long nMaxSimple = (long)1 << 50;
+
         private int S1(BigInteger n, long x1, long x2)
         {
-            if (n <= long.MaxValue)
+            if (n <= nMaxSimple)
                 return S1((long)n, (int)x1, (int)x2);
 
+#if false
             var s = (long)0;
             var x = (x2 - 1) | 1;
             var beta = (long)(n / (x + 2));
@@ -211,6 +214,9 @@ namespace Decompose.Numerics
                 x -= 2;
             }
             return (int)((s >> 1) & 1);
+#else
+            return hyperbolicSum[0].Evaluate(n, x1, x2).IsEven ? 0 : 1;
+#endif
         }
 
         private int S1(long n, int x1, int x2)
