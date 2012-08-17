@@ -478,7 +478,7 @@ namespace Sandbox
             var algorithm2 = new PrimeCounting(0);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 20; i <= 20; i++)
+            for (var i = 1; i <= 20; i++)
             {
                 var n = IntegerMath.Power((BigInteger)10, i);
                 var p0 = PrimeCounting.PiPowerOfTen(i) % 2;
@@ -497,6 +497,11 @@ namespace Sandbox
                 var p2 = -1;
 #endif
                 Console.WriteLine("i = {0}, p0 = {1}, p1 = {2}, p2 = {3}", i, p0, p1, p2);
+                if (p0 != p1)
+                {
+                    Console.WriteLine("mismatch!");
+                    break;
+                }
             }
 #endif
 

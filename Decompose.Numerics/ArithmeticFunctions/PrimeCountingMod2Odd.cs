@@ -40,6 +40,10 @@ namespace Decompose.Numerics
                 if (mu != 0)
                     sum += mu * F2(IntegerMath.FloorRoot(n, k));
             }
+            for (var k = 1; k <= kmax; k++)
+                sum -= IntegerMath.Mobius(k);
+            sum &= 3;
+            sum >>= 1;
             return (sum + (n >= 2 ? 1 : 0)) % 2;
         }
 
@@ -122,11 +126,9 @@ namespace Decompose.Numerics
                 }
                 x -= 2;
             }
-            {
-                count &= 3;
-                if (count != 0)
-                    s += count * T2(lastalpha);
-            }
+            count &= 3;
+            if (count != 0)
+                s += count * T2(lastalpha);
             var xx = (ulong)x * (ulong)x;
             var dx = 4 * (ulong)x - 4;
             while (x >= 1)
@@ -139,14 +141,13 @@ namespace Decompose.Numerics
                     if (mu == 1)
                         s += term;
                     else
-                        s += 4 - term;
+                        s -= term;
                 }
                 xx -= dx;
                 dx -= 8;
                 x -= 2;
             }
-            Debug.Assert((s - 1) % 2 == 0);
-            return (s - 1) / 2;
+            return s & 3;
         }
 
         public int T2(BigInteger n)
