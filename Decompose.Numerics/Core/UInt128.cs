@@ -600,30 +600,28 @@ namespace Decompose.Numerics
         {
             if (s1 != 0 || other < 0)
                 return 1;
-            return ((uint)this).CompareTo((uint)other);
+            return r0.CompareTo((uint)other);
         }
 
         public int CompareTo(uint other)
         {
             if (s1 != 0)
                 return 1;
-            return ((uint)this).CompareTo(other);
+            return r0.CompareTo(other);
         }
 
         public int CompareTo(long other)
         {
             if (s1 != 0 || other < 0)
                 return 1;
-            return ((ulong)this).CompareTo((ulong)other);
+            return s0.CompareTo((ulong)other);
         }
 
         public int CompareTo(ulong other)
         {
             if (s1 != 0)
                 return 1;
-            if (s0 < other)
-                return -1;
-            return (int)(s0 - other);
+            return s0.CompareTo(other);
         }
 
         public bool Equals(UInt128 other)

@@ -49,7 +49,7 @@ namespace Decompose.Numerics
 #if true
             var xmax = ((long)IntegerMath.FloorSquareRoot(n) - 1) | 1;
 #else
-            var dmax = IntegerMath.FloorPower(n, 2, 7);
+            var xmax = ((long)IntegerMath.FloorPower(n, 2, 7) - 1) | 1;
 #endif
             var s = 0;
             var t = (long)0;
