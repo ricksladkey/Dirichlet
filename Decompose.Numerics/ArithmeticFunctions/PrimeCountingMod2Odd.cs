@@ -9,7 +9,7 @@ namespace Decompose.Numerics
     public class PrimeCountingMod2Odd
     {
         private int threads;
-        private MobiusCollection mobius;
+        private sbyte[] mobius;
         private DivisionFreeDivisorSummatoryFunction[] hyperbolicSum;
 
         public PrimeCountingMod2Odd(int threads)
@@ -23,9 +23,10 @@ namespace Decompose.Numerics
 
         public int Evaluate(BigInteger n)
         {
-            var jmax = IntegerMath.FloorLog(n, 2);
-            var dmax = IntegerMath.FloorRoot(n, 2);
-            mobius = new MobiusCollection((int)(IntegerMath.Max(jmax, dmax) + 1), 0);
+            var xmax = (long)IntegerMath.FloorRoot(n, 2);
+            var range = new MobiusOddRange(xmax + 1, 0);
+            mobius = new sbyte[(xmax + 1) >> 1];
+            range.GetValues(1, xmax + 1, mobius);
             return Pi2(n);
         }
 
@@ -35,8 +36,9 @@ namespace Decompose.Numerics
             var sum = 0;
             for (var k = 1; k <= kmax; k++)
             {
-                if (mobius[k] != 0)
-                    sum += mobius[k] * F2(IntegerMath.FloorRoot(n, k));
+                var mu = IntegerMath.Mobius(k);
+                if (mu != 0)
+                    sum += mu * F2(IntegerMath.FloorRoot(n, k));
             }
             return (sum + (n >= 2 ? 1 : 0)) % 2;
         }
@@ -103,7 +105,7 @@ namespace Decompose.Numerics
                 Debug.Assert(gamma == 2 * beta - (BigInteger)(x - 2) * delta);
                 Debug.Assert(alpha == n / ((BigInteger)x * x));
 
-                var mu = mobius[(int)x];
+                var mu = mobius[x >> 1];
                 if (mu != 0)
                 {
                     if (alpha != lastalpha)
@@ -129,7 +131,7 @@ namespace Decompose.Numerics
             var dx = 4 * (ulong)x - 4;
             while (x >= 1)
             {
-                var mu = mobius[(int)x];
+                var mu = mobius[x >> 1];
                 Debug.Assert(xx == (ulong)x * (ulong)x);
                 if (mu != 0)
                 {
