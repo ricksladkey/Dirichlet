@@ -10,32 +10,29 @@ namespace Decompose.Numerics
     {
         private int threads;
         private MobiusCollection mobius;
-        private Dictionary<BigInteger, BigInteger> t2Map;
         private DivisionFreeDivisorSummatoryFunction[] hyperbolicSum;
 
         public PrimeCountingMod2Odd(int threads)
         {
             this.threads = threads;
-            t2Map = new Dictionary<BigInteger, BigInteger>();
             var count = Math.Max(threads, 1);
             hyperbolicSum = new DivisionFreeDivisorSummatoryFunction[count];
             for (var i = 0; i < count; i++)
                 hyperbolicSum[i] = new DivisionFreeDivisorSummatoryFunction(0, false, true);
         }
 
-        public BigInteger Evaluate(BigInteger n)
+        public int Evaluate(BigInteger n)
         {
-            t2Map.Clear();
             var jmax = IntegerMath.FloorLog(n, 2);
             var dmax = IntegerMath.FloorRoot(n, 2);
             mobius = new MobiusCollection((int)(IntegerMath.Max(jmax, dmax) + 1), 0);
             return Pi2(n);
         }
 
-        public BigInteger Pi2(BigInteger n)
+        private int Pi2(BigInteger n)
         {
             var kmax = (int)IntegerMath.FloorLog(n, 2);
-            var sum = (BigInteger)0;
+            var sum = 0;
             for (var k = 1; k <= kmax; k++)
             {
                 if (mobius[k] != 0)
@@ -44,7 +41,7 @@ namespace Decompose.Numerics
             return (sum + (n >= 2 ? 1 : 0)) % 2;
         }
 
-        public BigInteger F2(BigInteger n)
+        private int F2(BigInteger n)
         {
 #if true
             var xmax = ((long)IntegerMath.FloorSquareRoot(n) - 1) | 1;
@@ -52,7 +49,6 @@ namespace Decompose.Numerics
             var xmax = ((long)IntegerMath.FloorPower(n, 2, 7) - 1) | 1;
 #endif
             var s = 0;
-            var t = (long)0;
             var x = xmax;
             var beta = (long)(n / (x + 2));
             var eps = (long)(n % (x + 2));
@@ -156,12 +152,15 @@ namespace Decompose.Numerics
 
         private int S1(BigInteger n, long x1, long x2)
         {
+            if (n <= long.MaxValue)
+                return S1((long)n, (int)x1, (int)x2);
+
             var s = (long)0;
             var x = (x2 - 1) | 1;
             var beta = (long)(n / (x + 2));
             var eps = (long)(n % (x + 2));
             var delta = (long)(n / x - beta);
-            var gamma = 2 * (long)beta - x * delta;
+            var gamma = 2 * beta - x * delta;
             while (x >= x1)
             {
                 eps += gamma;
@@ -201,6 +200,58 @@ namespace Decompose.Numerics
             while (x >= x1)
             {
                 beta = (long)((nRep / (ulong)x) & 3);
+                s += beta + (beta & 1);
+                x -= 2;
+            }
+            return (int)((s >> 1) & 1);
+        }
+
+        private int S1(long n, int x1, int x2)
+        {
+            var s = (int)0;
+            var x = (x2 - 1) | 1;
+            var beta = (int)(n / (x + 2));
+            var eps = (int)(n % (x + 2));
+            var delta = (int)(n / x - beta);
+            var gamma = 2 * beta - x * delta;
+            while (x >= x1)
+            {
+                eps += gamma;
+                if (eps >= x)
+                {
+                    ++delta;
+                    gamma -= x;
+                    eps -= x;
+                    if (eps >= x)
+                    {
+                        ++delta;
+                        gamma -= x;
+                        eps -= x;
+                        if (eps >= x)
+                            break;
+                    }
+                }
+                else if (eps < 0)
+                {
+                    --delta;
+                    gamma += x;
+                    eps += x;
+                }
+                gamma += 4 * delta;
+                beta += delta;
+                beta &= 3;
+
+                Debug.Assert(eps == n % x);
+                Debug.Assert(beta == ((n / x) & 3));
+                Debug.Assert(delta == (n / x) - n / (x + 2));
+                Debug.Assert(gamma == 2 * (n / x) - (BigInteger)(x - 2) * delta);
+
+                s += beta + (beta & 1);
+                x -= 2;
+            }
+            while (x >= x1)
+            {
+                beta = (int)((n / x) & 3);
                 s += beta + (beta & 1);
                 x -= 2;
             }
