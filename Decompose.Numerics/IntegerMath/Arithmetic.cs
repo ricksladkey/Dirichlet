@@ -72,6 +72,13 @@ namespace Decompose.Numerics
             return factors.Length % 2 == 0 ? 1 : -1;
         }
 
+        public static int Mobius(long n)
+        {
+            if (n < int.MaxValue)
+                return Mobius((int)n);
+            throw new NotImplementedException();
+        }
+
         public static int Mobius(BigInteger n)
         {
             if (n < int.MaxValue)
@@ -87,12 +94,26 @@ namespace Decompose.Numerics
             return sum;
         }
 
+        public static int Mertens(long n)
+        {
+            if (n < int.MaxValue)
+                return Mertens((int)n);
+            throw new NotImplementedException();
+        }
+
         public static int MertensOdd(int n)
         {
             var sum = 0;
             for (var i = 1; i <= n; i += 2)
                 sum += Mobius(i);
             return sum;
+        }
+
+        public static int MertensOdd(long n)
+        {
+            if (n < int.MaxValue)
+                return MertensOdd((int)n);
+            throw new NotImplementedException();
         }
 
         public static BigInteger Mertens(BigInteger n)

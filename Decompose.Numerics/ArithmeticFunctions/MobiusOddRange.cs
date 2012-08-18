@@ -11,12 +11,14 @@ namespace Decompose.Numerics
         private class Data
         {
             public long[] Products;
+            public sbyte[] Values;
             public int[] Offsets;
             public long[] OffsetsSquared;
 
             public Data(int length)
             {
                 Products = new long[blockSize];
+                Values = new sbyte[blockSize];
                 Offsets = new int[length];
                 OffsetsSquared = new long[length];
             }
@@ -61,15 +63,11 @@ namespace Decompose.Numerics
             // validate range.
             Debug.Assert(kmin % 2 == 1 && kmax % 2 == 1);
 
-            // Determine the number of primes appropriate for values up to kmax.
-            var plimit = (int)Math.Ceiling(Math.Sqrt(kmax));
-            var pmax = primes.Length;
-            while (pmax > 0 && primes[pmax - 1] > plimit)
-                --pmax;
+            var pmax = GetPMax(kmax);
 
             if (threads == 0)
             {
-                ProcessRange(pmax, kmin, kmax, values, offset, sums, m0);
+                ProcessRange(pmax, kmin, kmax, values, offset, sums, m0, null);
                 if (values != null && kmin <= 1)
                     values[1 - kmin] = 1;
                 return;
@@ -83,11 +81,9 @@ namespace Decompose.Numerics
             {
                 var kstart = (long)thread * batchSize + kmin;
                 var kend = Math.Min(kstart + batchSize, kmax);
-                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(pmax, kstart, kend, values, offset, sums, m0));
+                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(pmax, kstart, kend, values, offset, sums, m0, null));
             }
             Task.WaitAll(tasks);
-            if (values != null && kmin <= 1)
-                values[1 - kmin] = 1;
 
             if (sums == null)
                 return;
@@ -97,9 +93,9 @@ namespace Decompose.Numerics
             mabs[0] = 0;
             for (var thread = 1; thread < threads; thread++)
             {
-                var kstart = (long)thread * batchSize + kmin;
-                if (kstart < kmax)
-                    mabs[thread] = mabs[thread - 1] + sums[((kstart - kmin) >> 1) - 1] - m0;
+                var last = (long)thread * batchSize - 2;
+                if (last < (sums.Length << 1))
+                    mabs[thread] = mabs[thread - 1] + sums[last >> 1] - m0;
             }
 
             // Convert relative Mertens function values into absolute Mertens values.
@@ -113,6 +109,21 @@ namespace Decompose.Numerics
             Task.WaitAll(tasks);
         }
 
+        public void GetValues(long kmin, long kmax, long m0, Action<long, long, sbyte[]> action)
+        {
+            ProcessRange(GetPMax(kmax), kmin, kmax, null, -1, null, m0, action);
+        }
+
+        private int GetPMax(long kmax)
+        {
+            // Determine the number of primes appropriate for values up to kmax.
+            var plimit = (int)Math.Ceiling(Math.Sqrt(kmax));
+            var pmax = primes.Length;
+            while (pmax > 0 && primes[pmax - 1] > plimit)
+                --pmax;
+            return pmax;
+        }
+
         private void BumpRange(long abs, long kstart, long kend, long offset, long[] sums)
         {
             var klo = (int)(kstart - offset) >> 1;
@@ -123,7 +134,7 @@ namespace Decompose.Numerics
 
         private void CreateCycle()
         {
-            // Create pre-sieved cycle of the squares of small primes.
+            // Create pre-sieved product and value cycles of small primes and their squares.
             var dmax = 3;
             cycleLimit = Math.Min(primes.Length, dmax);
             cycleSize = 1;
@@ -147,7 +158,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private void ProcessRange(int pmax, long kstart, long kend, sbyte[] values, long kmin, long[] sums, long m0)
+        private void ProcessRange(int pmax, long kstart, long kend, sbyte[] values, long kmin, long[] sums, long m0, Action<long, long, sbyte[]> action)
         {
             // Acquire resources.
             Data data;
@@ -156,6 +167,8 @@ namespace Decompose.Numerics
             var products = data.Products;
             var offsets = data.Offsets;
             var offsetsSquared = data.OffsetsSquared;
+            if (action != null)
+                values = data.Values;
 
             // Determine the initial cycle offset.
             var cycleOffset = cycleSize - (int)((kstart >> 1) % cycleSize);
@@ -164,7 +177,7 @@ namespace Decompose.Numerics
             offsets[0] = cycleOffset;
 
             // Determine the initial offset and offset squared of each prime divisor.
-            for (var i = cycleLimit; i < pmax; i++)
+            for (var i = 1; i < pmax; i++)
             {
                 var p = primes[i];
                 var offset = p - (int)(((kstart + p) >> 1) % p);
@@ -183,8 +196,13 @@ namespace Decompose.Numerics
             for (var k = kstart; k < kend; k += blockSize)
             {
                 var length = (int)Math.Min(blockSize, kend - k) >> 1;
+                var offset = kmin == -1 ? k : kmin;
                 SieveBlock(pmax, k, length, products, offsets, offsetsSquared);
-                m0 = AddValues(k, length, products, values, kmin, sums, m0);
+                m0 = AddValues(k, length, products, values, offset, sums, m0);
+
+                // Perform action, if any.
+                if (action != null)
+                    action(k, k + length, values);
             }
 
             // Release resources.
