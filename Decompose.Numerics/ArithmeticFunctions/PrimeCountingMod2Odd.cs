@@ -11,12 +11,15 @@ namespace Decompose.Numerics
         private static int maximumBatchSize = 1 << 24;
         private const long C1 = 1;
         private const long C2 = 1;
+        private const long C3 = 1;
+        private const long C4 = 1;
 
         private int threads;
         private BigInteger n;
         private long sqrtn;
         private long kmax;
         private long imax;
+        private long xmed;
         private long xmax;
         private MobiusOddRange mobius;
         private long[] xi;
@@ -44,6 +47,7 @@ namespace Decompose.Numerics
             kmax = (int)IntegerMath.FloorLog(n, 2);
             imax = (long)IntegerMath.FloorPower(n, 1, 5) * C1 / C2;
             xmax = DownToOdd(imax != 0 ? Xi(imax) : sqrtn);
+            xmed = DownToOdd(Math.Min((long)(IntegerMath.FloorPower(n, 2, 7) * C3 / C4), xmax));
             mobius = new MobiusOddRange(xmax + 1, threads);
             xi = new long[imax + 1];
             mx = new long[imax + 1];
@@ -52,21 +56,33 @@ namespace Decompose.Numerics
             for (var i = 1; i <= imax; i++)
                 xi[i] = Xi(i);
 
-            // Process ranges of Mobius values.
             values = new sbyte[maximumBatchSize >> 1];
             m = new long[maximumBatchSize >> 1];
             m0 = (long)0;
-            for (var x = (long)1; x <= xmax; x += maximumBatchSize)
+
+            // Process small values.
+            for (var x = (long)1; x <= xmed; x += maximumBatchSize)
             {
                 var xfirst = x;
-                var xlast = Math.Min(xmax, xfirst + maximumBatchSize - 1);
+                var xlast = Math.Min(xmed, xfirst + maximumBatchSize - 2);
                 mobius.GetValues(xfirst, xlast + 2, values, xfirst, m, m0);
                 sum += Pi2(xfirst, xlast);
                 UpdateMx(xfirst, xlast, 1, 1);
                 m0 = m[(xlast - xfirst) >> 1];
             }
 
-            // Evaluate the tail.
+            // Process medium values.
+            for (var x = xmed + 2; x <= xmax; x += maximumBatchSize)
+            {
+                var xfirst = x;
+                var xlast = Math.Min(xmax, xfirst + maximumBatchSize - 2);
+                mobius.GetValues(xfirst, xlast + 2, values, xfirst, m, m0);
+                sum += Pi2(xfirst, xlast);
+                UpdateMx(xfirst, xlast, 1, 1);
+                m0 = m[(xlast - xfirst) >> 1];
+            }
+
+            // Process large values.
             sum += EvaluateTail();
 
             // Adjust for final parity of F2.
@@ -335,14 +351,14 @@ namespace Decompose.Numerics
                 var sqrt = IntegerMath.FloorSquareRoot(x);
                 var s = (long)0;
 
-                var jmin = UpToOdd(Math.Max(3, x / (x2 + 1) + 1));
+                var jmin = UpToOdd(Math.Max(3, x / (x2 + 2) + 1));
                 var jmax = DownToOdd(Math.Min(sqrt, x / x1));
                 s += JSum(x, jmin, ref jmax, x1);
                 for (var j = jmin; j <= jmax; j += 2)
                     s += m[(x / j - x1) >> 1];
 
                 var kmin = Math.Max(1, x1);
-                var kmax = Math.Min(x / sqrt - 1, x2);
+                var kmax = Math.Min(x / sqrt - 1, x2 + 2);
                 s += KSum(x, kmin, ref kmax, x1);
                 var current = T1Odd(x / kmin);
                 for (var k = kmin; k <= kmax; k++)
