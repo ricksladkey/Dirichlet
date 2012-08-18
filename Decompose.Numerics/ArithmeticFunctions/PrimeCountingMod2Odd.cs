@@ -63,6 +63,7 @@ namespace Decompose.Numerics
                 mobius.GetValues(xfirst, xlast + 2, values, xfirst, m, m0);
                 sum += Pi2(xfirst, xlast);
                 UpdateMx(xfirst, xlast, 1, 1);
+                m0 = m[(xlast - xfirst) >> 1];
             }
 
             // Evaluate the tail.
