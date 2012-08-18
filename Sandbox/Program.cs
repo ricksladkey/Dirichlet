@@ -478,7 +478,7 @@ namespace Sandbox
             var algorithm2 = new PrimeCounting(0);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 18; i <= 18; i++)
+            for (var i = 1; i <= 19; i++)
             {
                 var n = IntegerMath.Power((BigInteger)10, i);
                 var p0 = PrimeCounting.PiPowerOfTen(i) % 2;
@@ -501,6 +501,72 @@ namespace Sandbox
                 {
                     Console.WriteLine("mismatch!");
                     break;
+                }
+            }
+#endif
+
+#if false
+            for (var power = 6; power <= 16; power++)
+            {
+                var algorithm = new MertensFunctionOdd(8);
+                Console.WriteLine("{{ {0}, {1} }},", power, algorithm.Evaluate(IntegerMath.Power((long)10, power)));
+            }
+#endif
+
+#if false
+            var n = 1000000;
+            var algorithm = new MobiusOddRange(n + 1, 8);
+            var values = new sbyte[n >> 1];
+            algorithm.GetValues(1, UpToOdd(n), values);
+            for (var i = 1; i <= n; i += 2)
+            {
+                if (values[i >> 1] != IntegerMath.Mobius(i))
+                    Console.WriteLine("values[{0}] = {1}, mu({2}) = {3}", i >> 1, values[i >> 1], i, IntegerMath.Mobius(i));
+            }
+            var m = new long[n >> 1];
+            algorithm.GetValues(1, UpToOdd(n), null, 1, m, 0);
+            var sum = (long)0;
+            for (var i = 1; i <= n; i += 2)
+            {
+                sum += values[i >> 1];
+                if (sum != m[i >> 1])
+                    Console.WriteLine("m[{0}] = {1}, sum(values,1,{2}) = {3}", i >> 1, m[i >> 1], i, sum);
+            }
+#endif
+
+#if false
+            var timer = new Stopwatch();
+            var n = DownToOdd(IntegerMath.Power(10, 8));
+            var algorithm1 = new MobiusOddRange(n, 0);
+            var m1 = new long[(n + 2) >> 1];
+            timer.Restart();
+            algorithm1.GetValues(1, n + 2, null, 1, m1, 0);
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            var sum1 = m1[n >> 1];
+            var algorithm2 = new MobiusRange(n, 0);
+            var m2 = new long[n + 1];
+            timer.Restart();
+            algorithm2.GetValues(1, n + 1, null, 1, m2, 0);
+            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            var sum2 = m2[n - 1];
+            Console.WriteLine("n = {0}, sum1 = {1}, sum2 = {2}", n, sum1, sum2);
+#endif
+
+#if false
+            var n = IntegerMath.Power(10, 5);
+            var algorithm1 = new DivisorRange(n, 0);
+            var algorithm2 = new DivisionFreeDivisorSummatoryFunction(0, false, true);
+            var values = new int[n];
+            algorithm1.GetValues(1, n + 1, values);
+            for (var i = 1; i <= n; i += 2)
+            {
+                var sum = 0;
+                for (var j = 1; j <= i; j += 2)
+                    sum += values[j - 1];
+                if (sum != algorithm2.Evaluate(i))
+                {
+                    Debugger.Break();
+                    Console.WriteLine();
                 }
             }
 #endif
@@ -771,45 +837,6 @@ namespace Sandbox
                 for (var m = 1; m <= sqrt; m++)
                     sum2 -= n / m % 2 * IntegerMath.Mobius(m);
                 Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", power, sum1, sum2);
-            }
-#endif
-
-#if false
-            var timer = new Stopwatch();
-            var n = DownToOdd(IntegerMath.Power(10, 8));
-            var algorithm1 = new MobiusOddRange(n, 0);
-            var m1 = new long[(n + 2) >> 1];
-            timer.Restart();
-            algorithm1.GetValues(1, n + 2, null, 1, m1, 0);
-            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-            var sum1 = m1[n >> 1];
-            var algorithm2 = new MobiusRange(n, 0);
-            var m2 = new long[n + 1];
-            timer.Restart();
-            algorithm2.GetValues(1, n + 1, null, 1, m2, 0);
-            output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-            var sum2 = m2[n - 1];
-            Console.WriteLine("n = {0}, sum1 = {1}, sum2 = {2}", n, sum1, sum2);
-#endif
-
-#if false
-            var n = 1000000;
-            var algorithm = new MobiusOddRange(n + 1, 8);
-            var values = new sbyte[n >> 1];
-            algorithm.GetValues(1, UpToOdd(n), values);
-            for (var i = 1; i <= n; i += 2)
-            {
-                if (values[i >> 1] != IntegerMath.Mobius(i))
-                    Console.WriteLine("values[{0}] = {1}, mu({2}) = {3}", i >> 1, values[i >> 1], i, IntegerMath.Mobius(i));
-            }
-            var m = new long[n >> 1];
-            algorithm.GetValues(1, UpToOdd(n), null, 1, m, 0);
-            var sum = (long)0;
-            for (var i = 1; i <= n; i += 2)
-            {
-                sum += values[i >> 1];
-                if (sum != m[i >> 1])
-                    Console.WriteLine("m[{0}] = {1}, sum(values,1,{2}) = {3}", i >> 1, m[i >> 1], i, sum);
             }
 #endif
 
