@@ -968,7 +968,7 @@ namespace Decompose.Numerics.Test
             {
                 var n = 1 << 10;
                 var mobius = new MobiusRange(n, threads);
-                var batchSize = 10;
+                var batchSize = 100;
                 var values = new sbyte[batchSize];
                 for (var k = 1; k < mobius.Size; k += batchSize)
                 {
@@ -1040,7 +1040,7 @@ namespace Decompose.Numerics.Test
             {
                 var n = 1 << 10;
                 var mobius = new MobiusOddRange(n, threads);
-                var batchSize = 10;
+                var batchSize = 100;
                 var values = new sbyte[batchSize >> 1];
                 for (var k = 1; k < n; k += batchSize)
                 {
@@ -1111,12 +1111,74 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void DivisorsTest1()
+        public void DivisorTest1()
         {
             var n = 1 << 10;
             var divisors = new DivisorsCollection(n);
             for (int i = 1; i < n; i++)
                 Assert.AreEqual(IntegerMath.NumberOfDivisors(i), divisors[i]);
+        }
+
+        [TestMethod]
+        public void DivisorTest2()
+        {
+            for (var threads = 0; threads < 4; threads++)
+            {
+                var n = 1 << 10;
+                var divisors = new DivisorRange(n, threads);
+                var values = new int[n];
+                divisors.GetValues(1, n, values);
+                for (int i = 1; i < n; i += 2)
+                    Assert.AreEqual(IntegerMath.NumberOfDivisors(i), values[i - 1]);
+            }
+        }
+
+        [TestMethod]
+        public void DivisorTest3()
+        {
+            for (var threads = 0; threads < 4; threads++)
+            {
+                var n = 1 << 10;
+                var divisors = new DivisorRange(n, threads);
+                var batchSize = 100;
+                var values = new int[batchSize];
+                for (var k = 1; k < n; k += batchSize)
+                {
+                    var kmin = k;
+                    var kmax = Math.Min(kmin + batchSize, n + 1);
+                    divisors.GetValues(k, kmax, values);
+                    var length = kmax - kmin;
+                    for (int i = 0; i < length; i++)
+                        Assert.AreEqual(IntegerMath.NumberOfDivisors(i + kmin), values[i]);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void DivisorTest4()
+        {
+            for (var threads = 0; threads < 4; threads++)
+            {
+                var n = 1 << 10;
+                var divisors = new DivisorRange(n, threads);
+                var batchSize = 100;
+                var values = new int[batchSize];
+                var sums = new long[batchSize];
+                var sum0 = (long)0;
+                for (var k = 1; k < n; k += batchSize)
+                {
+                    var kmin = k;
+                    var kmax = Math.Min(kmin + batchSize, n + 1);
+                    divisors.GetValues(k, kmax, values, kmin, sums, sum0);
+                    var length = kmax - kmin;
+                    for (int i = 0; i < length; i++)
+                    {
+                        Assert.AreEqual(IntegerMath.NumberOfDivisors(i + kmin), values[i]);
+                        Assert.AreEqual(IntegerMath.SumOfNumberOfDivisors(i + kmin), sums[i]);
+                    }
+                    sum0 = sums[kmax - 1 - kmin];
+                }
+            }
         }
     }
 }

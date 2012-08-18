@@ -9,6 +9,7 @@ namespace Decompose.Numerics
     public class PrimeCountingMod2Odd
     {
         private static int maximumBatchSize = 1 << 24;
+        private const long nMaxSimple = (long)1 << 50;
         private const long C1 = 1;
         private const long C2 = 1;
         private const long C3 = 1;
@@ -22,11 +23,17 @@ namespace Decompose.Numerics
         private long xmed;
         private long xmax;
         private MobiusOddRange mobius;
+        private DivisorRange divisor;
         private long[] xi;
         private long[] mx;
         private long m0;
         private sbyte[] values;
         private long[] m;
+        private bool sieveDivisors;
+        private long d1;
+        private long d2;
+        private int[] d;
+        private long[] dsum;
 
         private IDivisorSummatoryFunction<BigInteger>[] hyperbolicSum;
 
@@ -48,7 +55,8 @@ namespace Decompose.Numerics
             imax = (long)IntegerMath.FloorPower(n, 1, 5) * C1 / C2;
             xmax = DownToOdd(imax != 0 ? Xi(imax) : sqrtn);
             xmed = DownToOdd(Math.Min((long)(IntegerMath.FloorPower(n, 2, 7) * C3 / C4), xmax));
-            mobius = new MobiusOddRange(xmax + 1, threads);
+            mobius = new MobiusOddRange(xmax + 1, 0);
+            divisor = new DivisorRange(Xi(xmed), 0);
             xi = new long[imax + 1];
             mx = new long[imax + 1];
 
@@ -59,55 +67,48 @@ namespace Decompose.Numerics
             values = new sbyte[maximumBatchSize >> 1];
             m = new long[maximumBatchSize >> 1];
             m0 = (long)0;
+            d = new int[maximumBatchSize];
+            dsum = new long[maximumBatchSize];
 
             // Process small values.
+            sieveDivisors = false;
             for (var x = (long)1; x <= xmed; x += maximumBatchSize)
             {
                 var xfirst = x;
                 var xlast = Math.Min(xmed, xfirst + maximumBatchSize - 2);
                 mobius.GetValues(xfirst, xlast + 2, values, xfirst, m, m0);
-                sum += Pi2(xfirst, xlast);
+                sum += Pi2Small(xfirst, xlast);
                 UpdateMx(xfirst, xlast, 1, 1);
                 m0 = m[(xlast - xfirst) >> 1];
             }
 
             // Process medium values.
+            sieveDivisors = false;
+            d1 = d2 = Xi(xmed) + 1;
             for (var x = xmed + 2; x <= xmax; x += maximumBatchSize)
             {
                 var xfirst = x;
                 var xlast = Math.Min(xmax, xfirst + maximumBatchSize - 2);
                 mobius.GetValues(xfirst, xlast + 2, values, xfirst, m, m0);
-                sum += Pi2(xfirst, xlast);
+                sum += Pi2Medium(xfirst, xlast);
                 UpdateMx(xfirst, xlast, 1, 1);
                 m0 = m[(xlast - xfirst) >> 1];
             }
 
             // Process large values.
-            sum += EvaluateTail();
+            sum += Pi2Large();
 
             // Adjust for final parity of F2.
-            for (var k = 1; k <= kmax; k++)
-                sum -= IntegerMath.Mobius(k);
+            sum -= IntegerMath.Mertens(kmax);
 
             // Compute final result.
             sum &= 3;
+            Debug.Assert((sum & 1) == 0);
             sum >>= 1;
             return (sum + (n >= 2 ? 1 : 0)) % 2;
         }
 
-        private int EvaluateTail()
-        {
-            // Finialize mx.
-            ComputeMx();
-
-            // Compute tail.
-            var s = (BigInteger)0;
-            for (var i = 1; i < imax; i++)
-                s += T2(i) * (mx[i] - mx[i + 1]);
-            return (int)(s & 3);
-        }
-
-        private int Pi2(long x1, long x2)
+        private int Pi2Small(long x1, long x2)
         {
             var s = 0;
             for (var k = 1; k <= kmax; k++)
@@ -117,6 +118,24 @@ namespace Decompose.Numerics
                     s += mu * F2(IntegerMath.FloorRoot(n, k), x1, x2);
             }
             return s;
+        }
+
+        private int Pi2Medium(long x1, long x2)
+        {
+            Debug.Assert(x1 > IntegerMath.FloorRoot(n, 4));
+            return F2(n, x1, x2);
+        }
+
+        private int Pi2Large()
+        {
+            // Finialize mx.
+            ComputeMx();
+
+            // Compute tail.
+            var s = (BigInteger)0;
+            for (var i = 1; i < imax; i++)
+                s += T2(i) * (mx[i] - mx[i + 1]);
+            return (int)(s & 3);
         }
 
         private int F2(BigInteger n, long x1, long x2)
@@ -217,13 +236,28 @@ namespace Decompose.Numerics
 
         private int T2(BigInteger n)
         {
+            if (sieveDivisors)
+            {
+                if (n < d1)
+                {
+                    var d1old = d1;
+                    d1 = Math.Max(1, d1old - maximumBatchSize);
+                    d2 = Math.Min(d1 + maximumBatchSize - 1, d1old - 1);
+                    divisor.GetValues(d1, d2 + 1, d, d1, dsum, T2Slow(d1 - 1));
+                }
+                Debug.Assert(dsum[(int)(n - d1)] == new DivisionFreeDivisorSummatoryFunction(0, false, true).Evaluate(n));
+                return (int)(dsum[(int)(n - d1)] & 3);
+            }
+            return T2Slow(n);
+        }
+
+        private int T2Slow(BigInteger n)
+        {
             var sqrt = (long)IntegerMath.FloorSquareRoot(n);
             var result = 2 * S1(n, 1, sqrt) + 3 * (int)(T1Odd(sqrt) & 1);
             Debug.Assert(result % 4 == new DivisionFreeDivisorSummatoryFunction(0, false, true).Evaluate(n) % 4);
             return result;
         }
-
-        private const long nMaxSimple = (long)1 << 50;
 
         private int S1(BigInteger n, long x1, long x2)
         {
