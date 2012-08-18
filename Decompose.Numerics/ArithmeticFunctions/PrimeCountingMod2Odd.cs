@@ -42,9 +42,9 @@ namespace Decompose.Numerics
             var sum = 0;
             sqrtn = (long)IntegerMath.FloorSquareRoot(n);
             kmax = (int)IntegerMath.FloorLog(n, 2);
-            imax = (((long)IntegerMath.FloorRoot(n, 5) * C1 / C2) - 1) | 1;
-            xmax = ((imax != 0 ? Xi(imax) : sqrtn) - 1) | 1;
-            mobius = new MobiusOddRange(sqrtn + 1, threads);
+            imax = (long)IntegerMath.FloorPower(n, 1, 5) * C1 / C2;
+            xmax = DownToOdd(imax != 0 ? Xi(imax) : sqrtn);
+            mobius = new MobiusOddRange(xmax + 1, threads);
             xi = new long[imax + 1];
             mx = new long[imax + 1];
 
@@ -105,8 +105,8 @@ namespace Decompose.Numerics
 
         private int F2(BigInteger n, long x1, long x2)
         {
-            var xmin = Math.Max(1, x1) | 1;
-            var xmax = (Math.Min((long)IntegerMath.FloorSquareRoot(n), x2) - 1) | 1;
+            var xmin = UpToOdd(Math.Max(1, x1));
+            var xmax = DownToOdd(Math.Min((long)IntegerMath.FloorSquareRoot(n), x2));
             var s = 0;
             var x = xmax;
             var beta = (long)(n / (x + 2));
@@ -199,10 +199,10 @@ namespace Decompose.Numerics
             return s & 3;
         }
 
-        public int T2(BigInteger n)
+        private int T2(BigInteger n)
         {
             var sqrt = (long)IntegerMath.FloorSquareRoot(n);
-            var result = 2 * S1(n, 1, sqrt) + 3 * (int)(((sqrt + (sqrt & 1)) >> 1) & 1);
+            var result = 2 * S1(n, 1, sqrt) + 3 * (int)(T1Odd(sqrt) & 1);
             Debug.Assert(result % 4 == new DivisionFreeDivisorSummatoryFunction(0, false, true).Evaluate(n) % 4);
             return result;
         }
@@ -216,7 +216,7 @@ namespace Decompose.Numerics
 
 #if false
             var s = (long)0;
-            var x = (x2 - 1) | 1;
+            var x = DownToOdd(x2);
             var beta = (long)(n / (x + 2));
             var eps = (long)(n % (x + 2));
             var delta = (long)(n / x - beta);
@@ -272,7 +272,7 @@ namespace Decompose.Numerics
         private int S1(long n, int x1, int x2)
         {
             var s = (int)0;
-            var x = (x2 - 1) | 1;
+            var x = (int)DownToOdd(x2);
             var beta = (int)(n / (x + 2));
             var eps = (int)(n % (x + 2));
             var delta = (int)(n / x - beta);
@@ -472,7 +472,7 @@ namespace Decompose.Numerics
 
         private long DownToOdd(long a)
         {
-            return a - (~a & 1);
+            return (a - 1) | 1;
         }
 
         private long T1Odd(long a)
