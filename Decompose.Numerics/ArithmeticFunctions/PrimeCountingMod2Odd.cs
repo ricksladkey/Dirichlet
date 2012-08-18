@@ -133,16 +133,12 @@ namespace Decompose.Numerics
             var dx = 4 * (ulong)x - 4;
             while (x >= 1)
             {
-                var mu = mobius[x >> 1];
                 Debug.Assert(xx == (ulong)x * (ulong)x);
-                if (mu != 0)
-                {
-                    var term = T2(n / xx);
-                    if (mu == 1)
-                        s += term;
-                    else
-                        s -= term;
-                }
+                var mu = mobius[x >> 1];
+                if (mu > 0)
+                    s += T2(n / xx);
+                else if (mu < 0)
+                    s -= T2(n / xx);
                 xx -= dx;
                 dx -= 8;
                 x -= 2;
