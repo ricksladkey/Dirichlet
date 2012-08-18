@@ -8,7 +8,9 @@ namespace Decompose.Numerics
 {
     public class PrimeCountingMod2Odd
     {
+        private static int maximumBatchSize = 1 << 20;
         private int threads;
+        private long kmax;
         private sbyte[] mobius;
         private IDivisorSummatoryFunction<BigInteger>[] hyperbolicSum;
 
@@ -23,22 +25,17 @@ namespace Decompose.Numerics
 
         public int Evaluate(BigInteger n)
         {
+            var sum = 0;
+            kmax = (int)IntegerMath.FloorLog(n, 2);
             var xmax = (long)IntegerMath.FloorRoot(n, 2);
             var range = new MobiusOddRange(xmax + 1, 0);
-            mobius = new sbyte[(xmax + 1) >> 1];
-            range.GetValues(1, xmax + 1, mobius);
-            return Pi2(n);
-        }
-
-        private int Pi2(BigInteger n)
-        {
-            var kmax = (int)IntegerMath.FloorLog(n, 2);
-            var sum = 0;
-            for (var k = 1; k <= kmax; k++)
+            mobius = new sbyte[maximumBatchSize >> 1];
+            for (var x = (long)1; x <= xmax; x += maximumBatchSize)
             {
-                var mu = IntegerMath.Mobius(k);
-                if (mu != 0)
-                    sum += mu * F2(IntegerMath.FloorRoot(n, k));
+                var xfirst = x;
+                var xlast = Math.Min(xmax, xfirst + maximumBatchSize - 1);
+                range.GetValues(xfirst, xlast + 2, mobius);
+                sum += Pi2(n, xfirst, xlast);
             }
             for (var k = 1; k <= kmax; k++)
                 sum -= IntegerMath.Mobius(k);
@@ -47,12 +44,25 @@ namespace Decompose.Numerics
             return (sum + (n >= 2 ? 1 : 0)) % 2;
         }
 
-        private int F2(BigInteger n)
+        private int Pi2(BigInteger n, long x1, long x2)
         {
+            var s = 0;
+            for (var k = 1; k <= kmax; k++)
+            {
+                var mu = IntegerMath.Mobius(k);
+                if (mu != 0)
+                    s += mu * F2(IntegerMath.FloorRoot(n, k), x1, x2);
+            }
+            return s;
+        }
+
+        private int F2(BigInteger n, long x1, long x2)
+        {
+            var xmin = (Math.Max(1, x1) - 1) | 1;
 #if true
-            var xmax = ((long)IntegerMath.FloorSquareRoot(n) - 1) | 1;
+            var xmax = (Math.Min((long)IntegerMath.FloorSquareRoot(n), x2) - 1) | 1;
 #else
-            var xmax = ((long)IntegerMath.FloorPower(n, 2, 7) - 1) | 1;
+            var xmax = long)IntegerMath.FloorPower(n, 2, 7);
 #endif
             var s = 0;
             var x = xmax;
@@ -64,7 +74,7 @@ namespace Decompose.Numerics
             var alphax = (alpha + 1) * (x + 2);
             var lastalpha = (long)-1;
             var count = 0;
-            while (x >= 1)
+            while (x >= xmin)
             {
                 eps += gamma;
                 if (eps >= x)
@@ -109,7 +119,7 @@ namespace Decompose.Numerics
                 Debug.Assert(gamma == 2 * beta - (BigInteger)(x - 2) * delta);
                 Debug.Assert(alpha == n / ((BigInteger)x * x));
 
-                var mu = mobius[x >> 1];
+                var mu = mobius[(x - x1) >> 1];
                 if (mu != 0)
                 {
                     if (alpha != lastalpha)
@@ -131,10 +141,10 @@ namespace Decompose.Numerics
                 s += count * T2(lastalpha);
             var xx = (ulong)x * (ulong)x;
             var dx = 4 * (ulong)x - 4;
-            while (x >= 1)
+            while (x >= xmin)
             {
                 Debug.Assert(xx == (ulong)x * (ulong)x);
-                var mu = mobius[x >> 1];
+                var mu = mobius[(x - x1) >> 1];
                 if (mu > 0)
                     s += T2(n / xx);
                 else if (mu < 0)
