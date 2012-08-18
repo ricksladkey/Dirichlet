@@ -219,7 +219,6 @@ namespace Decompose.Numerics
             return x1 - 1;
         }
 
-
         private long Xi(long i)
         {
             return (long)IntegerMath.FloorSquareRoot(n / i);

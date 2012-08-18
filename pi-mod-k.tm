@@ -55,6 +55,11 @@
     2|)>,<space|1em>n\<geq\>2>>>>
   </eqnarray*>
 
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|x<rsub|max>\<less\>d\<leq\><sqrt|n>,d
+    odd>\<mu\><around*|(|d|)>*T<rsub|2,odd><around*|(|<around*|\<lfloor\>|<frac|n<rsup|>|d<rsup|2>>|\<rfloor\>>|)>>|<cell|=>|<cell|<big|sum><rsub|1\<leq\>i\<leq\>i<rsub|max>>T<rsub|2,odd><around*|(|i|)>*<around*|(|M<rsub|odd><around*|(|<sqrt|<frac|n|i>>|)>-M<rsub|odd><around*|(|<sqrt|<frac|n|i+1>>|)>|)>>>>>
+  </eqnarray*>
+
   Formulas for <math|T<rsub|2,odd><around*|(|n|)>> for successive
   approximation algorithm
 
