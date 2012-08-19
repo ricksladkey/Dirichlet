@@ -253,53 +253,65 @@ namespace Decompose.Numerics
             if (0 < cycleLimit)
             {
                 // Handle multiples of 2^2.
-                int k;
-                for (k = (int)offsetsSquared[0]; k < length; k += 4)
+                const int i = 0;
+                const int p = 2;
+                const int pSquared = p * p;
+                int kk;
+                for (kk = (int)offsetsSquared[i]; kk < length; kk += pSquared)
                 {
-                    var quotient = (k + k0) >> 2;
+                    Debug.Assert((k0 + kk) % pSquared == 0);
+                    var quotient = (k0 + kk) / pSquared;
                     int exponent;
-                    for (exponent = 2; (quotient & 1) == 0; exponent++)
+                    for (exponent = 2; quotient % p == 0; exponent++)
                     {
-                        products[k] <<= 1;
-                        quotient >>= 1;
+                        products[kk] *= p;
+                        quotient /= p;
                     }
-                    values[k + koffset] = values[k + koffset] / 3 * (exponent + 1);
+                    values[kk + koffset] = values[kk + koffset] / 3 * (exponent + 1);
                 }
-                offsetsSquared[0] = k - length;
+                offsetsSquared[i] = kk - length;
             }
             if (1 < cycleLimit)
             {
                 // Handle multiples of 3^2.
-                int k;
-                for (k = (int)offsetsSquared[1]; k < length; k += 9)
+                const int i = 1;
+                const int p = 3;
+                const int pSquared = p * p;
+                int kk;
+                for (kk = (int)offsetsSquared[i]; kk < length; kk += pSquared)
                 {
-                    var quotient = (k + k0) / 9;
+                    Debug.Assert((k0 + kk) % pSquared == 0);
+                    var quotient = (k0 + kk) / pSquared;
                     int exponent;
-                    for (exponent = 2; quotient % 3 == 0; exponent++)
+                    for (exponent = 2; quotient % p == 0; exponent++)
                     {
-                        products[k] *= 3;
-                        quotient /= 3;
+                        products[kk] *= p;
+                        quotient /= p;
                     }
-                    values[k + koffset] = values[k + koffset] / 3 * (exponent + 1);
+                    values[kk + koffset] = values[kk + koffset] / 3 * (exponent + 1);
                 }
-                offsetsSquared[1] = k - length;
+                offsetsSquared[i] = kk - length;
             }
             if (2 < cycleLimit)
             {
                 // Handle multiples of 5^2.
-                int k;
-                for (k = (int)offsetsSquared[2]; k < length; k += 25)
+                const int i = 2;
+                const int p = 5;
+                const int pSquared = p * p;
+                int kk;
+                for (kk = (int)offsetsSquared[i]; kk < length; kk += pSquared)
                 {
-                    var quotient = (k + k0) / 25;
+                    Debug.Assert((k0 + kk) % pSquared == 0);
+                    var quotient = (k0 + kk) / pSquared;
                     int exponent;
-                    for (exponent = 2; quotient % 5 == 0; exponent++)
+                    for (exponent = 2; quotient % p == 0; exponent++)
                     {
-                        products[k] *= 5;
-                        quotient /= 5;
+                        products[kk] *= p;
+                        quotient /= p;
                     }
-                    values[k + koffset] = values[k + koffset] / 3 * (exponent + 1);
+                    values[kk + koffset] = values[kk + koffset] / 3 * (exponent + 1);
                 }
-                offsetsSquared[2] = k - length;
+                offsetsSquared[i] = kk - length;
             }
 
             // Sieve remaining primes.
@@ -324,7 +336,7 @@ namespace Decompose.Numerics
                     do
                     {
                         products[kk] *= p;
-                        var quotient = (kk + k0) / pSquared;
+                        var quotient = (k0 + kk) / pSquared;
                         int exponent;
                         for (exponent = 2; quotient % p == 0; exponent++)
                         {
