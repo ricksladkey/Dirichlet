@@ -35,7 +35,7 @@ namespace Decompose.Numerics
             u = Math.Max((long)IntegerMath.FloorPower((BigInteger)nmax, 2, 3) * C1 / C2, IntegerMath.CeilingSquareRoot(nmax));
             ulo = Math.Min(u, maximumBatchSize);
             mlo = new long[ulo];
-            mobius.GetValues(1, ulo + 1, null, 1, mlo, 0);
+            mobius.GetSums(1, ulo + 1, mlo, 0);
         }
 
         public long Evaluate(long n)
@@ -55,9 +55,8 @@ namespace Decompose.Numerics
                 {
                     var xstart = x;
                     var xend = Math.Min(xstart + maximumBatchSize - 1, u);
-                    mobius.GetValues(xstart, xend + 1, null, xstart, mhi, m0);
+                    m0 = mobius.GetSums(xstart, xend + 1, mhi, m0);
                     ProcessBatch(mx, n, imax, mhi, xstart, xend);
-                    m0 = mhi[xend - xstart];
                 }
             }
             ComputeMx(mx, imax);

@@ -43,7 +43,7 @@ namespace Decompose.Numerics
             ulo = Math.Max(Math.Min(u, maximumBatchSize), minimumLowSize);
             mlo = new long[ulo];
             values = new sbyte[ulo];
-            mobius.GetValues(1, ulo + 1, values, 1, mlo, 0);
+            mobius.GetValuesAndSums(1, ulo + 1, values, mlo, 0);
         }
 
         public long Evaluate(long n)
@@ -64,9 +64,8 @@ namespace Decompose.Numerics
                 {
                     var xstart = x;
                     var xend = Math.Min(xstart + maximumBatchSize - 1, u);
-                    mobius.GetValues(xstart, xend + 1, null, xstart, mhi, m0);
+                    m0 = mobius.GetSums(xstart, xend + 1, mhi, m0);
                     ProcessBatch(mx, n, imax, mhi, xstart, xend);
-                    m0 = mhi[xend - xstart];
                 }
             }
             return ComputeMx(mx, imax);

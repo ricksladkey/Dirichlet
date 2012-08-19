@@ -108,8 +108,7 @@ namespace Decompose.Numerics
             {
                 mobius = new MobiusRange(n + 1, threads);
                 m = new long[n];
-                mobius.GetValues(1, n + 1, null, 1, m, 0);
-                return m[n - 1];
+                return mobius.GetSums(1, n + 1, m, 0);
             }
 
             imax = (int)(n / u);
@@ -160,8 +159,7 @@ namespace Decompose.Numerics
             {
                 var xstart = x;
                 var xend = Math.Min(xstart + maximumBatchSize - 1, u);
-                mobius.GetValues(xstart, xend + 1, null, xstart, m, m0);
-                m0 = m[xend - xstart];
+                m0 = mobius.GetSums(xstart, xend + 1, m, m0);
                 ProcessBatch(xstart, xend);
             }
             ComputeMx();

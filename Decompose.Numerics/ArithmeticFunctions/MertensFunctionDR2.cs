@@ -51,8 +51,7 @@ namespace Decompose.Numerics
             {
                 var xstart = x;
                 var xend = Math.Min(xstart + maximumBatchSize - 2, u);
-                mobiusOdd.GetValues(xstart, xend + 2, null, xstart, m, m0);
-                m0 = m[(xend - xstart) >> 1];
+                m0 = mobiusOdd.GetSums(xstart, xend + 2, m, m0);
                 ProcessBatch(xstart, xend);
             }
             return mi1 - mi2 - sum;

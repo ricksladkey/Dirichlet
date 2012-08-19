@@ -1065,6 +1065,7 @@ namespace Decompose.Numerics.Test
             { 12, 114106 },
             { 13, 191811 },
             { 14, -849354 },
+            { 15, -5196 },
         };
 
         [TestMethod]
@@ -1103,8 +1104,26 @@ namespace Decompose.Numerics.Test
                 for (var kmin = (long)1; kmin < n; kmin += batchSize)
                 {
                     var kmax = Math.Min(kmin + batchSize, mobius.Size);
-                    mobius.GetValues(kmin, kmax | 1, values, kmin, sums, m0);
-                    m0 = sums[((kmax | 1) - 2 - kmin) >> 1];
+                    m0 = mobius.GetValuesAndSums(kmin, kmax | 1, values, sums, m0);
+                }
+                Assert.AreEqual(m0, mertensOddData[j]);
+            }
+        }
+
+        [TestMethod]
+        public void MobiusTest9()
+        {
+            for (var j = 6; j <= 8; j++)
+            {
+                var n = IntegerMath.Power((long)10, j);
+                var mobius = new MobiusOddRange(n + 1, 8);
+                var batchSize = 1 << 16;
+                var sums = new long[batchSize >> 1];
+                var m0 = (long)0;
+                for (var kmin = (long)1; kmin < n; kmin += batchSize)
+                {
+                    var kmax = Math.Min(kmin + batchSize, mobius.Size);
+                    m0 = mobius.GetSums(kmin, kmax | 1, sums, m0);
                 }
                 Assert.AreEqual(m0, mertensOddData[j]);
             }
@@ -1169,14 +1188,36 @@ namespace Decompose.Numerics.Test
                 {
                     var kmin = k;
                     var kmax = Math.Min(kmin + batchSize, n + 1);
-                    divisors.GetValues(k, kmax, values, kmin, sums, sum0);
+                    sum0 = divisors.GetValuesAndSums(kmin, kmax, values, sums, sum0);
                     var length = kmax - kmin;
                     for (int i = 0; i < length; i++)
                     {
                         Assert.AreEqual(IntegerMath.NumberOfDivisors(i + kmin), values[i]);
                         Assert.AreEqual(IntegerMath.SumOfNumberOfDivisors(i + kmin), sums[i]);
                     }
-                    sum0 = sums[kmax - 1 - kmin];
+                }
+            }
+        }
+
+        [TestMethod]
+        public void DivisorTest5()
+        {
+            for (var threads = 0; threads < 4; threads++)
+            {
+                var n = 1 << 10;
+                var divisors = new DivisorRange(n, threads);
+                var batchSize = 100;
+                var values = new int[batchSize];
+                var sums = new long[batchSize];
+                var sum0 = (long)0;
+                for (var k = 1; k < n; k += batchSize)
+                {
+                    var kmin = k;
+                    var kmax = Math.Min(kmin + batchSize, n + 1);
+                    sum0 = divisors.GetSums(k, kmax, sums, sum0);
+                    var length = kmax - kmin;
+                    for (int i = 0; i < length; i++)
+                        Assert.AreEqual(IntegerMath.SumOfNumberOfDivisors(i + kmin), sums[i]);
                 }
             }
         }

@@ -67,7 +67,7 @@ namespace Decompose.Numerics
 
         private long EvaluateBatch(long x1, long x2)
         {
-            mobius.GetValues(x1, x2 + 1, values, x1, m, m0);
+            mobius.GetValuesAndSums(x1, x2 + 1, values, m, m0);
             if (threads <= 1)
             {
                 var x = x2;

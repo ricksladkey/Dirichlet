@@ -32,7 +32,6 @@ namespace Decompose.Numerics
         private bool sieveDivisors;
         private long d1;
         private long d2;
-        private int[] d;
         private long[] dsum;
 
         private IDivisorSummatoryFunction<BigInteger>[] hyperbolicSum;
@@ -67,7 +66,6 @@ namespace Decompose.Numerics
             values = new sbyte[maximumBatchSize >> 1];
             m = new long[maximumBatchSize >> 1];
             m0 = (long)0;
-            d = new int[maximumBatchSize];
             dsum = new long[maximumBatchSize];
 
             // Process small values.
@@ -76,7 +74,7 @@ namespace Decompose.Numerics
             {
                 var xfirst = x;
                 var xlast = Math.Min(xmed, xfirst + maximumBatchSize - 2);
-                mobius.GetValues(xfirst, xlast + 2, values, xfirst, m, m0);
+                mobius.GetValuesAndSums(xfirst, xlast + 2, values, m, xfirst, m0);
                 sum += Pi2Small(xfirst, xlast);
                 UpdateMx(xfirst, xlast, 1, 1);
                 m0 = m[(xlast - xfirst) >> 1];
@@ -89,7 +87,7 @@ namespace Decompose.Numerics
             {
                 var xfirst = x;
                 var xlast = Math.Min(xmax, xfirst + maximumBatchSize - 2);
-                mobius.GetValues(xfirst, xlast + 2, values, xfirst, m, m0);
+                mobius.GetValuesAndSums(xfirst, xlast + 2, values, m, xfirst, m0);
                 sum += Pi2Medium(xfirst, xlast);
                 UpdateMx(xfirst, xlast, 1, 1);
                 m0 = m[(xlast - xfirst) >> 1];
@@ -243,7 +241,7 @@ namespace Decompose.Numerics
                     var d1old = d1;
                     d1 = Math.Max(1, d1old - maximumBatchSize);
                     d2 = Math.Min(d1 + maximumBatchSize - 1, d1old - 1);
-                    divisor.GetValues(d1, d2 + 1, d, d1, dsum, T2Slow(d1 - 1));
+                    divisor.GetSums(d1, d2 + 1, dsum, T2Slow(d1 - 1));
                 }
                 Debug.Assert(dsum[(int)(n - d1)] == new DivisionFreeDivisorSummatoryFunction(0, false, true).Evaluate(n));
                 return (int)(dsum[(int)(n - d1)] & 3);

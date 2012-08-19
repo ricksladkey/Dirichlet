@@ -51,24 +51,40 @@ namespace Decompose.Numerics
 
         public void GetValues(long kmin, long kmax, int[] values)
         {
-            GetValues(kmin, kmax, values, kmin, null, 0);
+            GetValuesAndSums(kmin, kmax, values, null, 0, kmin);
         }
 
         public void GetValues(long kmin, long kmax, int[] values, long offset)
         {
-            GetValues(kmin, kmax, values, offset, null, 0);
+            GetValuesAndSums(kmin, kmax, values, null, 0, offset);
         }
 
-        public void GetValues(long kmin, long kmax, int[] values, long offset, long[] sums, long m0)
+        public long GetSums(long kmin, long kmax, long[] sums, long sum0)
+        {
+            return GetValuesAndSums(kmin, kmax, null, sums, sum0, kmin);
+        }
+
+        public long GetSums(long kmin, long kmax, long[] sums, long sum0, long offset)
+        {
+            return GetValuesAndSums(kmin, kmax, null, sums, sum0, offset);
+        }
+
+        public long GetValuesAndSums(long kmin, long kmax, int[] values, long[] sums, long sum0)
+        {
+            return GetValuesAndSums(kmin, kmax, values, sums, sum0, kmin);
+        }
+
+        public long GetValuesAndSums(long kmin, long kmax, int[] values, long[] sums, long sum0, long offset)
         {
             var pmax = GetPMax(kmax);
+            var voffset = values == null ? -1 : offset;
+            var soffset = sums == null ? -1 : offset;
+            var slast = kmax - soffset - 1;
 
             if (threads == 0)
             {
-                ProcessRange(pmax, kmin, kmax, values, offset, sums, m0, null);
-                if (values != null && kmin <= 1)
-                    values[1 - kmin] = 1;
-                return;
+                ProcessRange(pmax, kmin, kmax, values, voffset, sums, soffset, sum0, null);
+                return sums == null ? 0 : sums[slast];
             }
 
             // Choose batch size such that: batchSize*threads >= length and batchSize is even.
@@ -79,12 +95,12 @@ namespace Decompose.Numerics
             {
                 var kstart = (long)thread * batchSize + kmin;
                 var kend = Math.Min(kstart + batchSize, kmax);
-                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(pmax, kstart, kend, values, offset, sums, m0, null));
+                tasks[thread] = Task.Factory.StartNew(() => ProcessRange(pmax, kstart, kend, values, voffset, sums, soffset, sum0, null));
             }
             Task.WaitAll(tasks);
 
             if (sums == null)
-                return;
+                return 0;
 
             // Collect summatory function totals for each batch.
             var mabs = new long[threads];
@@ -93,7 +109,7 @@ namespace Decompose.Numerics
             {
                 var last = (long)thread * batchSize - 1;
                 if (last < sums.Length)
-                    mabs[thread] = mabs[thread - 1] + sums[last] - m0;
+                    mabs[thread] = mabs[thread - 1] + sums[last] - sum0;
             }
 
             // Convert relative summatory function values into absolute summatory function.
@@ -105,11 +121,13 @@ namespace Decompose.Numerics
                 tasks[thread] = Task.Factory.StartNew(() => BumpRange(mabs[index], kstart, kend, offset, sums));
             }
             Task.WaitAll(tasks);
+
+            return sums[slast];
         }
 
-        public void GetValues(long kmin, long kmax, long m0, Action<long, long, int[]> action)
+        public void GetValues(long kmin, long kmax, Action<long, long, int[]> action)
         {
-            ProcessRange(GetPMax(kmax), kmin, kmax, null, -1, null, m0, action);
+            ProcessRange(GetPMax(kmax), kmin, kmax, null, -1, null, -1, 0, action);
         }
 
         private int GetPMax(long kmax)
@@ -165,7 +183,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private void ProcessRange(int pmax, long kstart, long kend, int[] values, long kmin, long[] sums, long m0, Action<long, long, int[]> action)
+        private void ProcessRange(int pmax, long kstart, long kend, int[] values, long kmin, long[] sums, long smin, long sum0, Action<long, long, int[]> action)
         {
             // Acquire resources.
             Data data;
@@ -174,7 +192,7 @@ namespace Decompose.Numerics
             var products = data.Products;
             var offsets = data.Offsets;
             var offsetsSquared = data.OffsetsSquared;
-            if (action != null)
+            if (values == null)
                 values = data.Values;
 
             // Determine the initial offset and offset squared of each prime divisor.
@@ -201,10 +219,11 @@ namespace Decompose.Numerics
             // Process the whole range in block-sized batches.
             for (var k = kstart; k < kend; k += blockSize)
             {
+                var voffset = kmin == -1 ? k : kmin;
+                var soffset = smin == -1 ? k : smin;
                 var length = (int)Math.Min(blockSize, kend - k);
-                var offset = kmin == -1 ? k : kmin;
-                SieveBlock(pmax, k, length, products, values, offsets, offsetsSquared, offset);
-                m0 = AddValues(k, length, products, values, sums, offset, m0);
+                SieveBlock(pmax, k, length, products, values, offsets, offsetsSquared, voffset);
+                sum0 = AddValues(k, length, products, values, voffset, sums, soffset, sum0);
 
                 // Perform action, if any.
                 if (action != null)
@@ -321,32 +340,34 @@ namespace Decompose.Numerics
             }
         }
 
-        private long AddValues(long k0, int length, long[] products, int[] values, long[] sums, long kmin, long m0)
+        private long AddValues(long k0, int length, long[] products, int[] values, long kmin, long[] sums, long smin, long sum0)
         {
             // Each product can have at most one more prime factor.
             // It has that factor if the value of the product is
             // less than the full value.
-            var k = (int)(k0 - kmin);
+            var deltai = (int)(k0 - kmin);
+            var deltas = (int)(smin - kmin);
+            var kmax = (int)(deltai + length);
             if (sums == null)
             {
-                for (var i = 0; i < length; i++, k++)
+                for (var k = deltai; k < kmax; k++)
                 {
-                    if (products[i] < k + kmin)
+                    if (products[k - deltai] < k + kmin)
                         values[k] <<= 1;
-                    m0 += values[k];
+                    sum0 += values[k];
                 }
             }
             else
             {
-                for (var i = 0; i < length; i++, k++)
+                for (var k = deltai; k < kmax; k++)
                 {
-                    if (products[i] < k + kmin)
+                    if (products[k - deltai] < k + kmin)
                         values[k] <<= 1;
-                    m0 += values[k];
-                    sums[k] = m0;
+                    sum0 += values[k];
+                    sums[k - deltas] = sum0;
                 }
             }
-            return m0;
+            return sum0;
         }
     }
 }

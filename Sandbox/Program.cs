@@ -473,7 +473,7 @@ namespace Sandbox
             }
 #endif
 
-#if true
+#if false
             var algorithm1 = new PrimeCountingMod2Odd(0);
             var algorithm2 = new PrimeCounting(0);
             var timer = new Stopwatch();
@@ -505,11 +505,14 @@ namespace Sandbox
             }
 #endif
 
-#if false
+#if true
+            var timer = new Stopwatch();
             for (var power = 6; power <= 16; power++)
             {
                 var algorithm = new MertensFunctionOdd(8);
-                Console.WriteLine("{{ {0}, {1} }},", power, algorithm.Evaluate(IntegerMath.Power((long)10, power)));
+                timer.Restart();
+                Console.Write("{{ {0}, {1} }},", power, algorithm.Evaluate(IntegerMath.Power((long)10, power)));
+                Console.WriteLine("// elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
 
