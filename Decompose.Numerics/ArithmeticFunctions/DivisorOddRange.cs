@@ -379,7 +379,7 @@ namespace Decompose.Numerics
             }
             else
             {
-                for (var k = deltai; k < kmax; k++)
+                for (var k = deltai; k < kmax; k += 2)
                 {
                     if (products[(k - deltai) >> 1] < k + kmin)
                         values[k >> 1] <<= 1;

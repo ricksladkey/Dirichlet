@@ -8,7 +8,8 @@ namespace Decompose.Numerics
 {
     public class PrimeCountingMod2Odd
     {
-        private static int maximumBatchSize = 1 << 24;
+        private const int maximumBatchSize = 1 << 24;
+        private const int divisorBatchSize = 1 << 20;
         private const long nMaxSimple = (long)1 << 50;
         private const long C1 = 1;
         private const long C2 = 1;
@@ -23,7 +24,7 @@ namespace Decompose.Numerics
         private long xmed;
         private long xmax;
         private MobiusOddRange mobius;
-        private DivisorRange divisor;
+        private DivisorOddRange divisor;
         private long[] xi;
         private long[] mx;
         private long m0;
@@ -54,8 +55,9 @@ namespace Decompose.Numerics
             imax = (long)IntegerMath.FloorPower(n, 1, 5) * C1 / C2;
             xmax = DownToOdd(imax != 0 ? Xi(imax) : sqrtn);
             xmed = DownToOdd(Math.Min((long)(IntegerMath.FloorPower(n, 2, 7) * C3 / C4), xmax));
+            var dmax = (long)IntegerMath.Min(n / ((BigInteger)xmed * xmed) + 1, n);
             mobius = new MobiusOddRange(xmax + 1, 0);
-            divisor = new DivisorRange(Xi(xmed), 0);
+            divisor = new DivisorOddRange(dmax + 1, 0);
             xi = new long[imax + 1];
             mx = new long[imax + 1];
 
@@ -74,26 +76,25 @@ namespace Decompose.Numerics
             {
                 var xfirst = x;
                 var xlast = Math.Min(xmed, xfirst + maximumBatchSize - 2);
-                mobius.GetValuesAndSums(xfirst, xlast + 2, values, m, xfirst, m0);
+                m0 = mobius.GetValuesAndSums(xfirst, xlast + 2, values, m, m0);
                 sum += Pi2Small(xfirst, xlast);
                 UpdateMx(xfirst, xlast, 1, 1);
-                m0 = m[(xlast - xfirst) >> 1];
             }
 
             // Process medium values.
-            sieveDivisors = false;
-            d1 = d2 = Xi(xmed) + 1;
+            sieveDivisors = true;
+            d1 = d2 = sqrtn;
             for (var x = xmed + 2; x <= xmax; x += maximumBatchSize)
             {
                 var xfirst = x;
                 var xlast = Math.Min(xmax, xfirst + maximumBatchSize - 2);
-                mobius.GetValuesAndSums(xfirst, xlast + 2, values, m, xfirst, m0);
+                m0 = mobius.GetValuesAndSums(xfirst, xlast + 2, values, m, m0);
                 sum += Pi2Medium(xfirst, xlast);
                 UpdateMx(xfirst, xlast, 1, 1);
-                m0 = m[(xlast - xfirst) >> 1];
             }
 
             // Process large values.
+            divisor.GetSums(d1, d2, dsum, 0);
             sum += Pi2Large();
 
             // Adjust for final parity of F2.
@@ -236,15 +237,14 @@ namespace Decompose.Numerics
         {
             if (sieveDivisors)
             {
-                if (n < d1)
+                if (n < d1 || n >= d2)
                 {
-                    var d1old = d1;
-                    d1 = Math.Max(1, d1old - maximumBatchSize);
-                    d2 = Math.Min(d1 + maximumBatchSize - 1, d1old - 1);
-                    divisor.GetSums(d1, d2 + 1, dsum, T2Slow(d1 - 1));
+                    d1 = DownToOdd((long)n);
+                    d2 = DownToOdd(Math.Min(d1 + divisorBatchSize, divisor.Size));
+                    divisor.GetSums(d1, d2, dsum, d1 == 1 ? 0 : T2Slow(d1 - 2));
                 }
-                Debug.Assert(dsum[(int)(n - d1)] == new DivisionFreeDivisorSummatoryFunction(0, false, true).Evaluate(n));
-                return (int)(dsum[(int)(n - d1)] & 3);
+                Debug.Assert(dsum[(int)(n - d1) >> 1] == new DivisionFreeDivisorSummatoryFunction(0, false, true).Evaluate(n));
+                return (int)(dsum[(int)(n - d1) >> 1] & 3);
             }
             return T2Slow(n);
         }

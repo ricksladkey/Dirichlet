@@ -473,7 +473,7 @@ namespace Sandbox
             }
 #endif
 
-#if false
+#if true
             var algorithm1 = new PrimeCountingMod2Odd(0);
             var algorithm2 = new PrimeCounting(0);
             var timer = new Stopwatch();
@@ -505,7 +505,7 @@ namespace Sandbox
             }
 #endif
 
-#if true
+#if false
             var timer = new Stopwatch();
             for (var power = 6; power <= 16; power++)
             {
