@@ -10,7 +10,7 @@ namespace Decompose.Numerics
     {
         private const int maximumBatchSize = 1 << 20;
         private const int divisorBatchSize = 1 << 18;
-        private const long nMaxSimple = (long)1 << 50;
+        private const long nMaxSimple = (long)1 << 40;
         private const long C1 = 1;
         private const long C2 = 1;
         private const long C3 = 1;
@@ -24,7 +24,7 @@ namespace Decompose.Numerics
         private long xmed;
         private long xmax;
         private MobiusOddRange mobius;
-        private DivisorOddRange divisor;
+        private DivisorOddRange divisors;
         private long[] xi;
         private long[] mx;
         private long m0;
@@ -33,7 +33,7 @@ namespace Decompose.Numerics
         private bool sieveDivisors;
         private long d1;
         private long d2;
-        private long[] dsum;
+        private long[] dsums;
 
         private IDivisorSummatoryFunction<BigInteger>[] hyperbolicSum;
 
@@ -57,7 +57,7 @@ namespace Decompose.Numerics
             xmed = DownToOdd(Math.Min((long)(IntegerMath.FloorPower(n, 2, 7) * C3 / C4), xmax));
             var dmax = (long)IntegerMath.Min(n / ((BigInteger)xmed * xmed) + 1, n);
             mobius = new MobiusOddRange((xmax + 2) | 1, 0);
-            divisor = new DivisorOddRange((dmax + 2) | 1, 0);
+            divisors = new DivisorOddRange((dmax + 2) | 1, 0);
             xi = new long[imax + 1];
             mx = new long[imax + 1];
 
@@ -68,7 +68,7 @@ namespace Decompose.Numerics
             values = new sbyte[maximumBatchSize >> 1];
             m = new long[maximumBatchSize >> 1];
             m0 = (long)0;
-            dsum = new long[maximumBatchSize];
+            dsums = new long[maximumBatchSize];
 
             // Process small values.
             sieveDivisors = false;
@@ -83,7 +83,7 @@ namespace Decompose.Numerics
 
             // Process medium values.
             sieveDivisors = true;
-            d1 = d2 = sqrtn;
+            d1 = d2 = 1;
             var xmaxodd = DownToOdd(xmax);
             for (var x = xmed + 2; x <= xmaxodd; x += maximumBatchSize)
             {
@@ -95,6 +95,8 @@ namespace Decompose.Numerics
             }
 
             // Process large values.
+
+            sieveDivisors = true;
             sum += Pi2Large();
 
             // Adjust for final parity of F2.
@@ -235,26 +237,42 @@ namespace Decompose.Numerics
 
         private int T2(BigInteger n)
         {
-            if (sieveDivisors)
-            {
-                if (n < d1 || n >= d2)
-                {
-                    d1 = DownToOdd((long)n);
-                    d2 = DownToOdd(Math.Min(d1 + divisorBatchSize, Math.Max(divisor.Size, d1)));
-                    divisor.GetSums(d1, d2, dsum, d1 == 1 ? 0 : T2Slow(d1 - 2));
-                }
-                Debug.Assert(dsum[(int)(n - d1) >> 1] % 4 == new DivisionFreeDivisorSummatoryFunction(0, false, true).Evaluate(n) % 4);
-                return (int)(dsum[(int)(n - d1) >> 1] & 3);
-            }
-            return T2Slow(n);
+            return sieveDivisors ? T2Sequential(n) : T2Isolated(n);
         }
 
-        private int T2Slow(BigInteger n)
+        private int T2Isolated(BigInteger n)
         {
             var sqrt = (long)IntegerMath.FloorSquareRoot(n);
             var result = 2 * S1(n, 1, sqrt) + 3 * (int)(T1Odd(sqrt) & 1);
             Debug.Assert(result % 4 == new DivisionFreeDivisorSummatoryFunction(0, false, true).Evaluate(n) % 4);
             return result & 3;
+        }
+
+        private int T2Sequential(BigInteger n)
+        {
+            if (n < d1 || n >= d2)
+            {
+                var sum0 = (long)0;
+                if (n >= d2 && n < d2 + divisorBatchSize)
+                {
+                    sum0 = d2 == 1 ? 0 : dsums[(d2 - d1 - 2) >> 1];
+                    d1 = d2;
+                }
+                else if (n < d1 && n >= d1 - divisorBatchSize)
+                {
+                    d1 = Math.Max(1, d1 - divisorBatchSize);
+                    sum0 = d1 == 1 ? 0 : T2Isolated(d1 - 2);
+                }
+                else
+                {
+                    d1 = DownToOdd((long)n);
+                    sum0 = d1 == 1 ? 0 : T2Isolated(d1 - 2);
+                }
+                d2 = DownToOdd(Math.Min(d1 + divisorBatchSize, Math.Max(divisors.Size, d1)));
+                divisors.GetSums(d1, d2, dsums, sum0);
+            }
+            Debug.Assert(dsums[(int)(n - d1) >> 1] % 4 == new DivisionFreeDivisorSummatoryFunction(0, false, true).Evaluate(n) % 4);
+            return (int)(dsums[(int)(n - d1) >> 1] & 3);
         }
 
         private int S1(BigInteger n, long x1, long x2)

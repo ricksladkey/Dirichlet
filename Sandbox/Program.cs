@@ -452,7 +452,7 @@ namespace Sandbox
         {
 #if false
             var threads = 8;
-            for (int i = 1; i <= 24; i++)
+            for (int i = 19; i <= 19; i++)
             {
                 var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
                 var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads);
@@ -473,25 +473,25 @@ namespace Sandbox
             }
 #endif
 
-#if false
+#if true
             var algorithm1 = new PrimeCountingMod2Odd(0);
             var algorithm2 = new PrimeCounting(0);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 1; i <= 20; i++)
+            for (var i = 1; i <= 19; i++)
             {
                 var n = IntegerMath.Power((BigInteger)10, i);
                 var p0 = PrimeCounting.PiPowerOfTen(i) % 2;
 #if true
                 timer.Restart();
-                var p1 = EvaluateAndTime(() => algorithm1.Evaluate(n));
+                var p1 = algorithm1.Evaluate(n);
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #else
                 var p1 = -1;
 #endif
 #if false
                 timer.Restart();
-                var p2 = EvaluateAndTime(() => algorithm2.ParityOfPi(n));
+                var p2 = algorithm2.ParityOfPi(n);
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #else
                 var p2 = -1;
@@ -505,7 +505,7 @@ namespace Sandbox
             }
 #endif
 
-#if true
+#if false
             var algorithm1 = new PrimeCountingMod2Odd(0);
             var algorithm2 = new PrimeCounting(0);
             var timer = new Stopwatch();
