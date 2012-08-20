@@ -774,6 +774,18 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
+        public void FloorRootTest2()
+        {
+            // FloorRootCore guesses do not converge:
+            // 1) 4
+            // 2) 3
+            // 3) 207
+            var n = IntegerMath.Power((BigInteger)2, 52) - 1;
+            var root = IntegerMath.FloorRoot(n, 26);
+            Assert.AreEqual((BigInteger)3, root);
+        }
+
+        [TestMethod]
         public void PerfectPowerTest1()
         {
             var max = IntegerMath.Power(BigIntegers.Two, 3 * 64);

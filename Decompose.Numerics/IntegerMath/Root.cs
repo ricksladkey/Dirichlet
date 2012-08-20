@@ -323,6 +323,9 @@ namespace Decompose.Numerics
                 power = Number<T>.Power(c, degree);
                 if (power <= a && Number<T>.Power(c + 1, degree) > a)
                     return c;
+                power = Number<T>.Power(c - 1, degree);
+                if (power <= a && Number<T>.Power(c, degree) > a)
+                    return c - 1;
             }
             var cPrev = Number<T>.Zero;
             var degreeMinusOne = degree - 1;

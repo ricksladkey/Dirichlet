@@ -473,12 +473,12 @@ namespace Sandbox
             }
 #endif
 
-#if true
+#if false
             var algorithm1 = new PrimeCountingMod2Odd(0);
             var algorithm2 = new PrimeCounting(0);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 1; i <= 19; i++)
+            for (var i = 1; i <= 20; i++)
             {
                 var n = IntegerMath.Power((BigInteger)10, i);
                 var p0 = PrimeCounting.PiPowerOfTen(i) % 2;
@@ -492,6 +492,38 @@ namespace Sandbox
 #if false
                 timer.Restart();
                 var p2 = EvaluateAndTime(() => algorithm2.ParityOfPi(n));
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#else
+                var p2 = -1;
+#endif
+                Console.WriteLine("i = {0}, p0 = {1}, p1 = {2}, p2 = {3}", i, p0, p1, p2);
+                if (p0 != p1)
+                {
+                    Console.WriteLine("mismatch!");
+                    break;
+                }
+            }
+#endif
+
+#if true
+            var algorithm1 = new PrimeCountingMod2Odd(0);
+            var algorithm2 = new PrimeCounting(0);
+            var timer = new Stopwatch();
+            timer.Restart();
+            for (var i = 2; i <= 64; i++)
+            {
+                var n = IntegerMath.Power((BigInteger)2, i) - 1;
+                var p0 = PrimeCounting.PiPowerOfTwo(i) % 2;
+#if true
+                timer.Restart();
+                var p1 = algorithm1.Evaluate(n);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#else
+                var p1 = -1;
+#endif
+#if false
+                timer.Restart();
+                var p2 = algorithm2.ParityOfPi(n);
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #else
                 var p2 = -1;

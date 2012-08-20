@@ -76,6 +76,12 @@ namespace Decompose.Numerics
 
         public long GetValuesAndSums(long kmin, long kmax, int[] values, long[] sums, long sum0, long offset)
         {
+            // Validate operation.
+            if (kmax < kmin || kmax > size)
+                throw new InvalidOperationException();
+            if (kmin == kmax)
+                return sum0;
+
             var pmax = GetPMax(kmax);
             var voffset = values == null ? -1 : offset;
             var soffset = sums == null ? -1 : offset;

@@ -184,6 +184,22 @@ namespace Decompose.Numerics
             return sum;
         }
 
+        public static int SumOfNumberOfDivisorsOdd(int n)
+        {
+            var sum = (int)0;
+            for (var j = (int)1; j <= n; j += 2)
+                sum += NumberOfDivisors(j);
+            return sum;
+        }
+
+        public static BigInteger SumOfNumberOfDivisorsOdd(BigInteger n)
+        {
+            var sum = (BigInteger)0;
+            for (var j = (BigInteger)1; j <= n; j += 2)
+                sum += NumberOfDivisors(j);
+            return sum;
+        }
+
         public static int PrimeCountingFunction(int n)
         {
             return primes.TakeWhile(p => p <= n).Count();
