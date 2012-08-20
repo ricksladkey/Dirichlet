@@ -365,24 +365,24 @@ namespace Decompose.Numerics
                     gamma += x;
                     eps += x;
                 }
-                gamma += 4 * delta;
                 beta += delta;
+                gamma += delta << 2;
 
                 Debug.Assert(eps == n % x);
                 Debug.Assert(beta == n / x);
-                Debug.Assert(delta == (n / x) - n / (x + 2));
-                Debug.Assert(gamma == 2 * (n / x) - (BigInteger)(x - 2) * delta);
+                Debug.Assert(delta == beta - n / (x + 2));
+                Debug.Assert(gamma == 2 * beta - (x - 2) * delta);
 
-                s += (beta + 1) >> 1;
+                s ^= beta + 1;
                 x -= 2;
             }
             while (x >= x1)
             {
                 beta = (int)((n / x) & 3);
-                s += (beta + 1) >> 1;
+                s ^= beta + 1;
                 x -= 2;
             }
-            return s & 1;
+            return (s >> 1) & 1;
         }
 
         private long Xi(long i)
