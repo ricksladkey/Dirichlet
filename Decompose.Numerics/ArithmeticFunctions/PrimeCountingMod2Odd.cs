@@ -367,23 +367,22 @@ namespace Decompose.Numerics
                 }
                 gamma += 4 * delta;
                 beta += delta;
-                beta &= 3;
 
                 Debug.Assert(eps == n % x);
-                Debug.Assert(beta == ((n / x) & 3));
+                Debug.Assert(beta == n / x);
                 Debug.Assert(delta == (n / x) - n / (x + 2));
                 Debug.Assert(gamma == 2 * (n / x) - (BigInteger)(x - 2) * delta);
 
-                s += beta + (beta & 1);
+                s += (beta + 1) >> 1;
                 x -= 2;
             }
             while (x >= x1)
             {
                 beta = (int)((n / x) & 3);
-                s += beta + (beta & 1);
+                s += (beta + 1) >> 1;
                 x -= 2;
             }
-            return (int)((s >> 1) & 1);
+            return s & 1;
         }
 
         private long Xi(long i)
