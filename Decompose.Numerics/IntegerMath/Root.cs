@@ -68,7 +68,7 @@ namespace Decompose.Numerics
         {
             if (a <= maxRep)
                 return (ulong)Math.Floor(Math.Sqrt((double)a));
-            else if (a <= maxRepSquaredUInt128)
+            if (a <= maxRepSquaredUInt128)
             {
                 var s = (ulong)Math.Floor(Math.Sqrt((double)a));
                 var s2 = UInt128.Square(s);
@@ -86,7 +86,7 @@ namespace Decompose.Numerics
         {
             if (a <= maxRep)
                 return (ulong)Math.Ceiling(Math.Sqrt((double)a));
-            else if (a <= maxRepSquaredUInt128)
+            if (a <= maxRepSquaredUInt128)
             {
                 var s = (ulong)Math.Ceiling(Math.Sqrt((double)a));
                 var s2 = UInt128.Square(s);
@@ -104,7 +104,7 @@ namespace Decompose.Numerics
         {
             if (a <= maxRep)
                 return (BigInteger)Math.Floor(Math.Sqrt((double)a));
-            else if (a <= maxRepSquaredBigInteger)
+            if (a <= maxRepSquaredBigInteger)
             {
                 var s = (BigInteger)Math.Floor(Math.Sqrt((double)a));
                 var r = a - s * s;
@@ -122,7 +122,7 @@ namespace Decompose.Numerics
         {
             if (a <= maxRep)
                 return (BigInteger)Math.Ceiling(Math.Sqrt((double)a));
-            else if (a <= maxRepSquaredBigInteger)
+            if (a <= maxRepSquaredBigInteger)
             {
                 var s = (BigInteger)Math.Ceiling(Math.Sqrt((double)a));
                 var r = s * s - a;

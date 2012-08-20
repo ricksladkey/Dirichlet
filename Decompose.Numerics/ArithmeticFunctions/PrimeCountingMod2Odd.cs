@@ -95,8 +95,6 @@ namespace Decompose.Numerics
             }
 
             // Process large values.
-
-            sieveDivisors = true;
             sum += Pi2Large();
 
             // Adjust for final parity of F2.
@@ -260,6 +258,7 @@ namespace Decompose.Numerics
                 }
                 else if (n < d1 && n >= d1 - divisorBatchSize)
                 {
+                    // Could avoid an isolated computation if we supported summing down.
                     d1 = Math.Max(1, d1 - divisorBatchSize);
                     sum0 = d1 == 1 ? 0 : T2Isolated(d1 - 2);
                 }

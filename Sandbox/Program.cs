@@ -451,8 +451,8 @@ namespace Sandbox
         static void ParityTest()
         {
 #if false
-            var threads = 8;
-            for (int i = 19; i <= 19; i++)
+            var threads = 1;
+            for (int i = 18; i <= 18; i++)
             {
                 var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
                 var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads);
@@ -478,7 +478,7 @@ namespace Sandbox
             var algorithm2 = new PrimeCounting(0);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 1; i <= 19; i++)
+            for (var i = 1; i <= 20; i++)
             {
                 var n = IntegerMath.Power((BigInteger)10, i);
                 var p0 = PrimeCounting.PiPowerOfTen(i) % 2;
