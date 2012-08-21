@@ -8,7 +8,7 @@ namespace Decompose.Numerics
 {
     public class PrimeCountingMod2Odd
     {
-        private const int maximumBatchSize = 1 << 20;
+        private const int mobiusBatchSize = 1 << 20;
         private const int divisorBatchSize = 1 << 18;
         private const long C1 = 1;
         private const long C2 = 1;
@@ -68,34 +68,34 @@ namespace Decompose.Numerics
             for (var i = 1; i <= imax; i++)
                 xi[i] = Xi(i);
 
-            values = new sbyte[maximumBatchSize >> 1];
-            m = new long[maximumBatchSize >> 1];
+            values = new sbyte[mobiusBatchSize >> 1];
+            m = new long[mobiusBatchSize >> 1];
             m0 = (long)0;
-            dsums = new long[maximumBatchSize];
+            dsums = new long[divisorBatchSize >> 1];
+            d1 = d2 = 1;
 
-            // Process small values.
-            for (var x = (long)1; x <= xmed; x += maximumBatchSize)
+            // Process small x values.
+            for (var x = (long)1; x <= xmed; x += mobiusBatchSize)
             {
                 var xfirst = x;
-                var xlast = Math.Min(xmed, xfirst + maximumBatchSize - 2);
+                var xlast = Math.Min(xmed, xfirst + mobiusBatchSize - 2);
                 m0 = mobius.GetValuesAndSums(xfirst, xlast + 2, values, m, m0);
                 sum += Pi2Small(xfirst, xlast);
                 UpdateMx(xfirst, xlast, 1, 1);
             }
 
-            // Process medium values.
-            d1 = d2 = 1;
+            // Process medium x values.
             var xmaxodd = DownToOdd(xmax);
-            for (var x = xmed + 2; x <= xmaxodd; x += maximumBatchSize)
+            for (var x = xmed + 2; x <= xmaxodd; x += mobiusBatchSize)
             {
                 var xfirst = x;
-                var xlast = Math.Min(xmaxodd, xfirst + maximumBatchSize - 2);
+                var xlast = Math.Min(xmaxodd, xfirst + mobiusBatchSize - 2);
                 m0 = mobius.GetValuesAndSums(xfirst, xlast + 2, values, m, m0);
                 sum += Pi2Medium(xfirst, xlast);
                 UpdateMx(xfirst, xlast, 1, 1);
             }
 
-            // Process large values.
+            // Process large x values.
             sum += Pi2Large();
 
             // Adjust for final parity of F2.
