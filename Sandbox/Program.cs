@@ -478,7 +478,7 @@ namespace Sandbox
             var algorithm2 = new PrimeCounting(0);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 1; i <= 20; i++)
+            for (var i = 20; i <= 20; i++)
             {
                 var n = IntegerMath.Power((BigInteger)10, i);
                 var p0 = PrimeCounting.PiPowerOfTen(i) % 2;
