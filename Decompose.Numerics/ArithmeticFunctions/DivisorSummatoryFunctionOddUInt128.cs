@@ -39,8 +39,9 @@ namespace Decompose.Numerics
             public UInt128 c2;
         }
 
-        public static readonly UInt128 C1 = 225;
-        public static readonly UInt128 C2 = 15;
+        private const long nMaxSimple = (long)1 << 40;
+        private static readonly UInt128 C1 = 225;
+        private static readonly UInt128 C2 = 15;
 
         private int threads;
         private bool mod2;
@@ -102,8 +103,11 @@ namespace Decompose.Numerics
 
             if (threads == 0)
             {
+                if (n <= nMaxSimple)
+                    return (UInt128)manualAlgorithm.Evaluate(n, x0, xmax);
                 AddToSum(EvaluateInternal(n, x0, xmax));
-                AddToSum((UInt128)manualAlgorithm.Evaluate(n, x0, 2 * xmanual - 3));
+                if (xmanual > 1)
+                    AddToSum((UInt128)manualAlgorithm.Evaluate(n, x0, 2 * xmanual - 3));
                 return sum;
             }
 
@@ -124,7 +128,8 @@ namespace Decompose.Numerics
             queue.CompleteAdding();
 
             // Add manual portion.
-            AddToSum((UInt128)manualAlgorithm.Evaluate(n, x0, 2 * xmanual - 3));
+            if (xmanual > 1)
+                AddToSum((UInt128)manualAlgorithm.Evaluate(n, x0, 2 * xmanual - 3));
 
             // Wait for completion.
             Task.WaitAll(tasks);

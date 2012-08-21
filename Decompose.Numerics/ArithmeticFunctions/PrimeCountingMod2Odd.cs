@@ -10,14 +10,13 @@ namespace Decompose.Numerics
     {
         private const int maximumBatchSize = 1 << 20;
         private const int divisorBatchSize = 1 << 18;
-        private const long nMaxSimple = (long)1 << 40;
         private const long C1 = 1;
         private const long C2 = 1;
         private const long C3 = 1;
         private const long C4 = 1;
 
         private int threads;
-        private BigInteger n;
+        private UInt128 n;
         private long sqrtn;
         private long kmax;
         private long imax;
@@ -35,18 +34,23 @@ namespace Decompose.Numerics
         private long d2;
         private long[] dsums;
 
-        private IDivisorSummatoryFunction<BigInteger>[] hyperbolicSum;
+        private IDivisorSummatoryFunction<UInt128>[] hyperbolicSum;
 
         public PrimeCountingMod2Odd(int threads)
         {
             this.threads = threads;
             var count = Math.Max(threads, 1);
-            hyperbolicSum = new IDivisorSummatoryFunction<BigInteger>[count];
+            hyperbolicSum = new IDivisorSummatoryFunction<UInt128>[count];
             for (var i = 0; i < count; i++)
                 hyperbolicSum[i] = new DivisorSummatoryFunctionOddUInt128(0, true);
         }
 
         public int Evaluate(BigInteger n)
+        {
+            return Evaluate((UInt128)n);
+        }
+
+        public int Evaluate(UInt128 n)
         {
             this.n = n;
             var sum = 0;
@@ -55,7 +59,7 @@ namespace Decompose.Numerics
             imax = (long)IntegerMath.FloorPower(n, 1, 5) * C1 / C2;
             xmax = imax != 0 ? Xi(imax) : sqrtn;
             xmed = DownToOdd(Math.Min((long)(IntegerMath.FloorPower(n, 2, 7) * C3 / C4), xmax));
-            var dmax = (long)IntegerMath.Min(n / ((BigInteger)xmed * xmed) + 1, n);
+            var dmax = (long)IntegerMath.Min(n / IntegerMath.Square((UInt128)xmed) + 1, n);
             mobius = new MobiusOddRange((xmax + 2) | 1, 0);
             divisors = new DivisorOddRange((dmax + 2) | 1, 0);
             xi = new long[imax + 1];
@@ -114,7 +118,7 @@ namespace Decompose.Numerics
             {
                 var mu = IntegerMath.Mobius(k);
                 if (mu != 0)
-                    s += mu * F2(IntegerMath.FloorRoot(n, k), x1, x2);
+                    s += mu * F2Small((UInt128)IntegerMath.FloorRoot((BigInteger)n, k), x1, x2);
             }
             return s;
         }
@@ -122,7 +126,7 @@ namespace Decompose.Numerics
         private int Pi2Medium(long x1, long x2)
         {
             Debug.Assert(x1 > IntegerMath.FloorRoot(n, 4));
-            return F2(n, x1, x2);
+            return F2Medium(n, x1, x2);
         }
 
         private int Pi2Large()
@@ -131,21 +135,44 @@ namespace Decompose.Numerics
             ComputeMx();
 
             // Compute tail.
-            var s = (BigInteger)0;
+            var s = (long)0;
             for (var i = 1; i < imax; i++)
-                s += T2(i) * (mx[i] - mx[i + 1]);
+                s += T2Sequential(i) * (mx[i] - mx[i + 1]);
             return (int)(s & 3);
         }
 
-        private int F2(BigInteger n, long x1, long x2)
+        private int F2Small(UInt128 n, long x1, long x2)
         {
             var xmin = UpToOdd(Math.Max(1, x1));
             var xmax = DownToOdd(Math.Min((long)IntegerMath.FloorSquareRoot(n), x2));
             var s = 0;
             var x = xmax;
-            var beta = (long)(n / (x + 2));
-            var eps = (long)(n % (x + 2));
-            var delta = (long)(n / x - (ulong)beta);
+            var xx = (ulong)x * (ulong)x;
+            var dx = 4 * (ulong)x - 4;
+            while (x >= xmin)
+            {
+                Debug.Assert(xx == (ulong)x * (ulong)x);
+                var mu = values[(x - x1) >> 1];
+                if (mu > 0)
+                    s += T2(n / xx);
+                else if (mu < 0)
+                    s -= T2(n / xx);
+                xx -= dx;
+                dx -= 8;
+                x -= 2;
+            }
+            return s & 3;
+        }
+
+        private int F2Medium(UInt128 n, long x1, long x2)
+        {
+            var xmin = UpToOdd(Math.Max(1, x1));
+            var xmax = DownToOdd(Math.Min((long)IntegerMath.FloorSquareRoot(n), x2));
+            var s = 0;
+            var x = xmax;
+            var beta = (long)(n / ((ulong)x + 2));
+            var eps = (long)(n % ((ulong)x + 2));
+            var delta = (long)(n / (ulong)x - (ulong)beta);
             var gamma = 2 * beta - x * delta;
             var alpha = beta / (x + 2);
             var alphax = (alpha + 1) * (x + 2);
@@ -190,9 +217,9 @@ namespace Decompose.Numerics
                     }
                 }
 
-                Debug.Assert(eps == n % x);
-                Debug.Assert(beta == n / x);
-                Debug.Assert(delta == beta - n / (x + 2));
+                Debug.Assert(eps == (BigInteger)n % x);
+                Debug.Assert(beta == (BigInteger)n / x);
+                Debug.Assert(delta == beta - (BigInteger)n / (x + 2));
                 Debug.Assert(gamma == 2 * beta - (BigInteger)(x - 2) * delta);
                 Debug.Assert(alpha == n / ((BigInteger)x * x));
 
@@ -204,7 +231,7 @@ namespace Decompose.Numerics
                         count &= 3;
                         if (count != 0)
                         {
-                            s += count * T2(lastalpha);
+                            s += count * T2Sequential(lastalpha);
                             count = 0;
                         }
                         lastalpha = alpha;
@@ -215,7 +242,7 @@ namespace Decompose.Numerics
             }
             count &= 3;
             if (count != 0)
-                s += count * T2(lastalpha);
+                s += count * T2Sequential(lastalpha);
             var xx = (ulong)x * (ulong)x;
             var dx = 4 * (ulong)x - 4;
             while (x >= xmin)
@@ -223,9 +250,9 @@ namespace Decompose.Numerics
                 Debug.Assert(xx == (ulong)x * (ulong)x);
                 var mu = values[(x - x1) >> 1];
                 if (mu > 0)
-                    s += T2(n / xx);
+                    s += T2Sequential((long)(n / xx));
                 else if (mu < 0)
-                    s -= T2(n / xx);
+                    s -= T2Sequential((long)(n / xx));
                 xx -= dx;
                 dx -= 8;
                 x -= 2;
@@ -233,20 +260,21 @@ namespace Decompose.Numerics
             return s & 3;
         }
 
-        private int T2(BigInteger n)
+        private int T2(UInt128 n)
         {
-            return sieveDivisors ? T2Sequential(n) : T2Isolated(n);
+            return sieveDivisors ? T2Sequential((long)n) : T2Isolated(n);
         }
 
-        private int T2Isolated(BigInteger n)
+        private int T2Isolated(UInt128 n)
         {
             var sqrt = (long)IntegerMath.FloorSquareRoot(n);
-            var result = 2 * S1(n, 1, sqrt) + 3 * (int)(T1Odd(sqrt) & 1);
+            var s1 = hyperbolicSum[0].Evaluate(n, 1, (UInt128)sqrt).IsEven ? 0 : 1;
+            var result = 2 * s1 + 3 * (int)(T1Odd(sqrt) & 1);
             Debug.Assert(result % 4 == new DivisionFreeDivisorSummatoryFunction(0, false, true).Evaluate(n) % 4);
             return result & 3;
         }
 
-        private int T2Sequential(BigInteger n)
+        private int T2Sequential(long n)
         {
             if (n < d1 || n >= d2)
             {
@@ -260,12 +288,12 @@ namespace Decompose.Numerics
                 {
                     // Could avoid an isolated computation if we supported summing down.
                     d1 = Math.Max(1, d1 - divisorBatchSize);
-                    sum0 = d1 == 1 ? 0 : T2Isolated(d1 - 2);
+                    sum0 = d1 == 1 ? 0 : T2Isolated((UInt128)(d1 - 2));
                 }
                 else
                 {
                     d1 = DownToOdd((long)n);
-                    sum0 = d1 == 1 ? 0 : T2Isolated(d1 - 2);
+                    sum0 = d1 == 1 ? 0 : T2Isolated((UInt128)(d1 - 2));
                 }
                 d2 = DownToOdd(Math.Min(d1 + divisorBatchSize, Math.Max(divisors.Size, d1)));
                 divisors.GetSums(d1, d2, dsums, sum0);
@@ -274,120 +302,9 @@ namespace Decompose.Numerics
             return (int)(dsums[(int)(n - d1) >> 1] & 3);
         }
 
-        private int S1(BigInteger n, long x1, long x2)
-        {
-            if (n <= nMaxSimple)
-                return S1((long)n, (int)x1, (int)x2);
-
-#if false
-            var s = (long)0;
-            var x = DownToOdd(x2);
-            var beta = (long)(n / (x + 2));
-            var eps = (long)(n % (x + 2));
-            var delta = (long)(n / x - beta);
-            var gamma = 2 * beta - x * delta;
-            while (x >= x1)
-            {
-                eps += gamma;
-                if (eps >= x)
-                {
-                    ++delta;
-                    gamma -= x;
-                    eps -= x;
-                    if (eps >= x)
-                    {
-                        ++delta;
-                        gamma -= x;
-                        eps -= x;
-                        if (eps >= x)
-                            break;
-                    }
-                }
-                else if (eps < 0)
-                {
-                    --delta;
-                    gamma += x;
-                    eps += x;
-                }
-                gamma += 4 * delta;
-                beta += delta;
-                beta &= 3;
-
-                Debug.Assert(eps == n % x);
-                Debug.Assert(beta == ((n / x) & 3));
-                Debug.Assert(delta == (n / x) - n / (x + 2));
-                Debug.Assert(gamma == 2 * (n / x) - (BigInteger)(x - 2) * delta);
-
-                s += beta + (beta & 1);
-                x -= 2;
-            }
-            var nRep = (UInt128)n;
-            while (x >= x1)
-            {
-                beta = (long)((nRep / (ulong)x) & 3);
-                s += beta + (beta & 1);
-                x -= 2;
-            }
-            return (int)((s >> 1) & 1);
-#else
-            return hyperbolicSum[0].Evaluate(n, x1, x2).IsEven ? 0 : 1;
-#endif
-        }
-
-        private int S1(long n, int x1, int x2)
-        {
-            var s = (int)0;
-            var x = (int)DownToOdd(x2);
-            var beta = (int)(n / (x + 2));
-            var eps = (int)(n % (x + 2));
-            var delta = (int)(n / x - beta);
-            var gamma = (int)(2 * beta - (long)x * delta);
-            ++beta;
-            while (x >= x1)
-            {
-                eps += gamma;
-                if (eps >= x)
-                {
-                    ++delta;
-                    gamma -= x;
-                    eps -= x;
-                    if (eps >= x)
-                    {
-                        ++delta;
-                        gamma -= x;
-                        eps -= x;
-                        if (eps >= x)
-                            break;
-                    }
-                }
-                else if (eps < 0)
-                {
-                    --delta;
-                    gamma += x;
-                    eps += x;
-                }
-                beta += delta;
-                gamma += delta << 2;
-
-                Debug.Assert(eps == n % x);
-                Debug.Assert(beta == n / x + 1);
-                Debug.Assert(delta == n / x - n / (x + 2));
-                Debug.Assert(gamma == 2 * (n / x) - (x - 2) * delta);
-
-                s ^= beta;
-                x -= 2;
-            }
-            while (x >= x1)
-            {
-                s ^= (int)((n / x) & 3) + 1;
-                x -= 2;
-            }
-            return (s >> 1) & 1;
-        }
-
         private long Xi(long i)
         {
-            return (long)IntegerMath.FloorSquareRoot(n / i);
+            return (long)IntegerMath.FloorSquareRoot(n / (ulong)i);
         }
 
         private void UpdateMx(long x1, long x2, long offset, long increment)

@@ -131,6 +131,20 @@ namespace Decompose.Numerics
             return result;
         }
 
+        public static UInt128 Power(UInt128 value, UInt128 exponent)
+        {
+            var result = (UInt128)1;
+            while (exponent != 0)
+            {
+                if ((exponent & 1) != 0)
+                    result = result * value;
+                if (exponent != 1)
+                    value = value * value;
+                exponent >>= 1;
+            }
+            return result;
+        }
+
         public static BigInteger Power(BigInteger value, BigInteger exponent)
         {
             if (exponent < int.MaxValue)
