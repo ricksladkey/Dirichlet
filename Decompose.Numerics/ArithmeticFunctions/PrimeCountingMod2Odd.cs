@@ -198,8 +198,9 @@ namespace Decompose.Numerics
                     gamma += x;
                     eps += x;
                 }
-                gamma += 4 * delta;
                 beta += delta;
+                gamma += delta << 2;
+
                 alphax -= 2 * alpha + 2;
                 if (alphax <= beta)
                 {
@@ -359,11 +360,8 @@ namespace Decompose.Numerics
                     gamma += j;
                     eps += j;
                 }
-                gamma += delta;
-                gamma += delta;
-                gamma += delta;
-                gamma += delta;
                 beta += delta;
+                gamma += delta << 2;
 
                 Debug.Assert(eps == n % j);
                 Debug.Assert(beta == n / j);
@@ -408,9 +406,8 @@ namespace Decompose.Numerics
                     gamma += k;
                     eps += k;
                 }
-                gamma += delta;
-                gamma += delta;
                 beta += delta;
+                gamma += delta << 1;
 
                 Debug.Assert(eps == n % k);
                 Debug.Assert(beta == n / k);
