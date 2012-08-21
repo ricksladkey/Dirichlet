@@ -29,7 +29,6 @@ namespace Decompose.Numerics
         private long m0;
         private sbyte[] values;
         private long[] m;
-        private bool sieveDivisors;
         private long d1;
         private long d2;
         private long[] dsums;
@@ -75,7 +74,6 @@ namespace Decompose.Numerics
             dsums = new long[maximumBatchSize];
 
             // Process small values.
-            sieveDivisors = false;
             for (var x = (long)1; x <= xmed; x += maximumBatchSize)
             {
                 var xfirst = x;
@@ -86,7 +84,6 @@ namespace Decompose.Numerics
             }
 
             // Process medium values.
-            sieveDivisors = true;
             d1 = d2 = 1;
             var xmaxodd = DownToOdd(xmax);
             for (var x = xmed + 2; x <= xmaxodd; x += maximumBatchSize)
@@ -154,9 +151,9 @@ namespace Decompose.Numerics
                 Debug.Assert(xx == (ulong)x * (ulong)x);
                 var mu = values[(x - x1) >> 1];
                 if (mu > 0)
-                    s += T2(n / xx);
+                    s += T2Isolated(n / xx);
                 else if (mu < 0)
-                    s -= T2(n / xx);
+                    s -= T2Isolated(n / xx);
                 xx -= dx;
                 dx -= 8;
                 x -= 2;
@@ -258,11 +255,6 @@ namespace Decompose.Numerics
                 x -= 2;
             }
             return s & 3;
-        }
-
-        private int T2(UInt128 n)
-        {
-            return sieveDivisors ? T2Sequential((long)n) : T2Isolated(n);
         }
 
         private int T2Isolated(UInt128 n)
