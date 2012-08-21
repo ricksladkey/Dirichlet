@@ -80,7 +80,8 @@ namespace Decompose.Numerics
         {
             var xmax = IntegerMath.FloorSquareRoot(n);
             var s = Evaluate(n, 1, xmax);
-            return 2 * s - xmax * xmax;
+            var xmax2 = (xmax + 1) / 2;
+            return 2 * s - (UInt128)xmax2 * (UInt128)xmax2;
         }
 
         public BigInteger Evaluate(BigInteger n, BigInteger x0, BigInteger xmax)

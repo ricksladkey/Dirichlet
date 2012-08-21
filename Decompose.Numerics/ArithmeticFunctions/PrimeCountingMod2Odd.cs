@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Decompose.Numerics
 {
@@ -10,6 +11,7 @@ namespace Decompose.Numerics
     {
         private const int mobiusBatchSize = 1 << 20;
         private const int divisorBatchSize = 1 << 18;
+        private const int smallCutoff = 10;
         private const long C1 = 1;
         private const long C2 = 1;
         private const long C3 = 1;
@@ -34,6 +36,7 @@ namespace Decompose.Numerics
         private long[] dsums;
 
         private IDivisorSummatoryFunction<UInt128>[] hyperbolicSum;
+        private IDivisorSummatoryFunction<UInt128> hyperbolicSumParallel;
 
         public PrimeCountingMod2Odd(int threads)
         {
@@ -42,6 +45,7 @@ namespace Decompose.Numerics
             hyperbolicSum = new IDivisorSummatoryFunction<UInt128>[count];
             for (var i = 0; i < count; i++)
                 hyperbolicSum[i] = new DivisorSummatoryFunctionOddUInt128(0, true);
+            hyperbolicSumParallel = new DivisorSummatoryFunctionOddUInt128(threads, true);
         }
 
         public int Evaluate(BigInteger n)
@@ -110,14 +114,14 @@ namespace Decompose.Numerics
 
         private int Pi2Small(long x1, long x2)
         {
-            var s = 0;
-            for (var k = 1; k <= kmax; k++)
+            var s = F2SmallParallel(x1, x2);
+            for (var k = 2; k <= kmax; k++)
             {
                 var mu = IntegerMath.Mobius(k);
                 if (mu != 0)
                     s += mu * F2Small((UInt128)IntegerMath.FloorRoot((BigInteger)n, k), x1, x2);
             }
-            return s;
+            return s & 3;
         }
 
         private int Pi2Medium(long x1, long x2)
@@ -157,6 +161,51 @@ namespace Decompose.Numerics
                 xx -= dx;
                 dx -= 8;
                 x -= 2;
+            }
+            return s & 3;
+        }
+
+        private int F2SmallParallel(long x1, long x2)
+        {
+            var xmin = UpToOdd(Math.Max(1, x1));
+            var xmax = DownToOdd(Math.Min((long)IntegerMath.FloorSquareRoot(n), x2));
+
+            if (threads <= 1)
+                return F2SmallParallel(0, xmin, xmax, x1, 2);
+
+            var xsmall = DownToOdd(Math.Max(xmin, Math.Min(smallCutoff, xmax)));
+            var s = 0;
+            for (var x = xmin; x < xsmall; x += 2)
+                s += IntegerMath.Mobius(x) * T2Parallel(n / ((UInt128)x * (UInt128)x));
+            var tasks = new Task<int>[threads];
+            var increment = 2 * threads;
+            for (var worker = 0; worker < threads; worker++)
+            {
+                var thread = worker;
+                var offset = 2 * worker;
+                tasks[worker] = Task.Factory.StartNew(() => F2SmallParallel(thread, xsmall + offset, xmax, x1, increment));
+            }
+            Task.WaitAll(tasks);
+            s += tasks.Select(task => task.Result).Sum();
+            return s & 3;
+        }
+
+        private int F2SmallParallel(int thread, long xmin, long xmax, long offset, long increment)
+        {
+            var s = 0;
+            var xx = (ulong)xmin * (ulong)xmin;
+            var dx1 = 2 * (ulong)increment * (ulong)xmin + (ulong)increment * (ulong)increment;
+            var dx2 = 2 * (ulong)increment * (ulong)increment;
+            for (var x = xmin; x <= xmax; x += increment)
+            {
+                Debug.Assert(xx == (ulong)x * (ulong)x);
+                var mu = values[(x - offset) >> 1];
+                if (mu > 0)
+                    s += T2Isolated(thread, n / xx);
+                else if (mu < 0)
+                    s -= T2Isolated(thread, n / xx);
+                xx += dx1;
+                dx1 += dx2;
             }
             return s & 3;
         }
@@ -258,10 +307,22 @@ namespace Decompose.Numerics
             return s & 3;
         }
 
+        private int T2Parallel(UInt128 n)
+        {
+            var result = (int)(hyperbolicSumParallel.Evaluate(n) & 3);
+            Debug.Assert(result % 4 == new DivisionFreeDivisorSummatoryFunction(0, false, true).Evaluate(n) % 4);
+            return result;
+        }
+
         private int T2Isolated(UInt128 n)
         {
+            return T2Isolated(0, n);
+        }
+
+        private int T2Isolated(int thread, UInt128 n)
+        {
             var sqrt = (long)IntegerMath.FloorSquareRoot(n);
-            var s1 = hyperbolicSum[0].Evaluate(n, 1, (UInt128)sqrt).IsEven ? 0 : 1;
+            var s1 = hyperbolicSum[thread].Evaluate(n, 1, (UInt128)sqrt).IsEven ? 0 : 1;
             var result = 2 * s1 + 3 * (int)(T1Odd(sqrt) & 1);
             Debug.Assert(result % 4 == new DivisionFreeDivisorSummatoryFunction(0, false, true).Evaluate(n) % 4);
             return result & 3;

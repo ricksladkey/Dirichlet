@@ -474,7 +474,7 @@ namespace Sandbox
 #endif
 
 #if true
-            var threads = 0;
+            var threads = 8;
             var algorithm1 = new PrimeCountingMod2Odd(threads);
             var algorithm2 = new PrimeCounting(threads);
             var timer = new Stopwatch();
