@@ -43,7 +43,7 @@ namespace Decompose.Numerics
             var count = Math.Max(threads, 1);
             hyperbolicSum = new IDivisorSummatoryFunction<BigInteger>[count];
             for (var i = 0; i < count; i++)
-                hyperbolicSum[i] = new DivisorSummatoryFunctionOddUInt128(0);
+                hyperbolicSum[i] = new DivisorSummatoryFunctionOddUInt128(0, true);
         }
 
         public int Evaluate(BigInteger n)
@@ -341,7 +341,7 @@ namespace Decompose.Numerics
             var beta = (int)(n / (x + 2));
             var eps = (int)(n % (x + 2));
             var delta = (int)(n / x - beta);
-            var gamma = 2 * beta - x * delta;
+            var gamma = (int)(2 * beta - (long)x * delta);
             while (x >= x1)
             {
                 eps += gamma;
@@ -378,8 +378,7 @@ namespace Decompose.Numerics
             }
             while (x >= x1)
             {
-                beta = (int)((n / x) & 3);
-                s ^= beta + 1;
+                s ^= (int)((n / x) & 3) + 1;
                 x -= 2;
             }
             return (s >> 1) & 1;

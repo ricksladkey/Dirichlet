@@ -43,6 +43,7 @@ namespace Decompose.Numerics
         public static readonly UInt128 C2 = 15;
 
         private int threads;
+        private bool mod2;
         private UInt128 n;
         private UInt128 sum;
         private int unprocessed;
@@ -58,11 +59,12 @@ namespace Decompose.Numerics
         private UInt128 cmax;
 #endif
 
-        public DivisorSummatoryFunctionOddUInt128(int threads)
+        public DivisorSummatoryFunctionOddUInt128(int threads, bool mod2)
         {
             this.threads = threads;
+            this.mod2 = mod2;
             finished = new ManualResetEventSlim();
-            manualAlgorithm = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
+            manualAlgorithm = new DivisionFreeDivisorSummatoryFunction(threads, false, true, mod2);
             stores = new IStore<MutableInteger>[Math.Max(threads, 1)];
             for (var i = 0; i < Math.Max(threads, 1); i++)
                 stores[i] = new MutableIntegerStore(8);

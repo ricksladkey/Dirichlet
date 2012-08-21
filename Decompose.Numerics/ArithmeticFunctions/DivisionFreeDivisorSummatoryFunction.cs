@@ -23,22 +23,40 @@ namespace Decompose.Numerics
         private int threads;
         private bool simple;
         private bool odd;
+        private bool mod2;
         private BigInteger n;
         private UInt128 sum;
+        private int modsum;
+
+        public DivisionFreeDivisorSummatoryFunction(int threads)
+            : this(threads, false, false, false)
+        {
+        }
+
+        public DivisionFreeDivisorSummatoryFunction(int threads, bool simple)
+            : this(threads, simple, false, false)
+        {
+        }
 
         public DivisionFreeDivisorSummatoryFunction(int threads, bool simple, bool odd)
+            : this(threads, simple, odd, false)
+        {
+        }
+
+        public DivisionFreeDivisorSummatoryFunction(int threads, bool simple, bool odd, bool mod2)
         {
             this.threads = threads;
             this.simple = simple;
             this.odd = odd;
+            this.mod2 = mod2;
         }
 
         public BigInteger Evaluate(BigInteger n)
         {
             this.n = n;
             sum = 0;
+            modsum = 0;
             var xmax = (long)IntegerMath.FloorSquareRoot(n);
-            //root6 = (long)IntegerMath.CeilingRoot(n, 6);
             if (threads <= 1)
                 Evaluate(1, xmax);
             else
@@ -46,7 +64,9 @@ namespace Decompose.Numerics
             if (odd)
             {
                 var xmax2 = (xmax + 1) / 2;
-                return (BigInteger)sum - (BigInteger)xmax2 * xmax2;
+                if (mod2)
+                    return (2 * (int)(modsum & 1) - (int)(xmax2 & 1)) & 3;
+                return 2 * (BigInteger)sum - (BigInteger)xmax2 * xmax2;
             }
             return 2 * (BigInteger)sum - (BigInteger)xmax * xmax;
         }
@@ -55,19 +75,38 @@ namespace Decompose.Numerics
         {
             this.n = n;
             sum = 0;
+            modsum = 0;
             if (threads <= 1 || x2 - x1 < ((long)1 << 10))
                 Evaluate((long)x1, (long)x2);
             else
                 EvaluateParallel((long)x1, (long)x2);
-            return odd ? sum / 2 : sum;
+            return mod2 ? (BigInteger)(modsum & 3) : sum;
         }
 
         private void Evaluate(long x1, long x2)
         {
             var x = x2;
-            if (!simple)
-                x = odd ? S1Odd(x1, x) : S1(x1, x);
-            x = odd ? S3Odd(x1, x) : S3(x1, x);
+            if (odd)
+            {
+                if (mod2)
+                {
+                    if (!simple)
+                        x = S1OddMod2(x1, x);
+                    x = S3OddMod2(x1, x);
+                }
+                else
+                {
+                    if (!simple)
+                        x = S1Odd(x1, x);
+                    x = S3Odd(x1, x);
+                }
+            }
+            else
+            {
+                if (!simple)
+                    x = S1(x1, x);
+                x = S3(x1, x);
+            }
         }
 
         private void EvaluateParallel(long xmin, long xmax)
@@ -138,8 +177,8 @@ namespace Decompose.Numerics
                     gamma += x;
                     eps += x;
                 }
-                gamma += 2 * delta;
                 beta += (ulong)delta;
+                gamma += delta << 1;
 
                 Debug.Assert(eps == n % x);
                 Debug.Assert(beta == n / x);
@@ -190,8 +229,8 @@ namespace Decompose.Numerics
                     gamma += x;
                     eps += x;
                 }
-                gamma += 2 * delta;
                 beta += (ulong)delta;
+                gamma += delta << 1;
 
                 Debug.Assert(eps == n % x);
                 Debug.Assert(beta == n / x);
@@ -247,7 +286,7 @@ namespace Decompose.Numerics
         private long S1Odd(long x1, long x2)
         {
             if (n < nmaxOdd)
-                return S1OddSmall(x1, x2);
+                return S1OddSmall((int)x1, (int)x2);
             var s = (UInt128)0;
             var t = (ulong)0;
             var x = (x2 - 1) | 1;
@@ -278,8 +317,8 @@ namespace Decompose.Numerics
                     gamma += x;
                     eps += x;
                 }
-                gamma += 4 * delta;
                 beta += (ulong)delta;
+                gamma += delta << 2;
 
                 Debug.Assert(eps == n % x);
                 Debug.Assert(beta == n / x);
@@ -295,20 +334,21 @@ namespace Decompose.Numerics
                 x -= 2;
             }
             s += t;
+            s >>= 1;
             AddToSum(ref s);
             return x;
         }
 
-        private long S1OddSmall(long x1, long x2)
+        private long S1OddSmall(int x1, int x2)
         {
             if (x2 < 1)
                 return x1 - 2;
-            var t = (ulong)0;
+            var t = (uint)0;
             var x = (x2 - 1) | 1;
-            var beta = (ulong)(n / (x + 2));
-            var eps = (long)(n % (x + 2));
-            var delta = (long)(n / x - beta);
-            var gamma = 2 * (long)beta - x * delta;
+            var beta = (uint)(n / (x + 2));
+            var eps = (int)(n % (x + 2));
+            var delta = (int)(n / x - beta);
+            var gamma = 2 * (int)beta - x * delta;
             while (x >= x1)
             {
                 eps += gamma;
@@ -332,8 +372,8 @@ namespace Decompose.Numerics
                     gamma += x;
                     eps += x;
                 }
-                gamma += 4 * delta;
-                beta += (ulong)delta;
+                beta += (uint)delta;
+                gamma += delta << 2;
 
                 Debug.Assert(eps == n % x);
                 Debug.Assert(beta == n / x);
@@ -344,6 +384,7 @@ namespace Decompose.Numerics
                 x -= 2;
             }
             var s = (UInt128)t;
+            s >>= 1;
             AddToSum(ref s);
             return x;
         }
@@ -366,6 +407,7 @@ namespace Decompose.Numerics
                 x -= 2;
             }
             s += tOdd;
+            s >>= 1;
             AddToSum(ref s);
             return x;
         }
@@ -388,7 +430,134 @@ namespace Decompose.Numerics
                 x -= 2;
             }
             s += t;
+            s >>= 1;
             AddToSum(ref s);
+            return x;
+        }
+
+        private long S1OddMod2(long x1, long x2)
+        {
+            if (n <= long.MaxValue)
+                return S1OddMod2((int)x1, (int)x2);
+            var s = (long)0;
+            var x = (x2 - 1) | 1;
+            var beta = (long)(n / (x + 2));
+            var eps = (long)(n % (x + 2));
+            var delta = (long)(n / x - beta);
+            var gamma = 2 * beta - x * delta;
+            ++beta;
+            while (x >= x1)
+            {
+                eps += gamma;
+                if (eps >= x)
+                {
+                    ++delta;
+                    gamma -= x;
+                    eps -= x;
+                    if (eps >= x)
+                    {
+                        ++delta;
+                        gamma -= x;
+                        eps -= x;
+                        if (eps >= x)
+                            break;
+                    }
+                }
+                else if (eps < 0)
+                {
+                    --delta;
+                    gamma += x;
+                    eps += x;
+                }
+                beta += delta;
+                gamma += delta << 2;
+
+                Debug.Assert(eps == n % x);
+                Debug.Assert(beta == (n / x + 1) % 4);
+                Debug.Assert(delta == (n / x) - n / (x + 2));
+                Debug.Assert(gamma == 2 * (n / x) - (BigInteger)(x - 2) * delta);
+
+                s ^= beta;
+                x -= 2;
+            }
+            AddToModSum((int)(s >> 1));
+            return x;
+        }
+
+        private long S3OddMod2(long x1, long x2)
+        {
+            if (n <= long.MaxValue)
+                return S3OddMod2((int)x1, (int)x2);
+            var x = (x2 - 1) | 1;
+            var s = 0;
+            var nRep = (UInt128)n;
+            while (x >= x1)
+            {
+                s ^= (int)((nRep / (ulong)x) & 3) + 1;
+                x -= 2;
+            }
+            AddToModSum(s >> 1);
+            return x;
+        }
+
+        private int S1OddMod2(int x1, int x2)
+        {
+            var s = (int)0;
+            var x = (int)(x2 - 1) | 1;
+            var bigbeta = (n / (x + 2));
+            var eps = (int)(n % (x + 2));
+            var delta = (int)(n / x - bigbeta);
+            var gamma = (int)(2 * bigbeta - (long)x * delta);
+            var beta = (int)((bigbeta + 1) & 3);
+            while (x >= x1)
+            {
+                eps += gamma;
+                if (eps >= x)
+                {
+                    ++delta;
+                    gamma -= x;
+                    eps -= x;
+                    if (eps >= x)
+                    {
+                        ++delta;
+                        gamma -= x;
+                        eps -= x;
+                        if (eps >= x)
+                            break;
+                    }
+                }
+                else if (eps < 0)
+                {
+                    --delta;
+                    gamma += x;
+                    eps += x;
+                }
+                beta += delta;
+                gamma += delta << 2;
+
+                Debug.Assert(eps == n % x);
+                Debug.Assert(beta % 4 == (n / x + 1) % 4);
+                Debug.Assert(delta == n / x - n / (x + 2));
+                Debug.Assert(gamma == 2 * (n / x) - (x - 2) * delta);
+
+                s ^= beta;
+                x -= 2;
+            }
+            AddToModSum(s >> 1);
+            return x;
+        }
+
+        private int S3OddMod2(int x1, int x2)
+        {
+            var x = (x2 - 1) | 1;
+            var s = 0;
+            var nRep = (long)n;
+            while (x >= x1)
+            {
+                s ^= (int)((nRep / x) & 3) + 1;
+                x -= 2;
+            }
+            AddToModSum(s >> 1);
             return x;
         }
 
@@ -399,6 +568,11 @@ namespace Decompose.Numerics
                 lock (this)
                     sum += s;
             }
+        }
+
+        private void AddToModSum(int s)
+        {
+            Interlocked.Add(ref modsum, s);
         }
     }
 }
