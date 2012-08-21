@@ -549,15 +549,16 @@ namespace Decompose.Numerics
 
         private int S3OddMod2(int x1, int x2)
         {
+            var xmin = (uint)x1;
             var x = (x2 - 1) | 1;
-            var s = 0;
-            var nRep = (long)n;
+            var s = (uint)0;
+            var nRep = (ulong)n;
             while (x >= x1)
             {
-                s ^= (int)((nRep / x) & 3) + 1;
+                s ^= (uint)(nRep / (uint)x) + 1;
                 x -= 2;
             }
-            AddToModSum(s >> 1);
+            AddToModSum((int)(s >> 1));
             return x;
         }
 
