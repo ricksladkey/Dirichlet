@@ -10,7 +10,7 @@ namespace Decompose.Numerics
     public class PrimeCountingMod2Odd
     {
         private const int mobiusBatchSize = 1 << 20;
-        private const int divisorBatchSize = 1 << 18;
+        private const int divisorBatchSize = 1 << 20;
         private const int smallCutoff = 10;
         private const long C1 = 1;
         private const long C2 = 1;
@@ -63,8 +63,8 @@ namespace Decompose.Numerics
             xmax = imax != 0 ? Xi(imax) : sqrtn;
             xmed = DownToOdd(Math.Min((long)(IntegerMath.FloorPower(n, 2, 7) * C3 / C4), xmax));
             var dmax = (long)IntegerMath.Min(n / IntegerMath.Square((UInt128)xmed) + 1, n);
-            mobius = new MobiusOddRange((xmax + 2) | 1, 0);
-            divisors = new DivisorOddRange((dmax + 2) | 1, 0);
+            mobius = new MobiusOddRange((xmax + 2) | 1, threads);
+            divisors = new DivisorOddRange((dmax + 2) | 1, threads);
             xi = new long[imax + 1];
             mx = new long[imax + 1];
 
@@ -85,7 +85,7 @@ namespace Decompose.Numerics
                 var xlast = Math.Min(xmed, xfirst + mobiusBatchSize - 2);
                 m0 = mobius.GetValuesAndSums(xfirst, xlast + 2, values, m, m0);
                 sum += Pi2Small(xfirst, xlast);
-                UpdateMx(xfirst, xlast, 1, 1);
+                UpdateMx(xfirst, xlast);
             }
 
             // Process medium x values.
@@ -96,7 +96,7 @@ namespace Decompose.Numerics
                 var xlast = Math.Min(xmaxodd, xfirst + mobiusBatchSize - 2);
                 m0 = mobius.GetValuesAndSums(xfirst, xlast + 2, values, m, m0);
                 sum += Pi2Medium(xfirst, xlast);
-                UpdateMx(xfirst, xlast, 1, 1);
+                UpdateMx(xfirst, xlast);
             }
 
             // Process large x values.
@@ -359,6 +359,23 @@ namespace Decompose.Numerics
         private long Xi(long i)
         {
             return (long)IntegerMath.FloorSquareRoot(n / (ulong)i);
+        }
+
+        private void UpdateMx(long x1, long x2)
+        {
+            if (threads <= 1)
+            {
+                UpdateMx(x1, x2, 1, 1);
+                return;
+            }
+
+            var tasks = new Task[threads];
+            for (var thread = 0; thread < threads; thread++)
+            {
+                var offset = thread + 1;
+                tasks[thread] = Task.Factory.StartNew(() => UpdateMx(x1, x2, offset, threads));
+            }
+            Task.WaitAll(tasks);
         }
 
         private void UpdateMx(long x1, long x2, long offset, long increment)
