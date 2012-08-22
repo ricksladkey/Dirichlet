@@ -507,19 +507,15 @@ namespace Sandbox
 #endif
 
 #if true
-            var threads = 0;
+            var threads = 8;
             var algorithm1 = new PrimeCountingMod2Odd(threads);
             var algorithm2 = new PrimeCounting(threads);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 32; i <= 32; i++)
+            for (var i = 1; i <= 80; i++)
             {
                 var n = IntegerMath.Power((BigInteger)2, i);
-#if false
                 var p0 = PrimeCountingMod2.PowerOfTwo(i);
-#else
-                var p0 = PrimeCounting.PiPowerOfTwo(i) % 2;
-#endif
 #if true
                 timer.Restart();
                 var p1 = algorithm1.Evaluate(n);
