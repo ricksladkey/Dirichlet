@@ -473,13 +473,13 @@ namespace Sandbox
             }
 #endif
 
-#if true
+#if false
             var threads = 8;
             var algorithm1 = new PrimeCountingMod2Odd(threads);
             var algorithm2 = new PrimeCounting(threads);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 20; i <= 20; i++)
+            for (var i = 21; i <= 21; i++)
             {
                 var n = IntegerMath.Power((BigInteger)10, i);
                 var p0 = PrimeCounting.PiPowerOfTen(i) % 2;
@@ -506,15 +506,20 @@ namespace Sandbox
             }
 #endif
 
-#if false
-            var algorithm1 = new PrimeCountingMod2Odd(0);
-            var algorithm2 = new PrimeCounting(0);
+#if true
+            var threads = 0;
+            var algorithm1 = new PrimeCountingMod2Odd(threads);
+            var algorithm2 = new PrimeCounting(threads);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 2; i <= 64; i++)
+            for (var i = 32; i <= 32; i++)
             {
-                var n = IntegerMath.Power((BigInteger)2, i) - 1;
+                var n = IntegerMath.Power((BigInteger)2, i);
+#if false
+                var p0 = PrimeCountingMod2.PowerOfTwo(i);
+#else
                 var p0 = PrimeCounting.PiPowerOfTwo(i) % 2;
+#endif
 #if true
                 timer.Restart();
                 var p1 = algorithm1.Evaluate(n);
