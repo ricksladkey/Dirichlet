@@ -512,13 +512,13 @@ namespace Sandbox
             var algorithm2 = new PrimeCounting(threads);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 68; i <= 68; i++)
+            for (var i = 60; i <= 70; i++)
             {
                 var n = IntegerMath.Power((BigInteger)2, i);
                 var p0 = i <= 80 ? PrimeCountingMod2.PowerOfTwo(i) : -1;
 #if true
                 timer.Restart();
-                var p1 = algorithm1.Evaluate(n);
+                var p1 = EvaluateAndTime(() => algorithm1.Evaluate(n));
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #else
                 var p1 = -1;

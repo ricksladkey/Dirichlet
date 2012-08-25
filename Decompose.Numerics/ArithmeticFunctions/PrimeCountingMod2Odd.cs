@@ -9,7 +9,7 @@ namespace Decompose.Numerics
 {
     public class PrimeCountingMod2Odd
     {
-        private const int mobiusBatchSize = 1 << 20;
+        private const int mobiusBatchSize = 1 << 25;
         private const int divisorBatchSize = 1 << 20;
         private const int smallCutoff = 10;
         private const long C1 = 1;
@@ -89,6 +89,7 @@ namespace Decompose.Numerics
             }
 
             // Process medium x values.
+#if true
             for (var x = xmed + 2; x <= xmax; x += mobiusBatchSize)
             {
                 var xfirst = x;
@@ -97,6 +98,16 @@ namespace Decompose.Numerics
                 sum += Pi2Medium(xfirst, xlast);
                 UpdateMx(xfirst, xlast);
             }
+#else
+            for (var x = xmax; x > xmed; x -= mobiusBatchSize)
+            {
+                var xlast = x;
+                var xfirst = Math.Max(xmed + 2, xlast - mobiusBatchSize + 2);
+                m0 = mobius.GetValuesAndSums(xfirst, xlast + 2, values, m, m0);
+                sum += Pi2Medium(xfirst, xlast);
+                UpdateMx(xfirst, xlast);
+            }
+#endif
 
             // Process large x values.
             sum += Pi2Large();
@@ -218,7 +229,7 @@ namespace Decompose.Numerics
             var beta = (long)(n / ((ulong)x + 2));
             var eps = (long)(n % ((ulong)x + 2));
             var delta = (long)(n / (ulong)x - (ulong)beta);
-            var gamma = 2 * beta - x * delta;
+            var gamma = (long)(2 * (UInt128)beta - (UInt128)x * (UInt128)delta);
             var alpha = beta / (x + 2);
             var alphax = (alpha + 1) * (x + 2);
             var lastalpha = (long)-1;
@@ -320,11 +331,7 @@ namespace Decompose.Numerics
 
         private int T2Isolated(int thread, UInt128 n)
         {
-            var sqrt = (long)IntegerMath.FloorSquareRoot(n);
-            var s1 = hyperbolicSum[thread].Evaluate(n, 1, (UInt128)sqrt).IsEven ? 0 : 1;
-            var result = 2 * s1 + 3 * (int)(T1Odd(sqrt) & 1);
-            Debug.Assert(result % 4 == new DivisionFreeDivisorSummatoryFunction(0, false, true).Evaluate(n) % 4);
-            return result & 3;
+            return (int)(hyperbolicSum[thread].Evaluate(n) & 3);
         }
 
         private int T2Sequential(long n)
