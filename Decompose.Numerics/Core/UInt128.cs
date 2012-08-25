@@ -600,14 +600,14 @@ namespace Decompose.Numerics
         {
             if (s1 != 0 || other < 0)
                 return 1;
-            return s0.CompareTo((uint)other);
+            return s0.CompareTo((ulong)other);
         }
 
         public int CompareTo(uint other)
         {
             if (s1 != 0)
                 return 1;
-            return s0.CompareTo(other);
+            return s0.CompareTo((ulong)other);
         }
 
         public int CompareTo(long other)

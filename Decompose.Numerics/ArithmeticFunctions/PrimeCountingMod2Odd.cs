@@ -60,7 +60,7 @@ namespace Decompose.Numerics
             sqrtn = (long)IntegerMath.FloorSquareRoot(n);
             kmax = (int)IntegerMath.FloorLog(n, 2);
             imax = (long)IntegerMath.FloorPower(n, 1, 5) * C1 / C2;
-            xmax = imax != 0 ? Xi(imax) : sqrtn;
+            xmax = DownToOdd(imax != 0 ? Xi(imax) : sqrtn);
             xmed = DownToOdd(Math.Min((long)(IntegerMath.FloorPower(n, 2, 7) * C3 / C4), xmax));
             var dmax = (long)IntegerMath.Min(n / IntegerMath.Square((UInt128)xmed) + 1, n);
             mobius = new MobiusOddRange((xmax + 2) | 1, threads);
@@ -89,11 +89,10 @@ namespace Decompose.Numerics
             }
 
             // Process medium x values.
-            var xmaxodd = DownToOdd(xmax);
-            for (var x = xmed + 2; x <= xmaxodd; x += mobiusBatchSize)
+            for (var x = xmed + 2; x <= xmax; x += mobiusBatchSize)
             {
                 var xfirst = x;
-                var xlast = Math.Min(xmaxodd, xfirst + mobiusBatchSize - 2);
+                var xlast = Math.Min(xmax, xfirst + mobiusBatchSize - 2);
                 m0 = mobius.GetValuesAndSums(xfirst, xlast + 2, values, m, m0);
                 sum += Pi2Medium(xfirst, xlast);
                 UpdateMx(xfirst, xlast);
@@ -179,11 +178,11 @@ namespace Decompose.Numerics
                 s += IntegerMath.Mobius(x) * T2Parallel(n / ((UInt128)x * (UInt128)x));
             var tasks = new Task<int>[threads];
             var increment = 2 * threads;
-            for (var worker = 0; worker < threads; worker++)
+            for (var thread = 0; thread < threads; thread++)
             {
-                var thread = worker;
-                var offset = 2 * worker;
-                tasks[worker] = Task.Factory.StartNew(() => F2SmallParallel(thread, xsmall + offset, xmax, x1, increment));
+                var worker = thread;
+                var offset = 2 * thread;
+                tasks[thread] = Task.Factory.StartNew(() => F2SmallParallel(worker, xsmall + offset, xmax, x1, increment));
             }
             Task.WaitAll(tasks);
             s += tasks.Select(task => task.Result).Sum();
@@ -505,7 +504,7 @@ namespace Decompose.Numerics
             // Add the remaining contributions to each mx from other mx values.
             for (var i = imax; i >= 1; i--)
             {
-                var jmax = DownToOdd(xi[i] / (xmax + 1));
+                var jmax = DownToOdd(xi[i] / (xmax + 2));
                 var s = (long)0;
                 for (var j = (long)3; j <= jmax; j += 2)
                     s += mx[j * j * i];

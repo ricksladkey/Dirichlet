@@ -512,10 +512,10 @@ namespace Sandbox
             var algorithm2 = new PrimeCounting(threads);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 1; i <= 80; i++)
+            for (var i = 68; i <= 68; i++)
             {
                 var n = IntegerMath.Power((BigInteger)2, i);
-                var p0 = PrimeCountingMod2.PowerOfTwo(i);
+                var p0 = i <= 80 ? PrimeCountingMod2.PowerOfTwo(i) : -1;
 #if true
                 timer.Restart();
                 var p1 = algorithm1.Evaluate(n);
@@ -531,7 +531,7 @@ namespace Sandbox
                 var p2 = -1;
 #endif
                 Console.WriteLine("i = {0}, p0 = {1}, p1 = {2}, p2 = {3}", i, p0, p1, p2);
-                if (p0 != p1)
+                if (p0 != -1 && p0 != p1)
                 {
                     Console.WriteLine("mismatch!");
                     break;
