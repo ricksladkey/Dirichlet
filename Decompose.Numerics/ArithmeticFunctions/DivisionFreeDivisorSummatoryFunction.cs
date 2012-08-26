@@ -536,9 +536,9 @@ namespace Decompose.Numerics
                 gamma += delta << 2;
 
                 Debug.Assert(eps == n % x);
-                Debug.Assert(beta % 4 == (n / x + 1) % 4);
+                Debug.Assert((beta & 3) == (n / x + 1) % 4);
                 Debug.Assert(delta == n / x - n / (x + 2));
-                Debug.Assert(gamma == 2 * (n / x) - (x - 2) * delta);
+                Debug.Assert(gamma == 2 * (n / x) - (UInt128)(x - 2) * (UInt128)delta);
 
                 s ^= beta;
                 x -= 2;
