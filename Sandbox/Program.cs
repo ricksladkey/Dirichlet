@@ -506,7 +506,7 @@ namespace Sandbox
             }
 #endif
 
-#if true
+#if false
             var threads = 8;
             var algorithm1 = new PrimeCountingMod2Odd(threads);
             var algorithm2 = new PrimeCounting(threads);
@@ -642,22 +642,23 @@ namespace Sandbox
             }
 #endif
 
-#if false
+#if true
             var threads = 8;
             var power = 10;
-            var n = IntegerMath.Power(10, power);
+            var n = IntegerMath.Power((long)10, power);
             var batchSize = 1 << 24;
-            var algorithmDivisor = new DivisorRange(n + 1, threads);
-            var algorithmMobius = new MobiusRange(n + 1, threads);
-            var divisor = new int[batchSize];
-            var mobius = new sbyte[batchSize];
+            var algorithmDivisor = new DivisorOddRange(n + 1, threads);
+            var algorithmMobius = new MobiusOddRange(n + 1, threads);
+            var dsums = new long[batchSize];
+            var mobius = new long[batchSize];
             var timer = new Stopwatch();
             timer.Restart();
-            for (var k0 = 1; k0 <= n; k0 += batchSize)
+            var sum0 = (long)0;
+            for (var k0 = (long)1; k0 <= n; k0 += batchSize)
             {
                 var kstart = k0;
                 var kend = Math.Min(n + 1, k0 + batchSize);
-                algorithmDivisor.GetValues(kstart, kend, divisor);
+                sum0 = algorithmDivisor.GetSums(kstart, kend, dsums, sum0);
 #if false
                 for (var x = kstart; x < kend; x++)
                 {

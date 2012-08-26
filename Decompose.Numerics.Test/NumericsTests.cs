@@ -1240,11 +1240,25 @@ namespace Decompose.Numerics.Test
             for (var threads = 0; threads < 4; threads++)
             {
                 var n = 1 << 10;
-                var divisors = new DivisorOddRange(n, threads);
+                var divisors = new DivisorOddRange(n | 1, threads);
                 var values = new int[n];
                 divisors.GetValues(1, n | 1, values);
                 for (int i = 1; i < n; i += 2)
                     Assert.AreEqual(IntegerMath.NumberOfDivisors(i), values[i >> 1]);
+            }
+        }
+
+        [TestMethod]
+        public void DivisorTest7()
+        {
+            for (var threads = 0; threads < 4; threads++)
+            {
+                var n = 1 << 10;
+                var divisors = new DivisorOddRange(n | 1, threads);
+                var sums = new long[n];
+                divisors.GetSums(1, n | 1, sums, 0);
+                for (int i = 1; i < n; i += 2)
+                    Assert.AreEqual(IntegerMath.SumOfNumberOfDivisorsOdd(i), sums[i >> 1]);
             }
         }
     }

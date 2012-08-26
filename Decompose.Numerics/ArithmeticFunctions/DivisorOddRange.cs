@@ -13,14 +13,14 @@ namespace Decompose.Numerics
             public long[] Products;
             public int[] Values;
             public int[] Offsets;
-            public long[] OffsetsSquared;
+            public long[] OffsetsPower;
 
             public Data(int length)
             {
                 Products = new long[blockSize];
                 Values = new int[blockSize];
                 Offsets = new int[length];
-                OffsetsSquared = new long[length];
+                OffsetsPower = new long[length];
             }
         }
 
@@ -197,7 +197,7 @@ namespace Decompose.Numerics
                 data = new Data(Math.Max(1, primes.Length));
             var products = data.Products;
             var offsets = data.Offsets;
-            var offsetsSquared = data.OffsetsSquared;
+            var offsetsPower = data.OffsetsPower;
             if (values == null)
                 values = data.Values;
 
@@ -210,11 +210,11 @@ namespace Decompose.Numerics
                     offset = 0;
                 offsets[i] = offset;
                 Debug.Assert((kstart + 2 * offset) % p == 0);
-                var pSquared = (long)p * p;
-                var offsetSquared = pSquared - ((kstart + pSquared) >> 1) % pSquared;
-                if (offsetSquared == pSquared)
-                    offsetSquared = 0;
-                offsetsSquared[i] = offsetSquared;
+                var pPower = i < cycleLimit ? (long)p * p * p : (long)p * p;
+                var offsetPower = pPower - ((kstart + pPower) >> 1) % pPower;
+                if (offsetPower == pPower)
+                    offsetPower = 0;
+                offsetsPower[i] = offsetPower;
             }
 
             // Determine the initial cycle offset.
@@ -229,7 +229,7 @@ namespace Decompose.Numerics
                 var voffset = kmin == -1 ? k : kmin;
                 var soffset = smin == -1 ? k : smin;
                 var length = (int)Math.Min(blockSize, kend - k) >> 1;
-                SieveBlock(pmax, k, length, products, values, offsets, offsetsSquared, voffset);
+                SieveBlock(pmax, k, length, products, values, offsets, offsetsPower, voffset);
                 sum0 = AddValues(k, length, products, values, voffset, sums, soffset, sum0);
 
                 // Perform action, if any.
@@ -241,7 +241,7 @@ namespace Decompose.Numerics
             queue.Enqueue(data);
         }
 
-        private void SieveBlock(int pmax, long k0, int length, long[] products, int[] values, int[] offsets, long[] offsetsSquared, long kmin)
+        private void SieveBlock(int pmax, long k0, int length, long[] products, int[] values, int[] offsets, long[] offsetsPower, long kmin)
         {
             // Initialize and pre-sieve product and value arrays from cycles.
             var koffset = (k0 - kmin) >> 1;
@@ -257,20 +257,22 @@ namespace Decompose.Numerics
             }
             offsets[0] = cycleOffset - length;
 
-            // Handle small primes.
+            // Handle small primes individually to allow the operations
+            // to be optimized by the JIT compiler.
             if (1 < cycleLimit)
             {
-                // Handle multiples of 3^2.
+                // Handle multiples of 3^3.
                 const int i = 1;
                 const int p = 3;
-                const int pSquared = p * p;
+                const int pCubed = p * p * p;
                 int kk;
-                for (kk = (int)offsetsSquared[i]; kk < length; kk += pSquared)
+                for (kk = (int)offsetsPower[i]; kk < length; kk += pCubed)
                 {
-                    Debug.Assert((k0 + 2 * kk) % pSquared == 0);
-                    var quotient = (k0 + 2 * kk) / pSquared;
+                    Debug.Assert((k0 + 2 * kk) % pCubed == 0);
+                    products[kk] *= p;
+                    var quotient = (k0 + 2 * kk) / pCubed;
                     int exponent;
-                    for (exponent = 2; quotient % p == 0; exponent++)
+                    for (exponent = 3; quotient % p == 0; exponent++)
                     {
                         Debug.Assert(quotient / p > 0);
                         products[kk] *= p;
@@ -278,49 +280,53 @@ namespace Decompose.Numerics
                     }
                     values[kk + koffset] = values[kk + koffset] / 3 * (exponent + 1);
                 }
-                offsetsSquared[i] = kk - length;
+                offsetsPower[i] = kk - length;
             }
             if (2 < cycleLimit)
             {
                 // Handle multiples of 5^2.
                 const int i = 2;
                 const int p = 5;
-                const int pSquared = p * p;
+                const int pCubed = p * p * p;
                 int kk;
-                for (kk = (int)offsetsSquared[i]; kk < length; kk += pSquared)
+                for (kk = (int)offsetsPower[i]; kk < length; kk += pCubed)
                 {
-                    Debug.Assert((k0 + 2 * kk) % pSquared == 0);
-                    var quotient = (k0 + 2 * kk) / pSquared;
+                    Debug.Assert((k0 + 2 * kk) % pCubed == 0);
+                    products[kk] *= p;
+                    var quotient = (k0 + 2 * kk) / pCubed;
                     int exponent;
-                    for (exponent = 2; quotient % p == 0; exponent++)
+                    for (exponent = 3; quotient % p == 0; exponent++)
                     {
+                        Debug.Assert(quotient / p > 0);
                         products[kk] *= p;
                         quotient /= p;
                     }
                     values[kk + koffset] = values[kk + koffset] / 3 * (exponent + 1);
                 }
-                offsetsSquared[i] = kk - length;
+                offsetsPower[i] = kk - length;
             }
             if (3 < cycleLimit)
             {
                 // Handle multiples of 7^2.
                 const int i = 3;
                 const int p = 7;
-                const int pSquared = p * p;
+                const int pCubed = p * p * p;
                 int kk;
-                for (kk = (int)offsetsSquared[i]; kk < length; kk += pSquared)
+                for (kk = (int)offsetsPower[i]; kk < length; kk += pCubed)
                 {
-                    Debug.Assert((k0 + 2 * kk) % pSquared == 0);
-                    var quotient = (k0 + 2 * kk) / pSquared;
+                    Debug.Assert((k0 + 2 * kk) % pCubed == 0);
+                    products[kk] *= p;
+                    var quotient = (k0 + 2 * kk) / pCubed;
                     int exponent;
-                    for (exponent = 2; quotient % p == 0; exponent++)
+                    for (exponent = 3; quotient % p == 0; exponent++)
                     {
+                        Debug.Assert(quotient / p > 0);
                         products[kk] *= p;
                         quotient /= p;
                     }
                     values[kk + koffset] = values[kk + koffset] / 3 * (exponent + 1);
                 }
-                offsetsSquared[i] = kk - length;
+                offsetsPower[i] = kk - length;
             }
 
             // Sieve remaining primes.
@@ -339,7 +345,7 @@ namespace Decompose.Numerics
                 offsets[i] = k - length;
 
                 // Handle multiples of p^2.
-                long kk = offsetsSquared[i];
+                long kk = offsetsPower[i];
                 if (kk < length)
                 {
                     var pSquared = (long)p * p;
@@ -359,7 +365,7 @@ namespace Decompose.Numerics
                     }
                     while (kk < length);
                 }
-                offsetsSquared[i] = kk - length;
+                offsetsPower[i] = kk - length;
             }
         }
 
@@ -385,9 +391,10 @@ namespace Decompose.Numerics
             {
                 for (var k = deltai; k < kmax; k += 2)
                 {
+                    var value = values[k >> 1];
                     if (products[(k - deltai) >> 1] < k + kmin)
-                        values[k >> 1] <<= 1;
-                    sum0 += values[k >> 1];
+                        value <<= 1;
+                    sum0 += value;
                     sums[(k - deltas) >> 1] = sum0;
                     Debug.Assert(IntegerMath.NumberOfDivisors(k + kmin) == values[k >> 1]);
                 }
