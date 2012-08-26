@@ -198,8 +198,12 @@ namespace Decompose.Numerics
             var products = data.Products;
             var offsets = data.Offsets;
             var offsetsPower = data.OffsetsPower;
+            bool onlySums = false;
             if (values == null)
+            {
                 values = data.Values;
+                onlySums = true;
+            }
 
             // Determine the initial offset and offset squared of each prime divisor.
             for (var i = 1; i < pmax; i++)
@@ -230,7 +234,7 @@ namespace Decompose.Numerics
                 var soffset = smin == -1 ? k : smin;
                 var length = (int)Math.Min(blockSize, kend - k) >> 1;
                 SieveBlock(pmax, k, length, products, values, offsets, offsetsPower, voffset);
-                sum0 = AddValues(k, length, products, values, voffset, sums, soffset, sum0);
+                sum0 = AddValues(k, length, products, values, voffset, sums, soffset, sum0, onlySums);
 
                 // Perform action, if any.
                 if (action != null)
@@ -369,34 +373,36 @@ namespace Decompose.Numerics
             }
         }
 
-        private long AddValues(long k0, int length, long[] products, int[] values, long kmin, long[] sums, long smin, long sum0)
+        private long AddValues(long k0, int length, long[] products, int[] values, long kmin, long[] sums, long smin, long sum0, bool onlySums)
         {
             // Each product can have at most one more prime factor.
             // It has that factor if the value of the product is
             // less than the full value.
-            var deltai = (int)(k0 - kmin);
-            var deltas = (int)(smin - kmin);
-            var kmax = (int)(deltai + 2 * length);
-            if (sums == null)
+            var deltai = (int)(k0 - kmin) >> 1;
+            var deltas = (int)(smin - kmin) >> 1;
+            var kmax = (int)(deltai + length);
+            if (onlySums)
             {
-                for (var k = deltai; k < kmax; k += 2)
+                for (var k = 0; k < kmax; k++)
                 {
-                    if (products[(k - deltai) >> 1] < k + kmin)
-                        values[k >> 1] <<= 1;
-                    sum0 += values[k >> 1];
-                    Debug.Assert(IntegerMath.NumberOfDivisors(k + kmin) == values[k >> 1]);
+                    sums[k - deltas] = sum0 += values[k] << -(int)((products[k] - (2 * k + kmin)) >> 63);
+                    Debug.Assert(k == 0 || IntegerMath.NumberOfDivisors(2 * k + kmin) == sums[k - deltas] - sums[k - deltas - 1]);
+                }
+            }
+            else if (sums == null)
+            {
+                for (var k = deltai; k < kmax; k++)
+                {
+                    sum0 += values[k] <<= -(int)((products[k - deltai] - (2 * k + kmin)) >> 63);
+                    Debug.Assert(IntegerMath.NumberOfDivisors(2 * k + kmin) == values[k]);
                 }
             }
             else
             {
-                for (var k = deltai; k < kmax; k += 2)
+                for (var k = deltai; k < kmax; k++)
                 {
-                    var value = values[k >> 1];
-                    if (products[(k - deltai) >> 1] < k + kmin)
-                        value <<= 1;
-                    sum0 += value;
-                    sums[(k - deltas) >> 1] = sum0;
-                    Debug.Assert(IntegerMath.NumberOfDivisors(k + kmin) == values[k >> 1]);
+                    sums[k - deltas] = sum0 += values[k] <<= -(int)((products[k - deltai] - (2 * k + kmin)) >> 63);
+                    Debug.Assert(IntegerMath.NumberOfDivisors(2 * k + kmin) == values[k]);
                 }
             }
             return sum0;

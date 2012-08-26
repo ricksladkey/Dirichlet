@@ -1176,7 +1176,7 @@ namespace Decompose.Numerics.Test
                 for (var k = 1; k < n; k += batchSize)
                 {
                     var kmin = k;
-                    var kmax = Math.Min(kmin + batchSize, n + 1);
+                    var kmax = Math.Min(kmin + batchSize, n);
                     divisors.GetValues(k, kmax, values);
                     var length = kmax - kmin;
                     for (int i = 0; i < length; i++)
@@ -1199,7 +1199,7 @@ namespace Decompose.Numerics.Test
                 for (var k = 1; k < n; k += batchSize)
                 {
                     var kmin = k;
-                    var kmax = Math.Min(kmin + batchSize, n + 1);
+                    var kmax = Math.Min(kmin + batchSize, n);
                     sum0 = divisors.GetValuesAndSums(kmin, kmax, values, sums, sum0);
                     var length = kmax - kmin;
                     for (int i = 0; i < length; i++)
@@ -1225,7 +1225,7 @@ namespace Decompose.Numerics.Test
                 for (var k = 1; k < n; k += batchSize)
                 {
                     var kmin = k;
-                    var kmax = Math.Min(kmin + batchSize, n + 1);
+                    var kmax = Math.Min(kmin + batchSize, n);
                     sum0 = divisors.GetSums(k, kmax, sums, sum0);
                     var length = kmax - kmin;
                     for (int i = 0; i < length; i++)
