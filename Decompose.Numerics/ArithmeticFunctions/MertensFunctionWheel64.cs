@@ -21,7 +21,7 @@ namespace Decompose.Numerics
         private long n;
         private long u;
         private int imax;
-        private long[] m;
+        private int[] m;
         private long[] mx;
         private int[] r;
         private int lmax;
@@ -107,14 +107,14 @@ namespace Decompose.Numerics
             if (u <= wheelSize)
             {
                 mobius = new MobiusRange(n + 1, threads);
-                m = new long[n];
+                m = new int[n];
                 return mobius.GetSums(1, n + 1, m, 0);
             }
 
             imax = (int)(n / u);
             mobius = new MobiusRange(u + 1, threads);
             var batchSize = Math.Min(u, maximumBatchSize);
-            m = new long[batchSize];
+            m = new int[batchSize];
             mx = new long[imax + 1];
             r = new int[imax + 1];
 
@@ -154,7 +154,7 @@ namespace Decompose.Numerics
                     buckets[thread] = bucketLists[thread].ToArray();
             }
 
-            var m0 = (long)0;
+            var m0 = 0;
             for (var x = (long)1; x <= u; x += maximumBatchSize)
             {
                 var xstart = x;

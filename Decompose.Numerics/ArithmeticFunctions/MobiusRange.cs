@@ -58,22 +58,22 @@ namespace Decompose.Numerics
             GetValuesAndSums(kmin, kmax, values, null, 0, offset);
         }
 
-        public long GetSums(long kmin, long kmax, long[] sums, long sum0)
+        public int GetSums(long kmin, long kmax, int[] sums, int sum0)
         {
             return GetValuesAndSums(kmin, kmax, null, sums, sum0, kmin);
         }
 
-        public long GetSums(long kmin, long kmax, long[] sums, long sum0, long offset)
+        public int GetSums(long kmin, long kmax, int[] sums, int sum0, long offset)
         {
-            return GetValuesAndSums(kmin, kmax, null, sums, offset, sum0);
+            return GetValuesAndSums(kmin, kmax, null, sums, sum0, offset);
         }
 
-        public long GetValuesAndSums(long kmin, long kmax, sbyte[] values, long[] sums, long sum0)
+        public int GetValuesAndSums(long kmin, long kmax, sbyte[] values, int[] sums, int sum0)
         {
             return GetValuesAndSums(kmin, kmax, values, sums, sum0, kmin);
         }
 
-        public long GetValuesAndSums(long kmin, long kmax, sbyte[] values, long[] sums, long sum0, long offset)
+        public int GetValuesAndSums(long kmin, long kmax, sbyte[] values, int[] sums, int sum0, long offset)
         {
             // Validate operation.
             if (kmax < kmin || kmax > size)
@@ -108,7 +108,7 @@ namespace Decompose.Numerics
                 return 0;
 
             // Collect and sum Mertens function totals for each batch.
-            var mabs = new long[threads];
+            var mabs = new int[threads];
             mabs[0] = 0;
             for (var thread = 1; thread < threads; thread++)
             {
@@ -145,7 +145,7 @@ namespace Decompose.Numerics
             return pmax;
         }
 
-        private void BumpRange(long abs, long kstart, long kend, long offset, long[] sums)
+        private void BumpRange(int abs, long kstart, long kend, long offset, int[] sums)
         {
             var klo = (int)(kstart - offset);
             var khi = (int)(kend - offset);
@@ -179,7 +179,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private void ProcessRange(int pmax, long kstart, long kend, sbyte[] values, long[] sums, long sum0, long kmin, Action<long, long, sbyte[]> action)
+        private void ProcessRange(int pmax, long kstart, long kend, sbyte[] values, int[] sums, int sum0, long kmin, Action<long, long, sbyte[]> action)
         {
             // Acquire resources.
             Data data;
@@ -263,7 +263,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private long AddValues(long k0, int length, long[] products, sbyte[] values, long kmin, long[] sums, long sum0)
+        private int AddValues(long k0, int length, long[] products, sbyte[] values, long kmin, int[] sums, int sum0)
         {
             // Each product that is square-free can have at most one more
             // prime factor.  It has that factor if the absolute value of
@@ -294,7 +294,7 @@ namespace Decompose.Numerics
                     var abs = (p + neg) ^ neg; // abs = |p|
                     var flip = (abs - k) >> 63; // flip = -1 if abs < k, zero otherwise
                     var value = ((neg - pos) ^ flip) - flip; // value = pos - neg if flip = -1, neg - pos otherwise
-                    sum0 += value;
+                    sum0 += (int)value;
                     sums[k - kmin] = sum0;
                     Debug.Assert(k == 0 || value == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
                 }
@@ -311,7 +311,7 @@ namespace Decompose.Numerics
                     var flip = (abs - k) >> 63; // flip = -1 if abs < k, zero otherwise
                     var value = ((neg - pos) ^ flip) - flip; // value = pos - neg if flip = -1, neg - pos otherwise
                     values[k - kmin] = (sbyte)value;
-                    sum0 += value;
+                    sum0 += (int)value;
                     sums[k - kmin] = sum0;
                     Debug.Assert(k == 0 || value == Math.Sign(p) * (Math.Abs(p) != k ? -1 : 1));
                 }

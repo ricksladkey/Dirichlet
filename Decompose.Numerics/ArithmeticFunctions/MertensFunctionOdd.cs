@@ -19,7 +19,7 @@ namespace Decompose.Numerics
         private long u;
         private long imax;
         private sbyte[] mu;
-        private long[] m;
+        private int[] m;
         private long sum;
         private long mi1;
         private long mi2;
@@ -42,11 +42,11 @@ namespace Decompose.Numerics
             this.mobiusOdd = new MobiusOddRange(u + 2, threads);
             var batchSize = Math.Min(u + 1, maximumBatchSize);
             mu = new sbyte[imax];
-            m = new long[batchSize >> 1];
+            m = new int[batchSize >> 1];
 
             sum = 0;
             mobius.GetValues(1, imax + 1, mu);
-            var m0 = (long)0;
+            var m0 = 0;
             for (var x = (long)1; x <= u; x += maximumBatchSize)
             {
                 var xstart = x;

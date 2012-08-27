@@ -18,7 +18,7 @@ namespace Decompose.Numerics
         private long u;
         private long imax;
         private sbyte[] mu;
-        private long[] m;
+        private int[] m;
         private long sum;
 
         public MertensFunctionDR(int threads)
@@ -37,11 +37,11 @@ namespace Decompose.Numerics
             this.mobius = new MobiusRange(u + 1, threads);
             var batchSize = Math.Min(u, maximumBatchSize);
             mu = new sbyte[imax + 1];
-            m = new long[batchSize];
+            m = new int[batchSize];
 
             sum = 0;
             mobius.GetValues(0, imax + 1, mu);
-            var m0 = (long)0;
+            var m0 = 0;
             for (var x = (long)1; x <= u; x += maximumBatchSize)
             {
                 var xstart = x;

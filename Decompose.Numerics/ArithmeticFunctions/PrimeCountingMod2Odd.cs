@@ -28,9 +28,9 @@ namespace Decompose.Numerics
         private DivisorOddRange divisors;
         private long[] xi;
         private long[] mx;
-        private long m0;
+        private int m0;
         private sbyte[] values;
-        private long[] m;
+        private int[] m;
         private long d1;
         private long d2;
         private long[] dsums;
@@ -73,8 +73,8 @@ namespace Decompose.Numerics
                 xi[i] = Xi(i);
 
             values = new sbyte[mobiusBatchSize >> 1];
-            m = new long[mobiusBatchSize >> 1];
-            m0 = (long)0;
+            m = new int[mobiusBatchSize >> 1];
+            m0 = 0;
             dsums = new long[divisorBatchSize >> 1];
             d1 = d2 = 1;
 
@@ -400,7 +400,7 @@ namespace Decompose.Numerics
                     s += m[(x / j - x1) >> 1];
 
                 var kmin = Math.Max(1, x1);
-                var kmax = Math.Min(x / sqrt - 1, x2 + 2);
+                var kmax = Math.Min(x / sqrt - 1, x2 + 1);
                 s += KSum(x, kmin, ref kmax, x1);
                 var current = T1Odd(x / kmin);
                 for (var k = kmin; k <= kmax; k++)

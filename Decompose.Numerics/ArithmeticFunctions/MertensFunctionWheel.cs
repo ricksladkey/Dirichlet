@@ -24,7 +24,7 @@ namespace Decompose.Numerics
         private BigInteger n;
         private long u;
         private int imax;
-        private long[] m;
+        private int[] m;
         private BigInteger[] mx;
         private int[] r;
         private int[][] bucketsSmall;
@@ -113,7 +113,7 @@ namespace Decompose.Numerics
             imax = (int)(n / u);
             mobius = new MobiusRange(u + 1, threads);
             var batchSize = Math.Min(u, maximumBatchSize);
-            m = new long[batchSize];
+            m = new int[batchSize];
             mx = new BigInteger[imax + 1];
             r = new int[imax + 1];
             var lmax = 0;
@@ -161,7 +161,7 @@ namespace Decompose.Numerics
             for (var bucket = 0; bucket < buckets; bucket++)
                 bucketsSmall[bucket] = bucketListsSmall[bucket].ToArray();
 
-            var m0 = (long)0;
+            var m0 = 0;
             for (var x = (long)1; x <= u; x += maximumBatchSize)
             {
                 var xstart = x;

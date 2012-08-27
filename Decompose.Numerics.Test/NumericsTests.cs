@@ -1037,7 +1037,7 @@ namespace Decompose.Numerics.Test
             for (var threads = 0; threads < 4; threads++)
             {
                 var n = 1 << 10;
-                var mobius = new MobiusOddRange(n, threads);
+                var mobius = new MobiusOddRange(n | 1, threads);
                 var values = new sbyte[n >> 1];
                 mobius.GetValues(1, n | 1, values);
                 for (int i = 1; i < n; i += 2)
@@ -1051,14 +1051,14 @@ namespace Decompose.Numerics.Test
             for (var threads = 0; threads < 4; threads++)
             {
                 var n = 1 << 10;
-                var mobius = new MobiusOddRange(n, threads);
+                var mobius = new MobiusOddRange(n | 1, threads);
                 var batchSize = 100;
                 var values = new sbyte[batchSize >> 1];
                 for (var k = 1; k < n; k += batchSize)
                 {
                     var kmin = k;
-                    var kmax = Math.Min(kmin + batchSize, n + 2);
-                    mobius.GetValues(k, kmax | 1, values);
+                    var kmax = Math.Min(kmin + batchSize, n | 1);
+                    mobius.GetValues(k, kmax, values);
                     var length = kmax - kmin;
                     for (int i = 0; i < length; i += 2)
                         Assert.AreEqual(IntegerMath.Mobius(i + kmin), values[i >> 1]);
@@ -1111,8 +1111,8 @@ namespace Decompose.Numerics.Test
                 var mobius = new MobiusOddRange(n + 1, 8);
                 var batchSize = 1 << 16;
                 var values = new sbyte[batchSize >> 1];
-                var sums = new long[batchSize >> 1];
-                var m0 = (long)0;
+                var sums = new int[batchSize >> 1];
+                var m0 = 0;
                 for (var kmin = (long)1; kmin < n; kmin += batchSize)
                 {
                     var kmax = Math.Min(kmin + batchSize, mobius.Size);
@@ -1130,8 +1130,8 @@ namespace Decompose.Numerics.Test
                 var n = IntegerMath.Power((long)10, j);
                 var mobius = new MobiusOddRange(n + 1, 8);
                 var batchSize = 1 << 16;
-                var sums = new long[batchSize >> 1];
-                var m0 = (long)0;
+                var sums = new int[batchSize >> 1];
+                var m0 = 0;
                 for (var kmin = (long)1; kmin < n; kmin += batchSize)
                 {
                     var kmax = Math.Min(kmin + batchSize, mobius.Size);

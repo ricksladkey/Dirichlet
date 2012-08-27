@@ -22,7 +22,7 @@ namespace Decompose.Numerics
         private long ulo;
         private long u;
         private sbyte[] values;
-        private long[] mlo;
+        private int[] mlo;
         private long sum2;
         private long sqrt;
 
@@ -41,7 +41,7 @@ namespace Decompose.Numerics
             var sqrt = IntegerMath.FloorSquareRoot(nmax);
             u = Math.Max((long)IntegerMath.FloorPower((BigInteger)nmax, 2, 3) * C1 / C2, sqrt + 1);
             ulo = Math.Max(Math.Min(u, maximumBatchSize), minimumLowSize);
-            mlo = new long[ulo];
+            mlo = new int[ulo];
             values = new sbyte[ulo];
             mobius.GetValuesAndSums(1, ulo + 1, values, mlo, 0);
         }
@@ -58,7 +58,7 @@ namespace Decompose.Numerics
             ProcessBatch(mx, n, imax, mlo, 1, ulo);
             if (ulo < u)
             {
-                var mhi = new long[maximumBatchSize];
+                var mhi = new int[maximumBatchSize];
                 var m0 = mlo[ulo - 1];
                 for (var x = ulo + 1; x <= u; x += maximumBatchSize)
                 {
@@ -71,7 +71,7 @@ namespace Decompose.Numerics
             return ComputeMx(mx, imax);
         }
 
-        private void ProcessBatch(long[] mx, long n, long imax, long[] m, long x1, long x2)
+        private void ProcessBatch(long[] mx, long n, long imax, int[] m, long x1, long x2)
         {
             if (threads <= 1)
                 UpdateMx(mx, n, m, x1, x2, imax, 0, 1);
@@ -88,13 +88,13 @@ namespace Decompose.Numerics
             }
         }
 
-        private void UpdateMx(long[] mx, long n, long[] m, long x1, long x2, long imax, long min, long increment)
+        private void UpdateMx(long[] mx, long n, int[] m, long x1, long x2, long imax, long min, long increment)
         {
             UpdateMxSmall(mx, n, m, x1, x2, imax, min, increment);
             UpdateMxLarge(mx, n, m, x1, x2, imax, 2 * min + 1, 2 * increment);
         }
 
-        private void UpdateMxSmall(long[] mx, long n, long[] m, long x1, long x2, long imax, long min, long increment)
+        private void UpdateMxSmall(long[] mx, long n, int[] m, long x1, long x2, long imax, long min, long increment)
         {
             var kmin = Math.Max(1, x1) + min;
             var kmax = Math.Min(sqrt, x2);
@@ -115,7 +115,7 @@ namespace Decompose.Numerics
             Interlocked.Add(ref sum2, s1);
         }
 
-        private void UpdateMxLarge(long[] mx, long n, long[] m, long x1, long x2, long imax, long min, long increment)
+        private void UpdateMxLarge(long[] mx, long n, int[] m, long x1, long x2, long imax, long min, long increment)
         {
             for (var i = min; i <= imax; i += increment)
             {
@@ -143,7 +143,7 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private long JSum2(long x, long jmin, long jmax, long[] m, long x1)
+        private long JSum2(long x, long jmin, long jmax, int[] m, long x1)
         {
             var s = (long)0;
             for (var j = jmin; j <= jmax; j += 2)
@@ -151,7 +151,7 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private long KSum2(long x, long kmin, long kmax, long[] m, long x1)
+        private long KSum2(long x, long kmin, long kmax, int[] m, long x1)
         {
             var s = (long)0;
             var current = T1Odd(x);
@@ -234,7 +234,7 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private long JSum1(long n, long j1, ref long j, long[] m, long offset)
+        private long JSum1(long n, long j1, ref long j, int[] m, long offset)
         {
             var s = (long)0;
             var beta = n / (j + 2);
@@ -278,7 +278,7 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private long KSum1(long n, long k1, ref long k, long[] m, long offset)
+        private long KSum1(long n, long k1, ref long k, int[] m, long offset)
         {
             if (k == 0)
                 return 0;

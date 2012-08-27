@@ -506,19 +506,23 @@ namespace Sandbox
             }
 #endif
 
-#if false
+#if true
             var threads = 8;
             var algorithm1 = new PrimeCountingMod2Odd(threads);
             var algorithm2 = new PrimeCounting(threads);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 60; i <= 70; i++)
+            for (var i = 1; i <= 80; i++)
             {
                 var n = IntegerMath.Power((BigInteger)2, i);
                 var p0 = i <= 80 ? PrimeCountingMod2.PowerOfTwo(i) : -1;
 #if true
                 timer.Restart();
+#if false
                 var p1 = EvaluateAndTime(() => algorithm1.Evaluate(n));
+#else
+                var p1 = algorithm1.Evaluate(n);
+#endif
                 output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #else
                 var p1 = -1;
@@ -776,9 +780,9 @@ namespace Sandbox
             }
 #endif
 
-#if true
+#if false
             var threads = 8;
-            for (var i = 62; i <= 62; i++)
+            for (var i = 48; i <= 48; i++)
             {
                 var n = IntegerMath.Power((BigInteger)2, i);
                 var mertens1 = new MertensFunctionWheel64(threads);
@@ -1111,7 +1115,8 @@ namespace Sandbox
 #endif
 
 #if false
-            var algorithm = new SquareFreeCounting(8, false);
+            var threads = 8;
+            var algorithm = new SquareFreeCounting(threads, false);
             var timer = new Stopwatch();
             for (var i = 24; i <= 24; i++)
             {

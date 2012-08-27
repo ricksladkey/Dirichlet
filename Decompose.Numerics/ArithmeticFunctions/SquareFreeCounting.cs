@@ -29,9 +29,9 @@ namespace Decompose.Numerics
         private MobiusRange mobius;
         private long[] xi;
         private long[] mx;
-        private long m0;
+        private int m0;
         private sbyte[] values;
-        private long[] m;
+        private int[] m;
 
         public SquareFreeCounting(int threads, bool simple)
         {
@@ -56,8 +56,8 @@ namespace Decompose.Numerics
                 xi[i] = Xi(i);
 
             values = new sbyte[maximumBatchSize];
-            m = new long[maximumBatchSize];
-            m0 = (long)0;
+            m = new int[maximumBatchSize];
+            m0 = 0;
             for (var x = (long)1; x <= xmax; x += maximumBatchSize)
                 m0 = EvaluateBatch(x, Math.Min(xmax, x + maximumBatchSize - 1));
 
@@ -65,7 +65,7 @@ namespace Decompose.Numerics
             return sum;
         }
 
-        private long EvaluateBatch(long x1, long x2)
+        private int EvaluateBatch(long x1, long x2)
         {
             mobius.GetValuesAndSums(x1, x2 + 1, values, m, m0);
             if (threads <= 1)
