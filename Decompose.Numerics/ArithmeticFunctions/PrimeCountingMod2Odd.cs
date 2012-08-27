@@ -9,7 +9,7 @@ namespace Decompose.Numerics
 {
     public class PrimeCountingMod2Odd
     {
-        private const int mobiusBatchSize = 1 << 24;
+        private const int mobiusBatchSize = 1 << 26;
         private const int divisorBatchSize = 1 << 20;
         private const int smallCutoff = 10;
         private const long C1 = 1;

@@ -642,7 +642,7 @@ namespace Sandbox
             }
 #endif
 
-#if true
+#if false
             var threads = 8;
             var power = 10;
             var n = IntegerMath.Power((long)10, power);
@@ -773,6 +773,17 @@ namespace Sandbox
                     return s;
                 });
                 Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);
+            }
+#endif
+
+#if true
+            var threads = 8;
+            for (var i = 62; i <= 62; i++)
+            {
+                var n = IntegerMath.Power((BigInteger)2, i);
+                var mertens1 = new MertensFunctionWheel64(threads);
+                var sum1 = EvaluateAndTime(() => mertens1.Evaluate((long)n));
+                Console.WriteLine("i = {0}, sum = {1}", i, sum1);
             }
 #endif
 
