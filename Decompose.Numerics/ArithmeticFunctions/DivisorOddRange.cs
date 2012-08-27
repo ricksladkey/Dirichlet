@@ -288,7 +288,7 @@ namespace Decompose.Numerics
             }
             if (2 < cycleLimit)
             {
-                // Handle multiples of 5^2.
+                // Handle multiples of 5^3.
                 const int i = 2;
                 const int p = 5;
                 const int pCubed = p * p * p;
@@ -311,7 +311,7 @@ namespace Decompose.Numerics
             }
             if (3 < cycleLimit)
             {
-                // Handle multiples of 7^2.
+                // Handle multiples of 7^3.
                 const int i = 3;
                 const int p = 7;
                 const int pCubed = p * p * p;
