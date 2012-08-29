@@ -10,6 +10,11 @@ namespace Decompose.Numerics
     {
         private static IFactorizationAlgorithm<int> factorerInt = new TrialDivisionFactorization();
 
+        public static int[] PrimeFactors(int n)
+        {
+            return factorerInt.Factor(n).ToArray();
+        }
+
         public static bool IsSquareFree(int n)
         {
             return Abs(Mobius(n)) == 1;
@@ -22,8 +27,7 @@ namespace Decompose.Numerics
 
         public static int LittleOmega(int n)
         {
-            var factors = factorerInt.Factor(n).ToArray();
-            return factors
+            return PrimeFactors(n)
                 .OrderBy(factor => factor)
                 .GroupBy(factor => factor)
                 .Count();

@@ -531,7 +531,7 @@ namespace Decompose.Numerics
 
         private long T1Odd(long a)
         {
-            return (a + (a & 1)) >> 1;
+            return (a + 1) >> 1;
         }
     }
 }

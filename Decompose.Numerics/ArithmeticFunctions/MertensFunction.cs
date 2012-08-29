@@ -30,6 +30,9 @@ namespace Decompose.Numerics
             BigInteger.Parse("-21830254"), // vs. -21830259 in http://oeis.org/A084237
             BigInteger.Parse("-46758740"),
             BigInteger.Parse("899990187"),
+            BigInteger.Parse("461113106"), // from http://arxiv.org/pdf/1108.0135v1.pdf
+            BigInteger.Parse("3395895277"), // from http://arxiv.org/pdf/1108.0135v1.pdf
+            BigInteger.Parse("-2061910120"), // from http://arxiv.org/pdf/1108.0135v1.pdf
         };
 
         public static BigInteger PowerOfTen(int i)

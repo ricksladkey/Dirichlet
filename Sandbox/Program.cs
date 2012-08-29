@@ -448,6 +448,39 @@ namespace Sandbox
             return (a + (a & 1)) >> 1;
         }
 
+        static void NotUsed()
+        {
+#if false
+            var n = 100000000;
+            var algorithm = new DivisorRange(n + 1, 8);
+            var values = new int[n];
+            algorithm.GetValues(1, n + 1, values);
+            var min = new int[n + 1];
+            for (var i = 1; i <= n; i++)
+            {
+                var d = values[i - 1];
+                if (min[d] == 0)
+                    min[d] = i;
+            }
+            for (var i = 1; i <= n; i++)
+            {
+                if (min[i] != 0)
+                {
+                    var iseq = IntegerMath.PrimeFactors(i).Reverse();
+                    var minseq = IntegerMath.PrimeFactors(min[i]).GroupBy(factor => factor).Select(group => group.Count());
+                    if (iseq.Select(factor => factor - 1).SequenceEqual(minseq))
+                        continue;
+                    Console.WriteLine("i = {0} =>{1}, min = {2} =>{3}",
+                        i,
+                        iseq.Aggregate("", (sofar, current) => sofar + " " + current),
+                        min[i],
+                        minseq.Aggregate("", (sofar, current) => sofar + " " + current));
+                }
+            }
+#endif
+
+        }
+
         static void ParityTest()
         {
 #if false
@@ -506,13 +539,13 @@ namespace Sandbox
             }
 #endif
 
-#if true
+#if false
             var threads = 8;
             var algorithm1 = new PrimeCountingMod2Odd(threads);
             var algorithm2 = new PrimeCounting(threads);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 1; i <= 80; i++)
+            for (var i = 1; i <= 81; i++)
             {
                 var n = IntegerMath.Power((BigInteger)2, i);
                 var p0 = i <= 80 ? PrimeCountingMod2.PowerOfTwo(i) : -1;
@@ -543,14 +576,24 @@ namespace Sandbox
             }
 #endif
 
-#if false
+#if true
+            var threads = 8;
             var timer = new Stopwatch();
-            for (var power = 6; power <= 16; power++)
+            for (var power = 16; power <= 16; power++)
             {
-                var algorithm = new MertensFunctionOdd(8);
+                var n = IntegerMath.Power((BigInteger)10, power);
+#if false
+                var algorithm1 = new MertensFunctionOdd(threads);
                 timer.Restart();
-                Console.Write("{{ {0}, {1} }},", power, algorithm.Evaluate(IntegerMath.Power((long)10, power)));
+                Console.Write("{{ {0}, {1} }},", power, algorithm1.Evaluate(n));
                 Console.WriteLine("// elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
+#if true
+                var algorithm2 = new MertensFunctionWheel(threads);
+                timer.Restart();
+                Console.Write("{{ {0}, {1} }},", power, algorithm2.Evaluate(n));
+                Console.WriteLine("// elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
             }
 #endif
 
@@ -648,13 +691,13 @@ namespace Sandbox
 
 #if false
             var threads = 8;
-            var power = 10;
+            var power = 9;
             var n = IntegerMath.Power((long)10, power);
             var batchSize = 1 << 24;
-            var algorithmDivisor = new DivisorOddRange(n + 1, threads);
-            var algorithmMobius = new MobiusOddRange(n + 1, threads);
+            var algorithmDivisor = new DivisorRange(n + 1, threads);
+            var algorithmMobius = new MobiusRange(n + 1, threads);
             var dsums = new long[batchSize];
-            var mobius = new long[batchSize];
+            var msums = new int[batchSize];
             var timer = new Stopwatch();
             timer.Restart();
             var sum0 = (long)0;
@@ -694,13 +737,15 @@ namespace Sandbox
                 });
             output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
-#if false
+
+#if true
             timer.Restart();
-            for (var k0 = 1; k0 <= n; k0 += batchSize)
+            var m0 = 0;
+            for (var k0 = (long)1; k0 <= n; k0 += batchSize)
             {
                 var kstart = k0;
                 var kend = Math.Min(n + 1, k0 + batchSize);
-                algorithmMobius.GetValues(kstart, kend, mobius);
+                m0 = algorithmMobius.GetSums(kstart, kend, msums, m0);
             }
             output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif

@@ -26,6 +26,11 @@ namespace Decompose.Numerics
         private static UInt128 zero = (UInt128)0;
         private static UInt128 one = (UInt128)1;
 
+        public static UInt128 MinValue
+        {
+            get { return zero; }
+        }
+
         public static UInt128 MaxValue
         {
             get { return maxValue; }
