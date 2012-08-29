@@ -592,7 +592,7 @@ namespace Sandbox
                 var algorithm2 = new MertensFunctionWheel(threads);
                 timer.Restart();
                 Console.Write("{{ {0}, {1} }},", power, algorithm2.Evaluate(n));
-                Console.WriteLine("// elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                Console.WriteLine(" // elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
             }
 #endif

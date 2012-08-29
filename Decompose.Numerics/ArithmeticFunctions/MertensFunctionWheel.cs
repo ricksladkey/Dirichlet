@@ -14,7 +14,7 @@ namespace Decompose.Numerics
         private const long tmax = (long)1 << 62;
         private const long tmin = -tmax;
         private const long C1 = 1;
-        private const long C2 = 2;
+        private const long C2 = 3;
         private const long C3 = 2;
         private const long C4 = 1;
         private const long C5 = 10;
