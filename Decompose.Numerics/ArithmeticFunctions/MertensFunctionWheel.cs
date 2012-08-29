@@ -20,7 +20,7 @@ namespace Decompose.Numerics
         private const long C5 = 10;
 
         private int threads;
-        private MobiusRange mobius;
+        private MobiusRangeAdditive mobius;
         private BigInteger n;
         private long u;
         private int imax;
@@ -111,7 +111,7 @@ namespace Decompose.Numerics
                 return new MertensFunctionDR(threads).Evaluate((long)n);
 
             imax = (int)(n / u);
-            mobius = new MobiusRange(u + 1, threads);
+            mobius = new MobiusRangeAdditive(u + 1, threads);
             var batchSize = Math.Min(u, maximumBatchSize);
             m = new int[batchSize];
             mx = new BigInteger[imax + 1];

@@ -67,6 +67,7 @@
     <Compile Include="ArithmeticFunctions\MobiusCollection.cs" />
     <Compile Include="ArithmeticFunctions\MobiusOddRange.cs" />
     <Compile Include="ArithmeticFunctions\MobiusRange.cs" />
+    <Compile Include="ArithmeticFunctions\MobiusRangeAdditive.cs" />
     <Compile Include="ArithmeticFunctions\PrimeCountingMod2.cs" />
     <Compile Include="ArithmeticFunctions\PrimeCountingMod2Odd.cs" />
     <Compile Include="ArithmeticFunctions\PrimeCountingMod3Odd.cs" />

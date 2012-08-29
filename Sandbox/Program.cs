@@ -579,7 +579,7 @@ namespace Sandbox
 #if true
             var threads = 8;
             var timer = new Stopwatch();
-            for (var power = 16; power <= 16; power++)
+            for (var power = 12; power <= 16; power++)
             {
                 var n = IntegerMath.Power((BigInteger)10, power);
 #if false
@@ -620,19 +620,19 @@ namespace Sandbox
 
 #if false
             var timer = new Stopwatch();
-            var n = DownToOdd(IntegerMath.Power(10, 8));
-            var algorithm1 = new MobiusOddRange(n, 0);
-            var m1 = new long[(n + 2) >> 1];
+            var n = IntegerMath.Power(10, 9);
+            var algorithm1 = new MobiusRangeAdditive(n + 1, 0);
+            var values1 = new sbyte[n + 1];
             timer.Restart();
-            algorithm1.GetValues(1, n + 2, null, 1, m1, 0);
+            algorithm1.GetValues(1, n + 1, values1);
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-            var sum1 = m1[n >> 1];
-            var algorithm2 = new MobiusRange(n, 0);
-            var m2 = new long[n + 1];
+            var sum1 = values1.Sum(value => value);
+            var algorithm2 = new MobiusRange(n + 1, 0);
+            var values2 = new sbyte[n + 1];
             timer.Restart();
-            algorithm2.GetValues(1, n + 1, null, 1, m2, 0);
+            algorithm2.GetValues(1, n + 1, values2);
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-            var sum2 = m2[n - 1];
+            var sum2 = values2.Sum(value => value);
             Console.WriteLine("n = {0}, sum1 = {1}, sum2 = {2}", n, sum1, sum2);
 #endif
 
