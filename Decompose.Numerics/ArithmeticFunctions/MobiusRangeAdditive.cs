@@ -24,14 +24,17 @@ namespace Decompose.Numerics
             }
         }
 
-        private const sbyte squareMask = -128;
         private const int blockSize = 1 << 16;
+        private const int cycleLimitMax = 6;
+        private const int cycleSquaredLimitMax = 2;
+        private const sbyte squareSentinel = sbyte.MinValue;
 
         private long size;
         private int threads;
         private int[] primes;
         private sbyte[] logPrimes;
         private int cycleLimit;
+        private int cycleSquaredLimit;
         private int cycleSize;
         private sbyte[] cycle;
         private ConcurrentQueue<Data> queue;
@@ -45,7 +48,7 @@ namespace Decompose.Numerics
             this.threads = threads;
             var limit = (int)Math.Ceiling(Math.Sqrt(size));
             primes = new PrimeCollection(limit, 0).Select(p => (int)p).ToArray();
-            logPrimes = primes.Select(p => (sbyte)(IntegerMath.CeilingLog(p, 2) | 1)).ToArray();
+            logPrimes = primes.Select(p => (sbyte)(IntegerMath.CeilingLogBaseTwo(p) | 1)).ToArray();
             CreateCycle();
             var arrayLength = Math.Max(1, threads);
             queue = new ConcurrentQueue<Data>();
@@ -90,8 +93,6 @@ namespace Decompose.Numerics
             if (threads == 0)
             {
                 ProcessRange(pmax, kmin, kmax, values, sums, sum0, offset, null);
-                if (values != null && kmin <= 1)
-                    values[1 - kmin] = 1;
                 return sums == null ? 0 : sums[slast];
             }
 
@@ -158,14 +159,16 @@ namespace Decompose.Numerics
 
         private void CreateCycle()
         {
-            // Create pre-sieved product and value cycles of small primes and their squares.
-            var dmax = 3;
-            cycleLimit = Math.Min(primes.Length, dmax);
+            // Create pre-sieved product cycle of small primes and small prime squares.
+            cycleLimit = Math.Min(primes.Length, cycleLimitMax);
+            cycleSquaredLimit = Math.Min(cycleLimit, cycleSquaredLimitMax);
             cycleSize = 1;
             for (var i = 0; i < cycleLimit; i++)
             {
-                var p = (int)primes[i];
-                cycleSize *= p * p;
+                var p = primes[i];
+                cycleSize *= p;
+                if (i < cycleSquaredLimit)
+                    cycleSize *= p;
             }
             cycle = new sbyte[cycleSize];
             for (var i = 0; i < cycleLimit; i++)
@@ -174,9 +177,12 @@ namespace Decompose.Numerics
                 var logP = logPrimes[i];
                 for (var k = 0; k < cycleSize; k += p)
                     cycle[k] += logP;
-                var pSquared = (long)p * p;
-                for (var k = (long)0; k < cycleSize; k += pSquared)
-                    cycle[k] |= squareMask;
+                if (i < cycleSquaredLimit)
+                {
+                    var pSquared = (long)p * p;
+                    for (var k = (long)0; k < cycleSize; k += pSquared)
+                        cycle[k] = squareSentinel;
+                }
             }
         }
 
@@ -241,6 +247,22 @@ namespace Decompose.Numerics
             }
             offsets[0] = cycleOffset - length;
 
+            for (var i = cycleSquaredLimit; i < cycleLimit && i < pmax; i++)
+            {
+                var p = primes[i];
+                long kk = offsetsSquared[i];
+                if (kk < length)
+                {
+                    var pSquared = (long)p * p;
+                    do
+                    {
+                        products[kk] = squareSentinel;
+                        kk += pSquared;
+                    }
+                    while (kk < length);
+                }
+                offsetsSquared[i] = kk - length;
+            }
             for (var i = cycleLimit; i < pmax; i++)
             {
                 var p = primes[i];
@@ -255,7 +277,7 @@ namespace Decompose.Numerics
                     var pSquared = (long)p * p;
                     do
                     {
-                        products[kk] |= squareMask;
+                        products[kk] = squareSentinel;
                         kk += pSquared;
                     }
                     while (kk < length);
@@ -280,11 +302,11 @@ namespace Decompose.Numerics
                     while (k < next)
                     {
                         // Look ma, no branching.
-                        Debug.Assert(log2 == IntegerMath.FloorLog(k, 2) - 1);
+                        Debug.Assert(log2 == IntegerMath.FloorLogBaseTwo(k) - 1);
                         var p = (int)products[k - k0];
-                        var flip = (log2 - p) >> 63; // flip = -1 if log2 < p, zero otherwise
+                        var flip = (log2 - p) >> 31; // flip = -1 if log2 < p, zero otherwise
                         values[k - kmin] = (sbyte)((((((p & 1) << 1) - 1) ^ flip) - flip) & ~(p >> 31));
-                        Debug.Assert(values[k - kmin] == (sbyte)((p & squareMask) != 0 ? 0 : p > log2 ? 1 - ((p & 1) << 1) : ((p & 1) << 1) - 1));
+                        Debug.Assert(values[k - kmin] == (sbyte)(p < 0 ? 0 : p > log2 ? 1 - ((p & 1) << 1) : ((p & 1) << 1) - 1));
                         ++k;
                     }
                     ++log2;
@@ -298,10 +320,11 @@ namespace Decompose.Numerics
                     while (k < next)
                     {
                         // Look ma, no branching.
-                        Debug.Assert(log2 == IntegerMath.FloorLog(k, 2) - 1);
+                        Debug.Assert(log2 == IntegerMath.FloorLogBaseTwo(k) - 1);
                         var p = (int)products[k - k0];
-                        var flip = (log2 - p) >> 63; // flip = -1 if log2 < p, zero otherwise
+                        var flip = (log2 - p) >> 31; // flip = -1 if log2 < p, zero otherwise
                         sums[k - kmin] = sum0 += (((((p & 1) << 1) - 1) ^ flip) - flip) & ~(p >> 31);
+                        Debug.Assert(k == kmin || sums[k - kmin] - sums[k - kmin - 1] == (sbyte)(p < 0 ? 0 : p > log2 ? 1 - ((p & 1) << 1) : ((p & 1) << 1) - 1));
                         ++k;
                     }
                     ++log2;
@@ -315,13 +338,13 @@ namespace Decompose.Numerics
                     while (k < next)
                     {
                         // Look ma, no branching.
-                        Debug.Assert(log2 == IntegerMath.FloorLog(k, 2) - 1);
+                        Debug.Assert(log2 == IntegerMath.FloorLogBaseTwo(k) - 1);
                         var p = (int)products[k - k0];
-                        var flip = (log2 - p) >> 63; // flip = -1 if log2 < p, zero otherwise
+                        var flip = (log2 - p) >> 31; // flip = -1 if log2 < p, zero otherwise
                         var value = (((((p & 1) << 1) - 1) ^ flip) - flip) & ~(p >> 31);
                         values[k - kmin] = (sbyte)value;
                         sums[k - kmin] = sum0 += value;
-                        Debug.Assert(values[k - kmin] == (sbyte)((p & squareMask) != 0 ? 0 : p > log2 ? 1 - ((p & 1) << 1) : ((p & 1) << 1) - 1));
+                        Debug.Assert(values[k - kmin] == (sbyte)(p < 0 ? 0 : p > log2 ? 1 - ((p & 1) << 1) : ((p & 1) << 1) - 1));
                         ++k;
                     }
                     ++log2;

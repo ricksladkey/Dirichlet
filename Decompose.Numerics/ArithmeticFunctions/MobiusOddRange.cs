@@ -87,8 +87,6 @@ namespace Decompose.Numerics
             if (threads == 0)
             {
                 ProcessRange(pmax, kmin, kmax, values, sums, sum0, offset, null);
-                if (values != null && kmin <= 1)
-                    values[1 - kmin] = 1;
                 return sums == null ? 0 : sums[slast >> 1];
             }
 

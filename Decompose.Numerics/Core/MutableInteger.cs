@@ -1866,13 +1866,13 @@ namespace Decompose.Numerics
         public MutableInteger SetFloorSquareRoot(MutableInteger a, IStore<MutableInteger> store)
         {
             if (a.CompareTo(maxRep) <= 0)
-                Set((uint)Math.Floor(Math.Sqrt((ulong)a)));
+                Set((uint)Math.Sqrt((ulong)a));
             else if (a.CompareTo(maxRepSquared) <= 0)
             {
                 var reg1 = store.Allocate();
                 var shift = a.GetBitLength() - maxRepShift;
                 Set(a).UnsignedRightShift(shift);
-                Set((uint)Math.Floor(Math.Sqrt((ulong)this * (double)(1 << shift))));
+                Set((uint)Math.Sqrt((ulong)this * (double)(1 << shift)));
                 reg1.SetProduct(this, this).Subtract(a);
                 if (reg1.Sign == -1)
                     SetUnsignedDifference(this, 1);

@@ -661,7 +661,7 @@ namespace Decompose.Numerics
 
         public int TauSumInnerSmall(uint y, out uint sqrt)
         {
-            var limit = (uint)Math.Floor(Math.Sqrt(y));
+            var limit = (uint)Math.Sqrt(y);
             var sum = (uint)0;
             var current = limit - 1;
             var delta = (uint)1;
@@ -693,7 +693,7 @@ namespace Decompose.Numerics
 
         public int TauSumInnerMedium(ulong y, out uint sqrt)
         {
-            sqrt = (uint)Math.Floor(Math.Sqrt(y));
+            sqrt = (uint)Math.Sqrt(y);
             return TauSumInnerWorkerMedium(y, 1, sqrt + 1);
         }
 

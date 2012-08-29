@@ -576,10 +576,10 @@ namespace Sandbox
             }
 #endif
 
-#if true
+#if false
             var threads = 8;
             var timer = new Stopwatch();
-            for (var power = 12; power <= 16; power++)
+            for (var power = 16; power <= 16; power++)
             {
                 var n = IntegerMath.Power((BigInteger)10, power);
 #if false
@@ -618,21 +618,27 @@ namespace Sandbox
             }
 #endif
 
-#if false
+#if true
+            var threads = 8;
             var timer = new Stopwatch();
-            var n = IntegerMath.Power(10, 9);
-            var algorithm1 = new MobiusRangeAdditive(n + 1, 0);
-            var values1 = new sbyte[n + 1];
+            var n = IntegerMath.Power((long)10, 9);
+            var batchSize = (long)1 << 24;
+            var algorithm1 = new MobiusRangeAdditive(n + 1, threads);
+            var values1 = new sbyte[batchSize];
+            var sums1 = new int[batchSize];
             timer.Restart();
-            algorithm1.GetValues(1, n + 1, values1);
+            var sum1 = 0;
+            for (var x = (long)1; x <= n; x += batchSize)
+                sum1 = algorithm1.GetValuesAndSums(x, Math.Min(x + batchSize, n + 1), values1, sums1, sum1);
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-            var sum1 = values1.Sum(value => value);
-            var algorithm2 = new MobiusRange(n + 1, 0);
-            var values2 = new sbyte[n + 1];
+            var algorithm2 = new MobiusRange(n + 1, threads);
+            var values2 = new sbyte[batchSize];
+            var sums2 = new int[batchSize];
             timer.Restart();
-            algorithm2.GetValues(1, n + 1, values2);
+            var sum2 = 0;
+            for (var x = (long)1; x <= n; x += batchSize)
+                sum2 = algorithm2.GetValuesAndSums(x, Math.Min(x + batchSize, n + 1), values2, sums2, sum2);
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-            var sum2 = values2.Sum(value => value);
             Console.WriteLine("n = {0}, sum1 = {1}, sum2 = {2}", n, sum1, sum2);
 #endif
 

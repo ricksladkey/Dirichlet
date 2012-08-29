@@ -18,12 +18,12 @@ namespace Decompose.Numerics
 
         public static int FloorSquareRoot(int n)
         {
-            return (int)Math.Floor(Math.Sqrt(n));
+            return (int)Math.Sqrt(n);
         }
 
         public static uint FloorSquareRoot(uint n)
         {
-            return (uint)Math.Floor(Math.Sqrt(n));
+            return (uint)Math.Sqrt(n);
         }
 
         public static long FloorSquareRoot(long a)
@@ -39,8 +39,8 @@ namespace Decompose.Numerics
         public static uint FloorSquareRoot(ulong a)
         {
             if (a <= maxRep)
-                return (uint)Math.Floor(Math.Sqrt((double)a));
-            var s = (uint)Math.Floor(Math.Sqrt((double)a));
+                return (uint)Math.Sqrt((double)a);
+            var s = (uint)Math.Sqrt((double)a);
             var s2 = (ulong)s * s;
             if (a < s2)
                 --s;
@@ -67,10 +67,10 @@ namespace Decompose.Numerics
         public static ulong FloorSquareRoot(UInt128 a)
         {
             if (a <= maxRep)
-                return (ulong)Math.Floor(Math.Sqrt((double)a));
+                return (ulong)Math.Sqrt((double)a);
             if (a <= maxRepSquaredUInt128)
             {
-                var s = (ulong)Math.Floor(Math.Sqrt((double)a));
+                var s = (ulong)Math.Sqrt((double)a);
                 var s2 = UInt128.Square(s);
                 if (a < s2)
                     --s;
@@ -103,10 +103,10 @@ namespace Decompose.Numerics
         public static BigInteger FloorSquareRoot(BigInteger a)
         {
             if (a <= maxRep)
-                return (BigInteger)Math.Floor(Math.Sqrt((double)a));
+                return (BigInteger)Math.Sqrt((double)a);
             if (a <= maxRepSquaredBigInteger)
             {
-                var s = (BigInteger)Math.Floor(Math.Sqrt((double)a));
+                var s = (BigInteger)Math.Sqrt((double)a);
                 var r = a - s * s;
                 if (r.Sign == -1)
                     --s;
@@ -275,9 +275,9 @@ namespace Decompose.Numerics
                 return a;
             }
             var log = logA / 2;
-            var shift = Math.Max((int)Math.Floor(log / log2) - maxShift, 0);
+            var shift = Math.Max((int)(log / log2) - maxShift, 0);
             log -= shift * log2;
-            var c = (Number<T>)Math.Floor(Math.Exp(log)) << shift;
+            var c = (Number<T>)Math.Exp(log) << shift;
             if (shift == 0)
             {
                 power = c * c;
@@ -315,9 +315,9 @@ namespace Decompose.Numerics
                 return a;
             }
             var log = logA / (double)degree;
-            var shift = Math.Max((int)Math.Floor(log / log2) - maxShift, 0);
+            var shift = Math.Max((int)(log / log2) - maxShift, 0);
             log -= shift * log2;
-            var c = (Number<T>)Math.Floor(Math.Exp(log)) << shift;
+            var c = (Number<T>)Math.Exp(log) << shift;
             if (shift == 0)
             {
                 power = Number<T>.Power(c, degree);
