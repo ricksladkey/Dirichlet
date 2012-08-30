@@ -26,7 +26,7 @@ namespace Decompose.Numerics
         private long imax;
         private long xmax;
         private BigInteger sum;
-        private MobiusRange mobius;
+        private MobiusRangeAdditive mobius;
         private long[] xi;
         private long[] mx;
         private int m0;
@@ -47,7 +47,7 @@ namespace Decompose.Numerics
             sum = 0;
             imax = (long)IntegerMath.FloorRoot(n, 5) * C1 / C2;
             xmax = imax != 0 ? Xi(imax) : (long)IntegerMath.FloorPower(n, 1, 2);
-            mobius = new MobiusRange(xmax + 1, threads);
+            mobius = new MobiusRangeAdditive(xmax + 1, threads);
             xi = new long[imax + 1];
             mx = new long[imax + 1];
 

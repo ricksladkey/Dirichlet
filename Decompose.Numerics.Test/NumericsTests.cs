@@ -1050,20 +1050,6 @@ namespace Decompose.Numerics.Test
             }
         }
 
-        private Dictionary<int, int> mertensOddData = new Dictionary<int, int>()
-        {
-            { 6, 140 },
-            { 7, 569 },
-            { 8, 1076 },
-            { 9, -2989 },
-            { 10, -24032 },
-            { 11, -41235 },
-            { 12, 114106 },
-            { 13, 191811 },
-            { 14, -849354 },
-            { 15, -5196 },
-        };
-
         [TestMethod]
         public void MobiusOddRangeTest3()
         {
@@ -1082,7 +1068,7 @@ namespace Decompose.Numerics.Test
                     for (var i = 0; i < length; i += 2)
                         sum += values[i >> 1];
                 }
-                Assert.AreEqual(sum, mertensOddData[j]);
+                Assert.AreEqual(sum, MertensFunctionOdd.PowerOfTen(j));
             }
         }
 
@@ -1102,7 +1088,7 @@ namespace Decompose.Numerics.Test
                     var kmax = Math.Min(kmin + batchSize, mobius.Size);
                     m0 = mobius.GetValuesAndSums(kmin, kmax | 1, values, sums, m0);
                 }
-                Assert.AreEqual(m0, mertensOddData[j]);
+                Assert.AreEqual(m0, MertensFunctionOdd.PowerOfTen(j));
             }
         }
 
@@ -1121,7 +1107,7 @@ namespace Decompose.Numerics.Test
                     var kmax = Math.Min(kmin + batchSize, mobius.Size);
                     m0 = mobius.GetSums(kmin, kmax | 1, sums, m0);
                 }
-                Assert.AreEqual(m0, mertensOddData[j]);
+                Assert.AreEqual(m0, MertensFunctionOdd.PowerOfTen(j));
             }
         }
 
@@ -1198,6 +1184,102 @@ namespace Decompose.Numerics.Test
                     m0 = mobius.GetValuesAndSums(kmin, kmax, values, sums, m0);
                 }
                 Assert.AreEqual(m0, MertensFunction.PowerOfTen(j));
+            }
+        }
+
+        [TestMethod]
+        public void MobiusOddRangeAdditiveTest1()
+        {
+            for (var threads = 0; threads < 4; threads++)
+            {
+                var n = 1 << 10;
+                var mobius = new MobiusOddRangeAdditive(n | 1, threads);
+                var values = new sbyte[n >> 1];
+                mobius.GetValues(1, n | 1, values);
+                for (int i = 1; i < n; i += 2)
+                    Assert.AreEqual(IntegerMath.Mobius(i), values[i >> 1]);
+            }
+        }
+
+        [TestMethod]
+        public void MobiusOddRangeAdditiveTest2()
+        {
+            for (var threads = 0; threads < 4; threads++)
+            {
+                var n = 1 << 10;
+                var mobius = new MobiusOddRangeAdditive(n | 1, threads);
+                var batchSize = 100;
+                var values = new sbyte[batchSize >> 1];
+                for (var k = 1; k < n; k += batchSize)
+                {
+                    var kmin = k;
+                    var kmax = Math.Min(kmin + batchSize, n | 1);
+                    mobius.GetValues(k, kmax, values);
+                    var length = kmax - kmin;
+                    for (int i = 0; i < length; i += 2)
+                        Assert.AreEqual(IntegerMath.Mobius(i + kmin), values[i >> 1]);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void MobiusOddRangeAdditiveTest3()
+        {
+            for (var j = 6; j <= 8; j++)
+            {
+                var n = IntegerMath.Power((long)10, j);
+                var mobius = new MobiusOddRangeAdditive(n + 1, 8);
+                var batchSize = 1 << 16;
+                var values = new sbyte[batchSize >> 1];
+                var sum = 0;
+                for (var kmin = (long)1; kmin < n; kmin += batchSize)
+                {
+                    var kmax = Math.Min(kmin + batchSize, mobius.Size);
+                    mobius.GetValues(kmin, kmax | 1, values);
+                    var length = kmax - kmin;
+                    for (var i = 0; i < length; i += 2)
+                        sum += values[i >> 1];
+                }
+                Assert.AreEqual(sum, MertensFunctionOdd.PowerOfTen(j));
+            }
+        }
+
+        [TestMethod]
+        public void MobiusOddRangeAdditiveTest4()
+        {
+            for (var j = 6; j <= 8; j++)
+            {
+                var n = IntegerMath.Power((long)10, j);
+                var mobius = new MobiusOddRangeAdditive(n + 1, 8);
+                var batchSize = 1 << 16;
+                var values = new sbyte[batchSize >> 1];
+                var sums = new int[batchSize >> 1];
+                var m0 = 0;
+                for (var kmin = (long)1; kmin < n; kmin += batchSize)
+                {
+                    var kmax = Math.Min(kmin + batchSize, mobius.Size);
+                    m0 = mobius.GetValuesAndSums(kmin, kmax | 1, values, sums, m0);
+                }
+                Assert.AreEqual(m0, MertensFunctionOdd.PowerOfTen(j));
+            }
+        }
+
+        [TestMethod]
+        public void MobiusOddRangeAdditiveTest5()
+        {
+            for (var j = 6; j <= 8; j++)
+            {
+                var n = IntegerMath.Power((long)10, j);
+                var mobius = new MobiusOddRangeAdditive(n + 1, 8);
+                var batchSize = 1 << 16;
+                var sums = new int[batchSize >> 1];
+                var m0 = 0;
+                for (var kmin = (long)1; kmin < n; kmin += batchSize)
+                {
+                    var kmax = Math.Min(kmin + batchSize, mobius.Size);
+                    m0 = mobius.GetSums(kmin, kmax | 1, sums, m0);
+                }
+                Assert.AreEqual(m0, MertensFunctionOdd.PowerOfTen(j));
             }
         }
 

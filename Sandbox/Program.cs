@@ -540,6 +540,19 @@ namespace Sandbox
 #endif
 
 #if false
+            for (var i = 1; i <= 1000000; i++)
+            {
+                var sqrt = IntegerMath.CeilingSquareRoot(i);
+                var factors = IntegerMath.PrimeFactors(i);
+                var small = factors.Where(p => p < sqrt).ToArray();
+                var a = small.Sum(p => IntegerMath.CeilingLogBaseTwo(p) | 1);
+                var b = IntegerMath.CeilingLogBaseTwo(i) - 1;
+                if ((a > b) != (factors.Length == small.Length))
+                    Console.WriteLine("i = {0}, a = {1}, b = {2}", i, a, b);
+            }
+#endif
+
+#if true
             var threads = 8;
             var algorithm1 = new PrimeCountingMod2Odd(threads);
             var algorithm2 = new PrimeCounting(threads);
@@ -579,16 +592,16 @@ namespace Sandbox
 #if false
             var threads = 8;
             var timer = new Stopwatch();
-            for (var power = 16; power <= 16; power++)
+            for (var power = 0; power <= 16; power++)
             {
-                var n = IntegerMath.Power((BigInteger)10, power);
-#if false
-                var algorithm1 = new MertensFunctionOdd(threads);
-                timer.Restart();
-                Console.Write("{{ {0}, {1} }},", power, algorithm1.Evaluate(n));
-                Console.WriteLine("// elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-#endif
+                var n = IntegerMath.Power((long)10, power);
 #if true
+                var algorithm1 = new MertensFunctionOddDR(threads);
+                timer.Restart();
+                Console.WriteLine("BigInteger.Parse(\"{0}\"),", algorithm1.Evaluate(n));
+                //Console.WriteLine("// elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
+#if false
                 var algorithm2 = new MertensFunctionWheel(threads);
                 timer.Restart();
                 Console.Write("{{ {0}, {1} }},", power, algorithm2.Evaluate(n));
@@ -618,7 +631,7 @@ namespace Sandbox
             }
 #endif
 
-#if true
+#if false
             var threads = 8;
             var timer = new Stopwatch();
             var n = IntegerMath.Power((long)10, 10);

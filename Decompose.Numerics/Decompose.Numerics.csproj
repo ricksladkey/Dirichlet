@@ -60,6 +60,7 @@
     <Compile Include="ArithmeticFunctions\MertensFunctionDR.cs" />
     <Compile Include="ArithmeticFunctions\MertensFunctionDR2.cs" />
     <Compile Include="ArithmeticFunctions\MertensFunctionOdd.cs" />
+    <Compile Include="ArithmeticFunctions\MertensFunctionOddDR.cs" />
     <Compile Include="ArithmeticFunctions\MertensFunctionWheel.cs" />
     <Compile Include="ArithmeticFunctions\MertensFunctionWheel64.cs" />
     <Compile Include="ArithmeticFunctions\MertensRangeInverted.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="ArithmeticFunctions\MertensRangeDR.cs" />
     <Compile Include="ArithmeticFunctions\MobiusCollection.cs" />
     <Compile Include="ArithmeticFunctions\MobiusOddRange.cs" />
+    <Compile Include="ArithmeticFunctions\MobiusOddRangeAdditive.cs" />
     <Compile Include="ArithmeticFunctions\MobiusRange.cs" />
     <Compile Include="ArithmeticFunctions\MobiusRangeAdditive.cs" />
     <Compile Include="ArithmeticFunctions\PrimeCountingMod2.cs" />
