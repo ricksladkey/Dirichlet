@@ -225,7 +225,7 @@ namespace Decompose.Numerics
                 var length = (int)Math.Min(blockSize, kend - k);
                 var offset = kmin == -1 ? k : kmin;
                 SieveBlock(pmax, k, length, products, offsets, offsetsSquared);
-                sum0 = AddValues(k, length, products, values, offset, sums, sum0);
+                sum0 = FinishBlock(k, length, products, values, offset, sums, sum0);
 
                 // Perform action, if any.
                 if (action != null)
@@ -247,30 +247,17 @@ namespace Decompose.Numerics
             }
             offsets[0] = cycleOffset - length;
 
-            for (var i = cycleSquaredLimit; i < cycleLimit && i < pmax; i++)
+            for (var i = cycleSquaredLimit; i < pmax; i++)
             {
                 var p = primes[i];
-                long kk = offsetsSquared[i];
-                if (kk < length)
+                if (i >= cycleLimit)
                 {
-                    var pSquared = (long)p * p;
-                    do
-                    {
-                        products[kk] = squareSentinel;
-                        kk += pSquared;
-                    }
-                    while (kk < length);
+                    var logP = logPrimes[i];
+                    int k;
+                    for (k = offsets[i]; k < length; k += p)
+                        products[k] += logP;
+                    offsets[i] = k - length;
                 }
-                offsetsSquared[i] = kk - length;
-            }
-            for (var i = cycleLimit; i < pmax; i++)
-            {
-                var p = primes[i];
-                var logP = logPrimes[i];
-                int k;
-                for (k = offsets[i]; k < length; k += p)
-                    products[k] += logP;
-                offsets[i] = k - length;
                 long kk = offsetsSquared[i];
                 if (kk < length)
                 {
@@ -286,11 +273,12 @@ namespace Decompose.Numerics
             }
         }
 
-        private int AddValues(long k0, int length, sbyte[] products, sbyte[] values, long kmin, int[] sums, int sum0)
+        private int FinishBlock(long k0, int length, sbyte[] products, sbyte[] values, long kmin, int[] sums, int sum0)
         {
-            // Each product that is square-free can have at most one more
-            // prime factor.  It has that factor if the absolute value of
-            // the product is less than the full value.
+            // Each product of a squareful number is less than zero.
+            // Each product of a square-free number can have at most one
+            // more prime factor.  It has that factor if the value of
+            // the product is less half than the full value.
             var k = k0;
             var kmax = k + length;
             var log2 = k.GetBitLength() - 2;
@@ -306,7 +294,7 @@ namespace Decompose.Numerics
                         var p = (int)products[k - k0];
                         var flip = (log2 - p) >> 31; // flip = -1 if log2 < p, zero otherwise
                         values[k - kmin] = (sbyte)((((((p & 1) << 1) - 1) ^ flip) - flip) & ~(p >> 31));
-                        Debug.Assert(values[k - kmin] == (sbyte)(p < 0 ? 0 : p > log2 ? 1 - ((p & 1) << 1) : ((p & 1) << 1) - 1));
+                        Debug.Assert(values[k - kmin] == (sbyte)(p < 0 ? 0 : p > log2 ? 1 - 2 * (p & 1) : 2 * (p & 1) - 1));
                         ++k;
                     }
                     ++log2;
@@ -324,7 +312,7 @@ namespace Decompose.Numerics
                         var p = (int)products[k - k0];
                         var flip = (log2 - p) >> 31; // flip = -1 if log2 < p, zero otherwise
                         sums[k - kmin] = sum0 += (((((p & 1) << 1) - 1) ^ flip) - flip) & ~(p >> 31);
-                        Debug.Assert(k == kmin || sums[k - kmin] - sums[k - kmin - 1] == (sbyte)(p < 0 ? 0 : p > log2 ? 1 - ((p & 1) << 1) : ((p & 1) << 1) - 1));
+                        Debug.Assert(k == kmin || sums[k - kmin] - sums[k - kmin - 1] == (sbyte)(p < 0 ? 0 : p > log2 ? 1 - 2 * (p & 1) : 2 * (p & 1) - 1));
                         ++k;
                     }
                     ++log2;
@@ -344,7 +332,7 @@ namespace Decompose.Numerics
                         var value = (((((p & 1) << 1) - 1) ^ flip) - flip) & ~(p >> 31);
                         values[k - kmin] = (sbyte)value;
                         sums[k - kmin] = sum0 += value;
-                        Debug.Assert(values[k - kmin] == (sbyte)(p < 0 ? 0 : p > log2 ? 1 - ((p & 1) << 1) : ((p & 1) << 1) - 1));
+                        Debug.Assert(values[k - kmin] == (sbyte)(p < 0 ? 0 : p > log2 ? 1 - 2 * (p & 1) : 2 * (p & 1) - 1));
                         ++k;
                     }
                     ++log2;

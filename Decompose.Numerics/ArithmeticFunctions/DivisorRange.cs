@@ -233,7 +233,7 @@ namespace Decompose.Numerics
                 var soffset = smin == -1 ? k : smin;
                 var length = (int)Math.Min(blockSize, kend - k);
                 SieveBlock(pmax, k, length, products, values, offsets, offsetsPower, voffset);
-                sum0 = AddValues(k, length, products, values, voffset, sums, soffset, sum0, onlySums);
+                sum0 = FinishBlock(k, length, products, values, voffset, sums, soffset, sum0, onlySums);
 
                 // Perform action, if any.
                 if (action != null)
@@ -368,7 +368,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private long AddValues(long k0, int length, long[] products, int[] values, long kmin, long[] sums, long smin, long sum0, bool onlySums)
+        private long FinishBlock(long k0, int length, long[] products, int[] values, long kmin, long[] sums, long smin, long sum0, bool onlySums)
         {
             // Each product can have at most one more prime factor.
             // It has that factor if the value of the product is

@@ -117,7 +117,7 @@ namespace Decompose.Numerics
             {
                 var length = (int)Math.Min(blockSize, kend - k);
                 SieveBlock(k, length, products, offsets);
-                AddValues(k, length, products);
+                FinishBlock(k, length, products);
             }
         }
 
@@ -147,7 +147,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private void AddValues(int k0, int length, int[] products)
+        private void FinishBlock(int k0, int length, int[] products)
         {
             // Each product that is square-free can have at most one more
             // prime factor.  It has that factor if the absolute value of

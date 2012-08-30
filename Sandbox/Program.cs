@@ -621,7 +621,7 @@ namespace Sandbox
 #if true
             var threads = 8;
             var timer = new Stopwatch();
-            var n = IntegerMath.Power((long)10, 9);
+            var n = IntegerMath.Power((long)10, 10);
             var batchSize = (long)1 << 24;
             var algorithm1 = new MobiusRangeAdditive(n + 1, threads);
             var values1 = new sbyte[batchSize];
@@ -631,6 +631,7 @@ namespace Sandbox
             for (var x = (long)1; x <= n; x += batchSize)
                 sum1 = algorithm1.GetValuesAndSums(x, Math.Min(x + batchSize, n + 1), values1, sums1, sum1);
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#if false
             var algorithm2 = new MobiusRange(n + 1, threads);
             var values2 = new sbyte[batchSize];
             var sums2 = new int[batchSize];
@@ -639,6 +640,9 @@ namespace Sandbox
             for (var x = (long)1; x <= n; x += batchSize)
                 sum2 = algorithm2.GetValuesAndSums(x, Math.Min(x + batchSize, n + 1), values2, sums2, sum2);
             output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#else
+            var sum2 = -1;
+#endif
             Console.WriteLine("n = {0}, sum1 = {1}, sum2 = {2}", n, sum1, sum2);
 #endif
 
