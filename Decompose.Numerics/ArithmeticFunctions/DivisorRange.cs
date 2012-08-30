@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Decompose.Numerics
 {
-    public class DivisorRange
+    public class DivisorRange : IArithmeticRange<int, long>
     {
         private class Data
         {

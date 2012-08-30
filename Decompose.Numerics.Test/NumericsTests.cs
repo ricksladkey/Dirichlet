@@ -948,7 +948,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void MobiusTest1()
+        public void MobiusCollectionTest1()
         {
             for (var threads = 0; threads < 4; threads++)
             {
@@ -960,7 +960,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void MobiusTest2()
+        public void MobiusRangeTest1()
         {
             for (var threads = 0; threads < 4; threads++)
             {
@@ -974,7 +974,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void MobiusTest3()
+        public void MobiusRangeTest2()
         {
             for (var threads = 0; threads < 4; threads++)
             {
@@ -994,7 +994,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void MobiusTest4()
+        public void MobiusRangeTest3()
         {
             for (var j = 6; j <= 8; j++)
             {
@@ -1016,7 +1016,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void MobiusTest5()
+        public void MobiusOddRangeTest1()
         {
             for (var threads = 0; threads < 4; threads++)
             {
@@ -1030,7 +1030,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void MobiusTest6()
+        public void MobiusOddRangeTest2()
         {
             for (var threads = 0; threads < 4; threads++)
             {
@@ -1065,7 +1065,7 @@ namespace Decompose.Numerics.Test
         };
 
         [TestMethod]
-        public void MobiusTest7()
+        public void MobiusOddRangeTest3()
         {
             for (var j = 6; j <= 8; j++)
             {
@@ -1087,7 +1087,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void MobiusTest8()
+        public void MobiusOddRangeTest4()
         {
             for (var j = 6; j <= 8; j++)
             {
@@ -1107,7 +1107,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void MobiusTest9()
+        public void MobiusOddRangeTest5()
         {
             for (var j = 6; j <= 8; j++)
             {
@@ -1126,7 +1126,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void MobiusTest10()
+        public void MobiusRangeAdditiveTest1()
         {
             for (var threads = 0; threads < 4; threads++)
             {
@@ -1140,7 +1140,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void MobiusTest11()
+        public void MobiusRangeAdditiveTest2()
         {
             for (var threads = 0; threads < 4; threads++)
             {
@@ -1160,7 +1160,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void MobiusTest12()
+        public void MobiusRangeAdditiveTest3()
         {
             for (var j = 6; j <= 8; j++)
             {
@@ -1182,7 +1182,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void MobiusTest13()
+        public void MobiusRangeAdditiveTest4()
         {
             for (var j = 6; j <= 8; j++)
             {
@@ -1202,7 +1202,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void DivisorTest1()
+        public void DivisorCollectionTest1()
         {
             var n = 1 << 10;
             var divisors = new DivisorsCollection(n);
@@ -1211,7 +1211,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void DivisorTest2()
+        public void DivisorRangeTest1()
         {
             for (var threads = 0; threads < 4; threads++)
             {
@@ -1225,7 +1225,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void DivisorTest3()
+        public void DivisorRangeTest2()
         {
             for (var threads = 0; threads < 4; threads++)
             {
@@ -1246,7 +1246,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void DivisorTest4()
+        public void DivisorRangeTest3()
         {
             for (var threads = 0; threads < 4; threads++)
             {
@@ -1272,7 +1272,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void DivisorTest5()
+        public void DivisorRangeTest4()
         {
             for (var threads = 0; threads < 4; threads++)
             {
@@ -1295,7 +1295,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void DivisorTest6()
+        public void DivisorOddRangeTest1()
         {
             for (var threads = 0; threads < 4; threads++)
             {
@@ -1309,7 +1309,7 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
-        public void DivisorTest7()
+        public void DivisorOddRangeTest2()
         {
             for (var threads = 0; threads < 4; threads++)
             {

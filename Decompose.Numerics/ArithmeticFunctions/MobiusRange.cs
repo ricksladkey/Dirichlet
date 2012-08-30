@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Decompose.Numerics
 {
-    public class MobiusRange
+    public class MobiusRange : IArithmeticRange<sbyte, int>
     {
         private class Data
         {
