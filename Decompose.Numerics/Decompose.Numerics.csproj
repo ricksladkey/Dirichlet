@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArithmeticFunctions\DivisorOddRange.cs" />
+    <Compile Include="ArithmeticFunctions\DivisorOddRangeAdditive.cs" />
     <Compile Include="ArithmeticFunctions\DivisorRange.cs" />
     <Compile Include="ArithmeticFunctions\DivisorsCollection.cs" />
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunction.cs" />

@@ -483,6 +483,25 @@ namespace Sandbox
 
         static void ParityTest()
         {
+#if true
+            var timer = new Stopwatch();
+            var threads = 8;
+            var n = IntegerMath.Power((long)10, 10) | 1;
+            var batchSize = 1 << 24;
+            var algorithm1 = new DivisorOddRange(n | 1, threads);
+            var sums1 = new long[batchSize >> 1];
+            timer.Restart();
+            for (var x = (long)1; x < n; x += batchSize)
+                algorithm1.GetSums(x, Math.Min(x + batchSize, n), sums1, 0);
+            Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            var algorithm2 = new DivisorOddRangeAdditive(n | 1, threads);
+            var sums2 = new ulong[batchSize >> 1];
+            timer.Restart();
+            for (var x = (long)1; x < n; x += batchSize)
+                algorithm2.GetSums(x, Math.Min(x + batchSize, n), sums2, 0);
+            Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
+
 #if false
             var threads = 1;
             for (int i = 18; i <= 18; i++)
@@ -540,19 +559,24 @@ namespace Sandbox
 #endif
 
 #if false
-            for (var i = 1; i <= 1000000; i++)
+            // Confirm that low-precision logs reliably detect a factor larger than the square root.
+            // Specifically, a1 should be greater than b for all n and if a2 is greater than b
+            // then n should not have a factor larger than the square root.
+            var odd = 1;
+            for (var n = 1; n <= 10000000; n++)
             {
-                var sqrt = IntegerMath.CeilingSquareRoot(i);
-                var factors = IntegerMath.PrimeFactors(i);
-                var small = factors.Where(p => p < sqrt).ToArray();
-                var a = small.Sum(p => IntegerMath.CeilingLogBaseTwo(p) | 1);
-                var b = IntegerMath.CeilingLogBaseTwo(i) - 1;
-                if ((a > b) != (factors.Length == small.Length))
-                    Console.WriteLine("i = {0}, a = {1}, b = {2}", i, a, b);
+                var sqrt = IntegerMath.FloorSquareRoot(n);
+                var factors = IntegerMath.PrimeFactors(n);
+                var small = factors.Where(p => p <= sqrt).ToArray();
+                var a1 = factors.Sum(p => IntegerMath.CeilingLogBaseTwo(p) | odd);
+                var a2 = small.Sum(p => IntegerMath.CeilingLogBaseTwo(p) | odd);
+                var b = IntegerMath.CeilingLogBaseTwo(n) - 1;
+                if (!(a1 > b) || (a2 > b) != (factors.Length == small.Length))
+                    Console.WriteLine("i = {0}, a = {1}, b = {2}", n, a1, b);
             }
 #endif
 
-#if true
+#if false
             var threads = 8;
             var algorithm1 = new PrimeCountingMod2Odd(threads);
             var algorithm2 = new PrimeCounting(threads);
