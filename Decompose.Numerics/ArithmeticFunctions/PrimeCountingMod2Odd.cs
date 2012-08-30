@@ -24,7 +24,7 @@ namespace Decompose.Numerics
         private long imax;
         private long xmed;
         private long xmax;
-        private MobiusOddRange mobius;
+        private MobiusOddRangeAdditive mobius;
         private DivisorOddRange divisors;
         private long[] xi;
         private long[] mx;
@@ -63,7 +63,7 @@ namespace Decompose.Numerics
             xmax = DownToOdd(imax != 0 ? Xi(imax) : sqrtn);
             xmed = DownToOdd(Math.Min((long)(IntegerMath.FloorPower(n, 2, 7) * C3 / C4), xmax));
             var dmax = (long)IntegerMath.Min(n / IntegerMath.Square((UInt128)xmed) + 1, n);
-            mobius = new MobiusOddRange((xmax + 2) | 1, threads);
+            mobius = new MobiusOddRangeAdditive((xmax + 2) | 1, threads);
             divisors = new DivisorOddRange((dmax + 2) | 1, threads);
             xi = new long[imax + 1];
             mx = new long[imax + 1];
