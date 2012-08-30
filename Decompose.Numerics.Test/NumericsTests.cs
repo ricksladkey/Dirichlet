@@ -1299,7 +1299,7 @@ namespace Decompose.Numerics.Test
             {
                 var n = 1 << 10;
                 var divisors = new DivisorRange(n, threads);
-                var values = new int[n];
+                var values = new ushort[n];
                 divisors.GetValues(1, n, values);
                 for (int i = 1; i < n; i++)
                     Assert.AreEqual(IntegerMath.NumberOfDivisors(i), values[i - 1]);
@@ -1314,7 +1314,7 @@ namespace Decompose.Numerics.Test
                 var n = 1 << 10;
                 var divisors = new DivisorRange(n, threads);
                 var batchSize = 100;
-                var values = new int[batchSize];
+                var values = new ushort[batchSize];
                 for (var k = 1; k < n; k += batchSize)
                 {
                     var kmin = k;
@@ -1335,9 +1335,9 @@ namespace Decompose.Numerics.Test
                 var n = 1 << 10;
                 var divisors = new DivisorRange(n, threads);
                 var batchSize = 100;
-                var values = new int[batchSize];
-                var sums = new long[batchSize];
-                var sum0 = (long)0;
+                var values = new ushort[batchSize];
+                var sums = new ulong[batchSize];
+                var sum0 = (ulong)0;
                 for (var k = 1; k < n; k += batchSize)
                 {
                     var kmin = k;
@@ -1346,8 +1346,8 @@ namespace Decompose.Numerics.Test
                     var length = kmax - kmin;
                     for (int i = 0; i < length; i++)
                     {
-                        Assert.AreEqual(IntegerMath.NumberOfDivisors(i + kmin), values[i]);
-                        Assert.AreEqual(IntegerMath.SumOfNumberOfDivisors(i + kmin), sums[i]);
+                        Assert.AreEqual((ushort)IntegerMath.NumberOfDivisors(i + kmin), values[i]);
+                        Assert.AreEqual((ulong)IntegerMath.SumOfNumberOfDivisors(i + kmin), sums[i]);
                     }
                 }
             }
@@ -1361,9 +1361,9 @@ namespace Decompose.Numerics.Test
                 var n = 1 << 10;
                 var divisors = new DivisorRange(n, threads);
                 var batchSize = 100;
-                var values = new int[batchSize];
-                var sums = new long[batchSize];
-                var sum0 = (long)0;
+                var values = new ushort[batchSize];
+                var sums = new ulong[batchSize];
+                var sum0 = (ulong)0;
                 for (var k = 1; k < n; k += batchSize)
                 {
                     var kmin = k;
@@ -1371,7 +1371,7 @@ namespace Decompose.Numerics.Test
                     sum0 = divisors.GetSums(k, kmax, sums, sum0);
                     var length = kmax - kmin;
                     for (int i = 0; i < length; i++)
-                        Assert.AreEqual(IntegerMath.SumOfNumberOfDivisors(i + kmin), sums[i]);
+                        Assert.AreEqual((ulong)IntegerMath.SumOfNumberOfDivisors(i + kmin), sums[i]);
                 }
             }
         }
@@ -1383,7 +1383,7 @@ namespace Decompose.Numerics.Test
             {
                 var n = 1 << 10;
                 var divisors = new DivisorOddRange(n | 1, threads);
-                var values = new int[n];
+                var values = new ushort[n];
                 divisors.GetValues(1, n | 1, values);
                 for (int i = 1; i < n; i += 2)
                     Assert.AreEqual(IntegerMath.NumberOfDivisors(i), values[i >> 1]);
@@ -1397,10 +1397,10 @@ namespace Decompose.Numerics.Test
             {
                 var n = 1 << 10;
                 var divisors = new DivisorOddRange(n | 1, threads);
-                var sums = new long[n];
+                var sums = new ulong[n];
                 divisors.GetSums(1, n | 1, sums, 0);
                 for (int i = 1; i < n; i += 2)
-                    Assert.AreEqual(IntegerMath.SumOfNumberOfDivisorsOdd(i), sums[i >> 1]);
+                    Assert.AreEqual((ulong)IntegerMath.SumOfNumberOfDivisorsOdd(i), sums[i >> 1]);
             }
         }
 

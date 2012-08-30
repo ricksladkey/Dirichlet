@@ -6,19 +6,19 @@ using System.Threading.Tasks;
 
 namespace Decompose.Numerics
 {
-    public class DivisorRange : IArithmeticRange<int, long>
+    public class DivisorRange : IArithmeticRange<ushort, ulong>
     {
         private class Data
         {
             public long[] Products;
-            public int[] Values;
+            public ushort[] Values;
             public int[] Offsets;
             public long[] OffsetsPower;
 
             public Data(int length)
             {
                 Products = new long[blockSize];
-                Values = new int[blockSize];
+                Values = new ushort[blockSize];
                 Offsets = new int[length];
                 OffsetsPower = new long[length];
             }
@@ -32,7 +32,7 @@ namespace Decompose.Numerics
         private int cycleLimit;
         private int cycleSize;
         private long[] cycleProducts;
-        private int[] cycleValues;
+        private ushort[] cycleValues;
         private ConcurrentQueue<Data> queue;
 
         public long Size { get { return size; } }
@@ -49,32 +49,32 @@ namespace Decompose.Numerics
             queue = new ConcurrentQueue<Data>();
         }
 
-        public void GetValues(long kmin, long kmax, int[] values)
+        public void GetValues(long kmin, long kmax, ushort[] values)
         {
             GetValuesAndSums(kmin, kmax, values, null, 0, kmin);
         }
 
-        public void GetValues(long kmin, long kmax, int[] values, long offset)
+        public void GetValues(long kmin, long kmax, ushort[] values, long offset)
         {
             GetValuesAndSums(kmin, kmax, values, null, 0, offset);
         }
 
-        public long GetSums(long kmin, long kmax, long[] sums, long sum0)
+        public ulong GetSums(long kmin, long kmax, ulong[] sums, ulong sum0)
         {
             return GetValuesAndSums(kmin, kmax, null, sums, sum0, kmin);
         }
 
-        public long GetSums(long kmin, long kmax, long[] sums, long sum0, long offset)
+        public ulong GetSums(long kmin, long kmax, ulong[] sums, ulong sum0, long offset)
         {
             return GetValuesAndSums(kmin, kmax, null, sums, sum0, offset);
         }
 
-        public long GetValuesAndSums(long kmin, long kmax, int[] values, long[] sums, long sum0)
+        public ulong GetValuesAndSums(long kmin, long kmax, ushort[] values, ulong[] sums, ulong sum0)
         {
             return GetValuesAndSums(kmin, kmax, values, sums, sum0, kmin);
         }
 
-        public long GetValuesAndSums(long kmin, long kmax, int[] values, long[] sums, long sum0, long offset)
+        public ulong GetValuesAndSums(long kmin, long kmax, ushort[] values, ulong[] sums, ulong sum0, long offset)
         {
             // Validate operation.
             if (kmax < kmin || kmax > size)
@@ -109,7 +109,7 @@ namespace Decompose.Numerics
                 return 0;
 
             // Collect summatory function totals for each batch.
-            var mabs = new long[threads];
+            var mabs = new ulong[threads];
             mabs[0] = 0;
             for (var thread = 1; thread < threads; thread++)
             {
@@ -131,7 +131,7 @@ namespace Decompose.Numerics
             return sums[slast];
         }
 
-        public void GetValues(long kmin, long kmax, Action<long, long, int[]> action)
+        public void GetValues(long kmin, long kmax, Action<long, long, ushort[]> action)
         {
             ProcessRange(GetPMax(kmax), kmin, kmax, null, -1, null, -1, 0, action);
         }
@@ -146,7 +146,7 @@ namespace Decompose.Numerics
             return pmax;
         }
 
-        private void BumpRange(long abs, long kstart, long kend, long offset, long[] sums)
+        private void BumpRange(ulong abs, long kstart, long kend, long offset, ulong[] sums)
         {
             var klo = (int)(kstart - offset);
             var khi = (int)(kend - offset);
@@ -166,7 +166,7 @@ namespace Decompose.Numerics
                 cycleSize *= p * p;
             }
             cycleProducts = new long[cycleSize];
-            cycleValues = new int[cycleSize];
+            cycleValues = new ushort[cycleSize];
             for (var i = 0; i < cycleSize; i++)
             {
                 cycleProducts[i] = 1;
@@ -184,12 +184,12 @@ namespace Decompose.Numerics
                 for (var k = (long)0; k < cycleSize; k += pSquared)
                 {
                     cycleProducts[k] *= p;
-                    cycleValues[k] = cycleValues[k] / 2 * 3;
+                    cycleValues[k] = (ushort)(cycleValues[k] / 2 * 3);
                 }
             }
         }
 
-        private void ProcessRange(int pmax, long kstart, long kend, int[] values, long kmin, long[] sums, long smin, long sum0, Action<long, long, int[]> action)
+        private void ProcessRange(int pmax, long kstart, long kend, ushort[] values, long kmin, ulong[] sums, long smin, ulong sum0, Action<long, long, ushort[]> action)
         {
             // Acquire resources.
             Data data;
@@ -244,7 +244,7 @@ namespace Decompose.Numerics
             queue.Enqueue(data);
         }
 
-        private void SieveBlock(int pmax, long k0, int length, long[] products, int[] values, int[] offsets, long[] offsetsPower, long kmin)
+        private void SieveBlock(int pmax, long k0, int length, long[] products, ushort[] values, int[] offsets, long[] offsetsPower, long kmin)
         {
             // Initialize and pre-sieve product and value arrays from cycles.
             var koffset = k0 - kmin;
@@ -279,7 +279,7 @@ namespace Decompose.Numerics
                         products[kk] *= p;
                         quotient /= p;
                     }
-                    values[kk + koffset] = values[kk + koffset] / 3 * (exponent + 1);
+                    values[kk + koffset] = (ushort)(values[kk + koffset] / 3 * (exponent + 1));
                 }
                 offsetsPower[i] = kk - length;
             }
@@ -302,7 +302,7 @@ namespace Decompose.Numerics
                         products[kk] *= p;
                         quotient /= p;
                     }
-                    values[kk + koffset] = values[kk + koffset] / 3 * (exponent + 1);
+                    values[kk + koffset] = (ushort)(values[kk + koffset] / 3 * (exponent + 1));
                 }
                 offsetsPower[i] = kk - length;
             }
@@ -325,7 +325,7 @@ namespace Decompose.Numerics
                         products[kk] *= p;
                         quotient /= p;
                     }
-                    values[kk + koffset] = values[kk + koffset] / 3 * (exponent + 1);
+                    values[kk + koffset] = (ushort)(values[kk + koffset] / 3 * (exponent + 1));
                 }
                 offsetsPower[i] = kk - length;
             }
@@ -359,7 +359,7 @@ namespace Decompose.Numerics
                             products[kk] *= p;
                             quotient /= p;
                         }
-                        values[kk + koffset] = values[kk + koffset] / 2 * (exponent + 1);
+                        values[kk + koffset] = (ushort)(values[kk + koffset] / 2 * (exponent + 1));
                         kk += pSquared;
                     }
                     while (kk < length);
@@ -368,7 +368,7 @@ namespace Decompose.Numerics
             }
         }
 
-        private long FinishBlock(long k0, int length, long[] products, int[] values, long kmin, long[] sums, long smin, long sum0, bool onlySums)
+        private ulong FinishBlock(long k0, int length, long[] products, ushort[] values, long kmin, ulong[] sums, long smin, ulong sum0, bool onlySums)
         {
             // Each product can have at most one more prime factor.
             // It has that factor if the value of the product is
@@ -380,8 +380,8 @@ namespace Decompose.Numerics
             {
                 for (var k = 0; k < kmax; k++)
                 {
-                    sums[k - deltas] = sum0 += values[k] << -(int)((products[k] - (k + kmin)) >> 63);
-                    Debug.Assert(k == 0 || IntegerMath.NumberOfDivisors(k + kmin) == sums[k - deltas] - sums[k - deltas - 1]);
+                    sums[k - deltas] = sum0 += (uint)(values[k] << -(int)((products[k] - (k + kmin)) >> 63));
+                    Debug.Assert(k == 0 || (uint)IntegerMath.NumberOfDivisors(k + kmin) == sums[k - deltas] - sums[k - deltas - 1]);
                 }
             }
             else if (sums == null)

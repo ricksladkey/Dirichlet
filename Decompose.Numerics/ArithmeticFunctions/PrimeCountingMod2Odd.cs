@@ -25,7 +25,7 @@ namespace Decompose.Numerics
         private long xmed;
         private long xmax;
         private MobiusOddRangeAdditive mobius;
-        private DivisorOddRange divisors;
+        private DivisorOddRangeAdditive divisors;
         private long[] xi;
         private long[] mx;
         private int m0;
@@ -33,7 +33,7 @@ namespace Decompose.Numerics
         private int[] m;
         private long d1;
         private long d2;
-        private long[] dsums;
+        private ulong[] dsums;
 
         private IDivisorSummatoryFunction<UInt128>[] hyperbolicSum;
         private IDivisorSummatoryFunction<UInt128> hyperbolicSumParallel;
@@ -64,7 +64,7 @@ namespace Decompose.Numerics
             xmed = DownToOdd(Math.Min((long)(IntegerMath.FloorPower(n, 2, 7) * C3 / C4), xmax));
             var dmax = (long)IntegerMath.Min(n / IntegerMath.Square((UInt128)xmed) + 1, n);
             mobius = new MobiusOddRangeAdditive((xmax + 2) | 1, threads);
-            divisors = new DivisorOddRange((dmax + 2) | 1, threads);
+            divisors = new DivisorOddRangeAdditive((dmax + 2) | 1, threads);
             xi = new long[imax + 1];
             mx = new long[imax + 1];
 
@@ -75,7 +75,7 @@ namespace Decompose.Numerics
             values = new sbyte[mobiusBatchSize >> 1];
             m = new int[mobiusBatchSize >> 1];
             m0 = 0;
-            dsums = new long[divisorBatchSize >> 1];
+            dsums = new ulong[divisorBatchSize >> 1];
             d1 = d2 = 1;
 
             // Process small x values.
@@ -338,7 +338,7 @@ namespace Decompose.Numerics
         {
             if (n < d1 || n >= d2)
             {
-                var sum0 = (long)0;
+                var sum0 = (ulong)0;
                 if (n >= d2 && n < d2 + divisorBatchSize)
                 {
                     sum0 = d2 == 1 ? 0 : dsums[(d2 - d1 - 2) >> 1];
@@ -348,12 +348,12 @@ namespace Decompose.Numerics
                 {
                     // Could avoid an isolated computation if we supported summing down.
                     d1 = Math.Max(1, d1 - divisorBatchSize);
-                    sum0 = d1 == 1 ? 0 : T2Isolated((UInt128)(d1 - 2));
+                    sum0 = d1 == 1 ? 0 : (ulong)T2Isolated((UInt128)(d1 - 2));
                 }
                 else
                 {
                     d1 = DownToOdd((long)n);
-                    sum0 = d1 == 1 ? 0 : T2Isolated((UInt128)(d1 - 2));
+                    sum0 = d1 == 1 ? 0 : (ulong)T2Isolated((UInt128)(d1 - 2));
                 }
                 d2 = DownToOdd(Math.Min(d1 + divisorBatchSize, Math.Max(divisors.Size, d1)));
                 divisors.GetSums(d1, d2, dsums, sum0);
