@@ -410,7 +410,7 @@ namespace Decompose.Numerics
                         Debug.Assert(log2 == IntegerMath.CeilingLogBaseTwo(k));
                         var value = (uint)values[kk];
                         sums[(k - smin) >> 1] = sum0 += value + ((uint)((products[kk] - log2) >> 31) & value);
-                        Debug.Assert(k == k0 || (int)(sums[(k - smin) >> 1] - sums[(k - smin - 2) >> 1]) == (products[kk] < log2 ? 2 * value : value));
+                        Debug.Assert(k == k0 || (int)(sums[(k - smin) >> 1] - sums[(k - smin - 2) >> 1]) == (products[kk] > log2 - 1 ? value : 2 * value));
                         k += 2;
                         ++kk;
                     }
@@ -429,7 +429,7 @@ namespace Decompose.Numerics
                         var kk = (k - kmin) >> 1;
                         var value = (uint)values[kk];
                         sum0 += values[kk] = (ushort)(value + ((uint)((products[(k - k0) >> 1] - log2) >> 31) & value));
-                        Debug.Assert(values[kk] == (products[(k - k0) >> 1] < log2 ? 2 * value : value));
+                        Debug.Assert(values[kk] == (products[(k - k0) >> 1] > log2 - 1 ? value : 2 * value));
                         k += 2;
                     }
                     ++log2;
@@ -447,8 +447,8 @@ namespace Decompose.Numerics
                         var kk = (k - kmin) >> 1;
                         var value = (uint)values[kk];
                         sums[(k - smin) >> 1] = sum0 += values[kk] = (ushort)(value + ((uint)((products[(k - k0) >> 1] - log2) >> 31) & value));
-                        Debug.Assert(values[kk] == (products[kk] < log2 ? 2 * value : value));
-                        Debug.Assert(k == k0 || (int)(sums[(k - smin) >> 1] - sums[(k - smin - 2) >> 1]) == (products[(k - k0) >> 1] < log2 ? 2 * value : value));
+                        Debug.Assert(values[kk] == (products[(k - k0) >> 1] > log2 - 1 ? value : 2 * value));
+                        Debug.Assert(k == k0 || (int)(sums[(k - smin) >> 1] - sums[(k - smin - 2) >> 1]) == (products[(k - k0) >> 1] > log2 - 1 ? value : 2 * value));
                         k += 2;
                     }
                     ++log2;
