@@ -448,7 +448,7 @@ namespace Decompose.Numerics
                         var value = (uint)values[kk];
                         sums[(k - smin) >> 1] = sum0 += values[kk] = (ushort)(value + ((uint)((products[(k - k0) >> 1] - log2) >> 31) & value));
                         Debug.Assert(values[kk] == (products[kk] < log2 ? 2 * value : value));
-                        Debug.Assert(k == k0 || (int)(sums[(k - smin) >> 1] - sums[(k - smin - 2) >> 1]) == (products[kk] < log2 ? 2 * value : value));
+                        Debug.Assert(k == k0 || (int)(sums[(k - smin) >> 1] - sums[(k - smin - 2) >> 1]) == (products[(k - k0) >> 1] < log2 ? 2 * value : value));
                         k += 2;
                     }
                     ++log2;
