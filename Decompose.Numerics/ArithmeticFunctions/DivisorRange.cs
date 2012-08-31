@@ -8,6 +8,8 @@ namespace Decompose.Numerics
 {
     public class DivisorRange : IArithmeticRange<ushort, ulong>
     {
+        // Using a ushort for the divisor function is valid up to 10^17.
+        // See: http://wwwhomes.uni-bielefeld.de/achim/highly.txt
         private class Data
         {
             public long[] Products;
@@ -198,11 +200,12 @@ namespace Decompose.Numerics
             var products = data.Products;
             var offsets = data.Offsets;
             var offsetsPower = data.OffsetsPower;
-            bool onlySums = false;
+            var onlySums = false;
             if (values == null)
             {
                 values = data.Values;
-                onlySums = true;
+                if (sums != null)
+                    onlySums = true;
             }
 
             // Determine the initial offset and offset squared of each prime divisor.

@@ -83,7 +83,6 @@ namespace Decompose.Numerics
 
         private void CheckLast(int newLast)
         {
-            CheckValid();
             if (bits.Length <= newLast)
                 Resize(newLast + 1);
         }

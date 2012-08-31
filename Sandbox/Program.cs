@@ -483,11 +483,11 @@ namespace Sandbox
 
         static void ParityTest()
         {
-#if false
+#if true
             var timer = new Stopwatch();
             var threads = 8;
             var n = IntegerMath.Power((long)10, 10) | 1;
-            var batchSize = 1 << 24;
+            var batchSize = 1 << 20;
             var algorithm1 = new DivisorOddRange(n | 1, threads);
             var sums1 = new ulong[batchSize >> 1];
             timer.Restart();
@@ -500,6 +500,12 @@ namespace Sandbox
             for (var x = (long)1; x < n; x += batchSize)
                 algorithm2.GetSums(x, Math.Min(x + batchSize, n), sums2, 0);
             Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#if false
+            var algorithm3 = new DivisorOddRangeAdditive(n | 1, threads);
+            timer.Restart();
+            algorithm1.GetValues(1, n, (kstart, kend, values) => { });
+            Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
 #endif
 
 #if false
@@ -576,7 +582,7 @@ namespace Sandbox
             }
 #endif
 
-#if true
+#if false
             var threads = 8;
             var algorithm1 = new PrimeCountingMod2Odd(threads);
             var algorithm2 = new PrimeCounting(threads);

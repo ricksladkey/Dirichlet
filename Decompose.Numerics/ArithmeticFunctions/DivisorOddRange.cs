@@ -198,11 +198,12 @@ namespace Decompose.Numerics
             var products = data.Products;
             var offsets = data.Offsets;
             var offsetsPower = data.OffsetsPower;
-            bool onlySums = false;
+            var onlySums = false;
             if (values == null)
             {
                 values = data.Values;
-                onlySums = true;
+                if (sums != null)
+                    onlySums = true;
             }
 
             // Determine the initial offset and offset squared of each prime divisor.
