@@ -93,7 +93,7 @@ namespace Decompose.Numerics
             var soffset = sums == null ? -1 : offset;
             var slast = kmax - soffset - 2;
 
-            if (threads == 0)
+            if (threads <= 1)
             {
                 ProcessRange(pmax, kmin, kmax, values, voffset, sums, soffset, sum0, null);
                 return sums == null ? 0 : sums[slast >> 1];
@@ -280,12 +280,14 @@ namespace Decompose.Numerics
                 const int p = 3;
                 const int pCubed = p * p * p;
                 var logP = logPrimes[i];
+                var offset = (int)offsetsPower[i];
+                var quotient0 = (k0 + 2 * offset) / pCubed;
                 int kk;
-                for (kk = (int)offsetsPower[i]; kk < length; kk += pCubed)
+                for (kk = offset; kk < length; kk += pCubed, quotient0 += 2)
                 {
                     Debug.Assert((k0 + 2 * kk) % pCubed == 0);
                     products[kk] += logP;
-                    var quotient = (k0 + 2 * kk) / pCubed;
+                    var quotient = quotient0;
                     int exponent;
                     for (exponent = 3; quotient % p == 0; exponent++)
                     {
@@ -304,12 +306,14 @@ namespace Decompose.Numerics
                 const int p = 5;
                 const int pCubed = p * p * p;
                 var logP = logPrimes[i];
+                var offset = (int)offsetsPower[i];
+                var quotient0 = (k0 + 2 * offset) / pCubed;
                 int kk;
-                for (kk = (int)offsetsPower[i]; kk < length; kk += pCubed)
+                for (kk = offset; kk < length; kk += pCubed, quotient0 += 2)
                 {
                     Debug.Assert((k0 + 2 * kk) % pCubed == 0);
                     products[kk] += logP;
-                    var quotient = (k0 + 2 * kk) / pCubed;
+                    var quotient = quotient0;
                     int exponent;
                     for (exponent = 3; quotient % p == 0; exponent++)
                     {
@@ -328,12 +332,14 @@ namespace Decompose.Numerics
                 const int p = 7;
                 const int pCubed = p * p * p;
                 var logP = logPrimes[i];
+                var offset = (int)offsetsPower[i];
+                var quotient0 = (k0 + 2 * offset) / pCubed;
                 int kk;
-                for (kk = (int)offsetsPower[i]; kk < length; kk += pCubed)
+                for (kk = offset; kk < length; kk += pCubed, quotient0 += 2)
                 {
                     Debug.Assert((k0 + 2 * kk) % pCubed == 0);
                     products[kk] += logP;
-                    var quotient = (k0 + 2 * kk) / pCubed;
+                    var quotient = quotient0;
                     int exponent;
                     for (exponent = 3; quotient % p == 0; exponent++)
                     {
@@ -370,11 +376,12 @@ namespace Decompose.Numerics
                 if (kk < length)
                 {
                     var pSquared = (long)p * p;
+                    var quotient0 = (k0 + 2 * kk) / pSquared;
                     do
                     {
                         Debug.Assert((k0 + 2 * kk) % pSquared == 0);
                         products[kk] += logP;
-                        var quotient = (k0 + 2 * kk) / pSquared;
+                        var quotient = quotient0;
                         int exponent;
                         for (exponent = 2; quotient % p == 0; exponent++)
                         {
@@ -383,6 +390,7 @@ namespace Decompose.Numerics
                         }
                         values[kk + koffset] = (ushort)(values[kk + koffset] / 2 * (exponent + 1));
                         kk += pSquared;
+                        quotient += 2;
                     }
                     while (kk < length);
                 }

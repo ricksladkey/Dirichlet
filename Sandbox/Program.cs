@@ -483,22 +483,29 @@ namespace Sandbox
 
         static void ParityTest()
         {
-#if true
+#if false
             var timer = new Stopwatch();
             var threads = 8;
             var n = IntegerMath.Power((long)10, 10) | 1;
-            var batchSize = 1 << 20;
+            var batchSize = 1 << 24;
+#if false
             var algorithm1 = new DivisorOddRange(n | 1, threads);
             var sums1 = new ulong[batchSize >> 1];
             timer.Restart();
             for (var x = (long)1; x < n; x += batchSize)
                 algorithm1.GetSums(x, Math.Min(x + batchSize, n), sums1, 0);
             Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
             var algorithm2 = new DivisorOddRangeAdditive(n | 1, threads);
-            var sums2 = new ulong[batchSize >> 1];
+            var sums2a = new ulong[batchSize >> 1];
+            var sums2b = new ulong[batchSize >> 1];
+            var sums2 = sums2a;
             timer.Restart();
             for (var x = (long)1; x < n; x += batchSize)
+            {
+                sums2 = sums2 == sums2a ? sums2b : sums2a;
                 algorithm2.GetSums(x, Math.Min(x + batchSize, n), sums2, 0);
+            }
             Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #if false
             var algorithm3 = new DivisorOddRangeAdditive(n | 1, threads);
@@ -619,19 +626,19 @@ namespace Sandbox
             }
 #endif
 
-#if false
+#if true
             var threads = 8;
             var timer = new Stopwatch();
-            for (var power = 0; power <= 16; power++)
+            for (var power = 16; power <= 16; power++)
             {
                 var n = IntegerMath.Power((long)10, power);
-#if true
+#if false
                 var algorithm1 = new MertensFunctionOddDR(threads);
                 timer.Restart();
                 Console.WriteLine("BigInteger.Parse(\"{0}\"),", algorithm1.Evaluate(n));
-                //Console.WriteLine("// elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                //Console.WriteLine(" // elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
-#if false
+#if true
                 var algorithm2 = new MertensFunctionWheel(threads);
                 timer.Restart();
                 Console.Write("{{ {0}, {1} }},", power, algorithm2.Evaluate(n));
