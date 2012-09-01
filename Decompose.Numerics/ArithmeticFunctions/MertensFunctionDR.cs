@@ -110,7 +110,7 @@ namespace Decompose.Numerics
         private long KSum2(long x, long kmin, long kmax, long x1)
         {
             var s = (long)0;
-            var current = T1Odd(x);
+            var current = T1Odd(x / kmin);
             for (var k = kmin; k <= kmax; k++)
             {
                 var next = T1Odd(x / (k + 1));

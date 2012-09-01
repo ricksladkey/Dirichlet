@@ -629,7 +629,7 @@ namespace Sandbox
 #if true
             var threads = 8;
             var timer = new Stopwatch();
-            for (var power = 16; power <= 16; power++)
+            for (var power = 12; power <= 16; power++)
             {
                 var n = IntegerMath.Power((long)10, power);
 #if false
@@ -1121,7 +1121,7 @@ namespace Sandbox
 
                     var kmin = 1;
                     var kmax = x / sqrtx - 1;
-                    var current = T1Odd(x);
+                    var current = T1Odd(x / kmin);
                     for (var k = kmin; k <= kmax; k++)
                     {
                         var next = T1Odd(x / (k + 1));

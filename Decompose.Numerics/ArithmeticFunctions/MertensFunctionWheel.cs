@@ -10,6 +10,7 @@ namespace Decompose.Numerics
 {
     public class MertensFunctionWheel
     {
+        private const long maximumSmallBatchSize = (long)1 << 19;
         private const long maximumBatchSize = (long)1 << 26;
         private const long tmax = (long)1 << 62;
         private const long tmin = -tmax;
@@ -17,7 +18,9 @@ namespace Decompose.Numerics
         private const long C2 = 3;
         private const long C3 = 2;
         private const long C4 = 1;
-        private const long C5 = 10;
+        private const long C5 = 1;
+        private const long C6 = 1;
+        private const long C7 = 10;
 
         private int threads;
         private MobiusRangeAdditive mobius;
@@ -137,7 +140,7 @@ namespace Decompose.Numerics
                 var i = r[l];
                 var ni = n / (uint)i;
                 var large = ni > long.MaxValue;
-                var cost = Math.Sqrt((double)n / i) * (large ? C5 : 1);
+                var cost = Math.Sqrt((double)n / i) * (large ? C7 : 1);
                 var addto = 0;
                 var mincost = costs[0];
                 for (var bucket = 0; bucket < buckets; bucket++)
@@ -162,12 +165,19 @@ namespace Decompose.Numerics
                 bucketsSmall[bucket] = bucketListsSmall[bucket].ToArray();
 
             var m0 = 0;
-            for (var x = (long)1; x <= u; x += maximumBatchSize)
+            var xmed = Math.Min((long)IntegerMath.FloorRoot(n, 2) * C5 / C6, u);
+            for (var x = (long)1; x <= xmed; x += maximumSmallBatchSize)
+            {
+                var xstart = x;
+                var xend = Math.Min(xstart + maximumSmallBatchSize - 1, xmed);
+                m0 = mobius.GetSums(xstart, xend + 1, m, m0);
+                ProcessBatch(xstart, xend);
+            }
+            for (var x = xmed + 1; x <= u; x += maximumBatchSize)
             {
                 var xstart = x;
                 var xend = Math.Min(xstart + maximumBatchSize - 1, u);
                 m0 = mobius.GetSums(xstart, xend + 1, m, m0);
-                m0 = m[xend - xstart];
                 ProcessBatch(xstart, xend);
             }
             ComputeMx();
@@ -266,7 +276,7 @@ namespace Decompose.Numerics
         private long KSum2(long x, long kmin, long kmax, long x1)
         {
             var s = (long)0;
-            var current = T1Wheel(x);
+            var current = T1Wheel(x / kmin);
             for (var k = kmin; k <= kmax; k++)
             {
                 var next = T1Wheel(x / (k + 1));
@@ -394,7 +404,7 @@ namespace Decompose.Numerics
         private BigInteger KSum2(BigInteger x, long kmin, long kmax, long x1)
         {
             var s = (BigInteger)0;
-            var current = T1Wheel(x);
+            var current = T1Wheel(x / kmin);
             for (var k = kmin; k <= kmax; k++)
             {
                 var next = T1Wheel(x / (ulong)(k + 1));
