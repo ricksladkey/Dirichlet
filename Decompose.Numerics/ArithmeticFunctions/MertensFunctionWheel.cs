@@ -10,7 +10,7 @@ namespace Decompose.Numerics
 {
     public class MertensFunctionWheel
     {
-        private const long maximumSmallBatchSize = (long)1 << 19;
+        private const long maximumSmallBatchSize = (long)1 << 18;
         private const long maximumBatchSize = (long)1 << 26;
         private const long tmax = (long)1 << 62;
         private const long tmin = -tmax;
@@ -19,7 +19,7 @@ namespace Decompose.Numerics
         private const long C3 = 2;
         private const long C4 = 1;
         private const long C5 = 1;
-        private const long C6 = 1;
+        private const long C6 = 5;
         private const long C7 = 10;
 
         private int threads;
