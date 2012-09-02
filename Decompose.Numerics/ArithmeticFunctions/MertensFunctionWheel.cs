@@ -23,7 +23,7 @@ namespace Decompose.Numerics
         private const long C7 = 10;
 
         private int threads;
-        private MobiusRangeAdditive mobius;
+        private IArithmeticRange<sbyte, int> mobius;
         private BigInteger n;
         private long u;
         private int imax;
@@ -157,12 +157,8 @@ namespace Decompose.Numerics
                     bucketListsSmall[addto].Add(i);
                 costs[addto] += cost;
             }
-            bucketsLarge = new int[buckets][];
-            for (var bucket = 0; bucket < buckets; bucket++)
-                bucketsLarge[bucket] = bucketListsLarge[bucket].ToArray();
-            bucketsSmall = new int[buckets][];
-            for (var bucket = 0; bucket < buckets; bucket++)
-                bucketsSmall[bucket] = bucketListsSmall[bucket].ToArray();
+            bucketsLarge = bucketListsLarge.Select(bucket => bucket.ToArray()).ToArray();
+            bucketsSmall = bucketListsSmall.Select(bucket => bucket.ToArray()).ToArray();
 
             var m0 = 0;
             var xmed = Math.Min((long)IntegerMath.FloorRoot(n, 2) * C5 / C6, u);
@@ -389,9 +385,10 @@ namespace Decompose.Numerics
             var s = (long)0;
             var j = UpToWheel(jmin);
             var mod = j % wheelSize;
+            var xRep = (UInt128)x;
             while (j <= jmax)
             {
-                s += m[(int)(x / (ulong)j - x1)];
+                s += m[(int)(xRep / (ulong)j - (ulong)x1)];
                 var skip = wheelNext[mod >> 1];
                 j += skip;
                 mod += skip;

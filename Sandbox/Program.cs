@@ -631,7 +631,7 @@ namespace Sandbox
             var timer = new Stopwatch();
             for (var power = 16; power <= 16; power++)
             {
-                var n = IntegerMath.Power((long)10, power);
+                var n = IntegerMath.Power((BigInteger)10, power);
 #if false
                 var algorithm1 = new MertensFunctionOddDR(threads);
                 timer.Restart();
