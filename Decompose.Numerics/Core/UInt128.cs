@@ -85,6 +85,8 @@ namespace Decompose.Numerics
         public bool IsPowerOfTwo { get { return (this & (this - 1)).IsZero; } }
         public bool IsEven { get { return (r0 & 1) == 0; } }
 
+        public UInt128 TwosComplement { get { return 0 - this; } }
+
         public override string ToString()
         {
             return ((BigInteger)this).ToString();

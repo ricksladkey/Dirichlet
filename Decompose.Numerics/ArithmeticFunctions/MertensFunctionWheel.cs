@@ -12,7 +12,7 @@ namespace Decompose.Numerics
     {
         private const long maximumSmallBatchSize = (long)1 << 19;
         private const long maximumBatchSize = (long)1 << 26;
-        private const long largeLimit = long.MaxValue;
+        private const long largeLimit = int.MaxValue;
         private const long tmax = (long)1 << 62;
         private const long tmin = -tmax;
         private const long C1 = 1;
@@ -668,17 +668,35 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private BigInteger KSumLarge2(BigInteger x, long kmin, long kmax, long x1)
+        private BigInteger KSumLarge2Old(BigInteger x, long kmin, long kmax, long x1)
         {
             var s = (BigInteger)0;
             var current = T1Wheel(x / kmin);
             for (var k = kmin; k <= kmax; k++)
             {
-                var next = T1Wheel(x / (ulong)(k + 1));
+                var next = T1Wheel(x / (k + 1));
                 s += (current - next) * m[k - x1];
                 current = next;
             }
             return s;
+        }
+
+        private BigInteger KSumLarge2(BigInteger x, long kmin, long kmax, long x1)
+        {
+            var xRep = (UInt128)x;
+            var s = (UInt128)0;
+            var current = T1Wheel(xRep / (ulong)kmin);
+            for (var k = kmin; k <= kmax; k++)
+            {
+                var next = T1Wheel(xRep / (ulong)(k + 1));
+                var sum = m[k - x1];
+                if (sum >= 0)
+                    s += (current - next) * (uint)sum;
+                else
+                    s -= (current - next) * (uint)(-sum);
+                current = next;
+            }
+            return (BigInteger)(Int128)s;
         }
 
         private void ComputeMx()
@@ -714,6 +732,13 @@ namespace Decompose.Numerics
             var b = a / wheelSize;
             var c = (int)(a - b * wheelSize);
             return wheelCount * b + wheelSubtotal[c];
+        }
+
+        private UInt128 T1Wheel(UInt128 a)
+        {
+            var b = a / wheelSize;
+            var c = (int)(a - b * wheelSize);
+            return (uint)wheelCount * b + (uint)wheelSubtotal[c];
         }
 
         private BigInteger T1Wheel(BigInteger a)

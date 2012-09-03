@@ -36,12 +36,13 @@ namespace Decompose.Numerics
 
         public static UInt128 TwosComplement(UInt128 a)
         {
-            return 0 - a;
+            return a.TwosComplement;
         }
 
         public static int Abs(int a)
         {
-            return a >= 0 ? a : -a;
+            var flip = a >> 31;
+            return (a ^ flip) - flip; 
         }
 
         public static uint Abs(uint a)
@@ -51,12 +52,18 @@ namespace Decompose.Numerics
 
         public static long Abs(long a)
         {
-            return a >= 0 ? a : -a;
+            var flip = a >> 63;
+            return (a ^ flip) - flip;
         }
 
         public static ulong Abs(ulong a)
         {
             return a;
+        }
+
+        public static Int128 Abs(Int128 a)
+        {
+            return a.IsNegative ? -a : a;
         }
 
         public static UInt128 Abs(UInt128 a)
