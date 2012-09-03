@@ -16,10 +16,10 @@ namespace Decompose.Numerics
         private const long tmin = -tmax;
         private const long C1 = 1;
         private const long C2 = 3;
-        private const long C3 = 2;
-        private const long C4 = 1;
+        private const long C3 = 3;
+        private const long C4 = 2;
         private const long C5 = 1;
-        private const long C6 = 5;
+        private const long C6 = 1;
         private const long C7 = 10;
 
         private int threads;
@@ -27,9 +27,12 @@ namespace Decompose.Numerics
         private BigInteger n;
         private long u;
         private int imax;
+        private sbyte[] mu;
         private int[] m;
         private BigInteger[] mx;
         private int[] r;
+        private long[] niSmall;
+        private BigInteger[] niLarge;
         private int[][] bucketsSmall;
         private int[][] bucketsLarge;
 
@@ -116,6 +119,7 @@ namespace Decompose.Numerics
             imax = (int)(n / u);
             mobius = new MobiusRangeAdditive(u + 1, threads);
             var batchSize = Math.Min(u, maximumBatchSize);
+            mu = new sbyte[maximumSmallBatchSize];
             m = new int[batchSize];
             mx = new BigInteger[imax + 1];
             r = new int[imax + 1];
@@ -127,6 +131,8 @@ namespace Decompose.Numerics
             }
             Array.Resize(ref r, lmax);
 
+            niLarge = new BigInteger[imax + 1];
+            niSmall = new long[imax + 1];
             var buckets = Math.Max(1, threads);
             var costs = new double[buckets];
             var bucketListsLarge = new List<int>[buckets];
@@ -152,9 +158,15 @@ namespace Decompose.Numerics
                     }
                 }
                 if (large)
+                {
+                    niLarge[i] = ni;
                     bucketListsLarge[addto].Add(i);
+                }
                 else
+                {
+                    niSmall[i] = (long)ni;
                     bucketListsSmall[addto].Add(i);
+                }
                 costs[addto] += cost;
             }
             bucketsLarge = bucketListsLarge.Select(bucket => bucket.ToArray()).ToArray();
@@ -166,7 +178,7 @@ namespace Decompose.Numerics
             {
                 var xstart = x;
                 var xend = Math.Min(xstart + maximumSmallBatchSize - 1, xmed);
-                m0 = mobius.GetSums(xstart, xend + 1, m, m0);
+                m0 = mobius.GetValuesAndSums(xstart, xend + 1, mu, m, m0);
                 ProcessBatch(xstart, xend);
             }
             for (var x = xmed + 1; x <= u; x += maximumBatchSize)
@@ -207,7 +219,7 @@ namespace Decompose.Numerics
             for (var l = 0; l < r.Length; l++)
             {
                 var i = r[l];
-                var x = n / (uint)i;
+                var x = niLarge[i];
                 var sqrt = (long)IntegerMath.FloorSquareRoot(x);
                 var xover = (long)IntegerMath.Min(sqrt * C3 / C4, x);
                 xover = (long)(x / (x / (ulong)xover));
@@ -220,7 +232,8 @@ namespace Decompose.Numerics
 
                 var kmin = IntegerMath.Max(1, x1);
                 var kmax = (long)IntegerMath.Min(x / (ulong)xover - 1, x2);
-                s += KSum1(x, kmin, ref kmax, x1);
+                //s += KSum1M(x, kmin, ref kmax, x1);
+                s += KSum1Mu(x, kmin, ref kmax, x1);
                 s += KSum2(x, kmin, kmax, x1);
 
                 mx[i] -= s;
@@ -232,7 +245,7 @@ namespace Decompose.Numerics
             for (var l = 0; l < r.Length; l++)
             {
                 var i = r[l];
-                var x = (long)(n / (uint)i);
+                var x = niSmall[i];
                 var sqrt = IntegerMath.FloorSquareRoot(x);
                 var xover = Math.Min(sqrt * C3 / C4, x);
                 xover = x / (x / xover);
@@ -330,9 +343,10 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private long KSum1(long x, long k1, ref long k, long offset)
+        private long KSum1(long x, long k1, ref long k2, long offset)
         {
-            if (k == 0)
+            var k = k2;
+            if (k == 0 || k < k1)
                 return 0;
             var s = (long)0;
             var beta = x / (k + 1);
@@ -363,8 +377,7 @@ namespace Decompose.Numerics
                     gamma += k;
                     eps += k;
                 }
-                gamma += delta;
-                gamma += delta;
+                gamma += delta << 1;
                 beta += delta;
 
                 Debug.Assert(eps == x % k);
@@ -372,11 +385,20 @@ namespace Decompose.Numerics
                 Debug.Assert(delta == beta - x / (k + 1));
                 Debug.Assert(gamma == beta - (BigInteger)(k - 1) * delta);
 
-                var count = T1Wheel(beta);
-                s += (count - lastCount) * m[k - offset];
-                lastCount = count;
+#if true
+                s += T1Wheel(beta) * mu[k - offset];
+#else
+                var value = mu[k - offset];
+                if (value == 1)
+                    s += T1Wheel(beta);
+                else if (value == -1)
+                    s -= T1Wheel(beta);
+#endif
                 --k;
             }
+            s -= lastCount * m[k2 - offset];
+            s += T1Wheel(beta) * (m[k + 1 - offset] - mu[k + 1 - offset]);
+            k2 = k;
             return s;
         }
 
@@ -459,7 +481,56 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private BigInteger KSum1(BigInteger x, long k1, ref long k, long offset)
+        private long KSum1M(long x, long k1, ref long k, long offset)
+        {
+            if (k == 0)
+                return 0;
+            var s = (long)0;
+            var beta = x / (k + 1);
+            var eps = x % (k + 1);
+            var delta = x / k - beta;
+            var gamma = beta - k * delta;
+            var lastCount = T1Wheel(beta);
+            while (k >= k1)
+            {
+                eps += gamma;
+                if (eps >= k)
+                {
+                    ++delta;
+                    gamma -= k;
+                    eps -= k;
+                    if (eps >= k)
+                    {
+                        ++delta;
+                        gamma -= k;
+                        eps -= k;
+                        if (eps >= k)
+                            break;
+                    }
+                }
+                else if (eps < 0)
+                {
+                    --delta;
+                    gamma += k;
+                    eps += k;
+                }
+                gamma += delta << 1;
+                beta += delta;
+
+                Debug.Assert(eps == x % k);
+                Debug.Assert(beta == x / k);
+                Debug.Assert(delta == beta - x / (k + 1));
+                Debug.Assert(gamma == beta - (BigInteger)(k - 1) * delta);
+
+                var count = T1Wheel(beta);
+                s += (count - lastCount) * m[k - offset];
+                lastCount = count;
+                --k;
+            }
+            return s;
+        }
+
+        private BigInteger KSum1Mu(BigInteger x, long k1, ref long k, long offset)
         {
             if (k == 0)
                 return 0;
@@ -493,8 +564,7 @@ namespace Decompose.Numerics
                     gamma += k;
                     eps += k;
                 }
-                gamma += delta;
-                gamma += delta;
+                gamma += delta << 1;
                 beta += delta;
 
                 Debug.Assert(eps == (BigInteger)x % k);

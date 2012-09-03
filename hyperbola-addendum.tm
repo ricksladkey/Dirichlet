@@ -1,4 +1,4 @@
-<TeXmacs|1.0.7.15>
+<TeXmacs|1.0.7.16>
 
 <style|generic>
 
@@ -1148,6 +1148,20 @@
   </eqnarray*>
 
   Apparently not true!
+
+  An identity from Mertens:
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|M<around*|(|n|)>>|<cell|=>|<cell|2*M<around*|(|k|)>-<big|sum><rsup|k><rsub|r,s=1><around*|\<lfloor\>|<frac|n|r*s>|\<rfloor\>>*\<mu\><around*|(|r|)>*\<mu\><around*|(|s|)>>>|<row|<cell|>|<cell|=>|<cell|2*M<around*|(|k|)>-<big|sum><rsup|k><rsub|r=1>\<mu\><around*|(|r|)>*<big|sum><rsup|k><rsub|s=1><around*|\<lfloor\>|<frac|n/r|s>|\<rfloor\>>*\<mu\><around*|(|s|)>>>|<row|<cell|>|<cell|=>|<cell|M<around*|(|k|)>-<big|sum><rsup|k><rsub|r=1>\<mu\><around*|(|r|)>*<big|sum><rsup|n/r><rsub|t=<around*|\<lfloor\>|n/k|\<rfloor\>>>M<around*|(|<frac|n|r*t>|)><space|1em><around*|(|roughly|)>>>>>
+  </eqnarray*>
+
+  which appears to be basically the same as the DR identity.
+
+  Revise KSum to use <math|\<mu\>> instead of <math|M>:
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|K<rsub|sum><around*|(|k<rsub|min>,k<rsub|max>|)>>|<cell|=>|<cell|<big|sum><rsub|k=k<rsub|min><rsup|>><rsup|k<rsub|max>><around*|[|T<rsub|1,wheel><around*|(|<frac|n|k>|)>-T<rsub|1,wheel><around*|(|<frac|n|k+1>|)>|]>*M<around*|(|k|)>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|k=k<rsub|min>+1><rsup|k<rsub|max>>T<rsub|1,wheel><around*|(|<frac|n|k>|)>*\<mu\><around*|(|k|)>>>|<row|<cell|>|<cell|+>|<cell|M<around*|(|k<rsub|min>|)>*T<rsub|1,wheel><around*|(|<frac|n|k<rsub|min>>|)>>>|<row|<cell|>|<cell|->|<cell|M<around*|(|k<rsub|max>|)>*T<rsub|1,wheel><around*|(|<frac|n|k<rsub|max>+1>|)>>>>>
+  </eqnarray*>
 
   \;
 </body>
