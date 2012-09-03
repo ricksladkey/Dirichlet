@@ -12,6 +12,7 @@ namespace Decompose.Numerics
     {
         private const long maximumSmallBatchSize = (long)1 << 19;
         private const long maximumBatchSize = (long)1 << 26;
+        private const long largeLimit = long.MaxValue;
         private const long tmax = (long)1 << 62;
         private const long tmin = -tmax;
         private const long C1 = 1;
@@ -145,7 +146,7 @@ namespace Decompose.Numerics
             {
                 var i = r[l];
                 var ni = n / (uint)i;
-                var large = ni > long.MaxValue;
+                var large = ni > largeLimit;
                 var cost = Math.Sqrt((double)n / i) * (large ? C7 : 1);
                 var addto = 0;
                 var mincost = costs[0];
@@ -227,14 +228,14 @@ namespace Decompose.Numerics
 
                 var jmin = UpToOdd(IntegerMath.Max(imax / i + 1, (long)IntegerMath.Min(xover + 1, x / ((ulong)x2 + 1) + 1)));
                 var jmax = DownToOdd((long)IntegerMath.Min(xover, x / (ulong)x1));
-                s += JSum1(x, jmin, ref jmax, x1);
-                s += JSum2(x, jmin, jmax, x1);
+                s += JSumLarge1(x, jmin, ref jmax, x1);
+                s += JSumLarge2(x, jmin, jmax, x1);
 
                 var kmin = IntegerMath.Max(1, x1);
                 var kmax = (long)IntegerMath.Min(x / (ulong)xover - 1, x2);
-                //s += KSum1M(x, kmin, ref kmax, x1);
-                s += KSum1Mu(x, kmin, ref kmax, x1);
-                s += KSum2(x, kmin, kmax, x1);
+                s += KSumLarge1Mu(x, kmin, ref kmax, x1);
+                //s += KSumLarge1M(x, kmin, ref kmax, x1);
+                s += KSumLarge2(x, kmin, kmax, x1);
 
                 mx[i] -= s;
             }
@@ -253,49 +254,68 @@ namespace Decompose.Numerics
 
                 var jmin = UpToOdd(Math.Max(imax / i + 1, x / (x2 + 1) + 1));
                 var jmax = DownToOdd(Math.Min(xover, x / x1));
-                //s += JSum1(x, jmin, ref jmax, x1);
-                s += JSum2(x, jmin, jmax, x1);
+                //s += JSumSmall1(x, jmin, ref jmax, x1);
+                s += JSumSmall2(x, jmin, jmax, x1);
 
                 var kmin = Math.Max(1, x1);
                 var kmax = Math.Min(x / xover - 1, x2);
-                s += KSum1(x, kmin, ref kmax, x1);
-                s += KSum2(x, kmin, kmax, x1);
+                s += KSumSmall1Mu(x, kmin, ref kmax, x1);
+                //s += KSumSmall1M(x, kmin, ref kmax, x1);
+                s += KSumSmall2(x, kmin, kmax, x1);
 
                 mx[i] -= s;
             }
         }
 
-        private long JSum2(long x, long jmin, long jmax, long x1)
+        private BigInteger JSumLarge1(BigInteger x, long j1, ref long j, long offset)
         {
             var s = (long)0;
-            var j = UpToWheel(jmin);
-            var mod = j % wheelSize;
-            while (j <= jmax)
+            var beta = (long)(x / ((ulong)j + 2));
+            var eps = (long)(x % ((ulong)j + 2));
+            var delta = (long)(x / (ulong)j) - beta;
+            var gamma = 2 * beta - j * delta;
+            var mod = (j % wheelSize) >> 1;
+            while (j >= j1)
             {
-                s += m[x / j - x1];
-                var skip = wheelNext[mod >> 1];
-                j += skip;
-                mod += skip;
-                if (mod >= wheelSize)
-                    mod -= wheelSize;
+                eps += gamma;
+                if (eps >= j)
+                {
+                    ++delta;
+                    gamma -= j;
+                    eps -= j;
+                    if (eps >= j)
+                    {
+                        ++delta;
+                        gamma -= j;
+                        eps -= j;
+                        if (eps >= j)
+                            break;
+                    }
+                }
+                else if (eps < 0)
+                {
+                    --delta;
+                    gamma += j;
+                    eps += j;
+                }
+                gamma += 4 * delta;
+                beta += delta;
+
+                Debug.Assert(eps == (BigInteger)x % j);
+                Debug.Assert(beta == (BigInteger)x / j);
+                Debug.Assert(delta == beta - (BigInteger)x / (j + 2));
+                Debug.Assert(gamma == 2 * beta - (BigInteger)(j - 2) * delta);
+
+                if (wheelInclude[mod])
+                    s += m[beta - offset];
+                if (--mod < 0)
+                    mod += wheelSize2;
+                j -= 2;
             }
             return s;
         }
 
-        private long KSum2(long x, long kmin, long kmax, long x1)
-        {
-            var s = (long)0;
-            var current = T1Wheel(x / kmin);
-            for (var k = kmin; k <= kmax; k++)
-            {
-                var next = T1Wheel(x / (k + 1));
-                s += (current - next) * m[k - x1];
-                current = next;
-            }
-            return s;
-        }
-
-        private long JSum1(long x, long j1, ref long j, long offset)
+        private long JSumSmall1(long x, long j1, ref long j, long offset)
         {
             var s = (long)0;
             var beta = x / (j + 2);
@@ -343,7 +363,42 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private long KSum1(long x, long k1, ref long k2, long offset)
+        private long JSumLarge2(BigInteger x, long jmin, long jmax, long x1)
+        {
+            var s = (long)0;
+            var j = UpToWheel(jmin);
+            var mod = j % wheelSize;
+            var xRep = (UInt128)x;
+            while (j <= jmax)
+            {
+                s += m[(int)(xRep / (ulong)j - (ulong)x1)];
+                var skip = wheelNext[mod >> 1];
+                j += skip;
+                mod += skip;
+                if (mod >= wheelSize)
+                    mod -= wheelSize;
+            }
+            return s;
+        }
+
+        private long JSumSmall2(long x, long jmin, long jmax, long x1)
+        {
+            var s = (long)0;
+            var j = UpToWheel(jmin);
+            var mod = j % wheelSize;
+            while (j <= jmax)
+            {
+                s += m[x / j - x1];
+                var skip = wheelNext[mod >> 1];
+                j += skip;
+                mod += skip;
+                if (mod >= wheelSize)
+                    mod -= wheelSize;
+            }
+            return s;
+        }
+
+        private long KSumSmall1Mu(long x, long k1, ref long k2, long offset)
         {
             var k = k2;
             if (k == 0 || k < k1)
@@ -399,6 +454,11 @@ namespace Decompose.Numerics
                 s += wheel * mu[k - offset];
 #endif
 #if false
+                var value = (int)mu[k - offset];
+                var flip = value >> 31;
+                s += ((wheel ^ flip) - flip) & (value << 31 >> 31);
+#endif
+#if false
                 s += T1Wheel(beta) * mu[k - offset];
 #endif
 #if false
@@ -422,86 +482,7 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private long JSum2(BigInteger x, long jmin, long jmax, long x1)
-        {
-            var s = (long)0;
-            var j = UpToWheel(jmin);
-            var mod = j % wheelSize;
-            var xRep = (UInt128)x;
-            while (j <= jmax)
-            {
-                s += m[(int)(xRep / (ulong)j - (ulong)x1)];
-                var skip = wheelNext[mod >> 1];
-                j += skip;
-                mod += skip;
-                if (mod >= wheelSize)
-                    mod -= wheelSize;
-            }
-            return s;
-        }
-
-        private BigInteger KSum2(BigInteger x, long kmin, long kmax, long x1)
-        {
-            var s = (BigInteger)0;
-            var current = T1Wheel(x / kmin);
-            for (var k = kmin; k <= kmax; k++)
-            {
-                var next = T1Wheel(x / (ulong)(k + 1));
-                s += (current - next) * m[k - x1];
-                current = next;
-            }
-            return s;
-        }
-
-        private BigInteger JSum1(BigInteger x, long j1, ref long j, long offset)
-        {
-            var s = (long)0;
-            var beta = (long)(x / ((ulong)j + 2));
-            var eps = (long)(x % ((ulong)j + 2));
-            var delta = (long)(x / (ulong)j) - beta;
-            var gamma = 2 * beta - j * delta;
-            var mod = (j % wheelSize) >> 1;
-            while (j >= j1)
-            {
-                eps += gamma;
-                if (eps >= j)
-                {
-                    ++delta;
-                    gamma -= j;
-                    eps -= j;
-                    if (eps >= j)
-                    {
-                        ++delta;
-                        gamma -= j;
-                        eps -= j;
-                        if (eps >= j)
-                            break;
-                    }
-                }
-                else if (eps < 0)
-                {
-                    --delta;
-                    gamma += j;
-                    eps += j;
-                }
-                gamma += 4 * delta;
-                beta += delta;
-
-                Debug.Assert(eps == (BigInteger)x % j);
-                Debug.Assert(beta == (BigInteger)x / j);
-                Debug.Assert(delta == beta - (BigInteger)x / (j + 2));
-                Debug.Assert(gamma == 2 * beta - (BigInteger)(j - 2) * delta);
-
-                if (wheelInclude[mod])
-                    s += m[beta - offset];
-                if (--mod < 0)
-                    mod += wheelSize2;
-                j -= 2;
-            }
-            return s;
-        }
-
-        private long KSum1M(long x, long k1, ref long k, long offset)
+        private long KSumSmall1M(long x, long k1, ref long k, long offset)
         {
             if (k == 0)
                 return 0;
@@ -550,7 +531,75 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private BigInteger KSum1Mu(BigInteger x, long k1, ref long k, long offset)
+        private BigInteger KSumLarge1Mu(BigInteger x, long k1, ref long k2, long offset)
+        {
+            var k = k2;
+            if (k == 0 || k < k1)
+                return 0;
+            var s = (BigInteger)0;
+            var t = (long)0;
+            var beta = (long)(x / (k + 1));
+            var eps = (long)(x % (k + 1));
+            var delta = (long)(x / k - beta);
+            var gamma = (long)(beta - k * delta);
+            var firstBeta = beta;
+            var betaOffset = beta / wheelSize * wheelCount;
+            beta %= wheelSize;
+            while (k >= k1)
+            {
+                eps += gamma;
+                if (eps >= k)
+                {
+                    ++delta;
+                    gamma -= k;
+                    eps -= k;
+                    if (eps >= k)
+                    {
+                        ++delta;
+                        gamma -= k;
+                        eps -= k;
+                        if (eps >= k)
+                            break;
+                    }
+                }
+                else if (eps < 0)
+                {
+                    --delta;
+                    gamma += k;
+                    eps += k;
+                }
+                gamma += delta << 1;
+                beta += delta;
+                if (beta >= wheelSize)
+                {
+                    betaOffset += wheelCount;
+                    beta -= wheelSize;
+                }
+                var wheel = betaOffset + wheelSubtotal[beta];
+
+                Debug.Assert(eps == x % k);
+                Debug.Assert(beta == x / k % wheelSize);
+                Debug.Assert(delta == x / k - x / (k + 1));
+                Debug.Assert(gamma == x / k - (BigInteger)(k - 1) * delta);
+                Debug.Assert(betaOffset == x / k / wheelSize * wheelCount);
+                Debug.Assert(wheel == T1Wheel(x / k));
+
+                t += wheel * mu[k - offset];
+                if (t > tmax || t < tmin)
+                {
+                    s += t;
+                    t = 0;
+                }
+                --k;
+            }
+            s += t;
+            s -= T1Wheel(firstBeta) * m[k2 - offset];
+            s += (betaOffset + wheelSubtotal[beta]) * (m[k + 1 - offset] - mu[k + 1 - offset]);
+            k2 = k;
+            return s;
+        }
+
+        private BigInteger KSumLarge1M(BigInteger x, long k1, ref long k, long offset)
         {
             if (k == 0)
                 return 0;
@@ -603,6 +652,32 @@ namespace Decompose.Numerics
                 --k;
             }
             s += t;
+            return s;
+        }
+
+        private long KSumSmall2(long x, long kmin, long kmax, long x1)
+        {
+            var s = (long)0;
+            var current = T1Wheel(x / kmin);
+            for (var k = kmin; k <= kmax; k++)
+            {
+                var next = T1Wheel(x / (k + 1));
+                s += (current - next) * m[k - x1];
+                current = next;
+            }
+            return s;
+        }
+
+        private BigInteger KSumLarge2(BigInteger x, long kmin, long kmax, long x1)
+        {
+            var s = (BigInteger)0;
+            var current = T1Wheel(x / kmin);
+            for (var k = kmin; k <= kmax; k++)
+            {
+                var next = T1Wheel(x / (ulong)(k + 1));
+                s += (current - next) * m[k - x1];
+                current = next;
+            }
             return s;
         }
 
