@@ -16,8 +16,8 @@ namespace Decompose.Numerics
         private const long tmin = -tmax;
         private const long C1 = 1;
         private const long C2 = 3;
-        private const long C3 = 3;
-        private const long C4 = 2;
+        private const long C3 = 1;
+        private const long C4 = 1;
         private const long C5 = 1;
         private const long C6 = 1;
         private const long C7 = 10;
@@ -353,7 +353,9 @@ namespace Decompose.Numerics
             var eps = x % (k + 1);
             var delta = x / k - beta;
             var gamma = beta - k * delta;
-            var lastCount = T1Wheel(beta);
+            var firstBeta = beta;
+            var betaOffset = beta / wheelSize * wheelCount;
+            beta %= wheelSize;
             while (k >= k1)
             {
                 eps += gamma;
@@ -379,25 +381,43 @@ namespace Decompose.Numerics
                 }
                 gamma += delta << 1;
                 beta += delta;
+                if (beta >= wheelSize)
+                {
+                    betaOffset += wheelCount;
+                    beta -= wheelSize;
+                }
+                var wheel = betaOffset + wheelSubtotal[beta];
 
                 Debug.Assert(eps == x % k);
-                Debug.Assert(beta == x / k);
-                Debug.Assert(delta == beta - x / (k + 1));
-                Debug.Assert(gamma == beta - (BigInteger)(k - 1) * delta);
+                Debug.Assert(beta == x / k % wheelSize);
+                Debug.Assert(delta == x / k - x / (k + 1));
+                Debug.Assert(gamma == x / k - (BigInteger)(k - 1) * delta);
+                Debug.Assert(betaOffset == x / k / wheelSize * wheelCount);
+                Debug.Assert(wheel == T1Wheel(x / k));
 
 #if true
+                s += wheel * mu[k - offset];
+#endif
+#if false
                 s += T1Wheel(beta) * mu[k - offset];
-#else
+#endif
+#if false
+                var value = (int)mu[k - offset];
+                var flip = value >> 31;
+                s += ((T1Wheel(beta) ^ flip) - flip) & (value << 31 >> 31);
+#endif
+#if false
                 var value = mu[k - offset];
-                if (value == 1)
-                    s += T1Wheel(beta);
-                else if (value == -1)
-                    s -= T1Wheel(beta);
+                if (value != 0)
+                {
+                    var flip = value >> 31;
+                    s += (T1Wheel(beta) ^ flip) - flip;
+                }
 #endif
                 --k;
             }
-            s -= lastCount * m[k2 - offset];
-            s += T1Wheel(beta) * (m[k + 1 - offset] - mu[k + 1 - offset]);
+            s -= T1Wheel(firstBeta) * m[k2 - offset];
+            s += (betaOffset + wheelSubtotal[beta]) * (m[k + 1 - offset] - mu[k + 1 - offset]);
             k2 = k;
             return s;
         }
