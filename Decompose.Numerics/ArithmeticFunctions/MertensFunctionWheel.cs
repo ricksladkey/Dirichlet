@@ -12,7 +12,7 @@ namespace Decompose.Numerics
     {
         private const long maximumSmallBatchSize = (long)1 << 19;
         private const long maximumBatchSize = (long)1 << 26;
-        private const long largeLimit = int.MaxValue;
+        private const long largeLimit = long.MaxValue;
         private const long tmax = (long)1 << 62;
         private const long tmin = -tmax;
         private const long C1 = 1;
@@ -25,15 +25,15 @@ namespace Decompose.Numerics
 
         private int threads;
         private IArithmeticRange<sbyte, int> mobius;
-        private BigInteger n;
+        private UInt128 n;
         private long u;
         private int imax;
         private sbyte[] mu;
         private int[] m;
-        private BigInteger[] mx;
+        private Int128[] mx;
         private int[] r;
         private long[] niSmall;
-        private BigInteger[] niLarge;
+        private UInt128[] niLarge;
         private int[][] bucketsSmall;
         private int[][] bucketsLarge;
 
@@ -111,18 +111,26 @@ namespace Decompose.Numerics
             if (n <= 0)
                 return 0;
 
+            return Evaluate((UInt128)n);
+        }
+
+        public Int128 Evaluate(UInt128 n)
+        {
+            if (n == 0)
+                return 0;
+
             this.n = n;
             u = (long)IntegerMath.Max(IntegerMath.FloorPower(n, 2, 3) * C1 / C2, IntegerMath.CeilingSquareRoot(n));
 
             if (u <= wheelSize)
                 return new MertensFunctionDR(threads).Evaluate((long)n);
 
-            imax = (int)(n / u);
+            imax = (int)(n / (ulong)u);
             mobius = new MobiusRangeAdditive(u + 1, threads);
             var batchSize = Math.Min(u, maximumBatchSize);
             mu = new sbyte[maximumSmallBatchSize];
             m = new int[batchSize];
-            mx = new BigInteger[imax + 1];
+            mx = new Int128[imax + 1];
             r = new int[imax + 1];
             var lmax = 0;
             for (var i = 1; i <= imax; i += 2)
@@ -132,16 +140,12 @@ namespace Decompose.Numerics
             }
             Array.Resize(ref r, lmax);
 
-            niLarge = new BigInteger[imax + 1];
+            niLarge = new UInt128[imax + 1];
             niSmall = new long[imax + 1];
             var buckets = Math.Max(1, threads);
             var costs = new double[buckets];
-            var bucketListsLarge = new List<int>[buckets];
-            for (var bucket = 0; bucket < buckets; bucket++)
-                bucketListsLarge[bucket] = new List<int>();
-            var bucketListsSmall = new List<int>[buckets];
-            for (var bucket = 0; bucket < buckets; bucket++)
-                bucketListsSmall[bucket] = new List<int>();
+            var bucketListsLarge = Enumerable.Range(0, buckets).Select(i => new List<int>()).ToArray();
+            var bucketListsSmall = Enumerable.Range(0, buckets).Select(i => new List<int>()).ToArray();
             for (var l = 0; l < lmax; l++)
             {
                 var i = r[l];
@@ -224,7 +228,7 @@ namespace Decompose.Numerics
                 var sqrt = (long)IntegerMath.FloorSquareRoot(x);
                 var xover = (long)IntegerMath.Min(sqrt * C3 / C4, x);
                 xover = (long)(x / (x / (ulong)xover));
-                var s = (BigInteger)0;
+                var s = (Int128)0;
 
                 var jmin = UpToOdd(IntegerMath.Max(imax / i + 1, (long)IntegerMath.Min(xover + 1, x / ((ulong)x2 + 1) + 1)));
                 var jmax = DownToOdd((long)IntegerMath.Min(xover, x / (ulong)x1));
@@ -267,9 +271,9 @@ namespace Decompose.Numerics
             }
         }
 
-        private BigInteger JSumLarge1(BigInteger x, long j1, ref long j, long offset)
+        private Int128 JSumLarge1(UInt128 x, long j1, ref long j, long offset)
         {
-            var s = (long)0;
+            var s = (Int128)0;
             var beta = (long)(x / ((ulong)j + 2));
             var eps = (long)(x % ((ulong)j + 2));
             var delta = (long)(x / (ulong)j) - beta;
@@ -363,7 +367,7 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private long JSumLarge2(BigInteger x, long jmin, long jmax, long x1)
+        private long JSumLarge2(UInt128 x, long jmin, long jmax, long x1)
         {
             var s = (long)0;
             var j = UpToWheel(jmin);
@@ -531,16 +535,16 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private BigInteger KSumLarge1Mu(BigInteger x, long k1, ref long k2, long offset)
+        private Int128 KSumLarge1Mu(UInt128 x, long k1, ref long k2, long offset)
         {
             var k = k2;
             if (k == 0 || k < k1)
                 return 0;
-            var s = (BigInteger)0;
+            var s = (Int128)0;
             var t = (long)0;
-            var beta = (long)(x / (k + 1));
-            var eps = (long)(x % (k + 1));
-            var delta = (long)(x / k - beta);
+            var beta = (long)(x / (ulong)(k + 1));
+            var eps = (long)(x % (ulong)(k + 1));
+            var delta = (long)(x / (ulong)k - (ulong)beta);
             var gamma = (long)(beta - k * delta);
             var firstBeta = beta;
             var betaOffset = beta / wheelSize * wheelCount;
@@ -577,12 +581,12 @@ namespace Decompose.Numerics
                 }
                 var wheel = betaOffset + wheelSubtotal[beta];
 
-                Debug.Assert(eps == x % k);
-                Debug.Assert(beta == x / k % wheelSize);
-                Debug.Assert(delta == x / k - x / (k + 1));
-                Debug.Assert(gamma == x / k - (BigInteger)(k - 1) * delta);
-                Debug.Assert(betaOffset == x / k / wheelSize * wheelCount);
-                Debug.Assert(wheel == T1Wheel(x / k));
+                Debug.Assert(eps == (BigInteger)x % k);
+                Debug.Assert(beta == (BigInteger)x / k % wheelSize);
+                Debug.Assert(delta == (BigInteger)x / k - (BigInteger)x / (k + 1));
+                Debug.Assert(gamma == (BigInteger)x / k - (BigInteger)(k - 1) * delta);
+                Debug.Assert(betaOffset == (BigInteger)x / k / wheelSize * wheelCount);
+                Debug.Assert(wheel == T1Wheel((BigInteger)x / k));
 
                 t += wheel * mu[k - offset];
                 if (t > tmax || t < tmin)
@@ -599,15 +603,15 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private BigInteger KSumLarge1M(BigInteger x, long k1, ref long k, long offset)
+        private Int128 KSumLarge1M(UInt128 x, long k1, ref long k, long offset)
         {
             if (k == 0)
                 return 0;
-            var s = (BigInteger)0;
+            var s = (Int128)0;
             var t = (long)0;
-            var beta = (long)(x / (k + 1));
-            var eps = (long)(x % (k + 1));
-            var delta = (long)(x / k - beta);
+            var beta = (long)(x / (ulong)(k + 1));
+            var eps = (long)(x % (ulong)(k + 1));
+            var delta = (long)(x / (ulong)k - (ulong)beta);
             var gamma = (long)(beta - k * delta);
             var lastCount = T1Wheel(beta);
             while (k >= k1)
@@ -668,35 +672,17 @@ namespace Decompose.Numerics
             return s;
         }
 
-        private BigInteger KSumLarge2Old(BigInteger x, long kmin, long kmax, long x1)
+        private Int128 KSumLarge2(UInt128 x, long kmin, long kmax, long x1)
         {
-            var s = (BigInteger)0;
-            var current = T1Wheel(x / kmin);
+            var s = (Int128)0;
+            var current = T1Wheel(x / (ulong)kmin);
             for (var k = kmin; k <= kmax; k++)
             {
-                var next = T1Wheel(x / (k + 1));
-                s += (current - next) * m[k - x1];
+                var next = T1Wheel(x / (ulong)(k + 1));
+                s += (Int128)(current - next) * m[k - x1];
                 current = next;
             }
             return s;
-        }
-
-        private BigInteger KSumLarge2(BigInteger x, long kmin, long kmax, long x1)
-        {
-            var xRep = (UInt128)x;
-            var s = (UInt128)0;
-            var current = T1Wheel(xRep / (ulong)kmin);
-            for (var k = kmin; k <= kmax; k++)
-            {
-                var next = T1Wheel(xRep / (ulong)(k + 1));
-                var sum = m[k - x1];
-                if (sum >= 0)
-                    s += (current - next) * (uint)sum;
-                else
-                    s -= (current - next) * (uint)(-sum);
-                current = next;
-            }
-            return (BigInteger)(Int128)s;
         }
 
         private void ComputeMx()
@@ -704,7 +690,7 @@ namespace Decompose.Numerics
             for (var l = r.Length - 1; l >= 0; l--)
             {
                 var i = r[l];
-                var s = (BigInteger)0;
+                var s = (Int128)0;
                 for (var ij = 2 * i; ij <= imax; ij += i)
                     s += mx[ij];
                 mx[i] -= s;

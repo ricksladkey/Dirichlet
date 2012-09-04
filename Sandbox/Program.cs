@@ -629,7 +629,7 @@ namespace Sandbox
 #if true
             var threads = 8;
             var timer = new Stopwatch();
-            for (var power = 15; power <= 15; power++)
+            for (var power = 12; power <= 16; power++)
             {
                 var n = IntegerMath.Power((BigInteger)10, power);
 #if false

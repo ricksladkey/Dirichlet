@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Numerics;
+using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class Int128
+    public struct Int128
     {
         private UInt128 v;
 
@@ -17,11 +18,16 @@ namespace Decompose.Numerics
 
         public bool IsNegative { get { return v.R3 >= int.MaxValue; } }
 
+        public override string ToString()
+        {
+            return ((BigInteger)this).ToString();
+        }
+
         public static implicit operator Int128(int a)
         {
             if (a < 0)
-                return new Int128(new UInt128((ulong)a, ulong.MaxValue));
-            return new Int128((uint)a);
+                return new Int128(new UInt128((ulong)(long)a, ulong.MaxValue));
+            return new Int128(new UInt128((ulong)a, 0));
         }
 
         public static implicit operator Int128(uint a)
@@ -33,7 +39,7 @@ namespace Decompose.Numerics
         {
             if (a < 0)
                 return new Int128(new UInt128((ulong)a, ulong.MaxValue));
-            return new Int128((uint)a);
+            return new Int128(new UInt128((ulong)a, 0));
         }
 
         public static implicit operator Int128(ulong a)
@@ -51,7 +57,7 @@ namespace Decompose.Numerics
             return a.v;
         }
 
-        public static implicit operator Int128(BigInteger a)
+        public static explicit operator Int128(BigInteger a)
         {
             return new Int128(a < 0 ? ((UInt128)(-a)).TwosComplement : (UInt128)a);
         }
@@ -68,7 +74,28 @@ namespace Decompose.Numerics
 
         public static Int128 operator -(Int128 a, Int128 b)
         {
-            return new Int128(a.v + b.v);
+            return new Int128(a.v - b.v);
+        }
+
+        public static Int128 operator *(Int128 a, Int128 b)
+        {
+            Int128 c;
+            if (a.IsNegative)
+            {
+                if (b.IsNegative)
+                    c.v = a.v.TwosComplement * b.v.TwosComplement;
+                else
+                    c.v = (a.v.TwosComplement * b.v).TwosComplement;
+            }
+            else
+            {
+                if (b.IsNegative)
+                    c.v = (a.v * b.v.TwosComplement).TwosComplement;
+                else
+                    c.v = a.v * b.v;
+            }
+            Debug.Assert((BigInteger)a * (BigInteger)b == (BigInteger)c);
+            return c;
         }
 
         public static Int128 operator -(Int128 a)
