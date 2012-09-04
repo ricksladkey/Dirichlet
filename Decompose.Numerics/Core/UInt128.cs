@@ -67,11 +67,6 @@ namespace Decompose.Numerics
             this.s1 = s1;
         }
 
-        public uint LeastSignificantWord
-        {
-            get { return r0; }
-        }
-
         public uint R0 { get { return r0; } }
         public uint R1 { get { return r1; } }
         public uint R2 { get { return r2; } }
@@ -84,7 +79,7 @@ namespace Decompose.Numerics
         public bool IsOne { get { return (s1 ^ s0) == 1; } }
         public bool IsPowerOfTwo { get { return (this & (this - 1)).IsZero; } }
         public bool IsEven { get { return (r0 & 1) == 0; } }
-
+        public uint LeastSignificantWord { get { return r0; } }
         public UInt128 TwosComplement { get { return 0 - this; } }
 
         public override string ToString()

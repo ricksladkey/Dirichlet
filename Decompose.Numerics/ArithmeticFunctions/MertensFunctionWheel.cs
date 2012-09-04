@@ -21,7 +21,7 @@ namespace Decompose.Numerics
         private const long C4 = 3;
         private const long C5 = 1;
         private const long C6 = 1;
-        private const long C7 = 10;
+        private const long C7 = 3;
 
         private int threads;
         private IArithmeticRange<sbyte, int> mobius;
@@ -274,6 +274,7 @@ namespace Decompose.Numerics
         private Int128 JSumLarge1(UInt128 x, long j1, ref long j, long offset)
         {
             var s = (Int128)0;
+            var t = (long)0;
             var beta = (long)(x / ((ulong)j + 2));
             var eps = (long)(x % ((ulong)j + 2));
             var delta = (long)(x / (ulong)j) - beta;
@@ -311,11 +312,19 @@ namespace Decompose.Numerics
                 Debug.Assert(gamma == 2 * beta - (BigInteger)(j - 2) * delta);
 
                 if (wheelInclude[mod])
-                    s += m[beta - offset];
+                {
+                    t += m[beta - offset];
+                    if (t > tmax || t < tmin)
+                    {
+                        s += t;
+                        t = 0;
+                    }
+                }
                 if (--mod < 0)
                     mod += wheelSize2;
                 j -= 2;
             }
+            s += t;
             return s;
         }
 
