@@ -626,7 +626,7 @@ namespace Sandbox
             }
 #endif
 
-#if true
+#if false
             var threads = 8;
             var timer = new Stopwatch();
             for (var power = 19; power <= 19; power++)
@@ -809,6 +809,30 @@ namespace Sandbox
             }
             output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
+#endif
+
+#if true
+            {
+                var sum1 = EvaluateAndTime(() =>
+                {
+                    var a = (UInt128)(ulong.MaxValue / 1000);
+                    var b = (UInt128)(ulong.MaxValue / 1000);
+                    var s = (UInt128)0;
+                    for (var i = 0; i < 100000000; i++)
+                        s += a * b;
+                    return s;
+                });
+                var sum2 = EvaluateAndTime(() =>
+                {
+                    var a = (Int128)(ulong.MaxValue / 1000);
+                    var b = (Int128)(ulong.MaxValue / 1000);
+                    var s = (Int128)0;
+                    for (var i = 0; i < 100000000; i++)
+                        s += a * b;
+                    return s;
+                });
+                Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);
+            }
 #endif
 
 #if false

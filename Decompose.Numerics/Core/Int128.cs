@@ -11,6 +11,16 @@ namespace Decompose.Numerics
     {
         private UInt128 v;
 
+        private static readonly Int128 minValue = new Int128((UInt128)1 << 127);
+        private static readonly Int128 maxValue = new Int128((UInt128)1 << 127 - 1);
+        private static readonly Int128 zero = (Int128)0;
+        private static readonly Int128 one = (Int128)1;
+
+        public static Int128 MinValue { get { return minValue; } }
+        public static Int128 MaxValue { get { return maxValue; } }
+        public static Int128 Zero { get { return zero; } }
+        public static Int128 One { get { return one; } }
+
         private Int128(UInt128 a)
         {
             v = a;
@@ -61,19 +71,26 @@ namespace Decompose.Numerics
 
         public static implicit operator Int128(long a)
         {
+            Int128 c;
             if (a < 0)
-                return new Int128(new UInt128((ulong)a, ulong.MaxValue));
-            return new Int128(new UInt128((ulong)a, 0));
+                UInt128.Create(out c.v, (ulong)a, ulong.MaxValue);
+            else
+                UInt128.Create(out c.v, (ulong)a, 0);
+            return c;
         }
 
         public static implicit operator Int128(ulong a)
         {
-            return new Int128(new UInt128(a, 0));
+            Int128 c;
+            UInt128.Create(out c.v, a, 0);
+            return c;
         }
 
         public static explicit operator Int128(UInt128 a)
         {
-            return new Int128(a);
+            Int128 c;
+            c.v = a;
+            return c;
         }
 
         public static explicit operator UInt128(Int128 a)
@@ -168,9 +185,12 @@ namespace Decompose.Numerics
 
         public static Int128 operator +(Int128 a, long b)
         {
+            Int128 c;
             if (b < 0)
-                return new Int128(a.v - (ulong)(-b));
-            return new Int128(a.v + (ulong)b);
+                c.v = a.v - (ulong)(-b);
+            else
+                c.v = a.v + (ulong)b;
+            return c;
         }
 
         public static Int128 operator +(long a, Int128 b)
@@ -207,6 +227,11 @@ namespace Decompose.Numerics
         public static Int128 operator -(Int128 a, Int128 b)
         {
             return new Int128(a.v - b.v);
+        }
+
+        public static Int128 operator -(Int128 a)
+        {
+            return new Int128(a.v.TwosComplement);
         }
 
         public static Int128 operator --(Int128 a)
@@ -281,15 +306,10 @@ namespace Decompose.Numerics
                 if (b.IsNegative)
                     c.v = (a.v * b.v.TwosComplement).TwosComplement;
                 else
-                    c.v = a.v * b.v;
+                    UInt128.Multiply(out c.v, ref a.v, ref b.v);
             }
             Debug.Assert((BigInteger)a * (BigInteger)b == (BigInteger)c);
             return c;
-        }
-
-        public static Int128 operator -(Int128 a)
-        {
-            return new Int128(a.v.TwosComplement);
         }
 
         public static bool operator <(Int128 a, Int128 b)
@@ -502,20 +522,6 @@ namespace Decompose.Numerics
             return !b.Equals(a);
         }
 
-        public static Int128 AddProduct(Int128 a, UInt128 b, int c)
-        {
-            if (c < 0)
-                return new Int128(a.v - b * (uint)(-c));
-            return new Int128(a.v + b * (uint)c);
-        }
-
-        public static Int128 AddProduct(Int128 a, UInt128 b, long c)
-        {
-            if (c < 0)
-                return new Int128(a.v - b * (ulong)(-c));
-            return new Int128(a.v + b * (ulong)c);
-        }
-
         public int CompareTo(Int128 other)
         {
             if (IsNegative)
@@ -573,6 +579,34 @@ namespace Decompose.Numerics
         public override int GetHashCode()
         {
             return v.S0.GetHashCode() ^ v.S1.GetHashCode();
+        }
+
+        public static Int128 AddProduct(Int128 a, UInt128 b, int c)
+        {
+            if (c < 0)
+                return new Int128(a.v - b * (uint)(-c));
+            return new Int128(a.v + b * (uint)c);
+        }
+
+        public static Int128 AddProduct(Int128 a, UInt128 b, long c)
+        {
+            if (c < 0)
+                return new Int128(a.v - b * (ulong)(-c));
+            return new Int128(a.v + b * (ulong)c);
+        }
+
+        public static Int128 SubtractProduct(Int128 a, UInt128 b, int c)
+        {
+            if (c < 0)
+                return new Int128(a.v + b * (uint)(-c));
+            return new Int128(a.v - b * (uint)c);
+        }
+
+        public static Int128 SubtractProduct(Int128 a, UInt128 b, long c)
+        {
+            if (c < 0)
+                return new Int128(a.v + b * (ulong)(-c));
+            return new Int128(a.v - b * (ulong)c);
         }
     }
 }
