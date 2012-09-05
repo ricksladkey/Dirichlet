@@ -123,7 +123,7 @@ namespace Decompose.Numerics
             if (n / x2 > betaMax)
                 return x2;
 
-            var s = (UInt128)n;
+            var s = (Int128)0;
             var t = (long)0;
             var x = x2;
             var beta = (long)(n / (x + 1));
@@ -178,23 +178,15 @@ namespace Decompose.Numerics
                 Debug.Assert(alpha == n / ((BigInteger)x * x));
 
                 t += (int)alpha * values[x - offset];
-                if (t > tmax)
+                if (t > tmax || t < tmin)
                 {
-                    s += (ulong)t;
-                    t = 0;
-                }
-                else if (t < tmin)
-                {
-                    s -= (ulong)-t;
+                    s += t;
                     t = 0;
                 }
                 --x;
             }
-            if (t > 0)
-                s += (ulong)t;
-            else if (t < 0)
-                s -= (ulong)-t;
-            AddToSum(s - n);
+            s += t;
+            AddToSum(s);
             return x;
         }
 

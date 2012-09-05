@@ -381,10 +381,9 @@ namespace Decompose.Numerics
             var s = (long)0;
             var j = UpToWheel(jmin);
             var mod = j % wheelSize;
-            var xRep = (UInt128)x;
             while (j <= jmax)
             {
-                s += m[(int)(xRep / (ulong)j - (ulong)x1)];
+                s += m[(int)(x / (ulong)j - (ulong)x1)];
                 var skip = wheelNext[mod >> 1];
                 j += skip;
                 mod += skip;
