@@ -629,14 +629,14 @@ namespace Sandbox
 #if true
             var threads = 8;
             var timer = new Stopwatch();
-            for (var power = 18; power <= 19; power++)
+            for (var power = 19; power <= 19; power++)
             {
                 var n = IntegerMath.Power((BigInteger)10, power);
 #if false
-                var algorithm1 = new MertensFunctionOddDR(threads);
+                var algorithm1 = new MertensFunctionWheel64(threads);
                 timer.Restart();
-                Console.WriteLine("BigInteger.Parse(\"{0}\"),", algorithm1.Evaluate(n));
-                //Console.WriteLine(" // elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                Console.Write("BigInteger.Parse(\"{0}\"),", algorithm1.Evaluate((long)n));
+                Console.WriteLine(" // elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
 #if true
                 var algorithm2 = new MertensFunctionWheel(threads);

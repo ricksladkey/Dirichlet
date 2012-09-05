@@ -502,6 +502,20 @@ namespace Decompose.Numerics
             return !b.Equals(a);
         }
 
+        public static Int128 AddProduct(Int128 a, UInt128 b, int c)
+        {
+            if (c < 0)
+                return new Int128(a.v - b * (uint)(-c));
+            return new Int128(a.v + b * (uint)c);
+        }
+
+        public static Int128 AddProduct(Int128 a, UInt128 b, long c)
+        {
+            if (c < 0)
+                return new Int128(a.v - b * (ulong)(-c));
+            return new Int128(a.v + b * (ulong)c);
+        }
+
         public int CompareTo(Int128 other)
         {
             if (IsNegative)

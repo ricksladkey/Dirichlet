@@ -694,7 +694,7 @@ namespace Decompose.Numerics
             for (var k = kmin; k <= kmax; k++)
             {
                 var next = T1Wheel(x / (ulong)(k + 1));
-                s += (Int128)(current - next) * m[k - x1];
+                s = Int128.AddProduct(s, current - next, m[k - x1]);
                 current = next;
             }
             return s;
