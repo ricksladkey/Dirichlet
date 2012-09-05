@@ -593,6 +593,12 @@ namespace Decompose.Numerics
                 {
                     betaOffset += wheelCount;
                     beta -= wheelSize;
+                    if (beta >= wheelSize)
+                    {
+                        var factor = beta / wheelSize;
+                        betaOffset += factor * wheelCount;
+                        beta -= factor * wheelSize;
+                    }
                 }
                 var wheel = betaOffset + wheelSubtotal[beta];
 
