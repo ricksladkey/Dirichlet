@@ -240,11 +240,7 @@ namespace Decompose.Numerics
         public static UInt128 operator +(UInt128 a, UInt128 b)
         {
             UInt128 c;
-            c.r0 = c.r1 = c.r2 = c.r3 = 0;
-            c.s0 = a.s0 + b.s0;
-            c.s1 = a.s1 + b.s1;
-            if (c.s0 < a.s0 && c.s0 < b.s0)
-                ++c.s1;
+            Add(out c, ref a, ref b);
             return c;
         }
 
@@ -284,11 +280,7 @@ namespace Decompose.Numerics
         public static UInt128 operator -(UInt128 a, UInt128 b)
         {
             UInt128 c;
-            c.r0 = c.r1 = c.r2 = c.r3 = 0;
-            c.s0 = a.s0 - b.s0;
-            c.s1 = a.s1 - b.s1;
-            if (a.s0 < b.s0)
-                --c.s1;
+            Subtract(out c, ref a, ref b);
             return c;
         }
 
@@ -673,14 +665,6 @@ namespace Decompose.Numerics
             return s0.GetHashCode() ^ s1.GetHashCode();
         }
 
-        public static UInt128 Multiply(ulong a, ulong b)
-        {
-            UInt128 c;
-            Multiply64(out c, (uint)a, (uint)(a >> 32), (uint)b, (uint)(b >> 32));
-            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
-            return c;
-        }
-
         public static void Multiply(out UInt128 c, ulong a, ulong b)
         {
             Multiply64(out c, (uint)a, (uint)(a >> 32), (uint)b, (uint)(b >> 32));
@@ -731,7 +715,27 @@ namespace Decompose.Numerics
             return c;
         }
 
-        private static void Add(out UInt128 w, ref UInt128 u, ref UInt128 v)
+        public static void Add(out UInt128 c, ref UInt128 a, ref UInt128 b)
+        {
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = a.s0 + b.s0;
+            c.s1 = a.s1 + b.s1;
+            if (c.s0 < a.s0 && c.s0 < b.s0)
+                ++c.s1;
+            Debug.Assert((BigInteger)c == (BigInteger)a + (BigInteger)b);
+        }
+
+        public static void Subtract(out UInt128 c, ref UInt128 a, ref UInt128 b)
+        {
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = a.s0 - b.s0;
+            c.s1 = a.s1 - b.s1;
+            if (a.s0 < b.s0)
+                --c.s1;
+            Debug.Assert((BigInteger)c == (BigInteger)a - (BigInteger)b);
+        }
+
+        private static void AddOld(out UInt128 w, ref UInt128 u, ref UInt128 v)
         {
             w.s0 = w.s1 = 0;
             var carry = (ulong)u.r0 + v.r0;
@@ -744,7 +748,7 @@ namespace Decompose.Numerics
             w.r3 = (uint)carry;
         }
 
-        private static void Subtract(out UInt128 w, ref UInt128 u, ref UInt128 v)
+        private static void SubtractOld(out UInt128 w, ref UInt128 u, ref UInt128 v)
         {
             w.s0 = w.s1 = 0;
             var borrow = (ulong)u.r0 - v.r0;

@@ -55,7 +55,9 @@ namespace Decompose.Numerics
 
         public static ulong ModularProduct(ulong a, ulong b, ulong modulus)
         {
-            var c = UInt128.Multiply(a, b) % modulus;
+            UInt128 ab;
+            UInt128.Multiply(out ab, a, b);
+            var c = ab % modulus;
             Debug.Assert((BigInteger)a * b % modulus == c);
             return c;
         }

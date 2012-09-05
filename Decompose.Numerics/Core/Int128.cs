@@ -202,7 +202,9 @@ namespace Decompose.Numerics
 
         public static Int128 operator +(Int128 a, Int128 b)
         {
-            return new Int128(a.v + b.v);
+            Int128 c;
+            UInt128.Add(out c.v, ref a.v, ref b.v);
+            return c;
         }
 
         public static Int128 operator ++(Int128 a)
@@ -226,7 +228,9 @@ namespace Decompose.Numerics
 
         public static Int128 operator -(Int128 a, Int128 b)
         {
-            return new Int128(a.v - b.v);
+            Int128 c;
+            UInt128.Subtract(out c.v, ref a.v, ref b.v);
+            return c;
         }
 
         public static Int128 operator -(Int128 a)
@@ -583,30 +587,70 @@ namespace Decompose.Numerics
 
         public static Int128 AddProduct(Int128 a, UInt128 b, int c)
         {
+            UInt128 d;
+            Int128 e;
             if (c < 0)
-                return new Int128(a.v - b * (uint)(-c));
-            return new Int128(a.v + b * (uint)c);
+            {
+                UInt128.Multiply(out d, ref b, (uint)(-c));
+                UInt128.Subtract(out e.v, ref a.v, ref d);
+            }
+            else
+            {
+                UInt128.Multiply(out d, ref b, (uint)c);
+                UInt128.Add(out e.v, ref a.v, ref d);
+            }
+            return e;
         }
 
         public static Int128 AddProduct(Int128 a, UInt128 b, long c)
         {
+            UInt128 d;
+            Int128 e;
             if (c < 0)
-                return new Int128(a.v - b * (ulong)(-c));
-            return new Int128(a.v + b * (ulong)c);
+            {
+                UInt128.Multiply(out d, ref b, (ulong)(-c));
+                UInt128.Subtract(out e.v, ref a.v, ref d);
+            }
+            else
+            {
+                UInt128.Multiply(out d, ref b, (ulong)c);
+                UInt128.Add(out e.v, ref a.v, ref d);
+            }
+            return e;
         }
 
         public static Int128 SubtractProduct(Int128 a, UInt128 b, int c)
         {
+            UInt128 d;
+            Int128 e;
             if (c < 0)
-                return new Int128(a.v + b * (uint)(-c));
-            return new Int128(a.v - b * (uint)c);
+            {
+                UInt128.Multiply(out d, ref b, (uint)(-c));
+                UInt128.Add(out e.v, ref a.v, ref d);
+            }
+            else
+            {
+                UInt128.Multiply(out d, ref b, (uint)c);
+                UInt128.Subtract(out e.v, ref a.v, ref d);
+            }
+            return e;
         }
 
         public static Int128 SubtractProduct(Int128 a, UInt128 b, long c)
         {
+            UInt128 d;
+            Int128 e;
             if (c < 0)
-                return new Int128(a.v + b * (ulong)(-c));
-            return new Int128(a.v - b * (ulong)c);
+            {
+                UInt128.Multiply(out d, ref b, (ulong)(-c));
+                UInt128.Add(out e.v, ref a.v, ref d);
+            }
+            else
+            {
+                UInt128.Multiply(out d, ref b, (ulong)c);
+                UInt128.Subtract(out e.v, ref a.v, ref d);
+            }
+            return e;
         }
     }
 }
