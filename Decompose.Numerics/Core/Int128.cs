@@ -178,10 +178,8 @@ namespace Decompose.Numerics
 
         public static Int128 operator >>(Int128 a, int b)
         {
-            if (a.IsNegative)
-                throw new NotImplementedException();
             Int128 c;
-            UInt128.RightShift(out c.v, ref a.v, b);
+            UInt128.RightShiftArithmetic(out c.v, ref a.v, b);
             return c;
         }
 
@@ -201,15 +199,11 @@ namespace Decompose.Numerics
 
         public static int operator &(int a, Int128 b)
         {
-            if (a < 0)
-                throw new NotImplementedException();
             return (int)(b.v & (uint)a);
         }
 
         public static long operator &(Int128 a, long b)
         {
-            if (b < 0)
-                throw new NotImplementedException();
             return (long)(a.v & (ulong)b);
         }
 
@@ -442,7 +436,7 @@ namespace Decompose.Numerics
                 else
                     UInt128.Multiply(out c.v, ref a.v, (uint)b);
             }
-            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
+            Debug.Assert((BigInteger)c == (BigInteger)a / (BigInteger)b);
             return c;
         }
 
@@ -473,7 +467,7 @@ namespace Decompose.Numerics
                 else
                     UInt128.Divide(out c.v, ref a.v, (ulong)b);
             }
-            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
+            Debug.Assert((BigInteger)c == (BigInteger)a / (BigInteger)b);
             return c;
         }
 
@@ -510,7 +504,7 @@ namespace Decompose.Numerics
                 else
                     UInt128.Divide(out c.v, ref a.v, ref b.v);
             }
-            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
+            Debug.Assert((BigInteger)c == (BigInteger)a / (BigInteger)b);
             return c;
         }
 
@@ -587,7 +581,7 @@ namespace Decompose.Numerics
                 else
                     UInt128.Modulo(out c.v, ref a.v, ref b.v);
             }
-            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
+            Debug.Assert((BigInteger)c == (BigInteger)a % (BigInteger)b);
             return c;
         }
 

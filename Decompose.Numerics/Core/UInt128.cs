@@ -697,6 +697,7 @@ namespace Decompose.Numerics
             c.s1 = a.s1;
             if (c.s0 < a.s0 && c.s0 < b)
                 ++c.s1;
+            Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 128));
         }
 
         public static void Add(out UInt128 c, ref UInt128 a, ref UInt128 b)
@@ -706,7 +707,7 @@ namespace Decompose.Numerics
             c.s1 = a.s1 + b.s1;
             if (c.s0 < a.s0 && c.s0 < b.s0)
                 ++c.s1;
-            Debug.Assert((BigInteger)c == (BigInteger)a + (BigInteger)b);
+            Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 128));
         }
 
         public static void Subtract(out UInt128 c, ref UInt128 a, ulong b)
@@ -716,7 +717,7 @@ namespace Decompose.Numerics
             c.s1 = a.s1;
             if (a.s0 < b)
                 --c.s1;
-            Debug.Assert((BigInteger)c == (BigInteger)a - (BigInteger)b);
+            Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + ((BigInteger)1 << 128)) % ((BigInteger)1 << 128));
         }
 
         public static void Subtract(out UInt128 c, ulong a, ref UInt128 b)
@@ -726,7 +727,7 @@ namespace Decompose.Numerics
             c.s1 = 0 - b.s1;
             if (a < b.s0)
                 --c.s1;
-            Debug.Assert((BigInteger)c == (BigInteger)a - (BigInteger)b);
+            Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + (BigInteger)(1 << 128)) % (BigInteger)(1 << 128));
         }
 
         public static void Subtract(out UInt128 c, ref UInt128 a, ref UInt128 b)
@@ -736,7 +737,7 @@ namespace Decompose.Numerics
             c.s1 = a.s1 - b.s1;
             if (a.s0 < b.s0)
                 --c.s1;
-            Debug.Assert((BigInteger)c == (BigInteger)a - (BigInteger)b);
+            Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + ((BigInteger)1 << 128)) % ((BigInteger)1 << 128));
         }
 
         private static void Add32(out UInt128 w, ref UInt128 u, ref UInt128 v)
@@ -1192,6 +1193,31 @@ namespace Decompose.Numerics
             c.s1 = 0;
         }
 
+        public static void RightShiftArithmetic(out UInt128 c, ref UInt128 a, int b)
+        {
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            var bneg = 64 - b;
+            if (b < 64)
+            {
+                if (b == 0)
+                {
+                    c = a;
+                    return;
+                }
+                c.s0 = a.s0 >> b | a.s1 << bneg;
+                c.s1 = (ulong)((long)a.s1 >> b);
+                return;
+            }
+            if (b == 64)
+            {
+                c.s0 = a.s1;
+                c.s1 = (ulong)((long)a.s1 >> 63);
+                return;
+            }
+            c.s0 = a.s1 >> (b - 64);
+            c.s1 = (ulong)((long)a.s1 >> 63);
+        }
+
         public static void And(out UInt128 c, ref UInt128 a, ref UInt128 b)
         {
             c.r0 = c.r1 = c.r2 = c.r3 = 0;
@@ -1225,8 +1251,9 @@ namespace Decompose.Numerics
             c.r0 = c.r1 = c.r2 = c.r3 = 0;
             c.s0 = 0 - a.s0;
             c.s1 = 0 - a.s1;
-            --c.s1;
-            Debug.Assert((BigInteger)c == (BigInteger)(~a - 1));
+            if (a.s0 > 0)
+                --c.s1;
+            Debug.Assert((BigInteger)c == (BigInteger)(~a + 1));
         }
     }
 }
