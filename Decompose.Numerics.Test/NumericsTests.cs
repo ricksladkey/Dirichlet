@@ -723,16 +723,52 @@ namespace Decompose.Numerics.Test
                 Assert.AreEqual((BigInteger)a << s, (UInt128)a << s);
                 Assert.AreEqual((BigInteger)a >> s, (UInt128)a >> s);
                 Assert.AreEqual((BigInteger)a & b, (UInt128)a & b);
+                Assert.AreEqual((BigInteger)a & b, a & (UInt128)b);
+                Assert.AreEqual((BigInteger)a & b, (UInt128)a & (UInt128)b);
                 Assert.AreEqual((BigInteger)a | b, (UInt128)a | b);
+                Assert.AreEqual((BigInteger)a | b, a | (UInt128)b);
+                Assert.AreEqual((BigInteger)a | b, (UInt128)a | (UInt128)b);
                 Assert.AreEqual((BigInteger)a ^ b, (UInt128)a ^ b);
+                Assert.AreEqual((BigInteger)a ^ b, a ^ (UInt128)b);
+                Assert.AreEqual((BigInteger)a ^ b, (UInt128)a ^ (UInt128)b);
                 if (a <= long.MaxValue)
                     Assert.AreEqual(~(BigInteger)a, (long)~(UInt128)a);
                 Assert.AreEqual((BigInteger)a + b, (UInt128)a + b);
-                if (b < a)
+                Assert.AreEqual((BigInteger)a + b, a + (UInt128)b);
+                Assert.AreEqual((BigInteger)a + b, (UInt128)a + (UInt128)b);
+                if (a >= b)
+                {
                     Assert.AreEqual((BigInteger)a - b, (UInt128)a - b);
+                    Assert.AreEqual((BigInteger)a - b, a - (UInt128)b);
+                    Assert.AreEqual((BigInteger)a - b, (UInt128)a - (UInt128)b);
+                }
                 Assert.AreEqual((BigInteger)a * b, (UInt128)a * b);
+                Assert.AreEqual((BigInteger)a * b, a * (UInt128)b);
+                Assert.AreEqual((BigInteger)a * b, (UInt128)a * (UInt128)b);
                 Assert.AreEqual((BigInteger)a * b % n, (UInt128)a * b % n);
+                Assert.AreEqual((BigInteger)a * b % n, a * (UInt128)b % n);
+                Assert.AreEqual((BigInteger)a * b % n, (UInt128)a * (UInt128)b % (UInt128)n);
                 Assert.AreEqual((BigInteger)a * b / n, (UInt128)a * b / n);
+                Assert.AreEqual((BigInteger)a * b / n, a * (UInt128)b / n);
+                Assert.AreEqual((BigInteger)a * b / n, (UInt128)a * (UInt128)b / (UInt128)n);
+                Assert.AreEqual((BigInteger)a < b, (UInt128)a < b);
+                Assert.AreEqual((BigInteger)a < b, a < (UInt128)b);
+                Assert.AreEqual((BigInteger)a < b, (UInt128)a < (UInt128)b);
+                Assert.AreEqual((BigInteger)a <= b, (UInt128)a <= b);
+                Assert.AreEqual((BigInteger)a <= b, a <= (UInt128)b);
+                Assert.AreEqual((BigInteger)a <= b, (UInt128)a <= (UInt128)b);
+                Assert.AreEqual((BigInteger)a > b, (UInt128)a > b);
+                Assert.AreEqual((BigInteger)a > b, a > (UInt128)b);
+                Assert.AreEqual((BigInteger)a > b, (UInt128)a > (UInt128)b);
+                Assert.AreEqual((BigInteger)a >= b, (UInt128)a >= b);
+                Assert.AreEqual((BigInteger)a >= b, a >= (UInt128)b);
+                Assert.AreEqual((BigInteger)a >= b, (UInt128)a >= (UInt128)b);
+                Assert.AreEqual((BigInteger)a == b, (UInt128)a == b);
+                Assert.AreEqual((BigInteger)a == b, a == (UInt128)b);
+                Assert.AreEqual((BigInteger)a == b, (UInt128)a == (UInt128)b);
+                Assert.AreEqual((BigInteger)a != b, (UInt128)a != b);
+                Assert.AreEqual((BigInteger)a != b, a != (UInt128)b);
+                Assert.AreEqual((BigInteger)a != b, (UInt128)a != (UInt128)b);
                 Assert.AreEqual(((BigInteger)a + b) % n, UInt64Helper.ModularSum(a, b, n));
                 Assert.AreEqual((((BigInteger)a - b) % n + n) % n, UInt64Helper.ModularDifference(a, b, n));
                 Assert.AreEqual((BigInteger)a * b % n, UInt64Helper.ModularProduct(a, b, n));
@@ -776,16 +812,49 @@ namespace Decompose.Numerics.Test
                 Assert.AreEqual((BigInteger)a << s, (Int128)a << s);
                 Assert.AreEqual((BigInteger)a >> s, (Int128)a >> s);
                 Assert.AreEqual((BigInteger)a & b, (Int128)a & b);
+                Assert.AreEqual((BigInteger)a & b, a & (Int128)b);
+                Assert.AreEqual((BigInteger)a & b, (Int128)a & (Int128)b);
                 Assert.AreEqual((BigInteger)a | b, (Int128)a | b);
+                Assert.AreEqual((BigInteger)a | b, a | (Int128)b);
+                Assert.AreEqual((BigInteger)a | b, (Int128)a | (Int128)b);
                 Assert.AreEqual((BigInteger)a ^ b, (Int128)a ^ b);
+                Assert.AreEqual((BigInteger)a ^ b, a ^ (Int128)b);
+                Assert.AreEqual((BigInteger)a ^ b, (Int128)a ^ (Int128)b);
                 if (a <= long.MaxValue)
                     Assert.AreEqual(~(BigInteger)a, (long)~(Int128)a);
                 Assert.AreEqual((BigInteger)a + b, (Int128)a + b);
-                if (b < a)
-                    Assert.AreEqual((BigInteger)a - b, (Int128)a - b);
+                Assert.AreEqual((BigInteger)a + b, a + (Int128)b);
+                Assert.AreEqual((BigInteger)a + b, (Int128)a + (Int128)b);
+                Assert.AreEqual((BigInteger)a - b, (Int128)a - b);
+                Assert.AreEqual((BigInteger)a - b, a - (Int128)b);
+                Assert.AreEqual((BigInteger)a - b, (Int128)a - (Int128)b);
                 Assert.AreEqual((BigInteger)a * b, (Int128)a * b);
+                Assert.AreEqual((BigInteger)a * b, a * (Int128)b);
+                Assert.AreEqual((BigInteger)a * b, (Int128)a * (Int128)b);
                 Assert.AreEqual((BigInteger)a * b % n, (Int128)a * b % n);
+                Assert.AreEqual((BigInteger)a * b % n, a * (Int128)b % n);
+                Assert.AreEqual((BigInteger)a * b % n, (Int128)a * (Int128)b % (Int128)n);
                 Assert.AreEqual((BigInteger)a * b / n, (Int128)a * b / n);
+                Assert.AreEqual((BigInteger)a * b / n, a * (Int128)b / n);
+                Assert.AreEqual((BigInteger)a * b / n, (Int128)a * (Int128)b / (Int128)n);
+                Assert.AreEqual((BigInteger)a < b, (Int128)a < b);
+                Assert.AreEqual((BigInteger)a < b, a < (Int128)b);
+                Assert.AreEqual((BigInteger)a < b, (Int128)a < (Int128)b);
+                Assert.AreEqual((BigInteger)a <= b, (Int128)a <= b);
+                Assert.AreEqual((BigInteger)a <= b, a <= (Int128)b);
+                Assert.AreEqual((BigInteger)a <= b, (Int128)a <= (Int128)b);
+                Assert.AreEqual((BigInteger)a > b, (Int128)a > b);
+                Assert.AreEqual((BigInteger)a > b, a > (Int128)b);
+                Assert.AreEqual((BigInteger)a > b, (Int128)a > (Int128)b);
+                Assert.AreEqual((BigInteger)a >= b, (Int128)a >= b);
+                Assert.AreEqual((BigInteger)a >= b, a >= (Int128)b);
+                Assert.AreEqual((BigInteger)a >= b, (Int128)a >= (Int128)b);
+                Assert.AreEqual((BigInteger)a == b, (Int128)a == b);
+                Assert.AreEqual((BigInteger)a == b, a == (Int128)b);
+                Assert.AreEqual((BigInteger)a == b, (Int128)a == (Int128)b);
+                Assert.AreEqual((BigInteger)a != b, (Int128)a != b);
+                Assert.AreEqual((BigInteger)a != b, a != (Int128)b);
+                Assert.AreEqual((BigInteger)a != b, (Int128)a != (Int128)b);
             }
         }
 

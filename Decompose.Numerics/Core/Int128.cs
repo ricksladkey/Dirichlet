@@ -179,7 +179,7 @@ namespace Decompose.Numerics
         public static Int128 operator >>(Int128 a, int b)
         {
             Int128 c;
-            UInt128.RightShiftArithmetic(out c.v, ref a.v, b);
+            UInt128.ArithmeticRightShift(out c.v, ref a.v, b);
             return c;
         }
 
@@ -209,8 +209,6 @@ namespace Decompose.Numerics
 
         public static long operator &(long a, Int128 b)
         {
-            if (a < 0)
-                throw new NotImplementedException();
             return (long)(b.v & (ulong)a);
         }
 
@@ -248,7 +246,7 @@ namespace Decompose.Numerics
         public static Int128 operator +(long a, Int128 b)
         {
             Int128 c;
-            if (b < 0)
+            if (a < 0)
                 UInt128.Subtract(out c.v, ref b.v, (ulong)(-a));
             else
                 UInt128.Add(out c.v, ref b.v, (ulong)a);
@@ -800,7 +798,7 @@ namespace Decompose.Numerics
             if (IsNegative)
             {
                 if (other.IsNegative)
-                    return other.v.CompareTo(v);
+                    return v.CompareTo(other.v);
                 return -1;
             }
             if (other.IsNegative)

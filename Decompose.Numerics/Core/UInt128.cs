@@ -214,7 +214,7 @@ namespace Decompose.Numerics
 
         public static ulong operator &(ulong a, UInt128 b)
         {
-            return a & b.r0;
+            return a & b.s0;
         }
 
         public static UInt128 operator |(UInt128 a, UInt128 b)
@@ -727,7 +727,7 @@ namespace Decompose.Numerics
             c.s1 = 0 - b.s1;
             if (a < b.s0)
                 --c.s1;
-            Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + (BigInteger)(1 << 128)) % (BigInteger)(1 << 128));
+            Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + ((BigInteger)1 << 128)) % ((BigInteger)1 << 128));
         }
 
         public static void Subtract(out UInt128 c, ref UInt128 a, ref UInt128 b)
@@ -1193,7 +1193,7 @@ namespace Decompose.Numerics
             c.s1 = 0;
         }
 
-        public static void RightShiftArithmetic(out UInt128 c, ref UInt128 a, int b)
+        public static void ArithmeticRightShift(out UInt128 c, ref UInt128 a, int b)
         {
             c.r0 = c.r1 = c.r2 = c.r3 = 0;
             var bneg = 64 - b;
