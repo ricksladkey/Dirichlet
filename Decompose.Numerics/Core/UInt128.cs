@@ -559,6 +559,36 @@ namespace Decompose.Numerics
             return a.Equals(b);
         }
 
+        public static bool operator ==(UInt128 a, int b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator ==(int a, UInt128 b)
+        {
+            return b.Equals(a);
+        }
+
+        public static bool operator ==(UInt128 a, uint b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator ==(uint a, UInt128 b)
+        {
+            return b.Equals(a);
+        }
+
+        public static bool operator ==(UInt128 a, long b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator ==(long a, UInt128 b)
+        {
+            return b.Equals(a);
+        }
+
         public static bool operator ==(UInt128 a, ulong b)
         {
             return a.Equals(b);
@@ -572,6 +602,36 @@ namespace Decompose.Numerics
         public static bool operator !=(UInt128 a, UInt128 b)
         {
             return !a.Equals(b);
+        }
+
+        public static bool operator !=(UInt128 a, int b)
+        {
+            return !a.Equals(b);
+        }
+
+        public static bool operator !=(int a, UInt128 b)
+        {
+            return !b.Equals(a);
+        }
+
+        public static bool operator !=(UInt128 a, uint b)
+        {
+            return !a.Equals(b);
+        }
+
+        public static bool operator !=(uint a, UInt128 b)
+        {
+            return !b.Equals(a);
+        }
+
+        public static bool operator !=(UInt128 a, long b)
+        {
+            return !a.Equals(b);
+        }
+
+        public static bool operator !=(long a, UInt128 b)
+        {
+            return !b.Equals(a);
         }
 
         public static bool operator !=(UInt128 a, ulong b)
@@ -622,6 +682,21 @@ namespace Decompose.Numerics
         public bool Equals(UInt128 other)
         {
             return s0 == other.s0 && s1 == other.s1;
+        }
+
+        public bool Equals(int other)
+        {
+            return other >= 0 && s0 == (uint)other && s1 == 0;
+        }
+
+        public bool Equals(uint other)
+        {
+            return s0 == other && s1 == 0;
+        }
+
+        public bool Equals(long other)
+        {
+            return other >= 0 && s0 == (ulong)other && s1 == 0;
         }
 
         public bool Equals(ulong other)

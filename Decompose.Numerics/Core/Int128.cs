@@ -12,7 +12,7 @@ namespace Decompose.Numerics
         private UInt128 v;
 
         private static readonly Int128 minValue = (Int128)((UInt128)1 << 127);
-        private static readonly Int128 maxValue = (Int128)((UInt128)1 << 127 - 1);
+        private static readonly Int128 maxValue = (Int128)(((UInt128)1 << 127) - 1);
         private static readonly Int128 zero = (Int128)0;
         private static readonly Int128 one = (Int128)1;
 
@@ -777,9 +777,49 @@ namespace Decompose.Numerics
             return b.CompareTo(a) <= 0;
         }
 
+        public static bool operator ==(UInt128 a, Int128 b)
+        {
+            return b.Equals(a);
+        }
+
+        public static bool operator ==(Int128 a, UInt128 b)
+        {
+            return a.Equals(b);
+        }
+
         public static bool operator ==(Int128 a, Int128 b)
         {
             return a.Equals(b);
+        }
+
+        public static bool operator ==(Int128 a, int b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator ==(int a, Int128 b)
+        {
+            return b.Equals(a);
+        }
+
+        public static bool operator ==(Int128 a, uint b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator ==(uint a, Int128 b)
+        {
+            return b.Equals(a);
+        }
+
+        public static bool operator ==(Int128 a, long b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator ==(long a, Int128 b)
+        {
+            return b.Equals(a);
         }
 
         public static bool operator ==(Int128 a, ulong b)
@@ -792,9 +832,49 @@ namespace Decompose.Numerics
             return b.Equals(a);
         }
 
+        public static bool operator !=(UInt128 a, Int128 b)
+        {
+            return !b.Equals(a);
+        }
+
+        public static bool operator !=(Int128 a, UInt128 b)
+        {
+            return !a.Equals(b);
+        }
+
         public static bool operator !=(Int128 a, Int128 b)
         {
             return !a.Equals(b);
+        }
+
+        public static bool operator !=(Int128 a, int b)
+        {
+            return !a.Equals(b);
+        }
+
+        public static bool operator !=(int a, Int128 b)
+        {
+            return !b.Equals(a);
+        }
+
+        public static bool operator !=(Int128 a, uint b)
+        {
+            return !a.Equals(b);
+        }
+
+        public static bool operator !=(uint a, Int128 b)
+        {
+            return !b.Equals(a);
+        }
+
+        public static bool operator !=(Int128 a, long b)
+        {
+            return !a.Equals(b);
+        }
+
+        public static bool operator !=(long a, Int128 b)
+        {
+            return !b.Equals(a);
         }
 
         public static bool operator !=(Int128 a, ulong b)
@@ -843,14 +923,38 @@ namespace Decompose.Numerics
             return a.S0.CompareTo(s0);
         }
 
+        public bool Equals(UInt128 other)
+        {
+            return !IsNegative && v.S0 == other.S0 && v.S1 == other.S1;
+        }
+
         public bool Equals(Int128 other)
         {
-            return v == other.v;
+            return v.S0 == other.v.S0 && v.S1 == other.v.S1;
+        }
+
+        public bool Equals(int other)
+        {
+            if (other < 0)
+                return v.S1 == ulong.MaxValue && v.S0 == (uint)other;
+            return v.S1 == 0 && v.S0 == (uint)other;
+        }
+
+        public bool Equals(uint other)
+        {
+            return v.S1 == 0 && v.S0 == other;
+        }
+
+        public bool Equals(long other)
+        {
+            if (other < 0)
+                return v.S1 == ulong.MaxValue && v.S0 == (ulong)other;
+            return v.S1 == 0 && v.S0 == (ulong)other;
         }
 
         public bool Equals(ulong other)
         {
-            return v == other;
+            return v.S1 == 0 && v.S0 == other;
         }
 
         public override bool Equals(object obj)
