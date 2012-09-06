@@ -873,7 +873,7 @@ namespace Decompose.Numerics
             w.r3 = (uint)(carry >> 32);
         }
 
-        private static void Divide(out UInt128 w, ref UInt128 u, uint v)
+        public static void Divide(out UInt128 w, ref UInt128 u, uint v)
         {
             if (u.s1 == 0)
                 Divide64(out w, u.s0, v);
@@ -883,7 +883,7 @@ namespace Decompose.Numerics
                 Divide128(out w, ref u, v);
         }
 
-        private static void Divide(out UInt128 w, ref UInt128 u, ulong v)
+        public static void Divide(out UInt128 w, ref UInt128 u, ulong v)
         {
             if (u.s1 == 0)
                 Divide64(out w, u.s0, v);
@@ -915,7 +915,7 @@ namespace Decompose.Numerics
                 throw new NotImplementedException();
         }
 
-        private static uint Modulo(ref UInt128 u, uint v)
+        public static uint Modulo(ref UInt128 u, uint v)
         {
             if (u.s1 == 0)
                 return (uint)(u.s0 % v);
@@ -924,7 +924,7 @@ namespace Decompose.Numerics
             return Modulo128(ref u, v);
         }
 
-        private static ulong Modulo(ref UInt128 u, ulong v)
+        public static ulong Modulo(ref UInt128 u, ulong v)
         {
             if (u.s1 == 0)
                 return u.s0 % v;
@@ -944,7 +944,8 @@ namespace Decompose.Numerics
         {
             if (b.s1 == 0)
                 Create(out c, Modulo(ref a, b.s0), 0);
-            throw new NotImplementedException();
+            else
+                throw new NotImplementedException();
         }
 
         private static void Divide64(out UInt128 w, ulong u, ulong v)
