@@ -795,39 +795,38 @@ namespace Decompose.Numerics
 
         public int CompareTo(Int128 other)
         {
-            if (IsNegative)
-            {
-                if (other.IsNegative)
-                    return v.CompareTo(other.v);
-                return -1;
-            }
-            if (other.IsNegative)
-                return 1;
-            return v.CompareTo(other.v);
+            return SignedCompareTo(ref v, other.S0, other.S1);
         }
 
         public int CompareTo(int other)
         {
-            return CompareTo((Int128)other);
+            if (other < 0)
+                return SignedCompareTo(ref v, (ulong)(long)other, ulong.MaxValue);
+            return SignedCompareTo(ref v, (ulong)other, 0);
         }
 
         public int CompareTo(uint other)
         {
-            if (IsNegative)
-                return -1;
-            return v.CompareTo(other);
+            return SignedCompareTo(ref v, (ulong)other, 0);
         }
 
         public int CompareTo(long other)
         {
-            return CompareTo((Int128)other);
+            if (other < 0)
+                return SignedCompareTo(ref v, (ulong)other, ulong.MaxValue);
+            return SignedCompareTo(ref v, (ulong)other, 0);
         }
 
         public int CompareTo(ulong other)
         {
-            if (IsNegative)
-                return -1;
-            return v.CompareTo(other);
+            return SignedCompareTo(ref v, other, 0);
+        }
+
+        private static int SignedCompareTo(ref UInt128 a, ulong s0, ulong s1)
+        {
+            if (a.S1 != s1)
+                return (a.S1 ^ ((ulong)1 << 63)).CompareTo(s1 ^ ((ulong)1 << 63));
+            return a.S0.CompareTo(s0);
         }
 
         public bool Equals(Int128 other)
