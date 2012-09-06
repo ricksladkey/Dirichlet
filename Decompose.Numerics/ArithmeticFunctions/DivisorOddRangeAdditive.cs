@@ -390,7 +390,7 @@ namespace Decompose.Numerics
                         }
                         values[kk + koffset] = (ushort)(values[kk + koffset] / 2 * (exponent + 1));
                         kk += pSquared;
-                        quotient += 2;
+                        quotient0 += 2;
                     }
                     while (kk < length);
                 }
