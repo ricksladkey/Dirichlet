@@ -145,8 +145,14 @@ namespace Decompose.Numerics
         {
             var s = (UInt128)0;
             Region r;
-            while (queue.TryTake(out r, Timeout.Infinite))
-                s += ProcessRegion(thread, r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2);
+            try
+            {
+                while (queue.TryTake(out r, Timeout.Infinite))
+                    s += ProcessRegion(thread, r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2);
+            }
+            catch (OperationCanceledException)
+            {
+            }
             AddToSum(s);
         }
 
