@@ -25,6 +25,11 @@ namespace Decompose.Numerics
             return a * a;
         }
 
+        public static Int128 Square(Int128 a)
+        {
+            return Int128.Square(a);
+        }
+
         public static UInt128 Square(UInt128 a)
         {
             return UInt128.Square(a);
@@ -134,6 +139,20 @@ namespace Decompose.Numerics
         public static UInt128 Power(UInt128 value, UInt128 exponent)
         {
             var result = (UInt128)1;
+            while (exponent != 0)
+            {
+                if ((exponent & 1) != 0)
+                    result = result * value;
+                if (exponent != 1)
+                    value = value * value;
+                exponent >>= 1;
+            }
+            return result;
+        }
+
+        public static Int128 Power(Int128 value, Int128 exponent)
+        {
+            var result = (Int128)1;
             while (exponent != 0)
             {
                 if ((exponent & 1) != 0)

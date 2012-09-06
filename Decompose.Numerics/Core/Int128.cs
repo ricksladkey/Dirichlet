@@ -51,6 +51,11 @@ namespace Decompose.Numerics
         public uint LeastSignificantWord { get { return v.LeastSignificantWord; } }
         public bool IsNegative { get { return v.R3 > int.MaxValue; } }
 
+        public override string ToString()
+        {
+            return ((BigInteger)this).ToString();
+        }
+
         public int GetBitLength()
         {
             return v.GetBitLength();
@@ -61,9 +66,18 @@ namespace Decompose.Numerics
             return v.GetBitCount();
         }
 
-        public override string ToString()
+        public static explicit operator Int128(double a)
         {
-            return ((BigInteger)this).ToString();
+            Int128 c;
+            if (a < 0)
+            {
+                UInt128 cneg;
+                UInt128.Create(out cneg, -a);
+                UInt128.Negate(out c.v, ref cneg);
+            }
+            else
+                UInt128.Create(out c.v, a);
+            return c;
         }
 
         public static implicit operator Int128(int a)
@@ -849,6 +863,36 @@ namespace Decompose.Numerics
         public override int GetHashCode()
         {
             return v.GetHashCode();
+        }
+
+        public static Int128 Double(Int128 a)
+        {
+            Int128 c;
+            UInt128.Double(out c.v, ref a.v);
+            return c;
+        }
+
+        public static Int128 Square(long a)
+        {
+            if (a < 0)
+                a = -a;
+            Int128 c;
+            UInt128.Square(out c.v, (ulong)a);
+            return c;
+        }
+
+        public static Int128 Square(Int128 a)
+        {
+            Int128 c;
+            if (a.IsNegative)
+            {
+                UInt128 aneg;
+                UInt128.Negate(out aneg, ref a.v);
+                UInt128.Square(out c.v, ref aneg);
+            }
+            else
+                UInt128.Square(out c.v, ref a.v);
+            return c;
         }
 
         public static Int128 AddProduct(Int128 a, UInt128 b, int c)

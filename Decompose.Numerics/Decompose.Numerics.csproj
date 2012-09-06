@@ -113,6 +113,7 @@
     <Compile Include="IntegerMath\GreatestCommonDivisor.cs" />
     <Compile Include="Operations\ComplexOperations.cs" />
     <Compile Include="Operations\DoubleOperations.cs" />
+    <Compile Include="Operations\Int128Operations.cs" />
     <Compile Include="Operations\Int32Operations.cs" />
     <Compile Include="Operations\Int64Operations.cs" />
     <Compile Include="Operations\Number.cs" />

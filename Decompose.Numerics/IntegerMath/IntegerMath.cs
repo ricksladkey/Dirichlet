@@ -24,14 +24,29 @@ namespace Decompose.Numerics
                 .ToArray();
         }
 
+        public static int TwosComplement(int a)
+        {
+            return -a;
+        }
+
         public static uint TwosComplement(uint a)
         {
             return 0 - a;
         }
 
+        public static long TwosComplement(long a)
+        {
+            return -a;
+        }
+
         public static ulong TwosComplement(ulong a)
         {
             return 0 - a;
+        }
+
+        public static Int128 TwosComplement(Int128 a)
+        {
+            return -a;
         }
 
         public static UInt128 TwosComplement(UInt128 a)
@@ -98,6 +113,11 @@ namespace Decompose.Numerics
             return a < b ? a : b;
         }
 
+        public static Int128 Min(Int128 a, Int128 b)
+        {
+            return a < b ? a : b;
+        }
+
         public static UInt128 Min(UInt128 a, UInt128 b)
         {
             return a < b ? a : b;
@@ -124,6 +144,11 @@ namespace Decompose.Numerics
         }
 
         public static ulong Max(ulong a, ulong b)
+        {
+            return a > b ? a : b;
+        }
+
+        public static Int128 Max(Int128 a, Int128 b)
         {
             return a > b ? a : b;
         }
@@ -199,6 +224,14 @@ namespace Decompose.Numerics
         public static ulong Modulus(ulong n, ulong p)
         {
             return n % p;
+        }
+
+        public static Int128 Modulus(Int128 n, Int128 p)
+        {
+            var result = n % p;
+            if (result < 0)
+                result += p;
+            return result;
         }
 
         public static UInt128 Modulus(UInt128 n, UInt128 p)
@@ -280,9 +313,14 @@ namespace Decompose.Numerics
             return (a & (a - 1)) == 0;
         }
 
+        public static bool IsPowerOfTwo(Int128 a)
+        {
+            return a.IsPowerOfTwo;
+        }
+
         public static bool IsPowerOfTwo(UInt128 a)
         {
-            return (a & (a - 1)) == 0;
+            return a.IsPowerOfTwo;
         }
 
         public static bool IsPowerOfTwo(BigInteger a)

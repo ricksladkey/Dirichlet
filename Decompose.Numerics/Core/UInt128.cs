@@ -62,6 +62,16 @@ namespace Decompose.Numerics
             c.s1 = (ulong)(a >> 64);
         }
 
+        public static void Create(out UInt128 c, double a)
+        {
+            UInt128 m;
+            var shift = Math.Max((int)Math.Ceiling(Math.Log(a, 2)) - 63, 0);
+            m.r0 = m.r1 = m.r2 = m.r3 = 0;
+            m.s0 = (ulong)(a / Math.Pow(2, shift));
+            m.s1 = 0;
+            LeftShift(out c, ref m, shift);
+        }
+
         public uint R0 { get { return r0; } }
         public uint R1 { get { return r1; } }
         public uint R2 { get { return r2; } }
@@ -101,7 +111,9 @@ namespace Decompose.Numerics
         {
             if (a < 0)
                 throw new InvalidCastException();
-            return (ulong)a;
+            UInt128 c;
+            Create(out c, a);
+            return c;
         }
 
         public static explicit operator UInt128(int a)
@@ -148,7 +160,9 @@ namespace Decompose.Numerics
             if (a.s1 == 0)
                 return a.s0;
             var shift = a.GetBitLength() - 64;
-            return (double)(ulong)(a >> shift) * ((long)1 << shift);
+            UInt128 ashift;
+            RightShift(out ashift, ref a, shift);
+            return ashift.s0 * Math.Pow(2, shift);
         }
 
         public static explicit operator int(UInt128 a)
@@ -668,26 +682,42 @@ namespace Decompose.Numerics
 
         public static UInt128 Double(UInt128 a)
         {
-            UInt128 c = default(UInt128);
+            UInt128 c;
+            Double(out c, ref a);
+            return c;
+        }
+
+        public static void Double(out UInt128 c, ref UInt128 a)
+        {
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
             c.s1 = a.s1 << 1 | a.s0 >> 63;
             c.s0 = a.s0 << 1;
-            return c;
         }
 
         public static UInt128 Square(ulong a)
         {
             UInt128 c;
-            Square64(out c, (uint)a, (uint)(a >> 32));
+            Square(out c, a);
             return c;
         }
 
         public static UInt128 Square(UInt128 a)
         {
+            UInt128 c;
+            Square(out c, ref a);
+            return c;
+        }
+
+        public static void Square(out UInt128 c, ulong a)
+        {
+            Square64(out c, (uint)a, (uint)(a >> 32));
+        }
+
+        public static void Square(out UInt128 c, ref UInt128 a)
+        {
             if (a.s1 != 0)
                 throw new NotImplementedException();
-            UInt128 c;
             Square64(out c, a.r0, a.r1);
-            return c;
         }
 
         public static void Add(out UInt128 c, ref UInt128 a, ulong b)

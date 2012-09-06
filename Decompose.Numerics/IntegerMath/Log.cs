@@ -29,6 +29,11 @@ namespace Decompose.Numerics
             return a.GetBitLength() - 1;
         }
 
+        public static int FloorLogBaseTwo(Int128 a)
+        {
+            return a.GetBitLength() - 1;
+        }
+
         public static int FloorLogBaseTwo(UInt128 a)
         {
             return a.GetBitLength() - 1;
@@ -55,6 +60,11 @@ namespace Decompose.Numerics
         }
 
         public static int CeilingLogBaseTwo(ulong a)
+        {
+            return IntegerMath.IsPowerOfTwo(a) ? a.GetBitLength() - 1 : a.GetBitLength();
+        }
+
+        public static int CeilingLogBaseTwo(Int128 a)
         {
             return IntegerMath.IsPowerOfTwo(a) ? a.GetBitLength() - 1 : a.GetBitLength();
         }

@@ -626,7 +626,7 @@ namespace Sandbox
             }
 #endif
 
-#if false
+#if true
             var threads = 8;
             var timer = new Stopwatch();
             for (var power = 19; power <= 19; power++)
@@ -811,7 +811,7 @@ namespace Sandbox
 #endif
 #endif
 
-#if true
+#if false
             {
                 var sum1 = EvaluateAndTime(() =>
                 {

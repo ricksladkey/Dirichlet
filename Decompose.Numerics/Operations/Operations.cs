@@ -15,6 +15,7 @@ namespace Decompose.Numerics
             { typeof(uint), new UInt32Operations() },
             { typeof(long), new Int64Operations() },
             { typeof(ulong), new UInt64Operations() },
+            { typeof(Int128), new Int128Operations() },
             { typeof(UInt128), new UInt128Operations() },
             { typeof(BigInteger), new BigIntegerOperations() },
             { typeof(Complex), new ComplexOperations() },
