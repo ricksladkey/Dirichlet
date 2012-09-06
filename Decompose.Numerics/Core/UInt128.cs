@@ -85,6 +85,7 @@ namespace Decompose.Numerics
         public bool IsPowerOfTwo { get { return (this & (this - 1)).IsZero; } }
         public bool IsEven { get { return (r0 & 1) == 0; } }
         public uint LeastSignificantWord { get { return r0; } }
+        public int Sign { get { return IsZero ? 0 : 1; } }
 
         public override string ToString()
         {
@@ -306,6 +307,11 @@ namespace Decompose.Numerics
             UInt128 c;
             Subtract(out c, ref a, 1);
             return c;
+        }
+
+        public static UInt128 operator +(UInt128 a)
+        {
+            return a;
         }
 
         public static UInt128 operator *(UInt128 a, uint b)
@@ -753,6 +759,11 @@ namespace Decompose.Numerics
             else
                 throw new NotImplementedException();
             Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
+        }
+
+        public static UInt128 Abs(UInt128 a)
+        {
+            return a;
         }
 
         public static UInt128 Double(UInt128 a)

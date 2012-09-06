@@ -15,11 +15,13 @@ namespace Decompose.Numerics
         private static readonly Int128 maxValue = (Int128)(((UInt128)1 << 127) - 1);
         private static readonly Int128 zero = (Int128)0;
         private static readonly Int128 one = (Int128)1;
+        private static readonly Int128 minusOne = (Int128)(-1);
 
         public static Int128 MinValue { get { return minValue; } }
         public static Int128 MaxValue { get { return maxValue; } }
         public static Int128 Zero { get { return zero; } }
         public static Int128 One { get { return one; } }
+        public static Int128 MinusOne { get { return minusOne; } }
 
         public static Int128 Parse(string value)
         {
@@ -50,6 +52,7 @@ namespace Decompose.Numerics
         public bool IsEven { get { return v.IsEven; } }
         public uint LeastSignificantWord { get { return v.LeastSignificantWord; } }
         public bool IsNegative { get { return v.R3 > int.MaxValue; } }
+        public int Sign { get { return IsNegative ? -1 : v.Sign; } }
 
         public override string ToString()
         {
@@ -296,6 +299,11 @@ namespace Decompose.Numerics
             Int128 c;
             UInt128.Subtract(out c.v, ref a.v, ref b.v);
             return c;
+        }
+
+        public static Int128 operator +(Int128 a)
+        {
+            return a;
         }
 
         public static Int128 operator -(Int128 a)
@@ -597,6 +605,16 @@ namespace Decompose.Numerics
             return c;
         }
 
+        public static bool operator <(Int128 a, UInt128 b)
+        {
+            return a.CompareTo(b) < 0;
+        }
+
+        public static bool operator <(UInt128 a, Int128 b)
+        {
+            return b.CompareTo(a) > 0;
+        }
+
         public static bool operator <(Int128 a, Int128 b)
         {
             return a.CompareTo(b) < 0;
@@ -640,6 +658,16 @@ namespace Decompose.Numerics
         public static bool operator <(ulong a, Int128 b)
         {
             return b.CompareTo(a) > 0;
+        }
+
+        public static bool operator <=(Int128 a, UInt128 b)
+        {
+            return a.CompareTo(b) <= 0;
+        }
+
+        public static bool operator <=(UInt128 a, Int128 b)
+        {
+            return b.CompareTo(a) >= 0;
         }
 
         public static bool operator <=(Int128 a, Int128 b)
@@ -687,6 +715,16 @@ namespace Decompose.Numerics
             return b.CompareTo(a) >= 0;
         }
 
+        public static bool operator >(Int128 a, UInt128 b)
+        {
+            return a.CompareTo(b) > 0;
+        }
+
+        public static bool operator >(UInt128 a, Int128 b)
+        {
+            return b.CompareTo(a) < 0;
+        }
+
         public static bool operator >(Int128 a, Int128 b)
         {
             return a.CompareTo(b) > 0;
@@ -730,6 +768,16 @@ namespace Decompose.Numerics
         public static bool operator >(ulong a, Int128 b)
         {
             return b.CompareTo(a) < 0;
+        }
+
+        public static bool operator >=(Int128 a, UInt128 b)
+        {
+            return a.CompareTo(b) >= 0;
+        }
+
+        public static bool operator >=(UInt128 a, Int128 b)
+        {
+            return b.CompareTo(a) <= 0;
         }
 
         public static bool operator >=(Int128 a, Int128 b)
@@ -887,36 +935,43 @@ namespace Decompose.Numerics
             return !b.Equals(a);
         }
 
+        public int CompareTo(UInt128 other)
+        {
+            if (IsNegative)
+                return -1;
+            return v.CompareTo(other);
+        }
+
         public int CompareTo(Int128 other)
         {
-            return SignedCompareTo(ref v, other.S0, other.S1);
+            return SignedCompare(ref v, other.S0, other.S1);
         }
 
         public int CompareTo(int other)
         {
             if (other < 0)
-                return SignedCompareTo(ref v, (ulong)(long)other, ulong.MaxValue);
-            return SignedCompareTo(ref v, (ulong)other, 0);
+                return SignedCompare(ref v, (ulong)(long)other, ulong.MaxValue);
+            return SignedCompare(ref v, (ulong)other, 0);
         }
 
         public int CompareTo(uint other)
         {
-            return SignedCompareTo(ref v, (ulong)other, 0);
+            return SignedCompare(ref v, (ulong)other, 0);
         }
 
         public int CompareTo(long other)
         {
             if (other < 0)
-                return SignedCompareTo(ref v, (ulong)other, ulong.MaxValue);
-            return SignedCompareTo(ref v, (ulong)other, 0);
+                return SignedCompare(ref v, (ulong)other, ulong.MaxValue);
+            return SignedCompare(ref v, (ulong)other, 0);
         }
 
         public int CompareTo(ulong other)
         {
-            return SignedCompareTo(ref v, other, 0);
+            return SignedCompare(ref v, other, 0);
         }
 
-        private static int SignedCompareTo(ref UInt128 a, ulong s0, ulong s1)
+        private static int SignedCompare(ref UInt128 a, ulong s0, ulong s1)
         {
             if (a.S1 != s1)
                 return (a.S1 ^ ((ulong)1 << 63)).CompareTo(s1 ^ ((ulong)1 << 63));
@@ -925,12 +980,12 @@ namespace Decompose.Numerics
 
         public bool Equals(UInt128 other)
         {
-            return !IsNegative && v.S0 == other.S0 && v.S1 == other.S1;
+            return !IsNegative && v.Equals(other);
         }
 
         public bool Equals(Int128 other)
         {
-            return v.S0 == other.v.S0 && v.S1 == other.v.S1;
+            return v.Equals(other.v);
         }
 
         public bool Equals(int other)
@@ -967,6 +1022,15 @@ namespace Decompose.Numerics
         public override int GetHashCode()
         {
             return v.GetHashCode();
+        }
+
+        public static Int128 Abs(Int128 a)
+        {
+            if (!a.IsNegative)
+                return a;
+            Int128 c;
+            UInt128.Negate(out c.v, ref a.v);
+            return c;
         }
 
         public static Int128 Double(Int128 a)
