@@ -36,7 +36,9 @@ namespace Decompose.Numerics
 
         public static UInt128 TwosComplement(UInt128 a)
         {
-            return a.TwosComplement;
+            UInt128 c;
+            UInt128.Negate(out c, ref a);
+            return c;
         }
 
         public static int Abs(int a)

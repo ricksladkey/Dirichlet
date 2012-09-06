@@ -318,7 +318,9 @@ namespace Decompose.Numerics
             var r1 = last >= 1 ? a.bits[1] : 0;
             var r2 = last >= 2 ? a.bits[2] : 0;
             var r3 = last >= 3 ? a.bits[3] : 0;
-            return new UInt128(r0, r1, r2, r3);
+            UInt128 c;
+            UInt128.Create(out c, r0, r1, r2, r3);
+            return c;
         }
 
         public override string ToString()

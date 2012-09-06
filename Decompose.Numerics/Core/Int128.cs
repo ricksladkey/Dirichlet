@@ -11,8 +11,8 @@ namespace Decompose.Numerics
     {
         private UInt128 v;
 
-        private static readonly Int128 minValue = new Int128((UInt128)1 << 127);
-        private static readonly Int128 maxValue = new Int128((UInt128)1 << 127 - 1);
+        private static readonly Int128 minValue = (Int128)((UInt128)1 << 127);
+        private static readonly Int128 maxValue = (Int128)((UInt128)1 << 127 - 1);
         private static readonly Int128 zero = (Int128)0;
         private static readonly Int128 one = (Int128)1;
 
@@ -21,9 +21,19 @@ namespace Decompose.Numerics
         public static Int128 Zero { get { return zero; } }
         public static Int128 One { get { return one; } }
 
-        private Int128(UInt128 a)
+        public static Int128 Parse(string value)
         {
-            v = a;
+            Int128 c;
+            var a = BigInteger.Parse(value);
+            if (a < 0)
+            {
+                UInt128 cneg;
+                UInt128.Create(out cneg, ref a);
+                UInt128.Negate(out c.v, ref cneg);
+            }
+            else
+                UInt128.Create(out c.v, ref a);
+            return c;
         }
 
         public uint R0 { get { return v.R0; } }
@@ -34,13 +44,12 @@ namespace Decompose.Numerics
         public ulong S0 { get { return v.S0; } }
         public ulong S1 { get { return v.S1; } }
 
-        public bool IsZero { get { return (v.S0 | v.S1) == 0; } }
-        public bool IsOne { get { return (v.S1 ^ v.S0) == 1; } }
-        public bool IsPowerOfTwo { get { return (v & (v - 1)).IsZero; } }
-        public bool IsEven { get { return (v.R0 & 1) == 0; } }
-        public uint LeastSignificantWord { get { return v.R0; } }
-        public bool IsNegative { get { return v.R3 >= int.MaxValue; } }
-        public Int128 TwosComplement { get { return new Int128(v.TwosComplement); } }
+        public bool IsZero { get { return v.IsZero; } }
+        public bool IsOne { get { return v.IsOne; } }
+        public bool IsPowerOfTwo { get { return v.IsPowerOfTwo; } }
+        public bool IsEven { get { return v.IsEven; } }
+        public uint LeastSignificantWord { get { return v.LeastSignificantWord; } }
+        public bool IsNegative { get { return v.R3 > int.MaxValue; } }
 
         public int GetBitLength()
         {
@@ -59,14 +68,19 @@ namespace Decompose.Numerics
 
         public static implicit operator Int128(int a)
         {
+            Int128 c;
             if (a < 0)
-                return new Int128(new UInt128((ulong)(long)a, ulong.MaxValue));
-            return new Int128(new UInt128((ulong)a, 0));
+                UInt128.Create(out c.v, (ulong)(long)a, ulong.MaxValue);
+            else
+                UInt128.Create(out c.v, (ulong)a, 0);
+            return c;
         }
 
         public static implicit operator Int128(uint a)
         {
-            return new Int128(new UInt128(a, 0, 0, 0));
+            Int128 c;
+            UInt128.Create(out c.v, (ulong)a, 0);
+            return c;
         }
 
         public static implicit operator Int128(long a)
@@ -100,34 +114,62 @@ namespace Decompose.Numerics
 
         public static explicit operator Int128(BigInteger a)
         {
-            return new Int128(a < 0 ? ((UInt128)(-a)).TwosComplement : (UInt128)a);
+            Int128 c;
+            if (a < 0)
+            {
+                UInt128 b;
+                var aneg = -a;
+                UInt128.Create(out b, ref aneg);
+                UInt128.Negate(out c.v, ref b);
+            }
+            else
+                UInt128.Create(out c.v, ref a);
+            return c;
         }
 
         public static implicit operator BigInteger(Int128 a)
         {
-            return a.IsNegative ? -(BigInteger)a.v.TwosComplement : (BigInteger)a.v;
+            if (a.IsNegative)
+            {
+                UInt128 c;
+                UInt128.Negate(out c, ref a.v);
+                return -(BigInteger)c;
+            }
+            return (BigInteger)a.v;
         }
 
         public static explicit operator double(Int128 a)
         {
-            return a.IsNegative ? -(double)a.v.TwosComplement : (double)a.v;
+            if (a.IsNegative)
+            {
+                UInt128 c;
+                UInt128.Negate(out c, ref a.v);
+                return -(double)c;
+            }
+            return (double)a.v;
         }
 
         public static Int128 operator <<(Int128 a, int b)
         {
-            return new Int128(a.v << b);
+            Int128 c;
+            UInt128.LeftShift(out c.v, ref a.v, b);
+            return c;
         }
 
         public static Int128 operator >>(Int128 a, int b)
         {
             if (a.IsNegative)
                 throw new NotImplementedException();
-            return new Int128(a.v >> b);
+            Int128 c;
+            UInt128.RightShift(out c.v, ref a.v, b);
+            return c;
         }
 
         public static Int128 operator &(Int128 a, Int128 b)
         {
-            return new Int128(a.v & b.v);
+            Int128 c;
+            UInt128.And(out c.v, ref a.v, ref b.v);
+            return c;
         }
 
         public static int operator &(Int128 a, int b)
@@ -139,7 +181,9 @@ namespace Decompose.Numerics
 
         public static int operator &(int a, Int128 b)
         {
-            return b & a;
+            if (a < 0)
+                throw new NotImplementedException();
+            return (int)(b.v & (uint)a);
         }
 
         public static long operator &(Int128 a, long b)
@@ -151,53 +195,50 @@ namespace Decompose.Numerics
 
         public static long operator &(long a, Int128 b)
         {
-            return b & a;
+            if (a < 0)
+                throw new NotImplementedException();
+            return (long)(b.v & (ulong)a);
         }
 
         public static Int128 operator |(Int128 a, Int128 b)
         {
-            return new Int128(a.v | b.v);
+            Int128 c;
+            UInt128.Or(out c.v, ref a.v, ref b.v);
+            return c;
         }
 
         public static Int128 operator ^(Int128 a, Int128 b)
         {
-            return new Int128(a.v ^ b.v);
+            Int128 c;
+            UInt128.ExclusiveOr(out c.v, ref a.v, ref b.v);
+            return c;
         }
 
         public static Int128 operator ~(Int128 a)
         {
-            return new Int128(~a.v);
-        }
-
-        public static Int128 operator +(Int128 a, int b)
-        {
-            if (b < 0)
-                return new Int128(a.v - (uint)(-b));
-            return new Int128(a.v + (uint)b);
-        }
-
-        public static Int128 operator +(int a, Int128 b)
-        {
-            if (a < 0)
-                return new Int128(b.v - (uint)(-a));
-            return new Int128(b.v + (uint)a);
+            Int128 c;
+            UInt128.Not(out c.v, ref a.v);
+            return c;
         }
 
         public static Int128 operator +(Int128 a, long b)
         {
             Int128 c;
             if (b < 0)
-                c.v = a.v - (ulong)(-b);
+                UInt128.Subtract(out c.v, ref a.v, (ulong)(-b));
             else
-                c.v = a.v + (ulong)b;
+                UInt128.Add(out c.v, ref a.v, (ulong)b);
             return c;
         }
 
         public static Int128 operator +(long a, Int128 b)
         {
-            if (a < 0)
-                return new Int128(b.v - (ulong)(-a));
-            return new Int128(b.v + (ulong)a);
+            Int128 c;
+            if (b < 0)
+                UInt128.Subtract(out c.v, ref b.v, (ulong)(-a));
+            else
+                UInt128.Add(out c.v, ref b.v, (ulong)a);
+            return c;
         }
 
         public static Int128 operator +(Int128 a, Int128 b)
@@ -209,21 +250,19 @@ namespace Decompose.Numerics
 
         public static Int128 operator ++(Int128 a)
         {
-            return new Int128(++a.v);
-        }
-
-        public static Int128 operator -(Int128 a, int b)
-        {
-            if (b < 0)
-                return new Int128(a.v + (uint)(-b));
-            return new Int128(a.v - (uint)b);
+            Int128 c;
+            UInt128.Add(out c.v, ref a.v, 1);
+            return c;
         }
 
         public static Int128 operator -(Int128 a, long b)
         {
+            Int128 c;
             if (b < 0)
-                return new Int128(a.v + (ulong)(-b));
-            return new Int128(a.v - (ulong)b);
+                UInt128.Add(out c.v, ref a.v, (ulong)(-b));
+            else
+                UInt128.Subtract(out c.v, ref a.v, (ulong)b);
+            return c;
         }
 
         public static Int128 operator -(Int128 a, Int128 b)
@@ -235,12 +274,16 @@ namespace Decompose.Numerics
 
         public static Int128 operator -(Int128 a)
         {
-            return new Int128(a.v.TwosComplement);
+            Int128 c;
+            UInt128.Negate(out c.v, ref a.v);
+            return c;
         }
 
         public static Int128 operator --(Int128 a)
         {
-            return new Int128(--a.v);
+            Int128 c;
+            UInt128.Subtract(out c.v, ref a.v, 1);
+            return c;
         }
 
         public static Int128 operator *(Int128 a, int b)
@@ -248,19 +291,29 @@ namespace Decompose.Numerics
             Int128 c;
             if (a.IsNegative)
             {
+                UInt128 aneg;
+                UInt128.Negate(out aneg, ref a.v);
                 if (b < 0)
-                    c.v = a.v.TwosComplement * (uint)(-b);
+                    UInt128.Multiply(out c.v, ref aneg, (uint)(-b));
                 else
-                    c.v = (a.v.TwosComplement * (uint)b).TwosComplement;
+                {
+                    UInt128 cneg;
+                    UInt128.Multiply(out cneg, ref aneg, (uint)b);
+                    UInt128.Negate(out c.v, ref cneg);
+                }
             }
             else
             {
                 if (b < 0)
-                    c.v = (a.v * (uint)(-b)).TwosComplement;
+                {
+                    UInt128 cneg;
+                    UInt128.Multiply(out cneg, ref a.v, (uint)(-b));
+                    UInt128.Negate(out c.v, ref cneg);
+                }
                 else
-                    c.v = a.v * (uint)b;
+                    UInt128.Multiply(out c.v, ref a.v, (uint)b);
             }
-            Debug.Assert((BigInteger)a * (BigInteger)b == (BigInteger)c);
+            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
             return c;
         }
 
@@ -274,19 +327,29 @@ namespace Decompose.Numerics
             Int128 c;
             if (a.IsNegative)
             {
+                UInt128 aneg;
+                UInt128.Negate(out aneg, ref a.v);
                 if (b < 0)
-                    c.v = a.v.TwosComplement * (ulong)(-b);
+                    UInt128.Multiply(out c.v, ref aneg, (ulong)(-b));
                 else
-                    c.v = (a.v.TwosComplement * (ulong)b).TwosComplement;
+                {
+                    UInt128 cneg;
+                    UInt128.Multiply(out cneg, ref aneg, (ulong)b);
+                    UInt128.Negate(out c.v, ref cneg);
+                }
             }
             else
             {
                 if (b < 0)
-                    c.v = (a.v * (ulong)(-b)).TwosComplement;
+                {
+                    UInt128 cneg;
+                    UInt128.Multiply(out cneg, ref a.v, (ulong)(-b));
+                    UInt128.Negate(out c.v, ref cneg);
+                }
                 else
-                    c.v = a.v * (ulong)b;
+                    UInt128.Multiply(out c.v, ref a.v, (ulong)b);
             }
-            Debug.Assert((BigInteger)a * (BigInteger)b == (BigInteger)c);
+            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
             return c;
         }
 
@@ -300,19 +363,35 @@ namespace Decompose.Numerics
             Int128 c;
             if (a.IsNegative)
             {
+                UInt128 aneg;
+                UInt128.Negate(out aneg, ref a.v);
                 if (b.IsNegative)
-                    c.v = a.v.TwosComplement * b.v.TwosComplement;
+                {
+                    UInt128 bneg;
+                    UInt128.Negate(out bneg, ref b.v);
+                    UInt128.Multiply(out c.v, ref aneg, ref bneg);
+                }
                 else
-                    c.v = (a.v.TwosComplement * b.v).TwosComplement;
+                {
+                    UInt128 cneg;
+                    UInt128.Multiply(out cneg, ref aneg, ref b.v);
+                    UInt128.Negate(out c.v, ref cneg);
+                }
             }
             else
             {
                 if (b.IsNegative)
-                    c.v = (a.v * b.v.TwosComplement).TwosComplement;
+                {
+                    UInt128 bneg;
+                    UInt128 cneg;
+                    UInt128.Negate(out bneg, ref b.v);
+                    UInt128.Multiply(out cneg, ref a.v, ref bneg);
+                    UInt128.Negate(out c.v, ref cneg);
+                }
                 else
                     UInt128.Multiply(out c.v, ref a.v, ref b.v);
             }
-            Debug.Assert((BigInteger)a * (BigInteger)b == (BigInteger)c);
+            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
             return c;
         }
 
@@ -582,7 +661,7 @@ namespace Decompose.Numerics
 
         public override int GetHashCode()
         {
-            return v.S0.GetHashCode() ^ v.S1.GetHashCode();
+            return v.GetHashCode();
         }
 
         public static Int128 AddProduct(Int128 a, UInt128 b, int c)

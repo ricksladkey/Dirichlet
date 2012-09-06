@@ -629,7 +629,7 @@ namespace Sandbox
 #if true
             var threads = 8;
             var timer = new Stopwatch();
-            for (var power = 12; power <= 16; power++)
+            for (var power = 19; power <= 19; power++)
             {
                 var n = IntegerMath.Power((BigInteger)10, power);
 #if false
@@ -819,7 +819,7 @@ namespace Sandbox
                     var b = (UInt128)(ulong.MaxValue / 1000);
                     var s = (UInt128)0;
                     for (var i = 0; i < 100000000; i++)
-                        s += a;
+                        s += a * b;
                     return s;
                 });
                 var sum2 = EvaluateAndTime(() =>
@@ -828,7 +828,7 @@ namespace Sandbox
                     var b = (Int128)(ulong.MaxValue / 1000);
                     var s = (Int128)0;
                     for (var i = 0; i < 100000000; i++)
-                        s += a;
+                        s += a * b;
                     return s;
                 });
                 Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);

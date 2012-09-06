@@ -33,23 +33,10 @@ namespace Decompose.Numerics
 
         public static UInt128 Parse(string value)
         {
-            return (UInt128)BigInteger.Parse(value);
-        }
-
-        public UInt128(uint r0, uint r1, uint r2, uint r3)
-        {
-            this.s0 = this.s1 = 0;
-            this.r0 = r0;
-            this.r1 = r1;
-            this.r2 = r2;
-            this.r3 = r3;
-        }
-
-        public UInt128(ulong s0, ulong s1)
-        {
-            this.r0 = this.r1 = this.r2 = this.r3 = 0;
-            this.s0 = s0;
-            this.s1 = s1;
+            UInt128 c;
+            var a = BigInteger.Parse(value);
+            UInt128.Create(out c, ref a);
+            return c;
         }
 
         public static void Create(out UInt128 c, uint r0, uint r1, uint r2, uint r3)
@@ -68,6 +55,13 @@ namespace Decompose.Numerics
             c.s1 = s1;
         }
 
+        public static void Create(out UInt128 c, ref BigInteger a)
+        {
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = (ulong)(a & ulong.MaxValue);
+            c.s1 = (ulong)(a >> 64);
+        }
+
         public uint R0 { get { return r0; } }
         public uint R1 { get { return r1; } }
         public uint R2 { get { return r2; } }
@@ -81,7 +75,6 @@ namespace Decompose.Numerics
         public bool IsPowerOfTwo { get { return (this & (this - 1)).IsZero; } }
         public bool IsEven { get { return (r0 & 1) == 0; } }
         public uint LeastSignificantWord { get { return r0; } }
-        public UInt128 TwosComplement { get { return 0 - this; } }
 
         public override string ToString()
         {
@@ -115,31 +108,39 @@ namespace Decompose.Numerics
         {
             if (a < 0)
                 throw new InvalidCastException();
-            return new UInt128((uint)a, 0, 0, 0);
+            UInt128 c;
+            Create(out c, (uint)a, 0, 0, 0);
+            return c;
         }
 
         public static implicit operator UInt128(uint a)
         {
-            return new UInt128(a, 0, 0, 0);
+            UInt128 c;
+            Create(out c, a, 0, 0, 0);
+            return c;
         }
 
         public static explicit operator UInt128(long a)
         {
             if (a < 0)
                 throw new InvalidCastException();
-            return new UInt128((ulong)a, 0);
+            UInt128 c;
+            Create(out c, (ulong)a, 0);
+            return c;
         }
 
         public static implicit operator UInt128(ulong a)
         {
-            return new UInt128(a, 0);
+            UInt128 c;
+            Create(out c, a, 0);
+            return c;
         }
 
         public static explicit operator UInt128(BigInteger a)
         {
-            var s0 = (ulong)(a & ulong.MaxValue);
-            var s1 = (ulong)(a >> 64);
-            return new UInt128(s0, s1);
+            UInt128 c;
+            Create(out c, ref a);
+            return c;
         }
 
         public static explicit operator double(UInt128 a)
@@ -247,33 +248,21 @@ namespace Decompose.Numerics
         public static UInt128 operator +(UInt128 a, ulong b)
         {
             UInt128 c;
-            c.r0 = c.r1 = c.r2 = c.r3 = 0;
-            c.s0 = a.s0 + b;
-            c.s1 = a.s1;
-            if (c.s0 < a.s0 && c.s0 < b)
-                ++c.s1;
+            Add(out c, ref a, b);
             return c;
         }
 
         public static UInt128 operator +(ulong a, UInt128 b)
         {
             UInt128 c;
-            c.r0 = c.r1 = c.r2 = c.r3 = 0;
-            c.s0 = a + b.s0;
-            c.s1 = b.s1;
-            if (c.s0 < a && c.s0 < b.s0)
-                ++c.s1;
+            Add(out c, ref b, a);
             return c;
         }
 
         public static UInt128 operator ++(UInt128 a)
         {
             UInt128 c;
-            c.r0 = c.r1 = c.r2 = c.r3 = 0;
-            c.s0 = a.s0 + 1;
-            c.s1 = a.s1;
-            if (a.s0 == ulong.MaxValue)
-                ++c.s1;
+            Add(out c, ref a, 1);
             return c;
         }
 
@@ -287,59 +276,35 @@ namespace Decompose.Numerics
         public static UInt128 operator -(UInt128 a, ulong b)
         {
             UInt128 c;
-            c.r0 = c.r1 = c.r2 = c.r3 = 0;
-            c.s0 = a.s0 - b;
-            c.s1 = a.s1;
-            if (a.s0 < b)
-                --c.s1;
+            Subtract(out c, ref a, b);
             return c;
         }
 
         public static UInt128 operator -(ulong a, UInt128 b)
         {
             UInt128 c;
-            c.r0 = c.r1 = c.r2 = c.r3 = 0;
-            c.s0 = a - b.s0;
-            c.s1 = 0 - b.s1;
-            if (a < b)
-                --c.s1;
+            Subtract(out c, a, ref b);
             return c;
         }
 
         public static UInt128 operator --(UInt128 a)
         {
             UInt128 c;
-            c.r0 = c.r1 = c.r2 = c.r3 = 0;
-            c.s0 = a.s0 - 1;
-            c.s1 = a.s1;
-            if (a.s0 == 0)
-                --c.s1;
+            Subtract(out c, ref a, 1);
             return c;
         }
 
         public static UInt128 operator *(UInt128 a, uint b)
         {
             UInt128 c;
-            if (a.s1 == 0)
-                Multiply64(out c, a.r0, a.r1, b);
-            else if (a.r3 == 0)
-                Multiply96(out c, ref a, b);
-            else
-                throw new NotImplementedException();
-            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
+            Multiply(out c, ref a, b);
             return c;
         }
 
         public static UInt128 operator *(uint a, UInt128 b)
         {
             UInt128 c;
-            if (b.s1 == 0)
-                Multiply64(out c, b.r0, b.r1, a);
-            else if (b.r3 == 0)
-                Multiply96(out c, ref b, a);
-            else
-                throw new NotImplementedException();
-            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
+            Multiply(out c, ref b, a);
             return c;
         }
 
@@ -374,10 +339,7 @@ namespace Decompose.Numerics
         public static UInt128 operator /(UInt128 a, UInt128 b)
         {
             UInt128 c;
-            if (b.s1 == 0)
-                Divide(out c, ref a, b.s0);
-            else
-                throw new NotImplementedException();
+            Divide(out c, ref a, ref b);
             return c;
         }
 
@@ -393,9 +355,9 @@ namespace Decompose.Numerics
 
         public static UInt128 operator %(UInt128 a, UInt128 b)
         {
-            if (b.s1 == 0)
-                return Modulo(ref a, b.s0);
-            throw new NotImplementedException();
+            UInt128 c;
+            Modulo(out c, ref a, ref b);
+            return c;
         }
 
         public static bool operator <(UInt128 a, UInt128 b)
@@ -671,6 +633,17 @@ namespace Decompose.Numerics
             Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
         }
 
+        public static void Multiply(out UInt128 c, ref UInt128 a, uint b)
+        {
+            if (a.s1 == 0)
+                Multiply64(out c, a.r0, a.r1, b);
+            else if (a.r3 == 0)
+                Multiply96(out c, ref a, b);
+            else
+                throw new NotImplementedException();
+            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
+        }
+
         public static void Multiply(out UInt128 c, ref UInt128 a, ulong b)
         {
             if (a.s1 == 0)
@@ -710,9 +683,20 @@ namespace Decompose.Numerics
 
         public static UInt128 Square(UInt128 a)
         {
+            if (a.s1 != 0)
+                throw new NotImplementedException();
             UInt128 c;
             Square64(out c, a.r0, a.r1);
             return c;
+        }
+
+        public static void Add(out UInt128 c, ref UInt128 a, ulong b)
+        {
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = a.s0 + b;
+            c.s1 = a.s1;
+            if (c.s0 < a.s0 && c.s0 < b)
+                ++c.s1;
         }
 
         public static void Add(out UInt128 c, ref UInt128 a, ref UInt128 b)
@@ -725,6 +709,26 @@ namespace Decompose.Numerics
             Debug.Assert((BigInteger)c == (BigInteger)a + (BigInteger)b);
         }
 
+        public static void Subtract(out UInt128 c, ref UInt128 a, ulong b)
+        {
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = a.s0 - b;
+            c.s1 = a.s1;
+            if (a.s0 < b)
+                --c.s1;
+            Debug.Assert((BigInteger)c == (BigInteger)a - (BigInteger)b);
+        }
+
+        public static void Subtract(out UInt128 c, ulong a, ref UInt128 b)
+        {
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = a - b.s0;
+            c.s1 = 0 - b.s1;
+            if (a < b.s0)
+                --c.s1;
+            Debug.Assert((BigInteger)c == (BigInteger)a - (BigInteger)b);
+        }
+
         public static void Subtract(out UInt128 c, ref UInt128 a, ref UInt128 b)
         {
             c.r0 = c.r1 = c.r2 = c.r3 = 0;
@@ -735,7 +739,7 @@ namespace Decompose.Numerics
             Debug.Assert((BigInteger)c == (BigInteger)a - (BigInteger)b);
         }
 
-        private static void AddOld(out UInt128 w, ref UInt128 u, ref UInt128 v)
+        private static void Add32(out UInt128 w, ref UInt128 u, ref UInt128 v)
         {
             w.s0 = w.s1 = 0;
             var carry = (ulong)u.r0 + v.r0;
@@ -748,7 +752,7 @@ namespace Decompose.Numerics
             w.r3 = (uint)carry;
         }
 
-        private static void SubtractOld(out UInt128 w, ref UInt128 u, ref UInt128 v)
+        private static void Subtract32(out UInt128 w, ref UInt128 u, ref UInt128 v)
         {
             w.s0 = w.s1 = 0;
             var borrow = (ulong)u.r0 - v.r0;
@@ -903,6 +907,14 @@ namespace Decompose.Numerics
             }
         }
 
+        public static void Divide(out UInt128 c, ref UInt128 a, ref UInt128 b)
+        {
+            if (b.s1 == 0)
+                Divide(out c, ref a, b.s0);
+            else
+                throw new NotImplementedException();
+        }
+
         private static uint Modulo(ref UInt128 u, uint v)
         {
             if (u.s1 == 0)
@@ -926,6 +938,13 @@ namespace Decompose.Numerics
             if (u.r3 == 0)
                 return Modulo96(ref u, v);
             return Modulo128(ref u, v);
+        }
+
+        public static void Modulo(out UInt128 c, ref UInt128 a, ref UInt128 b)
+        {
+            if (b.s1 == 0)
+                Create(out c, Modulo(ref a, b.s0), 0);
+            throw new NotImplementedException();
         }
 
         private static void Divide64(out UInt128 w, ulong u, ulong v)
@@ -1122,82 +1141,91 @@ namespace Decompose.Numerics
             return (uint)qhat;
         }
 
-        private static void LeftShift(out UInt128 w, ref UInt128 u, int d)
+        public static void LeftShift(out UInt128 c, ref UInt128 a, int b)
         {
-            w.r0 = w.r1 = w.r2 = w.r3 = 0;
-            var dneg = 64 - d;
-            if (d < 64)
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            var bneg = 64 - b;
+            if (b < 64)
             {
-                if (d == 0)
+                if (b == 0)
                 {
-                    w = u;
+                    c = a;
                     return;
                 }
-                w.s0 = u.s0 << d;
-                w.s1 = u.s1 << d | u.s0 >> dneg;
+                c.s0 = a.s0 << b;
+                c.s1 = a.s1 << b | a.s0 >> bneg;
                 return;
             }
-            if (d == 64)
+            if (b == 64)
             {
-                w.s0 = 0;
-                w.s1 = u.s0;
+                c.s0 = 0;
+                c.s1 = a.s0;
                 return;
             }
-            w.s0 = 0;
-            w.s1 = u.s0 << (d - 64);
+            c.s0 = 0;
+            c.s1 = a.s0 << (b - 64);
         }
 
-        private static void RightShift(out UInt128 w, ref UInt128 u, int d)
+        public static void RightShift(out UInt128 c, ref UInt128 a, int b)
         {
-            w.r0 = w.r1 = w.r2 = w.r3 = 0;
-            var dneg = 64 - d;
-            if (d < 64)
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            var bneg = 64 - b;
+            if (b < 64)
             {
-                if (d == 0)
+                if (b == 0)
                 {
-                    w = u;
+                    c = a;
                     return;
                 }
-                w.s0 = u.s0 >> d | u.s1 << dneg;
-                w.s1 = u.s1 >> d;
+                c.s0 = a.s0 >> b | a.s1 << bneg;
+                c.s1 = a.s1 >> b;
                 return;
             }
-            if (d == 64)
+            if (b == 64)
             {
-                w.s0 = u.s1;
-                w.s1 = 0;
+                c.s0 = a.s1;
+                c.s1 = 0;
                 return;
             }
-            w.s0 = u.s1 >> (d - 64);
-            w.s1 = 0;
+            c.s0 = a.s1 >> (b - 64);
+            c.s1 = 0;
         }
 
-        private static void And(out UInt128 w, ref UInt128 u, ref UInt128 v)
+        public static void And(out UInt128 c, ref UInt128 a, ref UInt128 b)
         {
-            w.r0 = w.r1 = w.r2 = w.r3 = 0;
-            w.s0 = u.s0 & v.s0;
-            w.s1 = u.s1 & v.s1;
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = a.s0 & b.s0;
+            c.s1 = a.s1 & b.s1;
         }
 
-        private static void Or(out UInt128 w, ref UInt128 u, ref UInt128 v)
+        public static void Or(out UInt128 c, ref UInt128 a, ref UInt128 b)
         {
-            w.r0 = w.r1 = w.r2 = w.r3 = 0;
-            w.s0 = u.s0 | v.s0;
-            w.s1 = u.s1 | v.s1;
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = a.s0 | b.s0;
+            c.s1 = a.s1 | b.s1;
         }
 
-        private static void ExclusiveOr(out UInt128 w, ref UInt128 u, ref UInt128 v)
+        public static void ExclusiveOr(out UInt128 c, ref UInt128 a, ref UInt128 b)
         {
-            w.r0 = w.r1 = w.r2 = w.r3 = 0;
-            w.s0 = u.s0 ^ v.s0;
-            w.s1 = u.s1 ^ v.s1;
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = a.s0 ^ b.s0;
+            c.s1 = a.s1 ^ b.s1;
         }
 
-        private static void Not(out UInt128 w, ref UInt128 u)
+        public static void Not(out UInt128 c, ref UInt128 a)
         {
-            w.r0 = w.r1 = w.r2 = w.r3 = 0;
-            w.s0 = ~u.s0;
-            w.s1 = ~u.s1;
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = ~a.s0;
+            c.s1 = ~a.s1;
+        }
+
+        public static void Negate(out UInt128 c, ref UInt128 a)
+        {
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = 0 - a.s0;
+            c.s1 = 0 - a.s1;
+            --c.s1;
+            Debug.Assert((BigInteger)c == (BigInteger)(~a - 1));
         }
     }
 }
