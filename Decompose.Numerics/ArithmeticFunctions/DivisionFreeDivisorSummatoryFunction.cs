@@ -343,12 +343,13 @@ namespace Decompose.Numerics
         {
             if (x2 < 1)
                 return x1 - 2;
-            var t = (uint)0;
+            var t = (ulong)0;
             var x = (x2 - 1) | 1;
-            var beta = (uint)(n / (x + 2));
+            var beta = (ulong)(n / (x + 2));
             var eps = (int)(n % (x + 2));
             var delta = (int)(n / x - beta);
             var gamma = 2 * (int)beta - x * delta;
+            ++beta;
             while (x >= x1)
             {
                 eps += gamma;
@@ -380,11 +381,10 @@ namespace Decompose.Numerics
                 Debug.Assert(delta == beta - n / (x + 2));
                 Debug.Assert(gamma == 2 * beta - (BigInteger)(x - 2) * delta);
 
-                t += beta + (beta & 1);
+                t += beta >> 1;
                 x -= 2;
             }
             var s = (UInt128)t;
-            s >>= 1;
             AddToSum(ref s);
             return x;
         }

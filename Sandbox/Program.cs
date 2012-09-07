@@ -24,8 +24,8 @@ namespace Sandbox
             try
             {
                 //DivisorsPerformanceTest();
-                ModularSumTest();
-                //ParityTest();
+                //ModularSumTest();
+                ParityTest();
                 //PerfectPowerTest();
                 //FloorRootTest();
                 //FindPrimeTest1();
@@ -604,12 +604,12 @@ namespace Sandbox
 #endif
 #endif
 
-#if false
-            var threads = 1;
-            for (int i = 18; i <= 18; i++)
+#if true
+            var threads = 8;
+            for (int i = 24; i <= 24; i++)
             {
                 var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
-                var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads);
+                var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads, false);
                 var n = IntegerMath.Power((BigInteger)10, i);
                 var xmax = IntegerMath.FloorSquareRoot(n);
 #if false
@@ -715,7 +715,7 @@ namespace Sandbox
             }
 #endif
 
-#if true
+#if false
             var threads = 8;
             var timer = new Stopwatch();
             for (var power = 19; power <= 19; power++)

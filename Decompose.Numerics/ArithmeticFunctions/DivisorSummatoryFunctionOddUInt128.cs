@@ -153,6 +153,11 @@ namespace Decompose.Numerics
             catch (OperationCanceledException)
             {
             }
+            catch
+            {
+                finished.Set();
+                throw;
+            }
             AddToSum(s);
         }
 
