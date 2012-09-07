@@ -73,13 +73,13 @@ namespace Decompose.Numerics
 
                 public override IResidue<ulong> Add(IResidue<ulong> x)
                 {
-                    r = UInt64Helper.ModularSum(r, GetRep(x), reducer.modulus);
+                    r = IntegerMath.ModularSum(r, GetRep(x), reducer.modulus);
                     return this;
                 }
 
                 public override IResidue<ulong> Subtract(IResidue<ulong> x)
                 {
-                    r = UInt64Helper.ModularDifference(r, GetRep(x), reducer.modulus);
+                    r = IntegerMath.ModularDifference(r, GetRep(x), reducer.modulus);
                     return this;
                 }
 

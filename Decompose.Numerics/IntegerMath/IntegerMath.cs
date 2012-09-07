@@ -8,18 +8,18 @@ namespace Decompose.Numerics
 {
     public static partial class IntegerMath
     {
-        static IntegerMath()
-        {
-            CachePrimes();
-            CreateSmallDivisorBatches();
-            CreateModuliMap();
-        }
+        private static int[] smallPrimesCached;
 
-        private static int[] primes;
+        private static int[] GetSmallPrimes()
+        {
+            if (smallPrimesCached == null)
+                CachePrimes();
+            return smallPrimesCached;
+        }
 
         private static void CachePrimes()
         {
-            primes = new SieveOfEratosthenes()
+            smallPrimesCached = new SieveOfEratosthenes()
                 .TakeWhile(p => p < 1000000)
                 .ToArray();
         }

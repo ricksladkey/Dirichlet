@@ -10,18 +10,17 @@ namespace Decompose.Numerics
     {
         public static int ModularProduct(int a, int b, int modulus)
         {
-            return (int)((long)a * b % modulus);
+            return (int)((ulong)a * (ulong)b % (ulong)modulus);
         }
 
         public static uint ModularProduct(uint a, uint b, uint modulus)
         {
-            return (uint)((ulong)a * b % modulus);
+            return (uint)((ulong)a * (ulong)b % (ulong)modulus);
         }
 
         public static long ModularProduct(long a, long b, long modulus)
         {
-            var result = (long)UInt64Helper.ModularProduct((ulong)Math.Abs(a), (ulong)Math.Abs(b), (ulong)modulus);
-            return (a < 0) != (b < 0) ? -result : result;
+            return (long)UInt64Helper.ModularProduct((ulong)a, (ulong)b, (ulong)modulus);
         }
 
         public static ulong ModularProduct(ulong a, ulong b, ulong modulus)

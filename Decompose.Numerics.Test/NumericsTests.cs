@@ -769,16 +769,18 @@ namespace Decompose.Numerics.Test
                 Assert.AreEqual((BigInteger)a != b, (UInt128)a != b);
                 Assert.AreEqual((BigInteger)a != b, a != (UInt128)b);
                 Assert.AreEqual((BigInteger)a != b, (UInt128)a != (UInt128)b);
-                Assert.AreEqual(((BigInteger)a + b) % n, UInt64Helper.ModularSum(a, b, n));
-                Assert.AreEqual((((BigInteger)a - b) % n + n) % n, UInt64Helper.ModularDifference(a, b, n));
-                Assert.AreEqual((BigInteger)a * b % n, UInt64Helper.ModularProduct(a, b, n));
+                Assert.AreEqual(((BigInteger)a + b) % n, IntegerMath.ModularSum(a, b, n));
+                Assert.AreEqual((((BigInteger)a - b) % n + n) % n, IntegerMath.ModularDifference(a, b, n));
+                Assert.AreEqual((BigInteger)a * b % n, IntegerMath.ModularProduct(a, b, n));
             }
+            var sum = 0;
             for (int i = 0; i < 1000; i++)
             {
                 var n = random.Next(modulusMax - 1) + 1;
                 var a = random.Next(factorMax) % n;
                 var b = random.Next(factorMax) % n;
-                Assert.AreEqual(BigInteger.ModPow(a, b, n), UInt64Helper.ModularPower(a, b, n));
+                Assert.AreEqual(BigInteger.ModPow(a, b, n), IntegerMath.ModularPower(a, b, n));
+                ++sum;
             }
         }
 
@@ -856,6 +858,26 @@ namespace Decompose.Numerics.Test
                 Assert.AreEqual((BigInteger)a != b, a != (Int128)b);
                 Assert.AreEqual((BigInteger)a != b, (Int128)a != (Int128)b);
             }
+        }
+
+        [TestMethod]
+        public void ModularPowerOfTwoBug()
+        {
+            var value = (ulong)310322;
+            var exponent = (ulong)647414;
+            var s = 5;
+            var result = IntegerMath.ModularPowerPowerOfTwoModulus(value, exponent, s);
+            Assert.AreEqual((ulong)0, result);
+        }
+
+        [TestMethod]
+        public void ModularPowerEvenBug()
+        {
+            var a = (ulong)310322;
+            var b = (ulong)647414;
+            var n = (ulong)507446567392;
+            var result = IntegerMath.ModularPower(a, b, n);
+            Assert.AreEqual((ulong)448890944160, result);
         }
 
         [TestMethod]

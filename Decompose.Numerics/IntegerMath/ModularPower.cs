@@ -140,12 +140,15 @@ namespace Decompose.Numerics
             var mask = n == 64 ? ulong.MaxValue : ((ulong)1 << n) - 1;
 
             // Remove factors of two from value.
-            var s = 0;
+            var s = (ulong)0;
             while ((value & 1) == 0)
             {
                 value >>= 1;
-                ++s;
+                s = s + Math.Min(exponent, 63);
+                if (s >= (ulong)n)
+                    return 0;
             }
+            s = Math.Min(s, 63);
 
             // Reduce exponent since value and 2^n are relatively prime
             // and phi(2^n) = 2^(n-1).
@@ -163,7 +166,7 @@ namespace Decompose.Numerics
             }
 
             // Result is result ^ 2^s % 2^n.
-            return (result << s) & mask;
+            return (result << (int)s) & mask;
         }
 
         private static uint ModularPowerReduction(uint start, uint value, uint exponent, uint modulus)

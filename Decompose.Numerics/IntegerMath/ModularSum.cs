@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace Decompose.Numerics
 {
@@ -35,14 +36,24 @@ namespace Decompose.Numerics
         public static ulong ModularSum(ulong a, ulong b, ulong modulus)
         {
             Debug.Assert(modulus > 0 && a >= 0 && a < modulus && b >= 0 && b < modulus);
-            return UInt64Helper.ModularSum(a, b, modulus);
+            return ModularSumHelper(a + b, a, b, modulus);
+        }
+
+        private static ulong ModularSumHelper(ulong sum, ulong a, ulong b, ulong modulus)
+        {
+            // This is split into a separate method in order to trick the JIT compiler into inlining both of them.
+            if (sum >= modulus || sum < a && sum < b)
+                sum -= modulus;
+            return sum;
         }
 
         public static BigInteger ModularSum(BigInteger a, BigInteger b, BigInteger modulus)
         {
             Debug.Assert(modulus > 0 && a >= 0 && a < modulus && b >= 0 && b < modulus);
             var sum = a + b;
-            return sum >= modulus ? sum - modulus : sum;
+            if (sum >= modulus)
+                sum -= modulus;
+            return sum;
         }
     }
 }

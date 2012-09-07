@@ -236,7 +236,8 @@ namespace Decompose.Numerics
             var absA = Number<T>.Abs(a);
             var bits = IntegerMath.FloorLog((T)absA, 2);
             var logA = Number<T>.Log(absA).Real;
-            foreach (var p in primes)
+            var smallPrimes = GetSmallPrimes();
+            foreach (var p in smallPrimes)
             {
                 if (absA != a && p == 2)
                     continue;
@@ -257,17 +258,20 @@ namespace Decompose.Numerics
 
         private static void CreateModuliMap()
         {
+            var smallPrimes = GetSmallPrimes();
             moduliMap = new Dictionary<int, int[]>();
-            foreach (var p in primes.Take(1000))
+            foreach (var p in smallPrimes.Take(1000))
             {
                 var n = 6;
-                var moduli = primes.Where(q => q % p == 1).Take(n);
+                var moduli = smallPrimes.Where(q => q % p == 1).Take(n);
                 moduliMap[p] = moduli.ToArray();
             }
         }
 
         private static bool IsPossiblePerfectPower<T>(T a, int p)
         {
+            if (moduliMap == null)
+                CreateModuliMap();
             if (!moduliMap.ContainsKey(p))
                 return true;
             var moduli = moduliMap[p];

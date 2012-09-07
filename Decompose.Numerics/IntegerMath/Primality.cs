@@ -12,38 +12,42 @@ namespace Decompose.Numerics
             public int End { get; set; }
             public uint Modulus { get; set; }
         }
-        private static SmallDivisorBatch[] smallDivisorBatches;
+        private static SmallDivisorBatch[] SmallDivisorBatches;
 
         private static void CreateSmallDivisorBatches()
         {
-            int n = 1;
+            var smallPrimes = GetSmallPrimes();
+            var n = 1;
             var batches = new List<SmallDivisorBatch>();
             while (n < 100)
             {
                 var begin = n;
                 var modulus = (uint)1;
-                while (uint.MaxValue / modulus >= (uint)primes[n])
-                    modulus *= (uint)primes[n++];
+                while (uint.MaxValue / modulus >= (uint)smallPrimes[n])
+                    modulus *= (uint)smallPrimes[n++];
                 var end = n;
                 batches.Add(new SmallDivisorBatch { Begin = begin, End = end, Modulus = modulus });
             }
-            smallDivisorBatches = batches.ToArray();
+            SmallDivisorBatches = batches.ToArray();
         }
 
         public static int GetSmallDivisor(BigInteger n)
         {
             if (n.IsEven)
                 return 2;
-            for (int j = 0; j < smallDivisorBatches.Length; j++)
+            var smallPrimes = GetSmallPrimes();
+            if (SmallDivisorBatches == null)
+                CreateSmallDivisorBatches();
+            for (int j = 0; j < SmallDivisorBatches.Length; j++)
             {
-                var begin = smallDivisorBatches[j].Begin;
-                var end = smallDivisorBatches[j].End;
-                var modulus = smallDivisorBatches[j].Modulus;
+                var begin = SmallDivisorBatches[j].Begin;
+                var end = SmallDivisorBatches[j].End;
+                var modulus = SmallDivisorBatches[j].Modulus;
                 var value = (uint)(n % modulus);
                 for (int i = begin; i < end; i++)
                 {
-                    if (value % (uint)primes[i] == 0)
-                        return primes[i];
+                    if (value % (uint)smallPrimes[i] == 0)
+                        return smallPrimes[i];
                 }
             }
             return 1;

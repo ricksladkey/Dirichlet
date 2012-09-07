@@ -206,7 +206,7 @@ namespace Decompose.Numerics
 
         public static int PrimeCountingFunction(int n)
         {
-            return primes.TakeWhile(p => p <= n).Count();
+            return GetSmallPrimes().TakeWhile(p => p <= n).Count();
         }
 
         public static BigInteger PrimeCountingFunction(BigInteger n)

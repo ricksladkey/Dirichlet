@@ -1912,3 +1912,7 @@ F2(10) = mu(1) * T2Odd(10 / 1) + mu(3) * T2Odd(10 / 9)
 2 * 3 * 5 * 7
 
 9, 11, 13, 15, [17]
+
+value^exponent mod 32
+(2*value)^exponent mod 32
+2^exponent mod 32 * value^exponent mod 32
