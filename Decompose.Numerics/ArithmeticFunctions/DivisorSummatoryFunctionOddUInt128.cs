@@ -40,7 +40,7 @@ namespace Decompose.Numerics
         }
 
         private const long nMaxSimple = (long)1 << 40;
-        private static readonly UInt128 C1 = 225;
+        private static readonly UInt128 C1 = 200;
         private static readonly UInt128 C2 = 15;
 
         private int threads;
@@ -261,7 +261,7 @@ namespace Decompose.Numerics
                 var abba = a1 * b2 + b1 * a2;
                 var ab2 = 2 * a1 * b1;
                 var u4 = UTan(ab1, abba, ab2, a3b3, c1);
-                if (u4 <= 0)
+                if (u4 <= 0 || u4 > long.MaxValue)
                     return Processed(s + ProcessRegionManual(thread, w, h, a1, b1, c1, a2, b2, c2));
                 var u5 = u4 + 1;
                 ulong v4, v5;
