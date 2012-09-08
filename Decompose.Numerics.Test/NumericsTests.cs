@@ -750,6 +750,7 @@ namespace Decompose.Numerics.Test
             UInt128Test((ulong)1 << 40, (ulong)1 << 60);
             UInt128Test((ulong)1 << 60, (ulong)1 << 60);
 
+            UInt128Test(uint.MaxValue, uint.MaxValue);
             UInt128Test(ulong.MaxValue, ulong.MaxValue);
         }
 
@@ -792,10 +793,16 @@ namespace Decompose.Numerics.Test
                 value = a; Assert.AreEqual((BigInteger)a, value++);
                 value = (UInt128)a * b; Assert.AreEqual((BigInteger)a * b + 1, ++value);
                 value = (UInt128)a * b; Assert.AreEqual((BigInteger)a * b, value++);
-                value = a; Assert.AreEqual((BigInteger)a - 1, --value);
-                value = a; Assert.AreEqual((BigInteger)a, value--);
-                value = (UInt128)a * b; Assert.AreEqual((BigInteger)a * b - 1, --value);
-                value = (UInt128)a * b; Assert.AreEqual((BigInteger)a * b, value--);
+                if (a > 0)
+                {
+                    value = a; Assert.AreEqual((BigInteger)a - 1, --value);
+                    value = a; Assert.AreEqual((BigInteger)a, value--);
+                }
+                if (a > 0 && b > 0)
+                {
+                    value = (UInt128)a * b; Assert.AreEqual((BigInteger)a * b - 1, --value);
+                    value = (UInt128)a * b; Assert.AreEqual((BigInteger)a * b, value--);
+                }
                 Assert.AreEqual((BigInteger)a * b, (UInt128)a * b);
                 Assert.AreEqual((BigInteger)a * b, a * (UInt128)b);
                 Assert.AreEqual((BigInteger)a * b, (UInt128)a * (UInt128)b);
@@ -863,6 +870,8 @@ namespace Decompose.Numerics.Test
             Int128Test((long)1 << 40, (long)1 << 60);
             Int128Test((long)1 << 60, (long)1 << 60);
 
+            UInt128Test(int.MaxValue, int.MaxValue);
+            UInt128Test(uint.MaxValue, uint.MaxValue);
             Int128Test(long.MaxValue, long.MaxValue);
         }
 

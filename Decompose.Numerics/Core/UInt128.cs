@@ -1450,15 +1450,11 @@ namespace Decompose.Numerics
             {
                 UInt128 s2;
                 UInt128.Square(out s2, s);
-                if (a < s2)
+                var r = a.s0 - s2.s0;
+                if (r > long.MaxValue)
                     --s;
-                else
-                {
-                    UInt128 diff;
-                    UInt128.Subtract(out diff, ref a, ref s2);
-                    if (diff.S1 != 0 || diff.S0 > (s << 1))
-                        ++s;
-                }
+                else if (r - (s << 1) <= long.MaxValue)
+                    ++s;
                 Debug.Assert((BigInteger)s * s <= a && (BigInteger)(s + 1) * (s + 1) > a);
                 return s;
             }
@@ -1476,15 +1472,11 @@ namespace Decompose.Numerics
             {
                 UInt128 s2;
                 UInt128.Square(out s2, s);
-                if (s2 < a)
+                var r = s2.s0 - a.s0;
+                if (r > long.MaxValue)
                     ++s;
-                else
-                {
-                    UInt128 diff;
-                    UInt128.Subtract(out diff, ref s2, ref a);
-                    if (diff.S1 != 0 || diff.S0 > (s << 1))
-                        --s;
-                }
+                else if (r - (s << 1) <= long.MaxValue)
+                    --s;
                 Debug.Assert((BigInteger)(s - 1) * (s - 1) < a && (BigInteger)s * s >= a);
                 return s;
             }

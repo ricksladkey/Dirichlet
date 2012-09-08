@@ -604,7 +604,7 @@ namespace Sandbox
 #endif
 #endif
 
-#if false
+#if true
             var threads = 8;
             for (int i = 16; i <= 24; i++)
             {
@@ -900,7 +900,7 @@ namespace Sandbox
 #endif
 #endif
 
-#if true
+#if false
             {
                 var sum1 = EvaluateAndTime(() =>
                 {
