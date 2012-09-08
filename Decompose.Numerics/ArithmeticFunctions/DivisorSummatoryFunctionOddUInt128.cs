@@ -2,12 +2,9 @@
 #undef DIAG
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Numerics;
-using System.Diagnostics;
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -40,8 +37,8 @@ namespace Decompose.Numerics
         }
 
         private const long nMaxSimple = (long)1 << 40;
-        private static readonly UInt128 C1 = 200;
-        private static readonly UInt128 C2 = 15;
+        private static readonly UInt128 C1 = 175;
+        private static readonly UInt128 C2 = 40;
 
         private int threads;
         private bool mod2;
@@ -52,7 +49,6 @@ namespace Decompose.Numerics
         private ManualResetEventSlim finished;
         private BlockingCollection<Region> queue;
         private DivisionFreeDivisorSummatoryFunction manualAlgorithm;
-        private IStore<MutableInteger>[] stores;
 
 #if RECORD_SIZES
         private UInt128 amax;
@@ -66,9 +62,6 @@ namespace Decompose.Numerics
             this.mod2 = mod2;
             finished = new ManualResetEventSlim();
             manualAlgorithm = new DivisionFreeDivisorSummatoryFunction(threads, false, true, mod2);
-            stores = new IStore<MutableInteger>[Math.Max(threads, 1)];
-            for (var i = 0; i < Math.Max(threads, 1); i++)
-                stores[i] = new MutableIntegerStore(8);
         }
 
         public BigInteger Evaluate(BigInteger n)
@@ -94,6 +87,9 @@ namespace Decompose.Numerics
             if (x0 > xmax)
                 return 0;
 
+            if (n <= nMaxSimple)
+                return (UInt128)manualAlgorithm.Evaluate(n, x0, xmax);
+
             queue = new BlockingCollection<Region>();
             sum = 0;
 #if RECORD_SIZES
@@ -104,8 +100,6 @@ namespace Decompose.Numerics
 
             if (threads == 0)
             {
-                if (n <= nMaxSimple)
-                    return (UInt128)manualAlgorithm.Evaluate(n, x0, xmax);
                 AddToSum(EvaluateInternal(n, x0, xmax));
                 if (xmanual > 1)
                     AddToSum((UInt128)manualAlgorithm.Evaluate(n, x0, 2 * xmanual - 3));
@@ -281,30 +275,12 @@ namespace Decompose.Numerics
 #if DIAG
                 Console.WriteLine("ProcessRegion: s = {0}", s);
 #endif
-#if false
-                if (threads == 0)
-                {
-                    Enqueue(new Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
-                    w -= u7;
-                    h = v5;
-                    a1 = a3;
-                    b1 = b3;
-                    c1 += c2 + u7;
-                }
-                else
-                {
-                    Enqueue(new Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
-                    Enqueue(new Region(w - u7, v5, a3, b3, c1 + c2 + u7, a2, b2, c2));
-                    return Processed(s);
-                }
-#else
                 Enqueue(new Region(u4, h - v6, a1, b1, c1, a3, b3, c1 + c2 + v6));
                 w -= u7;
                 h = v5;
                 a1 = a3;
                 b1 = b3;
                 c1 += c2 + u7;
-#endif
             }
         }
 
@@ -313,7 +289,6 @@ namespace Decompose.Numerics
             return w < h ? ProcessRegionManual(thread, w, a1, b1, c1, a2, b2, c2) : ProcessRegionManual(thread, h, b2, a2, c2, b1, a1, c1);
         }
 
-#if true
         public UInt128 ProcessRegionManual(int thread, ulong w, ulong a1, ulong b1, UInt128 c1, ulong a2, ulong b2, UInt128 c2)
         {
             if (w <= 1)
@@ -332,70 +307,23 @@ namespace Decompose.Numerics
             while (true)
             {
                 Debug.Assert((t5 - UInt128.CeilingSqrt(t6)) / t4 == VFloor(u, a1, b1, c1, a2, b2, c2));
+#if false
                 s += (t5 - UInt128.CeilingSqrt(t6)) / t4;
                 if (u >= umax)
                     break;
                 t5 += t1;
                 t6 += t3;
                 t3 += 8;
-                ++u;
-            }
-
-            Debug.Assert(s == ProcessRegionHorizontal(w, 0, a1, b1, c1, a2, b2, c2));
-#if DIAG
-            Console.WriteLine("ProcessRegionManual: s = {0}", s);
-#endif
-            return s;
-        }
-#endif
-
-#if false
-        public UInt128 ProcessRegionManual(int thread, ulong w, ulong a1, ulong b1, UInt128 c1, ulong a2, ulong b2, UInt128 c2)
-        {
-            if (w <= 1)
-                return 0;
-
-            var s = (UInt128)0;
-            var umax = w - 1;
-            var t1 = (a1 * b2 + b1 * a2) << 1;
-            var t2 = (c1 << 1) - a1 - b1;
-            var t3 = (t2 << 2) + 12;
-            var t4 = (a1 * b1) << 2;
-            var t5 = t1 * (1 + c1) - a1 + b1 - t4 * c2;
-            var t6 = UInt128.Square(t2 + 2) - t4 * n;
-
-            var store = stores[thread];
-            var sRep = store.Allocate().Set(0);
-            var t1Rep = store.Allocate().Set(t1);
-            var t3Rep = store.Allocate().Set(t3);
-            var t4Rep = store.Allocate().Set(t4);
-            var t5Rep = store.Allocate().Set(t5);
-            var t6Rep = store.Allocate().Set(t6);
-            var t7Rep = store.Allocate();
-            var t8Rep = store.Allocate();
-
-            var u = (ulong)1;
-            while (true)
-            {
-                t8Rep.SetUnsignedDifference(t5Rep, t7Rep.SetCeilingSquareRoot(t6Rep, store))
-                    .ModuloWithQuotient(t4Rep, t7Rep);
-                sRep.SetUnsignedSum(sRep, t7Rep);
+#else
+                UInt128.AddEquals(ref s, (ulong)((t5 - UInt128.CeilingSqrt(t6)) / t4));
                 if (u >= umax)
                     break;
-                t5Rep.SetUnsignedSum(t5Rep, t1Rep);
-                t6Rep.SetUnsignedSum(t6Rep, t3Rep);
-                t3Rep.SetUnsignedSum(t3Rep, 8);
+                UInt128.AddEquals(ref t5, t1);
+                UInt128.AddEquals(ref t6, ref t3);
+                UInt128.AddEquals(ref t3, 8);
+#endif
                 ++u;
             }
-            s = (UInt128)sRep;
-
-            store.Release(sRep);
-            store.Release(t1Rep);
-            store.Release(t3Rep);
-            store.Release(t4Rep);
-            store.Release(t6Rep);
-            store.Release(t7Rep);
-            store.Release(t8Rep);
 
             Debug.Assert(s == ProcessRegionHorizontal(w, 0, a1, b1, c1, a2, b2, c2));
 #if DIAG
@@ -403,7 +331,6 @@ namespace Decompose.Numerics
 #endif
             return s;
         }
-#endif
 
         public UInt128 ProcessRegionHorizontal(UInt128 w, UInt128 h, ulong a1, ulong b1, UInt128 c1, ulong a2, ulong b2, UInt128 c2)
         {
@@ -421,7 +348,7 @@ namespace Decompose.Numerics
             return s;
         }
 
-        public UInt128 H(UInt128 u, UInt128 v, ulong a1, ulong b1, UInt128 c1, ulong a2, ulong b2, UInt128 c2)
+        public UInt128 H(ulong u, ulong v, ulong a1, ulong b1, UInt128 c1, ulong a2, ulong b2, UInt128 c2)
         {
             var uu = u + c1;
             var vv = v + c2;

@@ -864,6 +864,23 @@ namespace Decompose.Numerics
             Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 128));
         }
 
+        public static void AddEquals(ref UInt128 a, ulong b)
+        {
+            var as0 = a.s0;
+            a.s0 = as0 + b;
+            if (a.s0 < as0 && a.s0 < b)
+                ++a.s1;
+        }
+
+        public static void AddEquals(ref UInt128 a, ref UInt128 b)
+        {
+            var as0 = a.s0;
+            a.s0 = as0 + b.s0;
+            a.s1 += b.s1;
+            if (a.s0 < as0 && a.s0 < b.s0)
+                ++a.s1;
+        }
+
         public static void Subtract(out UInt128 c, ref UInt128 a, ulong b)
         {
             c.r0 = c.r1 = c.r2 = c.r3 = 0;
