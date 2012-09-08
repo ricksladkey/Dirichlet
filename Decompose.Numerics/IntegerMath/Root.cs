@@ -64,6 +64,7 @@ namespace Decompose.Numerics
             return s;
         }
 
+#if false
         public static ulong FloorSquareRoot(Int128 a)
         {
             return FloorSquareRoot((UInt128)a);
@@ -109,6 +110,27 @@ namespace Decompose.Numerics
             }
             return (ulong)CeilingSquareRoot<BigInteger>(a);
         }
+#else
+        public static ulong FloorSquareRoot(Int128 a)
+        {
+            return UInt128.FloorSqrt((UInt128)a);
+        }
+
+        public static ulong FloorSquareRoot(UInt128 a)
+        {
+            return UInt128.FloorSqrt(a);
+        }
+
+        public static ulong CeilingSquareRoot(Int128 a)
+        {
+            return UInt128.CeilingSqrt((UInt128)a);
+        }
+
+        public static ulong CeilingSquareRoot(UInt128 a)
+        {
+            return UInt128.CeilingSqrt(a);
+        }
+#endif
 
         public static BigInteger FloorSquareRoot(BigInteger a)
         {

@@ -908,7 +908,7 @@ namespace Sandbox
                     var b = (UInt128)(ulong.MaxValue / 1000);
                     var s = (UInt128)0;
                     for (var i = 0; i < 100000000; i++)
-                        s += a < b ? (uint)1 : (uint)0;
+                        s += a * b;
                     return s;
                 });
                 var sum2 = EvaluateAndTime(() =>
@@ -917,7 +917,7 @@ namespace Sandbox
                     var b = (Int128)(ulong.MaxValue / 1000);
                     var s = (Int128)0;
                     for (var i = 0; i < 100000000; i++)
-                        s += a < b ? (int)1 : (int)0;
+                        s += a * b;
                     return s;
                 });
                 Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);

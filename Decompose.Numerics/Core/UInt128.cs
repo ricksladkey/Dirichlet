@@ -158,6 +158,11 @@ namespace Decompose.Numerics
 
         public static explicit operator double(UInt128 a)
         {
+            return ConvertToDouble(ref a);
+        }
+
+        public static double ConvertToDouble(ref UInt128 a)
+        {
             if (a.s1 == 0)
                 return a.s0;
             var shift = a.GetBitLength() - 64;
@@ -1397,6 +1402,92 @@ namespace Decompose.Numerics
             UInt128 result;
             Pow(out result, ref value, exponent);
             return result;
+        }
+
+        private const int maxRepShift = 53;
+        private static readonly ulong maxRep = (ulong)1 << maxRepShift;
+        private static readonly UInt128 maxRepSquaredHigh = (ulong)1 << (2 * maxRepShift - 64);
+
+        public static ulong FloorSqrt(UInt128 a)
+        {
+            if (a.s1 == 0 && a.s0 <= maxRep)
+                return (ulong)Math.Sqrt(a.s0);
+            var s = (ulong)Math.Sqrt(ConvertToDouble(ref a));
+            if (a.s1 < maxRepSquaredHigh)
+            {
+                UInt128 s2;
+                UInt128.Square(out s2, s);
+                if (a < s2)
+                    --s;
+                else
+                {
+                    UInt128 diff;
+                    UInt128.Subtract(out diff, ref a, ref s2);
+                    if (diff.S1 != 0 || diff.S0 > (s << 1))
+                        ++s;
+                }
+                Debug.Assert((BigInteger)s * s <= a && (BigInteger)(s + 1) * (s + 1) > a);
+                return s;
+            }
+            s = FloorSqrt(ref a, s);
+            Debug.Assert((BigInteger)s * s <= a && (BigInteger)(s + 1) * (s + 1) > a);
+            return s;
+        }
+
+        public static ulong CeilingSqrt(UInt128 a)
+        {
+            if (a.s1 == 0 && a.s0 <= maxRep)
+                return (ulong)Math.Ceiling(Math.Sqrt(a.s0));
+            var s = (ulong)Math.Ceiling(Math.Sqrt(ConvertToDouble(ref a)));
+            if (a.s1 < maxRepSquaredHigh)
+            {
+                UInt128 s2;
+                UInt128.Square(out s2, s);
+                if (s2 < a)
+                    ++s;
+                else
+                {
+                    UInt128 diff;
+                    UInt128.Subtract(out diff, ref s2, ref a);
+                    if (diff.S1 != 0 || diff.S0 > (s << 1))
+                        --s;
+                }
+                Debug.Assert((BigInteger)(s - 1) * (s - 1) < a && (BigInteger)s * s >= a);
+                return s;
+            }
+            s = FloorSqrt(ref a, s);
+            UInt128 square;
+            UInt128.Square(out square, s);
+            if (square.S0 != a.S0 || square.S1 != a.S1)
+                ++s;
+            Debug.Assert((BigInteger)(s - 1) * (s - 1) < a && (BigInteger)s * s >= a);
+            return s;
+        }
+
+        private static ulong FloorSqrt(ref UInt128 a, ulong s)
+        {
+            var sprev = (ulong)0;
+            UInt128 div;
+            UInt128 sum;
+            while (true)
+            {
+                // Equivalent to:
+                // snext = (a / s + s) / 2;
+                UInt128.Divide(out div, ref a, s);
+                UInt128.Add(out sum, ref div, s);
+                var snext = sum.S0 >> 1;
+                if (sum.S1 != 0)
+                    snext |= (ulong)1 << 63;
+                if (snext == sprev)
+                {
+                    if (snext < s)
+                        s = snext;
+                    break;
+                }
+                sprev = s;
+                s = snext;
+            }
+            return s;
         }
     }
 }

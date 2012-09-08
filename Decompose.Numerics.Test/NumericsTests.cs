@@ -694,6 +694,48 @@ namespace Decompose.Numerics.Test
         }
 
         [TestMethod]
+        public void ModularOperationsTest()
+        {
+            ModularOperationsTest((ulong)1 << 20, (ulong)1 << 20);
+            ModularOperationsTest((ulong)1 << 40, (ulong)1 << 20);
+            ModularOperationsTest((ulong)1 << 60, (ulong)1 << 20);
+
+            ModularOperationsTest((ulong)1 << 20, (ulong)1 << 40);
+            ModularOperationsTest((ulong)1 << 40, (ulong)1 << 40);
+            ModularOperationsTest((ulong)1 << 60, (ulong)1 << 40);
+
+            ModularOperationsTest((ulong)1 << 20, (ulong)1 << 60);
+            ModularOperationsTest((ulong)1 << 40, (ulong)1 << 60);
+            ModularOperationsTest((ulong)1 << 60, (ulong)1 << 60);
+
+            ModularOperationsTest(ulong.MaxValue, ulong.MaxValue);
+        }
+
+        private void ModularOperationsTest(ulong factorMax, ulong modulusMax)
+        {
+            var random = new MersenneTwister(0).Create<ulong>();
+            for (int i = 0; i < 10000; i++)
+            {
+                var n = random.Next(modulusMax - 1) + 1;
+                var a = random.Next(factorMax) % n;
+                var b = random.Next(factorMax) % n;
+                var s = (int)(b % 32);
+                Assert.AreEqual(((BigInteger)a + b) % n, IntegerMath.ModularSum(a, b, n));
+                Assert.AreEqual((((BigInteger)a - b) % n + n) % n, IntegerMath.ModularDifference(a, b, n));
+                Assert.AreEqual((BigInteger)a * b % n, IntegerMath.ModularProduct(a, b, n));
+            }
+            var sum = 0;
+            for (int i = 0; i < 1000; i++)
+            {
+                var n = random.Next(modulusMax - 1) + 1;
+                var a = random.Next(factorMax) % n;
+                var b = random.Next(factorMax) % n;
+                Assert.AreEqual(BigInteger.ModPow(a, b, n), IntegerMath.ModularPower(a, b, n));
+                ++sum;
+            }
+        }
+
+        [TestMethod]
         public void UInt128Test()
         {
             UInt128Test((ulong)1 << 20, (ulong)1 << 20);
@@ -769,18 +811,14 @@ namespace Decompose.Numerics.Test
                 Assert.AreEqual((BigInteger)a != b, (UInt128)a != b);
                 Assert.AreEqual((BigInteger)a != b, a != (UInt128)b);
                 Assert.AreEqual((BigInteger)a != b, (UInt128)a != (UInt128)b);
-                Assert.AreEqual(((BigInteger)a + b) % n, IntegerMath.ModularSum(a, b, n));
-                Assert.AreEqual((((BigInteger)a - b) % n + n) % n, IntegerMath.ModularDifference(a, b, n));
-                Assert.AreEqual((BigInteger)a * b % n, IntegerMath.ModularProduct(a, b, n));
-            }
-            var sum = 0;
-            for (int i = 0; i < 1000; i++)
-            {
-                var n = random.Next(modulusMax - 1) + 1;
-                var a = random.Next(factorMax) % n;
-                var b = random.Next(factorMax) % n;
-                Assert.AreEqual(BigInteger.ModPow(a, b, n), IntegerMath.ModularPower(a, b, n));
-                ++sum;
+                for (var j = 0; j < 2; j++)
+                {
+                    var m = j == 0 ? (UInt128)a * (UInt128)b : (UInt128)n * (UInt128)n;
+                    var floorsqrt = UInt128.FloorSqrt(m);
+                    Debug.Assert((BigInteger)floorsqrt * floorsqrt <= m && (BigInteger)(floorsqrt + 1) * (floorsqrt + 1) > m);
+                    var ceilingsqrt = UInt128.CeilingSqrt(m);
+                    Debug.Assert((BigInteger)(ceilingsqrt - 1) * (ceilingsqrt - 1) < m && (BigInteger)ceilingsqrt * ceilingsqrt >= m);
+                }
             }
         }
 
@@ -857,6 +895,14 @@ namespace Decompose.Numerics.Test
                 Assert.AreEqual((BigInteger)a != b, (Int128)a != b);
                 Assert.AreEqual((BigInteger)a != b, a != (Int128)b);
                 Assert.AreEqual((BigInteger)a != b, (Int128)a != (Int128)b);
+                for (var j = 0; j < 2; j++)
+                {
+                    var m = Int128.Abs(j == 0 ? (Int128)a * (Int128)b : (Int128)n * (Int128)n);
+                    var floorsqrt = Int128.FloorSqrt(m);
+                    Debug.Assert((BigInteger)floorsqrt * floorsqrt <= m && (BigInteger)(floorsqrt + 1) * (floorsqrt + 1) > m);
+                    var ceilingsqrt = Int128.CeilingSqrt(m);
+                    Debug.Assert((BigInteger)(ceilingsqrt - 1) * (ceilingsqrt - 1) < m && (BigInteger)ceilingsqrt * ceilingsqrt >= m);
+                }
             }
         }
 

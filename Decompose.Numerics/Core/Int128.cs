@@ -181,9 +181,9 @@ namespace Decompose.Numerics
             {
                 UInt128 c;
                 UInt128.Negate(out c, ref a.v);
-                return -(double)c;
+                return -UInt128.ConvertToDouble(ref c);
             }
-            return (double)a.v;
+            return UInt128.ConvertToDouble(ref a.v);
         }
 
         public static Int128 operator <<(Int128 a, int b)
@@ -1158,5 +1158,20 @@ namespace Decompose.Numerics
             Pow(out result, ref value, exponent);
             return result;
         }
+
+        public static ulong FloorSqrt(Int128 a)
+        {
+            if (a.IsNegative)
+                throw new InvalidOperationException();
+            return UInt128.FloorSqrt(a.v);
+        }
+
+        public static ulong CeilingSqrt(Int128 a)
+        {
+            if (a.IsNegative)
+                throw new InvalidOperationException();
+            return UInt128.CeilingSqrt(a.v);
+        }
+
     }
 }
