@@ -294,6 +294,7 @@ namespace Decompose.Numerics
             var eps = (long)(n % (x + 2));
             var delta = (long)(n / x - beta);
             var gamma = 2 * (long)beta - x * delta;
+            ++beta;
             while (x >= x1)
             {
                 eps += gamma;
@@ -321,11 +322,11 @@ namespace Decompose.Numerics
                 gamma += delta << 2;
 
                 Debug.Assert(eps == n % x);
-                Debug.Assert(beta == n / x);
-                Debug.Assert(delta == beta - n / (x + 2));
-                Debug.Assert(gamma == 2 * beta - (BigInteger)(x - 2) * delta);
+                Debug.Assert(beta == n / x + 1);
+                Debug.Assert(delta == n / x - n / (x + 2));
+                Debug.Assert(gamma == 2 * (n / x) - (BigInteger)(x - 2) * delta);
 
-                t += beta + (beta & 1);
+                t += beta >> 1;
                 if (t > tmax)
                 {
                     s += t;
@@ -334,7 +335,6 @@ namespace Decompose.Numerics
                 x -= 2;
             }
             s += t;
-            s >>= 1;
             AddToSum(ref s);
             return x;
         }
@@ -377,9 +377,9 @@ namespace Decompose.Numerics
                 gamma += delta << 2;
 
                 Debug.Assert(eps == n % x);
-                Debug.Assert(beta == n / x);
-                Debug.Assert(delta == beta - n / (x + 2));
-                Debug.Assert(gamma == 2 * beta - (BigInteger)(x - 2) * delta);
+                Debug.Assert(beta == n / x + 1);
+                Debug.Assert(delta == n / x - n / (x + 2));
+                Debug.Assert(gamma == 2 * (n / x) - (BigInteger)(x - 2) * delta);
 
                 t += beta >> 1;
                 x -= 2;
