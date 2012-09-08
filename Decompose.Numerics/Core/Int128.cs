@@ -1070,6 +1070,36 @@ namespace Decompose.Numerics
             return c;
         }
 
+        public static Int128 Cube(long a)
+        {
+            Int128 c;
+            if (a < 0)
+            {
+                UInt128 cneg;
+                UInt128.Cube(out cneg, (ulong)(-a));
+                UInt128.Negate(out c.v, ref cneg);
+            }
+            else
+                UInt128.Cube(out c.v, (ulong)a);
+            return c;
+        }
+
+        public static Int128 Cube(Int128 a)
+        {
+            Int128 c;
+            if (a < 0)
+            {
+                UInt128 aneg;
+                UInt128.Negate(out aneg, ref a.v);
+                UInt128 cneg;
+                UInt128.Cube(out cneg, ref aneg);
+                UInt128.Negate(out c.v, ref cneg);
+            }
+            else
+                UInt128.Cube(out c.v, ref a.v);
+            return c;
+        }
+
         public static Int128 AddProduct(Int128 a, UInt128 b, int c)
         {
             UInt128 d;
@@ -1178,6 +1208,28 @@ namespace Decompose.Numerics
             if (a.IsNegative)
                 throw new InvalidOperationException();
             return UInt128.CeilingSqrt(a.v);
+        }
+
+        public static long FloorCbrt(Int128 a)
+        {
+            if (a.IsNegative)
+            {
+                UInt128 aneg;
+                UInt128.Negate(out aneg, ref a.v);
+                return -(long)UInt128.FloorCbrt(aneg);
+            }
+            return (long)UInt128.FloorCbrt(a.v);
+        }
+
+        public static long CeilingCbrt(Int128 a)
+        {
+            if (a.IsNegative)
+            {
+                UInt128 aneg;
+                UInt128.Negate(out aneg, ref a.v);
+                return -(long)UInt128.CeilingCbrt(aneg);
+            }
+            return (long)UInt128.CeilingCbrt(a.v);
         }
 
         public static Int128 Min(Int128 a, Int128 b)

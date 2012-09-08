@@ -183,7 +183,7 @@ namespace Decompose.Numerics
             if (x0 > xmax)
                 return 0;
             var ymin = YFloor(xmax);
-            var xmin = UInt128.Max(x0, UInt128.Min(T1(C1 * IntegerMath.CeilingRoot((2 * n), 3)), xmax));
+            var xmin = UInt128.Max(x0, UInt128.Min(T1(C1 * UInt128.CeilingCbrt(2 * n)), xmax));
 #if DIAG
             Console.WriteLine("n = {0}, xmin = {1}, xmax = {2}", n, xmin, xmax);
 #endif

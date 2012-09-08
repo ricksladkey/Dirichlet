@@ -831,11 +831,19 @@ namespace Decompose.Numerics.Test
                 Assert.AreEqual(BigInteger.Max((BigInteger)a * n, (BigInteger)b * n), UInt128.Max((UInt128)a * n, (UInt128)b * n));
                 for (var j = 0; j < 2; j++)
                 {
-                    var m = j == 0 ? (UInt128)a * (UInt128)b : (UInt128)n * (UInt128)n;
+                    var m = UInt128.Abs(j == 0 ? (UInt128)a * (UInt128)b : (UInt128)n * (UInt128)n);
                     var floorsqrt = UInt128.FloorSqrt(m);
                     Debug.Assert((BigInteger)floorsqrt * floorsqrt <= m && (BigInteger)(floorsqrt + 1) * (floorsqrt + 1) > m);
                     var ceilingsqrt = UInt128.CeilingSqrt(m);
                     Debug.Assert((BigInteger)(ceilingsqrt - 1) * (ceilingsqrt - 1) < m && (BigInteger)ceilingsqrt * ceilingsqrt >= m);
+                }
+                for (var j = 0; j < 2; j++)
+                {
+                    var m = j == 0 ? (UInt128)a * (UInt128)b : (UInt128)BigInteger.Pow((BigInteger)Math.Floor(Math.Pow((double)((BigInteger)a * b), (double)1 / 3)), 3);
+                    var floorcbrt = UInt128.FloorCbrt(m);
+                    Debug.Assert((BigInteger)floorcbrt * floorcbrt * floorcbrt <= m && (BigInteger)(floorcbrt + 1) * (floorcbrt + 1) * (floorcbrt + 1) > m);
+                    var ceilingcbrt = UInt128.CeilingCbrt(m);
+                    Debug.Assert((BigInteger)(ceilingcbrt - 1) * (ceilingcbrt - 1) * (ceilingcbrt - 1) < m && (BigInteger)ceilingcbrt * ceilingcbrt * ceilingcbrt >= m);
                 }
             }
         }
@@ -939,6 +947,14 @@ namespace Decompose.Numerics.Test
                     Debug.Assert((BigInteger)floorsqrt * floorsqrt <= m && (BigInteger)(floorsqrt + 1) * (floorsqrt + 1) > m);
                     var ceilingsqrt = Int128.CeilingSqrt(m);
                     Debug.Assert((BigInteger)(ceilingsqrt - 1) * (ceilingsqrt - 1) < m && (BigInteger)ceilingsqrt * ceilingsqrt >= m);
+                }
+                for (var j = 0; j < 2; j++)
+                {
+                    var m = j == 0 ? (Int128)a * (Int128)b : (Int128)(Math.Sign(a) * Math.Sign(b) * BigInteger.Pow((BigInteger)Math.Floor(Math.Pow((double)BigInteger.Abs((BigInteger)a * b), (double)1 / 3)), 3));
+                    var floorcbrt = Int128.FloorCbrt(m);
+                    Debug.Assert((BigInteger)floorcbrt * floorcbrt * floorcbrt <= m && (BigInteger)(floorcbrt + 1) * (floorcbrt + 1) * (floorcbrt + 1) > m);
+                    var ceilingcbrt = Int128.CeilingCbrt(m);
+                    Debug.Assert((BigInteger)(ceilingcbrt - 1) * (ceilingcbrt - 1) * (ceilingcbrt - 1) < m && (BigInteger)ceilingcbrt * ceilingcbrt * ceilingcbrt >= m);
                 }
             }
         }

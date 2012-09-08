@@ -816,6 +816,34 @@ namespace Decompose.Numerics
             Square64(out c, a.r0, a.r1);
         }
 
+        public static UInt128 Cube(ulong a)
+        {
+            UInt128 c;
+            Cube(out c, a);
+            return c;
+        }
+
+        public static UInt128 Cube(UInt128 a)
+        {
+            UInt128 c;
+            Cube(out c, ref a);
+            return c;
+        }
+
+        public static void Cube(out UInt128 c, ulong a)
+        {
+            UInt128 square;
+            Square(out square, a);
+            Multiply(out c, ref square, a);
+        }
+
+        public static void Cube(out UInt128 c, ref UInt128 a)
+        {
+            if (a.s1 != 0)
+                throw new NotImplementedException();
+            Cube(out c, a.s0);
+        }
+
         public static void Add(out UInt128 c, ref UInt128 a, ulong b)
         {
             c.r0 = c.r1 = c.r2 = c.r3 = 0;
@@ -1492,6 +1520,46 @@ namespace Decompose.Numerics
                 sprev = s;
                 s = snext;
             }
+            return s;
+        }
+
+        public static ulong FloorCbrt(UInt128 a)
+        {
+            var s = (ulong)Math.Pow(ConvertToDouble(ref a), (double)1 / 3);
+            UInt128 s3;
+            UInt128.Cube(out s3, s);
+            if (s3 < a)
+                ++s;
+            else
+            {
+                UInt128 sum;
+                UInt128.Multiply(out sum, 3 * s, s + 1);
+                UInt128 diff;
+                UInt128.Subtract(out diff, ref a, ref s3);
+                if (LessThan(ref diff, ref sum))
+                    --s;
+            }
+            Debug.Assert((BigInteger)(s - 1) * (s - 1) * (s - 1) < a && (BigInteger)s * s * s >= a);
+            return s;
+        }
+
+        public static ulong CeilingCbrt(UInt128 a)
+        {
+            var s = (ulong)Math.Ceiling(Math.Pow(ConvertToDouble(ref a), (double)1 / 3));
+            UInt128 s3;
+            UInt128.Cube(out s3, s);
+            if (a < s3)
+                --s;
+            else
+            {
+                UInt128 sum;
+                UInt128.Multiply(out sum, 3 * s, s + 1);
+                UInt128 diff;
+                UInt128.Subtract(out diff, ref a, ref s3);
+                if (LessThan(ref sum, ref diff))
+                    ++s;
+            }
+            Debug.Assert((BigInteger)s * s * s <= a && (BigInteger)(s + 1) * (s + 1) * (s + 1) > a);
             return s;
         }
 
