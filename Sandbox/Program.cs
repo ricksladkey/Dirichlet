@@ -604,7 +604,7 @@ namespace Sandbox
 #endif
 #endif
 
-#if true
+#if false
             var threads = 8;
             for (int i = 16; i <= 24; i++)
             {
@@ -900,7 +900,7 @@ namespace Sandbox
 #endif
 #endif
 
-#if false
+#if true
             {
                 var sum1 = EvaluateAndTime(() =>
                 {
@@ -908,7 +908,7 @@ namespace Sandbox
                     var b = (UInt128)(ulong.MaxValue / 1000);
                     var s = (UInt128)0;
                     for (var i = 0; i < 100000000; i++)
-                        s += a * b;
+                        s += UInt128.Min(a, b);
                     return s;
                 });
                 var sum2 = EvaluateAndTime(() =>
@@ -917,7 +917,7 @@ namespace Sandbox
                     var b = (Int128)(ulong.MaxValue / 1000);
                     var s = (Int128)0;
                     for (var i = 0; i < 100000000; i++)
-                        s += a * b;
+                        s += Int128.Min(a, b);
                     return s;
                 });
                 Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);

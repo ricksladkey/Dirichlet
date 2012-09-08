@@ -617,7 +617,7 @@ namespace Decompose.Numerics
 
         public static bool operator <(Int128 a, Int128 b)
         {
-            return a.CompareTo(b) < 0;
+            return LessThan(ref a.v, ref b.v);
         }
 
         public static bool operator <(Int128 a, int b)
@@ -672,7 +672,7 @@ namespace Decompose.Numerics
 
         public static bool operator <=(Int128 a, Int128 b)
         {
-            return a.CompareTo(b) <= 0;
+            return !LessThan(ref b.v, ref a.v);
         }
 
         public static bool operator <=(Int128 a, int b)
@@ -727,7 +727,7 @@ namespace Decompose.Numerics
 
         public static bool operator >(Int128 a, Int128 b)
         {
-            return a.CompareTo(b) > 0;
+            return LessThan(ref b.v, ref a.v);
         }
 
         public static bool operator >(Int128 a, int b)
@@ -782,7 +782,7 @@ namespace Decompose.Numerics
 
         public static bool operator >=(Int128 a, Int128 b)
         {
-            return a.CompareTo(b) >= 0;
+            return !LessThan(ref a.v, ref b.v);
         }
 
         public static bool operator >=(Int128 a, int b)
@@ -837,7 +837,7 @@ namespace Decompose.Numerics
 
         public static bool operator ==(Int128 a, Int128 b)
         {
-            return a.Equals(b);
+            return a.v.Equals(b.v);
         }
 
         public static bool operator ==(Int128 a, int b)
@@ -892,7 +892,7 @@ namespace Decompose.Numerics
 
         public static bool operator !=(Int128 a, Int128 b)
         {
-            return !a.Equals(b);
+            return !a.v.Equals(b.v);
         }
 
         public static bool operator !=(Int128 a, int b)
@@ -969,6 +969,13 @@ namespace Decompose.Numerics
         public int CompareTo(ulong other)
         {
             return SignedCompare(ref v, other, 0);
+        }
+
+        private static bool LessThan(ref UInt128 a, ref UInt128 b)
+        {
+            if (a.S1 != b.S1)
+                return (a.S1 ^ ((ulong)1 << 63)) < (b.S1 ^ ((ulong)1 << 63));
+            return a.S0 < b.S0;
         }
 
         private static int SignedCompare(ref UInt128 a, ulong s0, ulong s1)
@@ -1173,5 +1180,18 @@ namespace Decompose.Numerics
             return UInt128.CeilingSqrt(a.v);
         }
 
+        public static Int128 Min(Int128 a, Int128 b)
+        {
+            if (LessThan(ref a.v, ref b.v))
+                return a;
+            return b;
+        }
+
+        public static Int128 Max(Int128 a, Int128 b)
+        {
+            if (LessThan(ref b.v, ref a.v))
+                return a;
+            return b;
+        }
     }
 }

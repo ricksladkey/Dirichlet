@@ -762,6 +762,7 @@ namespace Decompose.Numerics.Test
                 var a = random.Next(factorMax) % n;
                 var b = random.Next(factorMax) % n;
                 var s = (int)(b % 32);
+                var value = (UInt128)0;
                 Assert.AreEqual((BigInteger)a << s, (UInt128)a << s);
                 Assert.AreEqual((BigInteger)a >> s, (UInt128)a >> s);
                 Assert.AreEqual((BigInteger)a & b, (UInt128)a & b);
@@ -778,12 +779,23 @@ namespace Decompose.Numerics.Test
                 Assert.AreEqual((BigInteger)a + b, (UInt128)a + b);
                 Assert.AreEqual((BigInteger)a + b, a + (UInt128)b);
                 Assert.AreEqual((BigInteger)a + b, (UInt128)a + (UInt128)b);
+                Assert.AreEqual(((BigInteger)a * n + (BigInteger)b * n) % ((BigInteger)1 << 128), (UInt128)a * n + (UInt128)b * n);
                 if (a >= b)
                 {
                     Assert.AreEqual((BigInteger)a - b, (UInt128)a - b);
                     Assert.AreEqual((BigInteger)a - b, a - (UInt128)b);
                     Assert.AreEqual((BigInteger)a - b, (UInt128)a - (UInt128)b);
+                    Assert.AreEqual((BigInteger)a * n - (BigInteger)b * n, (UInt128)a * n - (UInt128)b * n);
                 }
+                Assert.AreEqual(+(BigInteger)a, +(Int128)a);
+                value = a; Assert.AreEqual((BigInteger)a + 1, ++value);
+                value = a; Assert.AreEqual((BigInteger)a, value++);
+                value = (UInt128)a * b; Assert.AreEqual((BigInteger)a * b + 1, ++value);
+                value = (UInt128)a * b; Assert.AreEqual((BigInteger)a * b, value++);
+                value = a; Assert.AreEqual((BigInteger)a - 1, --value);
+                value = a; Assert.AreEqual((BigInteger)a, value--);
+                value = (UInt128)a * b; Assert.AreEqual((BigInteger)a * b - 1, --value);
+                value = (UInt128)a * b; Assert.AreEqual((BigInteger)a * b, value--);
                 Assert.AreEqual((BigInteger)a * b, (UInt128)a * b);
                 Assert.AreEqual((BigInteger)a * b, a * (UInt128)b);
                 Assert.AreEqual((BigInteger)a * b, (UInt128)a * (UInt128)b);
@@ -811,6 +823,12 @@ namespace Decompose.Numerics.Test
                 Assert.AreEqual((BigInteger)a != b, (UInt128)a != b);
                 Assert.AreEqual((BigInteger)a != b, a != (UInt128)b);
                 Assert.AreEqual((BigInteger)a != b, (UInt128)a != (UInt128)b);
+                Assert.AreEqual(BigInteger.Abs(a), UInt128.Abs(a));
+                Assert.AreEqual(BigInteger.Abs((BigInteger)a * b), UInt128.Abs((UInt128)a * b));
+                Assert.AreEqual(BigInteger.Min(a, b), UInt128.Min(a, b));
+                Assert.AreEqual(BigInteger.Min((BigInteger)a * n, (BigInteger)b * n), UInt128.Min((UInt128)a * n, (UInt128)b * n));
+                Assert.AreEqual(BigInteger.Max(a, b), UInt128.Max(a, b));
+                Assert.AreEqual(BigInteger.Max((BigInteger)a * n, (BigInteger)b * n), UInt128.Max((UInt128)a * n, (UInt128)b * n));
                 for (var j = 0; j < 2; j++)
                 {
                     var m = j == 0 ? (UInt128)a * (UInt128)b : (UInt128)n * (UInt128)n;
@@ -849,6 +867,7 @@ namespace Decompose.Numerics.Test
                 var a = random.Next(factorMax) % n - factorMax / 2;
                 var b = random.Next(factorMax) % n - factorMax / 2;
                 var s = (int)(Math.Abs(b) % 32);
+                var value = (Int128)0;
                 Assert.AreEqual((BigInteger)a << s, (Int128)a << s);
                 Assert.AreEqual((BigInteger)a >> s, (Int128)a >> s);
                 Assert.AreEqual((BigInteger)a & b, (Int128)a & b);
@@ -865,9 +884,21 @@ namespace Decompose.Numerics.Test
                 Assert.AreEqual((BigInteger)a + b, (Int128)a + b);
                 Assert.AreEqual((BigInteger)a + b, a + (Int128)b);
                 Assert.AreEqual((BigInteger)a + b, (Int128)a + (Int128)b);
+                Assert.AreEqual(((BigInteger)a * n + (BigInteger)b * n) % ((BigInteger)1 << 128), (Int128)a * n + (Int128)b * n);
                 Assert.AreEqual((BigInteger)a - b, (Int128)a - b);
                 Assert.AreEqual((BigInteger)a - b, a - (Int128)b);
                 Assert.AreEqual((BigInteger)a - b, (Int128)a - (Int128)b);
+                Assert.AreEqual(((BigInteger)a * n - (BigInteger)b * n) % ((BigInteger)1 << 128), (Int128)a * n - (Int128)b * n);
+                Assert.AreEqual(+(BigInteger)a, +(Int128)a);
+                Assert.AreEqual(-(BigInteger)a, -(Int128)a);
+                value = a; Assert.AreEqual((BigInteger)a + 1, ++value);
+                value = a; Assert.AreEqual((BigInteger)a, value++);
+                value = (Int128)a * b; Assert.AreEqual((BigInteger)a * b + 1, ++value);
+                value = (Int128)a * b; Assert.AreEqual((BigInteger)a * b, value++);
+                value = a; Assert.AreEqual((BigInteger)a - 1, --value);
+                value = a; Assert.AreEqual((BigInteger)a, value--);
+                value = (Int128)a * b; Assert.AreEqual((BigInteger)a * b - 1, --value);
+                value = (Int128)a * b; Assert.AreEqual((BigInteger)a * b, value--);
                 Assert.AreEqual((BigInteger)a * b, (Int128)a * b);
                 Assert.AreEqual((BigInteger)a * b, a * (Int128)b);
                 Assert.AreEqual((BigInteger)a * b, (Int128)a * (Int128)b);
@@ -895,6 +926,12 @@ namespace Decompose.Numerics.Test
                 Assert.AreEqual((BigInteger)a != b, (Int128)a != b);
                 Assert.AreEqual((BigInteger)a != b, a != (Int128)b);
                 Assert.AreEqual((BigInteger)a != b, (Int128)a != (Int128)b);
+                Assert.AreEqual(BigInteger.Abs(a), Int128.Abs(a));
+                Assert.AreEqual(BigInteger.Abs((BigInteger)a * b), Int128.Abs((Int128)a * b));
+                Assert.AreEqual(BigInteger.Min(a, b), Int128.Min(a, b));
+                Assert.AreEqual(BigInteger.Min((BigInteger)a * n, (BigInteger)b * n), Int128.Min((Int128)a * n, (Int128)b * n));
+                Assert.AreEqual(BigInteger.Max(a, b), Int128.Max(a, b));
+                Assert.AreEqual(BigInteger.Max((BigInteger)a * n, (BigInteger)b * n), Int128.Max((Int128)a * n, (Int128)b * n));
                 for (var j = 0; j < 2; j++)
                 {
                     var m = Int128.Abs(j == 0 ? (Int128)a * (Int128)b : (Int128)n * (Int128)n);

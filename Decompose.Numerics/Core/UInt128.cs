@@ -387,7 +387,7 @@ namespace Decompose.Numerics
 
         public static bool operator <(UInt128 a, UInt128 b)
         {
-            return a.CompareTo(b) < 0;
+            return LessThan(ref a, ref b);
         }
 
         public static bool operator <(UInt128 a, int b)
@@ -432,7 +432,7 @@ namespace Decompose.Numerics
 
         public static bool operator <=(UInt128 a, UInt128 b)
         {
-            return a.CompareTo(b) <= 0;
+            return !LessThan(ref b, ref a);
         }
 
         public static bool operator <=(UInt128 a, int b)
@@ -477,7 +477,7 @@ namespace Decompose.Numerics
 
         public static bool operator >(UInt128 a, UInt128 b)
         {
-            return a.CompareTo(b) > 0;
+            return LessThan(ref b, ref a);
         }
 
         public static bool operator >(UInt128 a, int b)
@@ -522,7 +522,7 @@ namespace Decompose.Numerics
 
         public static bool operator >=(UInt128 a, UInt128 b)
         {
-            return a.CompareTo(b) >= 0;
+            return !LessThan(ref a, ref b);
         }
 
         public static bool operator >=(UInt128 a, int b)
@@ -688,6 +688,11 @@ namespace Decompose.Numerics
             if (s1 != 0)
                 return 1;
             return s0.CompareTo(other);
+        }
+
+        private static bool LessThan(ref UInt128 a, ref UInt128 b)
+        {
+            return a.s1 < b.s1 || a.s1 == b.s1 && a.s0 < b.s0;
         }
 
         public bool Equals(UInt128 other)
@@ -1488,6 +1493,20 @@ namespace Decompose.Numerics
                 s = snext;
             }
             return s;
+        }
+
+        public static UInt128 Min(UInt128 a, UInt128 b)
+        {
+            if (LessThan(ref a, ref b))
+                return a;
+            return b;
+        }
+
+        public static UInt128 Max(UInt128 a, UInt128 b)
+        {
+            if (LessThan(ref b, ref a))
+                return a;
+            return b;
         }
     }
 }
