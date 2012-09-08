@@ -138,35 +138,21 @@ namespace Decompose.Numerics
 
         public static UInt128 Power(UInt128 value, UInt128 exponent)
         {
-            var result = (UInt128)1;
-            while (exponent != 0)
-            {
-                if ((exponent & 1) != 0)
-                    result = result * value;
-                if (exponent != 1)
-                    value = value * value;
-                exponent >>= 1;
-            }
+            UInt128 result;
+            UInt128.Pow(out result, ref value, (uint)exponent);
             return result;
         }
 
         public static Int128 Power(Int128 value, Int128 exponent)
         {
-            var result = (Int128)1;
-            while (exponent != 0)
-            {
-                if ((exponent & 1) != 0)
-                    result = result * value;
-                if (exponent != 1)
-                    value = value * value;
-                exponent >>= 1;
-            }
+            Int128 result;
+            Int128.Pow(out result, ref value, (int)exponent);
             return result;
         }
 
         public static BigInteger Power(BigInteger value, BigInteger exponent)
         {
-            if (exponent < int.MaxValue)
+            if (exponent <= int.MaxValue)
                 return BigInteger.Pow(value, (int)exponent);
             var result = (BigInteger)1;
             while (exponent != 0)

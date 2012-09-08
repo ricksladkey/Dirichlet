@@ -1130,5 +1130,33 @@ namespace Decompose.Numerics
             }
             return e;
         }
+
+        public static void Pow(out Int128 result, ref Int128 value, int exponent)
+        {
+            if (exponent < 0)
+                throw new InvalidOperationException();
+            if (value.IsNegative)
+            {
+                UInt128 valueneg;
+                UInt128.Negate(out valueneg, ref value.v);
+                if ((exponent & 1) == 0)
+                    UInt128.Pow(out result.v, ref valueneg, (uint)exponent);
+                else
+                {
+                    UInt128 resultneg;
+                    UInt128.Pow(out resultneg, ref valueneg, (uint)exponent);
+                    UInt128.Negate(out result.v, ref resultneg);
+                }
+            }
+            else
+                UInt128.Pow(out result.v, ref value.v, (uint)exponent);
+        }
+
+        public static Int128 Pow(Int128 value, int exponent)
+        {
+            Int128 result;
+            Pow(out result, ref value, exponent);
+            return result;
+        }
     }
 }

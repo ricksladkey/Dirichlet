@@ -1371,5 +1371,32 @@ namespace Decompose.Numerics
                 --c.s1;
             Debug.Assert((BigInteger)c == (BigInteger)(~a + 1));
         }
+
+        public static void Pow(out UInt128 result, ref UInt128 value, uint exponent)
+        {
+            result = one;
+            while (exponent != 0)
+            {
+
+                if ((exponent & 1) != 0)
+                {
+                    var previous = result;
+                    Multiply(out result, ref previous, ref value);
+                }
+                if (exponent != 1)
+                {
+                    var previous = value;
+                    Square(out value, ref previous);
+                }
+                exponent >>= 1;
+            }
+        }
+
+        public static UInt128 Pow(UInt128 value, uint exponent)
+        {
+            UInt128 result;
+            Pow(out result, ref value, exponent);
+            return result;
+        }
     }
 }
