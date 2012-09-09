@@ -26,7 +26,9 @@ namespace Sandbox
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
                 //ParityTest();
-                MertensPerformanceTest();
+                DivisorSummatoryFunctionOddTest();
+                //MertensPerformanceTest();
+                //PiMod2PerformanceTest();
                 //PerfectPowerTest();
                 //FloorRootTest();
                 //FindPrimeTest1();
@@ -74,6 +76,55 @@ namespace Sandbox
             return true;
         }
 
+        static void DivisorSummatoryFunctionOddTest()
+        {
+#if false
+            var threads = 8;
+            for (int i = 16; i <= 24; i++)
+            {
+                var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
+                var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads, false);
+                var n = IntegerMath.Power((BigInteger)10, i);
+                var xmax = IntegerMath.FloorSquareRoot(n);
+#if false
+                var xmin = IntegerMath.Min(600 * IntegerMath.CeilingRoot(2 * n, 3), xmax);
+#else
+                var xmin = 1;
+#endif
+#if false
+                var s1 = EvaluateAndTime(() => algorithm1.Evaluate(n, xmin, xmax));
+#else
+                var s1 = 0;
+#endif
+                var s2 = EvaluateAndTime(() => algorithm2.Evaluate(n, xmin, xmax));
+                Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
+            }
+#endif
+
+#if true
+            var threads = 8;
+            for (int i = 60; i <= 80; i++)
+            {
+                var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
+                var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads, false);
+                var n = IntegerMath.Power((BigInteger)2, i);
+                var xmax = IntegerMath.FloorSquareRoot(n);
+#if false
+                var xmin = IntegerMath.Min(600 * IntegerMath.CeilingRoot(2 * n, 3), xmax);
+#else
+                var xmin = 1;
+#endif
+#if false
+                var s1 = EvaluateAndTime(() => algorithm1.Evaluate(n, xmin, xmax));
+#else
+                var s1 = 0;
+#endif
+                var s2 = EvaluateAndTime(() => algorithm2.Evaluate(n, xmin, xmax));
+                Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
+            }
+#endif
+        }
+
         static void MertensPerformanceTest()
         {
             var threads = 8;
@@ -94,6 +145,80 @@ namespace Sandbox
                 Console.WriteLine(" // elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
             }
+        }
+
+        static void PiMod2PerformanceTest()
+        {
+#if false
+            var threads = 8;
+            var algorithm1 = new PrimeCountingMod2Odd(threads);
+            var algorithm2 = new PrimeCounting(threads);
+            var timer = new Stopwatch();
+            timer.Restart();
+            for (var i = 21; i <= 21; i++)
+            {
+                var n = IntegerMath.Power((BigInteger)10, i);
+                var p0 = PrimeCounting.PiPowerOfTen(i) % 2;
+#if true
+                timer.Restart();
+                var p1 = EvaluateAndTime(() => algorithm1.Evaluate(n));
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#else
+                var p1 = -1;
+#endif
+#if false
+                timer.Restart();
+                var p2 = algorithm2.ParityOfPi(n);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#else
+                var p2 = -1;
+#endif
+                Console.WriteLine("i = {0}, p0 = {1}, p1 = {2}, p2 = {3}", i, p0, p1, p2);
+                if (p0 != p1)
+                {
+                    Console.WriteLine("mismatch!");
+                    break;
+                }
+            }
+#endif
+
+#if true
+            var threads = 8;
+            var algorithm1 = new PrimeCountingMod2Odd(threads);
+            var algorithm2 = new PrimeCounting(threads);
+            var timer = new Stopwatch();
+            timer.Restart();
+            for (var i = 1; i <= 81; i++)
+            {
+                var n = IntegerMath.Power((BigInteger)2, i);
+                var p0 = i <= 80 ? PrimeCountingMod2.PowerOfTwo(i) : -1;
+#if true
+                timer.Restart();
+#if false
+                var p1 = EvaluateAndTime(() => algorithm1.Evaluate(n));
+#else
+                var p1 = algorithm1.Evaluate(n);
+#endif
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#else
+                var p1 = -1;
+#endif
+#if false
+                timer.Restart();
+                var p2 = algorithm2.ParityOfPi(n);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#else
+                var p2 = -1;
+#endif
+                Console.WriteLine("i = {0}, p0 = {1}, p1 = {2}, p2 = {3}", i, p0, p1, p2);
+                if (p0 != -1 && p0 != p1)
+                {
+                    Console.WriteLine("mismatch!");
+                    break;
+                }
+            }
+#endif
+
         }
 
         static Rational SawToothStar(BigInteger xn, BigInteger xd)
@@ -628,85 +753,6 @@ namespace Sandbox
 #endif
 
 #if false
-            var threads = 8;
-            for (int i = 16; i <= 24; i++)
-            {
-                var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
-                var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads, false);
-                var n = IntegerMath.Power((BigInteger)10, i);
-                var xmax = IntegerMath.FloorSquareRoot(n);
-#if false
-                var xmin = IntegerMath.Min(600 * IntegerMath.CeilingRoot(2 * n, 3), xmax);
-#else
-                var xmin = 1;
-#endif
-#if false
-                var s1 = EvaluateAndTime(() => algorithm1.Evaluate(n, xmin, xmax));
-#else
-                var s1 = 0;
-#endif
-                var s2 = EvaluateAndTime(() => algorithm2.Evaluate(n, xmin, xmax));
-                Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
-            }
-#endif
-
-#if false
-            var threads = 0;
-            for (int i = 20; i <= 60; i++)
-            {
-                var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
-                var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads, false);
-                var n = IntegerMath.Power((BigInteger)2, i);
-                var xmax = IntegerMath.FloorSquareRoot(n);
-#if false
-                var xmin = IntegerMath.Min(600 * IntegerMath.CeilingRoot(2 * n, 3), xmax);
-#else
-                var xmin = 1;
-#endif
-#if true
-                var s1 = EvaluateAndTime(() => algorithm1.Evaluate(n, xmin, xmax));
-#else
-                var s1 = 0;
-#endif
-                var s2 = EvaluateAndTime(() => algorithm2.Evaluate(n, xmin, xmax));
-                Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
-            }
-#endif
-
-#if false
-            var threads = 8;
-            var algorithm1 = new PrimeCountingMod2Odd(threads);
-            var algorithm2 = new PrimeCounting(threads);
-            var timer = new Stopwatch();
-            timer.Restart();
-            for (var i = 21; i <= 21; i++)
-            {
-                var n = IntegerMath.Power((BigInteger)10, i);
-                var p0 = PrimeCounting.PiPowerOfTen(i) % 2;
-#if true
-                timer.Restart();
-                var p1 = EvaluateAndTime(() => algorithm1.Evaluate(n));
-                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-#else
-                var p1 = -1;
-#endif
-#if false
-                timer.Restart();
-                var p2 = algorithm2.ParityOfPi(n);
-                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-#else
-                var p2 = -1;
-#endif
-                Console.WriteLine("i = {0}, p0 = {1}, p1 = {2}, p2 = {3}", i, p0, p1, p2);
-                if (p0 != p1)
-                {
-                    Console.WriteLine("mismatch!");
-                    break;
-                }
-            }
-#endif
-
-#if false
             // Confirm that low-precision logs reliably detect a factor larger than the square root.
             // Specifically, a1 should be greater than b for all n and if a2 is greater than b
             // then n should not have a factor larger than the square root.
@@ -721,43 +767,6 @@ namespace Sandbox
                 var b = IntegerMath.CeilingLogBaseTwo(n) - 1;
                 if (!(a1 > b) || (a2 > b) != (factors.Length == small.Length))
                     Console.WriteLine("i = {0}, a = {1}, b = {2}", n, a1, b);
-            }
-#endif
-
-#if false
-            var threads = 8;
-            var algorithm1 = new PrimeCountingMod2Odd(threads);
-            var algorithm2 = new PrimeCounting(threads);
-            var timer = new Stopwatch();
-            timer.Restart();
-            for (var i = 1; i <= 81; i++)
-            {
-                var n = IntegerMath.Power((BigInteger)2, i);
-                var p0 = i <= 80 ? PrimeCountingMod2.PowerOfTwo(i) : -1;
-#if true
-                timer.Restart();
-#if false
-                var p1 = EvaluateAndTime(() => algorithm1.Evaluate(n));
-#else
-                var p1 = algorithm1.Evaluate(n);
-#endif
-                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-#else
-                var p1 = -1;
-#endif
-#if false
-                timer.Restart();
-                var p2 = algorithm2.ParityOfPi(n);
-                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-#else
-                var p2 = -1;
-#endif
-                Console.WriteLine("i = {0}, p0 = {1}, p1 = {2}, p2 = {3}", i, p0, p1, p2);
-                if (p0 != -1 && p0 != p1)
-                {
-                    Console.WriteLine("mismatch!");
-                    break;
-                }
             }
 #endif
 

@@ -881,6 +881,11 @@ namespace Decompose.Numerics
             a.s1 += b.s1;
         }
 
+        public static void PlusEquals(ref UInt128 a, UInt128 b)
+        {
+            UInt128.PlusEquals(ref a, ref b);
+        }
+
         public static void Subtract(out UInt128 c, ref UInt128 a, ulong b)
         {
             c.r0 = c.r1 = c.r2 = c.r3 = 0;
@@ -924,6 +929,11 @@ namespace Decompose.Numerics
                 --a.s1;
             a.s0 -= b.s0;
             a.s1 -= b.s1;
+        }
+
+        public static void MinusEquals(ref UInt128 a, UInt128 b)
+        {
+            UInt128.MinusEquals(ref a, ref b);
         }
 
         private static void Add32(out UInt128 w, ref UInt128 u, ref UInt128 v)
@@ -970,17 +980,12 @@ namespace Decompose.Numerics
 
         private static void Multiply64(out UInt128 w, uint u0, uint u1, uint v)
         {
-            w.s0 = w.s1 = 0;
-            var carry = (ulong)u0 * v;
-            w.r0 = (uint)carry;
-            carry = carry >> 32;
+            w.r0 = w.r1 = w.r2 = w.r3 = 0;
+            w.s0 = (ulong)u0 * v;
+            var carry = w.r1 + (ulong)u1 * v;
             w.r1 = (uint)carry;
-            w.r2 = (uint)(carry >> 32);
-            carry = w.r1 + (ulong)u1 * v;
-            w.r1 = (uint)carry;
-            carry = (carry >> 32) + w.r2;
-            w.r2 = (uint)carry;
-            w.r3 = (uint)(carry >> 32);
+            carry >>= 32;
+            w.s1 = carry;
         }
 
         private static void Multiply64(out UInt128 w, uint u0, uint u1, uint v0, uint v1)
