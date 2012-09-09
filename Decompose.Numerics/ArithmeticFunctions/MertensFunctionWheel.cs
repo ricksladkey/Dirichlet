@@ -225,18 +225,18 @@ namespace Decompose.Numerics
             {
                 var i = r[l];
                 var x = niLarge[i];
-                var sqrt = (long)IntegerMath.FloorSquareRoot(x);
-                var xover = (long)IntegerMath.Min(sqrt * C3 / C4, x);
+                var sqrt = (long)UInt128.FloorSqrt(x);
+                var xover = (long)UInt128.Min((ulong)(sqrt * C3 / C4), x);
                 xover = (long)(x / (x / (ulong)xover));
                 var s = (Int128)0;
 
-                var jmin = UpToOdd(IntegerMath.Max(imax / i + 1, (long)IntegerMath.Min(xover + 1, x / ((ulong)x2 + 1) + 1)));
-                var jmax = DownToOdd((long)IntegerMath.Min(xover, x / (ulong)x1));
+                var jmin = UpToOdd(Math.Max(imax / i + 1, (long)UInt128.Min((ulong)xover + 1, x / ((ulong)x2 + 1) + 1)));
+                var jmax = DownToOdd((long)UInt128.Min((ulong)xover, x / (ulong)x1));
                 s += JSumLarge1(x, jmin, ref jmax, x1);
                 s += JSumLarge2(x, jmin, jmax, x1);
 
-                var kmin = IntegerMath.Max(1, x1);
-                var kmax = (long)IntegerMath.Min(x / (ulong)xover - 1, x2);
+                var kmin = Math.Max(1, x1);
+                var kmax = (long)UInt128.Min(x / (ulong)xover - 1, (ulong)x2);
                 s += KSumLarge1Mu(x, kmin, ref kmax, x1);
                 //s += KSumLarge1M(x, kmin, ref kmax, x1);
                 s += KSumLarge2(x, kmin, kmax, x1);
@@ -303,8 +303,8 @@ namespace Decompose.Numerics
                     gamma += j;
                     eps += j;
                 }
-                gamma += 4 * delta;
                 beta += delta;
+                gamma += delta << 2;
 
                 Debug.Assert(eps == (BigInteger)x % j);
                 Debug.Assert(beta == (BigInteger)x / j);
@@ -359,8 +359,8 @@ namespace Decompose.Numerics
                     gamma += j;
                     eps += j;
                 }
-                gamma += 4 * delta;
                 beta += delta;
+                gamma += delta << 2;
 
                 Debug.Assert(eps == x % j);
                 Debug.Assert(beta == x / j);
@@ -699,7 +699,7 @@ namespace Decompose.Numerics
             for (var k = kmin; k <= kmax; k++)
             {
                 var next = T1Wheel(x / (ulong)(k + 1));
-                s = Int128.AddProduct(s, current - next, m[k - x1]);
+                Int128.PlusEqualsProduct(ref s, current - next, m[k - x1]);
                 current = next;
             }
             return s;

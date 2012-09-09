@@ -25,7 +25,8 @@ namespace Sandbox
             {
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
-                ParityTest();
+                //ParityTest();
+                MertensPerformanceTest();
                 //PerfectPowerTest();
                 //FloorRootTest();
                 //FindPrimeTest1();
@@ -71,6 +72,28 @@ namespace Sandbox
             output.WriteLine("Stack trace:");
             output.WriteLine(ex.StackTrace);
             return true;
+        }
+
+        static void MertensPerformanceTest()
+        {
+            var threads = 8;
+            var timer = new Stopwatch();
+            for (var power = 12; power <= 16; power++)
+            {
+                var n = IntegerMath.Power((BigInteger)10, power);
+#if false
+                var algorithm1 = new MertensFunctionWheel64(threads);
+                timer.Restart();
+                Console.Write("BigInteger.Parse(\"{0}\"),", algorithm1.Evaluate((long)n));
+                Console.WriteLine(" // elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
+#if true
+                var algorithm2 = new MertensFunctionWheel(threads);
+                timer.Restart();
+                Console.Write("{{ {0}, {1} }},", power, algorithm2.Evaluate(n));
+                Console.WriteLine(" // elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#endif
+            }
         }
 
         static Rational SawToothStar(BigInteger xn, BigInteger xd)
@@ -604,7 +627,7 @@ namespace Sandbox
 #endif
 #endif
 
-#if true
+#if false
             var threads = 8;
             for (int i = 16; i <= 24; i++)
             {
@@ -618,6 +641,29 @@ namespace Sandbox
                 var xmin = 1;
 #endif
 #if false
+                var s1 = EvaluateAndTime(() => algorithm1.Evaluate(n, xmin, xmax));
+#else
+                var s1 = 0;
+#endif
+                var s2 = EvaluateAndTime(() => algorithm2.Evaluate(n, xmin, xmax));
+                Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
+            }
+#endif
+
+#if false
+            var threads = 0;
+            for (int i = 20; i <= 60; i++)
+            {
+                var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
+                var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads, false);
+                var n = IntegerMath.Power((BigInteger)2, i);
+                var xmax = IntegerMath.FloorSquareRoot(n);
+#if false
+                var xmin = IntegerMath.Min(600 * IntegerMath.CeilingRoot(2 * n, 3), xmax);
+#else
+                var xmin = 1;
+#endif
+#if true
                 var s1 = EvaluateAndTime(() => algorithm1.Evaluate(n, xmin, xmax));
 #else
                 var s1 = 0;
@@ -712,27 +758,6 @@ namespace Sandbox
                     Console.WriteLine("mismatch!");
                     break;
                 }
-            }
-#endif
-
-#if false
-            var threads = 8;
-            var timer = new Stopwatch();
-            for (var power = 19; power <= 19; power++)
-            {
-                var n = IntegerMath.Power((BigInteger)10, power);
-#if false
-                var algorithm1 = new MertensFunctionWheel64(threads);
-                timer.Restart();
-                Console.Write("BigInteger.Parse(\"{0}\"),", algorithm1.Evaluate((long)n));
-                Console.WriteLine(" // elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-#endif
-#if true
-                var algorithm2 = new MertensFunctionWheel(threads);
-                timer.Restart();
-                Console.Write("{{ {0}, {1} }},", power, algorithm2.Evaluate(n));
-                Console.WriteLine(" // elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-#endif
             }
 #endif
 
@@ -900,7 +925,7 @@ namespace Sandbox
 #endif
 #endif
 
-#if false
+#if true
             {
                 var sum1 = EvaluateAndTime(() =>
                 {
@@ -908,7 +933,7 @@ namespace Sandbox
                     var b = (UInt128)(ulong.MaxValue / 1000);
                     var s = (UInt128)0;
                     for (var i = 0; i < 100000000; i++)
-                        s += UInt128.Min(a, b);
+                        UInt128.PlusEquals(ref s, ref a);
                     return s;
                 });
                 var sum2 = EvaluateAndTime(() =>
@@ -917,7 +942,7 @@ namespace Sandbox
                     var b = (Int128)(ulong.MaxValue / 1000);
                     var s = (Int128)0;
                     for (var i = 0; i < 100000000; i++)
-                        s += Int128.Min(a, b);
+                        s += a;
                     return s;
                 });
                 Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);

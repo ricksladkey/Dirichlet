@@ -1100,38 +1100,65 @@ namespace Decompose.Numerics
             return c;
         }
 
-        public static Int128 AddProduct(Int128 a, UInt128 b, int c)
+        public static void PlusEquals(ref Int128 a, long b)
         {
-            UInt128 d;
-            Int128 e;
-            if (c < 0)
-            {
-                UInt128.Multiply(out d, ref b, (uint)(-c));
-                UInt128.Subtract(out e.v, ref a.v, ref d);
-            }
+            if (b < 0)
+                UInt128.MinusEquals(ref a.v, (ulong)(-b));
             else
-            {
-                UInt128.Multiply(out d, ref b, (uint)c);
-                UInt128.Add(out e.v, ref a.v, ref d);
-            }
-            return e;
+                UInt128.PlusEquals(ref a.v, (ulong)b);
         }
 
-        public static Int128 AddProduct(Int128 a, UInt128 b, long c)
+        public static void PlusEquals(ref Int128 a, ref Int128 b)
         {
-            UInt128 d;
-            Int128 e;
+            UInt128.PlusEquals(ref a.v, ref b.v);
+        }
+
+        public static void MinusEquals(ref Int128 a, long b)
+        {
+            if (b < 0)
+                UInt128.PlusEquals(ref a.v, (ulong)(-b));
+            else
+                UInt128.MinusEquals(ref a.v, (ulong)b);
+        }
+
+        public static void MinusEquals(ref Int128 a, ref Int128 b)
+        {
+            UInt128.MinusEquals(ref a.v, ref b.v);
+        }
+
+        public static void PlusEqualsProduct(ref Int128 a, ref UInt128 b, int c)
+        {
+            UInt128 product;
             if (c < 0)
             {
-                UInt128.Multiply(out d, ref b, (ulong)(-c));
-                UInt128.Subtract(out e.v, ref a.v, ref d);
+                UInt128.Multiply(out product, ref b, (uint)(-c));
+                UInt128.MinusEquals(ref a.v, ref product);
             }
             else
             {
-                UInt128.Multiply(out d, ref b, (ulong)c);
-                UInt128.Add(out e.v, ref a.v, ref d);
+                UInt128.Multiply(out product, ref b, (uint)c);
+                UInt128.PlusEquals(ref a.v, ref product);
             }
-            return e;
+        }
+
+        public static void PlusEqualsProduct(ref Int128 a, ref UInt128 b, long c)
+        {
+            UInt128 product;
+            if (c < 0)
+            {
+                UInt128.Multiply(out product, ref b, (ulong)(-c));
+                UInt128.MinusEquals(ref a.v, ref product);
+            }
+            else
+            {
+                UInt128.Multiply(out product, ref b, (ulong)c);
+                UInt128.PlusEquals(ref a.v, ref product);
+            }
+        }
+
+        public static void PlusEqualsProduct(ref Int128 a, UInt128 b, long c)
+        {
+            PlusEqualsProduct(ref a, ref b, c);
         }
 
         public static Int128 SubtractProduct(Int128 a, UInt128 b, int c)

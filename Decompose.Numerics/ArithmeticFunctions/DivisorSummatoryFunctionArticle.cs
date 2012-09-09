@@ -235,8 +235,8 @@ namespace Decompose.Numerics
                     gamma += x;
                     eps += x;
                 }
-                gamma += 2 * delta;
                 beta += delta;
+                gamma += delta << 1;
                 t += (ulong)beta;
                 if (t >= tmax)
                 {

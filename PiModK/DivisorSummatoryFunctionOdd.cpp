@@ -276,8 +276,8 @@ Integer DivisorSummatoryFunctionOdd::S1Fast(Integer n, Int64 x1, Int64 x2)
             gamma += x;
             eps += x;
         }
-        gamma += 4 * delta;
         beta += delta;
+        gamma += delta << 2;
         Assert(Integer(eps) == n % Integer(x));
         Assert(Integer(beta) == n / Integer(x));
         Assert(Integer(delta) == Integer(beta) - n / Integer((x + 2)));
@@ -335,8 +335,8 @@ Integer DivisorSummatoryFunctionOdd::S1SmallFast(Integer n, Int64 x1, Int64 x2)
             gamma += x;
             eps += x;
         }
-        gamma += 4 * delta;
         beta += delta;
+        gamma += delta << 2;
         Assert(Integer(eps) == n % Integer(x));
         Assert(Integer(beta) == n / Integer(x));
         Assert(Integer(delta) == Integer(beta) - n / Integer((x + 2)));

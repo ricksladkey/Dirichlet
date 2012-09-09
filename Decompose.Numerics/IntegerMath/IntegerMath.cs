@@ -115,12 +115,12 @@ namespace Decompose.Numerics
 
         public static Int128 Min(Int128 a, Int128 b)
         {
-            return a < b ? a : b;
+            return Int128.Min(a, b);
         }
 
         public static UInt128 Min(UInt128 a, UInt128 b)
         {
-            return a < b ? a : b;
+            return UInt128.Min(a, b);
         }
 
         public static BigInteger Min(BigInteger a, BigInteger b)
@@ -150,12 +150,12 @@ namespace Decompose.Numerics
 
         public static Int128 Max(Int128 a, Int128 b)
         {
-            return a > b ? a : b;
+            return Int128.Max(a, b);
         }
 
         public static UInt128 Max(UInt128 a, UInt128 b)
         {
-            return a > b ? a : b;
+            return UInt128.Max(a, b);
         }
 
         public static BigInteger Max(BigInteger a, BigInteger b)

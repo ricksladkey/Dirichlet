@@ -864,21 +864,21 @@ namespace Decompose.Numerics
             Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 128));
         }
 
-        public static void AddEquals(ref UInt128 a, ulong b)
+        public static void PlusEquals(ref UInt128 a, ulong b)
         {
-            var as0 = a.s0;
-            a.s0 = as0 + b;
-            if (a.s0 < as0 && a.s0 < b)
+            var sum = a.s0 + b;
+            if (sum < a.s0 && sum < b)
                 ++a.s1;
+            a.s0 = sum;
         }
 
-        public static void AddEquals(ref UInt128 a, ref UInt128 b)
+        public static void PlusEquals(ref UInt128 a, ref UInt128 b)
         {
-            var as0 = a.s0;
-            a.s0 = as0 + b.s0;
-            a.s1 += b.s1;
-            if (a.s0 < as0 && a.s0 < b.s0)
+            var sum = a.s0 + b.s0;
+            if (sum < a.s0 && sum < b.s0)
                 ++a.s1;
+            a.s0 = sum;
+            a.s1 += b.s1;
         }
 
         public static void Subtract(out UInt128 c, ref UInt128 a, ulong b)
@@ -909,6 +909,21 @@ namespace Decompose.Numerics
             if (a.s0 < b.s0)
                 --c.s1;
             Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + ((BigInteger)1 << 128)) % ((BigInteger)1 << 128));
+        }
+
+        public static void MinusEquals(ref UInt128 a, ulong b)
+        {
+            if (a.s0 < b)
+                --a.s1;
+            a.s0 -= b;
+        }
+
+        public static void MinusEquals(ref UInt128 a, ref UInt128 b)
+        {
+            if (a.s0 < b.s0)
+                --a.s1;
+            a.s0 -= b.s0;
+            a.s1 -= b.s1;
         }
 
         private static void Add32(out UInt128 w, ref UInt128 u, ref UInt128 v)
