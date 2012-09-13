@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 namespace Decompose.Numerics
 {
     [StructLayout(LayoutKind.Explicit)]
-    public struct UInt128 : IComparable<UInt128>, IEquatable<UInt128>
+    public struct UInt128 : IComparable, IComparable<UInt128>, IEquatable<UInt128>
     {
         [FieldOffset(0)]
         private uint r0;
@@ -34,9 +34,21 @@ namespace Decompose.Numerics
         public static UInt128 Parse(string value)
         {
             UInt128 c;
-            var a = BigInteger.Parse(value);
-            UInt128.Create(out c, ref a);
+            if (!TryParse(value, out c))
+                throw new FormatException();
             return c;
+        }
+
+        public static bool TryParse(string value, out UInt128 result)
+        {
+            BigInteger a;
+            if (!BigInteger.TryParse(value, out a))
+            {
+                result = UInt128.Zero;
+                return false;
+            }
+            UInt128.Create(out result, ref a);
+            return true;
         }
 
         public static void Create(out UInt128 c, uint r0, uint r1, uint r2, uint r3)
@@ -57,6 +69,8 @@ namespace Decompose.Numerics
 
         public static void Create(out UInt128 c, ref BigInteger a)
         {
+            if (a < 0)
+                throw new InvalidOperationException();
             c.r0 = c.r1 = c.r2 = c.r3 = 0;
             c.s0 = (ulong)(a & ulong.MaxValue);
             c.s1 = (ulong)(a >> 64);
@@ -64,6 +78,8 @@ namespace Decompose.Numerics
 
         public static void Create(out UInt128 c, double a)
         {
+            if (a < 0)
+                throw new InvalidOperationException();
             UInt128 m;
             var shift = Math.Max((int)Math.Ceiling(Math.Log(a, 2)) - 63, 0);
             m.r0 = m.r1 = m.r2 = m.r3 = 0;
@@ -688,6 +704,15 @@ namespace Decompose.Numerics
             if (s1 != 0)
                 return 1;
             return s0.CompareTo(other);
+        }
+
+        public int CompareTo(object obj)
+        {
+            if (obj == null)
+                return 1;
+            if (!(obj is UInt128))
+                throw new ArgumentException();
+            return CompareTo((UInt128)obj);
         }
 
         private static bool LessThan(ref UInt128 a, ref UInt128 b)
@@ -1604,6 +1629,18 @@ namespace Decompose.Numerics
             if (LessThan(ref b, ref a))
                 return a;
             return b;
+        }
+
+        public static double Log(UInt128 a)
+        {
+            return Log(a, Math.E);
+        }
+
+        public static double Log(UInt128 a, double b)
+        {
+            if (a.IsZero)
+                throw new InvalidOperationException();
+            return Math.Log(ConvertToDouble(ref a), b);
         }
     }
 }

@@ -78,9 +78,9 @@ namespace Sandbox
 
         static void DivisorSummatoryFunctionOddTest()
         {
-#if false
+#if true
             var threads = 8;
-            for (int i = 16; i <= 24; i++)
+            for (int i = 16; i <= 20; i++)
             {
                 var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
                 var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads, false);
@@ -101,7 +101,7 @@ namespace Sandbox
             }
 #endif
 
-#if true
+#if false
             var threads = 8;
             for (int i = 60; i <= 80; i++)
             {

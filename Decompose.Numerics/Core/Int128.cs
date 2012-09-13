@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public struct Int128 : IComparable<Int128>, IEquatable<Int128>
+    public struct Int128 : IComparable, IComparable<Int128>, IEquatable<Int128>
     {
         private UInt128 v;
 
@@ -26,16 +26,28 @@ namespace Decompose.Numerics
         public static Int128 Parse(string value)
         {
             Int128 c;
-            var a = BigInteger.Parse(value);
+            if (!TryParse(value, out c))
+                throw new FormatException();
+            return c;
+        }
+
+        public static bool TryParse(string value, out Int128 result)
+        {
+            BigInteger a;
+            if (!BigInteger.TryParse(value, out a))
+            {
+                result = Int128.Zero;
+                return false;
+            }
             if (a < 0)
             {
                 UInt128 cneg;
                 UInt128.Create(out cneg, ref a);
-                UInt128.Negate(out c.v, ref cneg);
+                UInt128.Negate(out result.v, ref cneg);
             }
             else
-                UInt128.Create(out c.v, ref a);
-            return c;
+                UInt128.Create(out result.v, ref a);
+            return true;
         }
 
         public uint R0 { get { return v.R0; } }
@@ -971,6 +983,15 @@ namespace Decompose.Numerics
             return SignedCompare(ref v, other, 0);
         }
 
+        public int CompareTo(object obj)
+        {
+            if (obj == null)
+                return 1;
+            if (!(obj is Int128))
+                throw new ArgumentException();
+            return CompareTo((Int128)obj);
+        }
+
         private static bool LessThan(ref UInt128 a, ref UInt128 b)
         {
             if (a.S1 != b.S1)
@@ -1292,6 +1313,18 @@ namespace Decompose.Numerics
             if (LessThan(ref b.v, ref a.v))
                 return a;
             return b;
+        }
+
+        public static double Log(Int128 a)
+        {
+            return Log(a, Math.E);
+        }
+
+        public static double Log(Int128 a, double b)
+        {
+            if (a.IsNegative || a.IsZero)
+                throw new InvalidOperationException();
+            return Math.Log(UInt128.ConvertToDouble(ref a.v), b);
         }
     }
 }
