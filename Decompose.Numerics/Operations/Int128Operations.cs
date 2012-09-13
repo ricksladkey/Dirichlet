@@ -6,8 +6,8 @@ namespace Decompose.Numerics
     public sealed class Int128Operations : IOperations<Int128>
     {
         public Type Type { get { return typeof(Int128); } }
-        public Int128 Zero { get { return 0; } }
-        public Int128 One { get { return 1; } }
+        public Int128 Zero { get { return Int128.Zero; } }
+        public Int128 One { get { return Int128.One; } }
         public Int128 Two { get { return 2; } }
         public bool IsUnsigned { get { return false; } }
         public Int128 Convert(int a) { return (Int128)a; }
@@ -29,14 +29,14 @@ namespace Decompose.Numerics
         public Int128 Or(Int128 a, Int128 b) { return a | b; }
         public Int128 ExclusiveOr(Int128 a, Int128 b) { return a ^ b; }
         public Int128 OnesComplement(Int128 a) { return ~a; }
-        public int Sign(Int128 a) { return a != 0 ? 1 : 0; }
-        public bool IsZero(Int128 a) { return a == 0; }
-        public bool IsOne(Int128 a) { return a == 1; }
-        public bool IsEven(Int128 a) { return (a & 1) == 0; }
+        public int Sign(Int128 a) { return a.Sign; }
+        public bool IsZero(Int128 a) { return a.IsZero; }
+        public bool IsOne(Int128 a) { return a.IsOne; }
+        public bool IsEven(Int128 a) { return a.IsEven; }
         public bool Equals(Int128 x, Int128 y) { return x.Equals(y); }
         public int GetHashCode(Int128 obj) { return obj.GetHashCode(); }
         public int Compare(Int128 x, Int128 y) { return x.CompareTo(y); }
-        public uint LeastSignificantWord(Int128 a) { return (uint)(a & uint.MaxValue); }
+        public uint LeastSignificantWord(Int128 a) { return a.R0; }
 
         public Int128 Power(Int128 a, Int128 b) { return IntegerMath.Power(a, b); }
         public Int128 Root(Int128 a, Int128 b) { return IntegerMath.Root(a, b); }

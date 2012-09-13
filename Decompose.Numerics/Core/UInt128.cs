@@ -2,11 +2,12 @@
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Globalization;
 
 namespace Decompose.Numerics
 {
     [StructLayout(LayoutKind.Explicit)]
-    public struct UInt128 : IComparable, IComparable<UInt128>, IEquatable<UInt128>
+    public struct UInt128 : IFormattable, IComparable, IComparable<UInt128>, IEquatable<UInt128>
     {
         [FieldOffset(0)]
         private uint r0;
@@ -41,8 +42,13 @@ namespace Decompose.Numerics
 
         public static bool TryParse(string value, out UInt128 result)
         {
+            return TryParse(value, NumberStyles.Integer, NumberFormatInfo.CurrentInfo, out result);
+        }
+
+        public static bool TryParse(string value, NumberStyles style, IFormatProvider provider, out UInt128 result)
+        {
             BigInteger a;
-            if (!BigInteger.TryParse(value, out a))
+            if (!BigInteger.TryParse(value, style, provider, out a))
             {
                 result = UInt128.Zero;
                 return false;
@@ -100,12 +106,26 @@ namespace Decompose.Numerics
         public bool IsOne { get { return (s1 ^ s0) == 1; } }
         public bool IsPowerOfTwo { get { return (this & (this - 1)).IsZero; } }
         public bool IsEven { get { return (r0 & 1) == 0; } }
-        public uint LeastSignificantWord { get { return r0; } }
         public int Sign { get { return IsZero ? 0 : 1; } }
 
         public override string ToString()
         {
             return ((BigInteger)this).ToString();
+        }
+
+        public string ToString(string format)
+        {
+            return ((BigInteger)this).ToString(format);
+        }
+
+        public string ToString(IFormatProvider provider)
+        {
+            return ToString(null, provider);
+        }
+
+        public string ToString(string format, IFormatProvider provider)
+        {
+            return ((BigInteger)this).ToString(format, provider);
         }
 
         public int GetBitLength()
@@ -386,18 +406,18 @@ namespace Decompose.Numerics
 
         public static ulong operator %(UInt128 a, uint b)
         {
-            return Modulo(ref a, b);
+            return Remainder(ref a, b);
         }
 
         public static ulong operator %(UInt128 a, ulong b)
         {
-            return Modulo(ref a, b);
+            return Remainder(ref a, b);
         }
 
         public static UInt128 operator %(UInt128 a, UInt128 b)
         {
             UInt128 c;
-            Modulo(out c, ref a, ref b);
+            Remainder(out c, ref a, ref b);
             return c;
         }
 
@@ -1132,16 +1152,16 @@ namespace Decompose.Numerics
                 throw new NotImplementedException();
         }
 
-        public static uint Modulo(ref UInt128 u, uint v)
+        public static uint Remainder(ref UInt128 u, uint v)
         {
             if (u.s1 == 0)
                 return (uint)(u.s0 % v);
             if (u.r3 == 0)
-                return Modulo96(ref u, v);
-            return Modulo128(ref u, v);
+                return Remainder96(ref u, v);
+            return Remainder128(ref u, v);
         }
 
-        public static ulong Modulo(ref UInt128 u, ulong v)
+        public static ulong Remainder(ref UInt128 u, ulong v)
         {
             if (u.s1 == 0)
                 return u.s0 % v;
@@ -1149,20 +1169,24 @@ namespace Decompose.Numerics
             if (v == v0)
             {
                 if (u.r3 == 0)
-                    return Modulo96(ref u, v0);
-                return Modulo128(ref u, v0);
+                    return Remainder96(ref u, v0);
+                return Remainder128(ref u, v0);
             }
             if (u.r3 == 0)
-                return Modulo96(ref u, v);
-            return Modulo128(ref u, v);
+                return Remainder96(ref u, v);
+            return Remainder128(ref u, v);
         }
 
-        public static void Modulo(out UInt128 c, ref UInt128 a, ref UInt128 b)
+        public static void Remainder(out UInt128 c, ref UInt128 a, ref UInt128 b)
         {
-            if (b.s1 == 0)
-                Create(out c, Modulo(ref a, b.s0), 0);
+            if (LessThan(ref a, ref b))
+                c = a;
+            else if (b.s1 == 0)
+                Create(out c, Remainder(ref a, b.s0), 0);
+            else if (b.r3 == 0)
+                Remainder96(out c, ref a, ref b);
             else
-                throw new NotImplementedException();
+                Remainder128(out c, ref a, ref b);
         }
 
         private static void Divide64(out UInt128 w, ulong u, ulong v)
@@ -1217,12 +1241,12 @@ namespace Decompose.Numerics
                 r3 = r2 >> dneg;
                 r2 = r2 << d | r1 >> dneg;
                 r1 = r1 << d | r0 >> dneg;
-                r0 = r0 << d;
+                r0 <<= d;
             }
             w.r3 = 0;
             w.r2 = 0;
-            w.r1 = ModDiv(r3, ref r2, ref r1, v1, v2);
-            w.r0 = ModDiv(r2, ref r1, ref r0, v1, v2);
+            w.r1 = DivRem(r3, ref r2, ref r1, v1, v2);
+            w.r0 = DivRem(r2, ref r1, ref r0, v1, v2);
         }
 
         private static void Divide128(out UInt128 w, ref UInt128 u, ulong v)
@@ -1244,15 +1268,15 @@ namespace Decompose.Numerics
                 r3 = r3 << d | r2 >> dneg;
                 r2 = r2 << d | r1 >> dneg;
                 r1 = r1 << d | r0 >> dneg;
-                r0 = r0 << d;
+                r0 <<= d;
             }
             w.r3 = 0;
-            w.r2 = ModDiv(r4, ref r3, ref r2, v1, v2);
-            w.r1 = ModDiv(r3, ref r2, ref r1, v1, v2);
-            w.r0 = ModDiv(r2, ref r1, ref r0, v1, v2);
+            w.r2 = DivRem(r4, ref r3, ref r2, v1, v2);
+            w.r1 = DivRem(r3, ref r2, ref r1, v1, v2);
+            w.r0 = DivRem(r2, ref r1, ref r0, v1, v2);
         }
 
-        private static uint Modulo96(ref UInt128 u, uint v)
+        private static uint Remainder96(ref UInt128 u, uint v)
         {
             var u0 = (ulong)(u.r2 % v);
             var u0u1 = u0 << 32 | u.r1;
@@ -1261,7 +1285,7 @@ namespace Decompose.Numerics
             return (uint)(u0u1 % v);
         }
 
-        private static uint Modulo128(ref UInt128 u, uint v)
+        private static uint Remainder128(ref UInt128 u, uint v)
         {
             var u0 = (ulong)(u.r3 % v);
             var u0u1 = u0 << 32 | u.r2;
@@ -1272,7 +1296,7 @@ namespace Decompose.Numerics
             return (uint)(u0u1 % v);
         }
 
-        private static ulong Modulo96(ref UInt128 u, ulong v)
+        private static ulong Remainder96(ref UInt128 u, ulong v)
         {
             var dneg = ((uint)(v >> 32)).GetBitLength();
             var d = 32 - dneg;
@@ -1288,14 +1312,14 @@ namespace Decompose.Numerics
                 r3 = r2 >> dneg;
                 r2 = r2 << d | r1 >> dneg;
                 r1 = r1 << d | r0 >> dneg;
-                r0 = r0 << d;
+                r0 <<= d;
             }
-            ModDiv(r3, ref r2, ref r1, v1, v2);
-            ModDiv(r2, ref r1, ref r0, v1, v2);
+            DivRem(r3, ref r2, ref r1, v1, v2);
+            DivRem(r2, ref r1, ref r0, v1, v2);
             return ((ulong)r1 << 32 | r0) >> d;
         }
 
-        private static ulong Modulo128(ref UInt128 u, ulong v)
+        private static ulong Remainder128(ref UInt128 u, ulong v)
         {
             var dneg = ((uint)(v >> 32)).GetBitLength();
             var d = 32 - dneg;
@@ -1313,15 +1337,87 @@ namespace Decompose.Numerics
                 r3 = r3 << d | r2 >> dneg;
                 r2 = r2 << d | r1 >> dneg;
                 r1 = r1 << d | r0 >> dneg;
-                r0 = r0 << d;
+                r0 <<= d;
             }
-            ModDiv(r4, ref r3, ref r2, v1, v2);
-            ModDiv(r3, ref r2, ref r1, v1, v2);
-            ModDiv(r2, ref r1, ref r0, v1, v2);
+            DivRem(r4, ref r3, ref r2, v1, v2);
+            DivRem(r3, ref r2, ref r1, v1, v2);
+            DivRem(r2, ref r1, ref r0, v1, v2);
             return ((ulong)r1 << 32 | r0) >> d;
         }
 
-        private static uint ModDiv(uint u0, ref uint u1, ref uint u2, uint v1, uint v2)
+        private static void Remainder96(out UInt128 w, ref UInt128 u, ref UInt128 v)
+        {
+            var dneg = v.r2.GetBitLength();
+            var d = 32 - dneg;
+            var v1 = v.r2;
+            var v2 = v.r1;
+            var v3 = v.r0;
+            var r0 = u.r0;
+            var r1 = u.r1;
+            var r2 = u.r2;
+            var r3 = u.r3;
+            var r4 = (uint)0;
+            if (d != 0)
+            {
+                v1 = v1 << d | v2 >> dneg;
+                v2 = v2 << d | v3 >> dneg;
+                v3 <<= d;
+                r4 = r3 >> dneg;
+                r3 = r3 << d | r2 >> dneg;
+                r2 = r2 << d | r1 >> dneg;
+                r1 = r1 << d | r0 >> dneg;
+                r0 <<= d;
+            }
+            DivRem(r4, ref r3, ref r2, ref r1, v1, v2, v3);
+            DivRem(r3, ref r2, ref r1, ref r0, v1, v2, v3);
+            if (d != 0)
+            {
+                r0 = r1 << dneg | r0 >> d;
+                r1 = r2 << dneg | r1 >> d;
+                r2 >>= d;
+            }
+            Create(out w, r0, r1, r2, 0);
+            Debug.Assert((BigInteger)w == (BigInteger)u % (BigInteger)v);
+        }
+
+        private static void Remainder128(out UInt128 w, ref UInt128 u, ref UInt128 v)
+        {
+            var dneg = v.r3.GetBitLength();
+            var d = 32 - dneg;
+            var v1 = v.r3;
+            var v2 = v.r2;
+            var v3 = v.r1;
+            var v4 = v.r0;
+            var r0 = u.r0;
+            var r1 = u.r1;
+            var r2 = u.r2;
+            var r3 = u.r3;
+            var r4 = (uint)0;
+            if (d != 0)
+            {
+                v1 = v1 << d | v2 >> dneg;
+                v2 = v2 << d | v3 >> dneg;
+                v3 = v3 << d | v4 >> dneg;
+                v4 <<= d;
+                r4 = r3 >> dneg;
+                r3 = r3 << d | r2 >> dneg;
+                r2 = r2 << d | r1 >> dneg;
+                r1 = r1 << d | r0 >> dneg;
+                r0 <<= d;
+            }
+            DivRem(r4, ref r3, ref r2, ref r1, ref r0, v1, v2, v3, v4);
+            if (d != 0)
+            {
+                r0 = r1 << dneg | r0 >> d;
+                r1 = r2 << dneg | r1 >> d;
+                r2 = r3 << dneg | r2 >> d;
+                r3 >>= d;
+            }
+            Create(out w, r0, r1, r2, r3);
+            Debug.Assert((BigInteger)w == (BigInteger)u % (BigInteger)v);
+        }
+
+        private static uint DivRem(uint u0, ref uint u1, ref uint u2, uint v1, uint v2)
         {
             var u0u1 = (ulong)u0 << 32 | u1;
             var qhat = u0 == v1 ? uint.MaxValue : u0u1 / v1;
@@ -1351,6 +1447,106 @@ namespace Decompose.Numerics
             {
                 --qhat;
                 carry = (ulong)u2 + v2;
+                u2 = (uint)carry;
+                carry >>= 32;
+                carry += (ulong)u1 + v1;
+                u1 = (uint)carry;
+            }
+            return (uint)qhat;
+        }
+
+        private static uint DivRem(uint u0, ref uint u1, ref uint u2, ref uint u3, uint v1, uint v2, uint v3)
+        {
+            var u0u1 = (ulong)u0 << 32 | u1;
+            var qhat = u0 == v1 ? uint.MaxValue : u0u1 / v1;
+            var r = u0u1 - qhat * v1;
+            if (r == (uint)r && v2 * qhat > (r << 32 | u2))
+            {
+                --qhat;
+                r += v1;
+                if (r == (uint)r && v2 * qhat > (r << 32 | u2))
+                {
+                    --qhat;
+                    r += v1;
+                }
+            }
+            var carry = qhat * v3;
+            var borrow = (long)u3 - (uint)carry;
+            carry >>= 32;
+            u3 = (uint)borrow;
+            borrow >>= 32;
+            carry += qhat * v2;
+            borrow += (long)u2 - (uint)carry;
+            carry >>= 32;
+            u2 = (uint)borrow;
+            borrow >>= 32;
+            carry += qhat * v1;
+            borrow += (long)u1 - (uint)carry;
+            carry >>= 32;
+            u1 = (uint)borrow;
+            borrow >>= 32;
+            borrow += (long)u0 - (uint)carry;
+            if (borrow != 0)
+            {
+                --qhat;
+                carry = (ulong)u3 + v3;
+                u3 = (uint)carry;
+                carry >>= 32;
+                carry += (ulong)u2 + v2;
+                u2 = (uint)carry;
+                carry >>= 32;
+                carry += (ulong)u1 + v1;
+                u1 = (uint)carry;
+            }
+            return (uint)qhat;
+        }
+
+        private static uint DivRem(uint u0, ref uint u1, ref uint u2, ref uint u3, ref uint u4, uint v1, uint v2, uint v3, uint v4)
+        {
+            var u0u1 = (ulong)u0 << 32 | u1;
+            var qhat = u0 == v1 ? uint.MaxValue : u0u1 / v1;
+            var r = u0u1 - qhat * v1;
+            if (r == (uint)r && v2 * qhat > (r << 32 | u2))
+            {
+                --qhat;
+                r += v1;
+                if (r == (uint)r && v2 * qhat > (r << 32 | u2))
+                {
+                    --qhat;
+                    r += v1;
+                }
+            }
+            var carry = qhat * v4;
+            var borrow = (long)u4 - (uint)carry;
+            carry >>= 32;
+            u4 = (uint)borrow;
+            borrow >>= 32;
+            carry += qhat * v3;
+            borrow += (long)u3 - (uint)carry;
+            carry >>= 32;
+            u3 = (uint)borrow;
+            borrow >>= 32;
+            carry += qhat * v2;
+            borrow += (long)u2 - (uint)carry;
+            carry >>= 32;
+            u2 = (uint)borrow;
+            borrow >>= 32;
+            carry += qhat * v1;
+            borrow += (long)u1 - (uint)carry;
+            carry >>= 32;
+            u1 = (uint)borrow;
+            borrow >>= 32;
+            borrow += (long)u0 - (uint)carry;
+            if (borrow != 0)
+            {
+                --qhat;
+                carry = (ulong)u4 + v4;
+                u4 = (uint)carry;
+                carry >>= 32;
+                carry += (ulong)u3 + v3;
+                u3 = (uint)carry;
+                carry >>= 32;
+                carry += (ulong)u2 + v2;
                 u2 = (uint)carry;
                 carry >>= 32;
                 carry += (ulong)u1 + v1;
@@ -1582,26 +1778,6 @@ namespace Decompose.Numerics
             var s = (ulong)Math.Pow(ConvertToDouble(ref a), (double)1 / 3);
             UInt128 s3;
             UInt128.Cube(out s3, s);
-            if (s3 < a)
-                ++s;
-            else
-            {
-                UInt128 sum;
-                UInt128.Multiply(out sum, 3 * s, s + 1);
-                UInt128 diff;
-                UInt128.Subtract(out diff, ref a, ref s3);
-                if (LessThan(ref diff, ref sum))
-                    --s;
-            }
-            Debug.Assert((BigInteger)(s - 1) * (s - 1) * (s - 1) < a && (BigInteger)s * s * s >= a);
-            return s;
-        }
-
-        public static ulong CeilingCbrt(UInt128 a)
-        {
-            var s = (ulong)Math.Ceiling(Math.Pow(ConvertToDouble(ref a), (double)1 / 3));
-            UInt128 s3;
-            UInt128.Cube(out s3, s);
             if (a < s3)
                 --s;
             else
@@ -1614,6 +1790,26 @@ namespace Decompose.Numerics
                     ++s;
             }
             Debug.Assert((BigInteger)s * s * s <= a && (BigInteger)(s + 1) * (s + 1) * (s + 1) > a);
+            return s;
+        }
+
+        public static ulong CeilingCbrt(UInt128 a)
+        {
+            var s = (ulong)Math.Ceiling(Math.Pow(ConvertToDouble(ref a), (double)1 / 3));
+            UInt128 s3;
+            UInt128.Cube(out s3, s);
+            if (s3 < a)
+                ++s;
+            else
+            {
+                UInt128 sum;
+                UInt128.Multiply(out sum, 3 * s, s + 1);
+                UInt128 diff;
+                UInt128.Subtract(out diff, ref s3, ref a);
+                if (LessThan(ref sum, ref diff))
+                    --s;
+            }
+            Debug.Assert((BigInteger)(s - 1) * (s - 1) * (s - 1) < a && (BigInteger)s * s * s >= a);
             return s;
         }
 
@@ -1636,11 +1832,113 @@ namespace Decompose.Numerics
             return Log(a, Math.E);
         }
 
+        public static double Log10(UInt128 a)
+        {
+            return Log(a, 10);
+        }
+
         public static double Log(UInt128 a, double b)
         {
             if (a.IsZero)
                 throw new InvalidOperationException();
             return Math.Log(ConvertToDouble(ref a), b);
+        }
+
+        public static UInt128 Add(UInt128 a, UInt128 b)
+        {
+            UInt128 c;
+            Add(out c, ref a, ref b);
+            return c;
+        }
+
+        public static UInt128 Subtract(UInt128 a, UInt128 b)
+        {
+            UInt128 c;
+            Subtract(out c, ref a, ref b);
+            return c;
+        }
+
+        public static UInt128 Multiply(UInt128 a, UInt128 b)
+        {
+            UInt128 c;
+            Multiply(out c, ref a, ref b);
+            return c;
+        }
+
+        public static UInt128 Divide(UInt128 a, UInt128 b)
+        {
+            UInt128 c;
+            Divide(out c, ref a, ref b);
+            return c;
+        }
+
+        public static UInt128 Remainder(UInt128 a, UInt128 b)
+        {
+            UInt128 c;
+            Remainder(out c, ref a, ref b);
+            return c;
+        }
+
+        public static UInt128 DivRem(UInt128 a, UInt128 b, out UInt128 remainder)
+        {
+            UInt128 c;
+            Divide(out c, ref a, ref b);
+            Remainder(out remainder, ref a, ref b);
+            return c;
+        }
+
+        public static UInt128 Negate(UInt128 a)
+        {
+            UInt128 c;
+            Negate(out c, ref a);
+            return c;
+        }
+
+        public static UInt128 GreatestCommonDivisor(UInt128 a, UInt128 b)
+        {
+            UInt128 c;
+            GreatestCommonDivisor(out c, ref a, ref b);
+            return c;
+        }
+
+        public static void GreatestCommonDivisor(out UInt128 c, ref UInt128 a, ref UInt128 b)
+        {
+            UInt128 a1;
+            UInt128 b1;
+            if (LessThan(ref a, ref b))
+            {
+                a1 = b;
+                b1 = a;
+            }
+            else
+            {
+                a1 = a;
+                b1 = b;
+            }
+
+            while (a1.s1 != 0 && !b.IsZero)
+            {
+                UInt128 rem;
+                UInt128.Remainder(out rem, ref a1, ref b1);
+                a1 = b1;
+                b1 = rem;
+            }
+
+            if (!b.IsZero)
+            {
+                var a2 = a1.s0;
+                var b2 = b1.s0;
+
+                while (b2 != 0)
+                {
+                    var t = b2;
+                    b2 = a2 % b2;
+                    a2 = t;
+                }
+                Create(out c, a2, 0);
+            }
+            else
+                c = a1;
         }
     }
 }
