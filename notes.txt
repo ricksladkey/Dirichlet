@@ -1918,3 +1918,9 @@ value^exponent mod 32
 2^exponent mod 32 * value^exponent mod 32
 
 a <= b <=> !(a > b) <=> !(b < a)
+
+s1 s0
+   x0
+
+x0s1' x0s1.
+      x0s0' x0s0.

@@ -2006,7 +2006,7 @@ namespace Decompose.Numerics
                 }
             }
 #endif
-#if true
+#if false
             do
             {
                 while (b1.IsEven)
@@ -2019,7 +2019,7 @@ namespace Decompose.Numerics
             }
             while (!b.IsZero);
 #endif
-#if false
+#if true
             // Ensure that a1 >= b1.
             if (LessThan(ref a1, ref b1))
                 Swap(ref a1, ref b1);
@@ -2068,10 +2068,27 @@ namespace Decompose.Numerics
                         }
                         x0 = x1; y0 = y1; x1 = x2; y1 = y2;
                     }
+#if false
                     var u = (BigInteger)a1;
                     var v = (BigInteger)b1;
                     a1 = (UInt128)(x0 * u + y0 * v);
                     b1 = (UInt128)(x1 * u + y1 * v);
+#else
+                    UInt128 anew;
+                    UInt128 bnew;
+                    if (i == 0)
+                    {
+                        SubtractProducts(out anew, ref b1, (ulong)y0, ref a1, (ulong)(-x0));
+                        SubtractProducts(out bnew, ref a1, (ulong)x1, ref b1, (ulong)(-y1));
+                    }
+                    else
+                    {
+                        SubtractProducts(out anew, ref a1, (ulong)x0, ref b1, (ulong)(-y0));
+                        SubtractProducts(out bnew, ref b1, (ulong)y1, ref a1, (ulong)(-x1));
+                    }
+                    a1 = anew;
+                    b1 = bnew;
+#endif
                     if (!b1.IsZero)
                     {
                         UInt128 rem;
@@ -2113,6 +2130,21 @@ namespace Decompose.Numerics
             else
                 c = a1;
             LeftShiftEquals(ref c, shift);
+        }
+
+        private static void SubtractProducts(out UInt128 result, ref UInt128 u, ulong x, ref UInt128 v, ulong y)
+        {
+            UInt128 us0x;
+            Multiply(out us0x, u.s0, x);
+            UInt128 us1x;
+            Multiply(out us1x, u.s1, x);
+            us0x.s1 += us1x.s0;
+            UInt128 vs0y;
+            Multiply(out vs0y, v.s0, y);
+            UInt128 vs1y;
+            Multiply(out vs1y, v.s1, y);
+            vs0y.s1 += vs1y.s0;
+            Subtract(out result, ref us0x, ref vs0y);
         }
 
         public static int Compare(UInt128 a, UInt128 b)
