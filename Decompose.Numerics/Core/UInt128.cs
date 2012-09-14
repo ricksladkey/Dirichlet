@@ -1946,22 +1946,67 @@ namespace Decompose.Numerics
 
         public static void GreatestCommonDivisor(out UInt128 c, ref UInt128 a, ref UInt128 b)
         {
-            if (a.IsZero)
+#if false
+            c = (UInt128)BigInteger.GreatestCommonDivisor(a, b);
+            return;
+#endif
+#if false
+            // Perform first step to ensure that a and b are approximately the same size.
+            UInt128 a0;
+            UInt128 b0;
+            if (LessThan(ref a, ref b))
             {
-                c = b;
+                a0 = a;
+                UInt128.Remainder(out b0, ref b, ref a);
+            }
+            else
+            {
+                b0 = b;
+                UInt128.Remainder(out a0, ref a, ref b);
+            }
+#else
+            var a0 = a;
+            var b0 = b;
+#endif
+
+            if (a0.IsZero)
+            {
+                c = b0;
                 return;
             }
-            if (b.IsZero)
+            if (b0.IsZero)
             {
-                c = a;
+                c = a0;
                 return;
             }
+
             UInt128 a1;
             UInt128 b1;
-            var ashift = UInt128.OddPart(out a1, ref a);
-            var bshift = UInt128.OddPart(out b1, ref b);
+            var ashift = UInt128.OddPart(out a1, ref a0);
+            var bshift = UInt128.OddPart(out b1, ref b0);
             var shift = Math.Min(ashift, bshift);
 
+#if false
+            // Ensure that a1 >= b1.
+            if (LessThan(ref a1, ref b1))
+                Swap(ref a1, ref b1);
+            UInt128 rem;
+            while (a1.s1 != 0 && !b.IsZero)
+            {
+                if (b1.s1 << 1 > a1.s1)
+                {
+                    MinusEquals(ref a1, ref b1);
+                    Swap(ref a1, ref b1);
+                }
+                else
+                {
+                    Remainder(out rem, ref a1, ref b1);
+                    a1 = b1;
+                    b1 = rem;
+                }
+            }
+#endif
+#if true
             do
             {
                 while (b1.IsEven)
@@ -1973,23 +2018,106 @@ namespace Decompose.Numerics
                 MinusEquals(ref b1, ref a1);
             }
             while (!b.IsZero);
+#endif
+#if false
+            // Ensure that a1 >= b1.
+            if (LessThan(ref a1, ref b1))
+                Swap(ref a1, ref b1);
+            if (a1.s1 != 0 && !b.IsZero)
+            {
+                while (a1.s1 != 0 && !b.IsZero)
+                {
+                    var norm = 63 - a1.s1.GetBitLength();
+                    UInt128 a2, b2;
+                    if (norm < 0)
+                    {
+                        norm = -norm;
+                        RightShift(out a2, ref a1, norm);
+                        RightShift(out b2, ref b1, norm);
+                    }
+                    else
+                    {
+                        LeftShift(out a2, ref a1, norm);
+                        LeftShift(out b2, ref b1, norm);
+                    }
+                    var uhat = (long)a2.s1;
+                    var vhat = (long)b2.s1;
+                    var x0 = (long)1;
+                    var y0 = (long)0;
+                    var x1 = (long)0;
+                    var y1 = (long)1;
+                    var i = 0;
+                    while (true)
+                    {
+                        var q = uhat / vhat;
+                        var x2 = x0 - q * x1;
+                        var y2 = y0 - q * y1;
+                        var t = uhat;
+                        uhat = vhat;
+                        vhat = t - q * vhat;
+                        i = 1 - i;
+                        if (i == 0)
+                        {
+                            if (vhat < -x2 || uhat - vhat < y2 - y1)
+                                break;
+                        }
+                        else
+                        {
+                            if (vhat < -y2 || uhat - vhat < x2 - x1)
+                                break;
+                        }
+                        x0 = x1; y0 = y1; x1 = x2; y1 = y2;
+                    }
+                    var u = (BigInteger)a1;
+                    var v = (BigInteger)b1;
+                    a1 = (UInt128)(x0 * u + y0 * v);
+                    b1 = (UInt128)(x1 * u + y1 * v);
+                    if (!b1.IsZero)
+                    {
+                        UInt128 rem;
+                        Remainder(out rem, ref a1, ref  b1);
+                        a1 = b1;
+                        b1 = rem;
+                    }
+                }
+            }
+#endif
 
             if (!b1.IsZero)
             {
                 var a2 = a1.s0;
                 var b2 = b1.s0;
 
-                while (b2 != 0)
+                while (a2 > int.MaxValue && b2 != 0)
                 {
-                    var rem = a2 % b2;
+                    var t = a2 % b2;
                     a2 = b2;
-                    b2 = rem;
+                    b2 = t;
                 }
-                Create(out c, a2, 0);
+
+                if (b2 != 0)
+                {
+                    var a3 = (uint)a2;
+                    var b3 = (uint)b2;
+                    while (b3 != 0)
+                    {
+                        var t = a3 % b3;
+                        a3 = b3;
+                        b3 = t;
+                    }
+                    Create(out c, a3, 0, 0, 0);
+                }
+                else
+                    Create(out c, a2, 0);
             }
             else
                 c = a1;
             LeftShiftEquals(ref c, shift);
+        }
+
+        public static int Compare(UInt128 a, UInt128 b)
+        {
+            return a.CompareTo(b);
         }
     }
 }

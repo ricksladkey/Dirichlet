@@ -1510,5 +1510,10 @@ namespace Decompose.Numerics
         {
             UInt128.Swap(ref a.v, ref b.v);
         }
+
+        public static int Compare(Int128 a, Int128 b)
+        {
+            return a.CompareTo(b);
+        }
     }
 }
