@@ -94,6 +94,40 @@ namespace Decompose.Numerics
             }
         }
 
+        private class Int128RandomNumberAlgorithm : RandomNumberAlgorithm<Int128>
+        {
+            public Int128RandomNumberAlgorithm(IRandomNumberGenerator random)
+                : base(random)
+            {
+            }
+
+            public override Int128 Next(Int128 n)
+            {
+                lock (random.SyncRoot)
+                {
+                    var next = (Int128)((UInt128)(random.Next() >> 1) << 96 | (UInt128)random.Next() << 64 | (UInt128)random.Next() << 32 | random.Next());
+                    return n == 0 ? next : next % n;
+                }
+            }
+        }
+
+        private class UInt128RandomNumberAlgorithm : RandomNumberAlgorithm<UInt128>
+        {
+            public UInt128RandomNumberAlgorithm(IRandomNumberGenerator random)
+                : base(random)
+            {
+            }
+
+            public override UInt128 Next(UInt128 n)
+            {
+                lock (random.SyncRoot)
+                {
+                    var next = (UInt128)random.Next() << 96 | (UInt128)random.Next() << 64 | (UInt128)random.Next() << 32 | random.Next();
+                    return n == 0 ? next : next % n;
+                }
+            }
+        }
+
         private class BigIntegerRandomNumberAlgorithm : RandomNumberAlgorithm<BigInteger>
         {
             public BigIntegerRandomNumberAlgorithm(IRandomNumberGenerator random)
@@ -186,6 +220,10 @@ namespace Decompose.Numerics
                 return (IRandomNumberAlgorithm<T>)new Int64RandomNumberAlgorithm(this);
             if (type == typeof(ulong))
                 return (IRandomNumberAlgorithm<T>)new UInt64RandomNumberAlgorithm(this);
+            if (type == typeof(Int128))
+                return (IRandomNumberAlgorithm<T>)new Int128RandomNumberAlgorithm(this);
+            if (type == typeof(UInt128))
+                return (IRandomNumberAlgorithm<T>)new UInt128RandomNumberAlgorithm(this);
             if (type == typeof(BigInteger))
                 return (IRandomNumberAlgorithm<T>)new BigIntegerRandomNumberAlgorithm(this);
             if (type == typeof(Rational))

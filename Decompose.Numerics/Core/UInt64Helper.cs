@@ -9,7 +9,7 @@ namespace Decompose.Numerics
         {
             UInt128 ab;
             UInt128.Multiply(out ab, a, b);
-            var c = ab % modulus;
+            var c = UInt128.Remainder(ref ab, modulus);
             Debug.Assert((BigInteger)a * b % modulus == c);
             return c;
         }

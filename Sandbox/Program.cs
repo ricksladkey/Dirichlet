@@ -23,10 +23,11 @@ namespace Sandbox
             output = new ConsoleLogger("Decompose.log");
             try
             {
+                GreatestCommonDivisorPerformanceTest();
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
                 //ParityTest();
-                DivisorSummatoryFunctionOddTest();
+                //DivisorSummatoryFunctionOddTest();
                 //MertensPerformanceTest();
                 //PiMod2PerformanceTest();
                 //PerfectPowerTest();
@@ -629,6 +630,46 @@ namespace Sandbox
             }
 #endif
 
+        }
+
+        static void GreatestCommonDivisorPerformanceTest()
+        {
+            for (var j = 0; j < 1; j++)
+            {
+                var timer = new Stopwatch();
+                var count = 1000000;
+                var random1 = new MersenneTwister(0).Create<UInt128>();
+                var random2 = new MersenneTwister(0).Create<UInt128>();
+                var sum1 = (UInt128)0;
+                {
+                    timer.Restart();
+                    for (var i = 0; i < count; i++)
+                    {
+                        var a = random1.Next(0);
+                        var b = random1.Next(0);
+                        var a1 = (BigInteger)a;
+                        var b1 = (BigInteger)b;
+                        var c = UInt128.GreatestCommonDivisor(a, b);
+                        sum1 += c;
+                    }
+                    Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                }
+                var sum2 = (BigInteger)0;
+                {
+                    timer.Restart();
+                    for (var i = 0; i < count; i++)
+                    {
+                        var a = random2.Next(0);
+                        var b = random2.Next(0);
+                        var a1 = (BigInteger)a;
+                        var b1 = (BigInteger)b;
+                        var c = BigInteger.GreatestCommonDivisor(a1, b1);
+                        sum2 += c;
+                    }
+                    Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                }
+                Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);
+            }
         }
 
         static void DivisorsPerformanceTest()

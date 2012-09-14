@@ -1347,6 +1347,7 @@ namespace Decompose.Numerics
 
         private static void Remainder96(out UInt128 w, ref UInt128 u, ref UInt128 v)
         {
+#if false
             var dneg = v.r2.GetBitLength();
             var d = 32 - dneg;
             var v1 = v.r2;
@@ -1368,7 +1369,8 @@ namespace Decompose.Numerics
                 r1 = r1 << d | r0 >> dneg;
                 r0 <<= d;
             }
-            DivRem(r4, ref r3, ref r2, ref r1, v1, v2, v3);
+            if (r4 != 0)
+                DivRem(r4, ref r3, ref r2, ref r1, v1, v2, v3);
             DivRem(r3, ref r2, ref r1, ref r0, v1, v2, v3);
             if (d != 0)
             {
@@ -1377,6 +1379,19 @@ namespace Decompose.Numerics
                 r2 >>= d;
             }
             Create(out w, r0, r1, r2, 0);
+#else
+            var d = 32 - v.r2.GetBitLength();
+            w = u;
+            var vv = v;
+            LeftShiftEquals(ref w, d);
+            LeftShiftEquals(ref vv, d);
+            var r4 = d != 0 ? v.r3 >> (32 - d) : 0;
+            if (r4 != 0)
+                DivRem(r4, ref w.r3, ref w.r2, ref w.r1, vv.r2, vv.r1, vv.r0);
+            DivRem(w.r3, ref w.r2, ref w.r1, ref w.r0, vv.r2, vv.r1, vv.r0);
+            w.r3 = 0;
+            RightShiftEquals(ref w, d);
+#endif
             Debug.Assert((BigInteger)w == (BigInteger)u % (BigInteger)v);
         }
 
@@ -1901,21 +1916,92 @@ namespace Decompose.Numerics
             return c;
         }
 
-        public static void GreatestCommonDivisor(out UInt128 c, ref UInt128 a, ref UInt128 b)
+        public static void RightShiftEquals(ref UInt128 c, int d)
         {
-            UInt128 a1;
-            UInt128 b1;
-            if (LessThan(ref a, ref b))
+            if (d < 64)
             {
-                a1 = b;
-                b1 = a;
+                if (d != 0)
+                {
+                    c.s0 = c.s1 << (64 - d) | c.s0 >> d;
+                    c.s1 >>= d;
+                }
             }
             else
             {
-                a1 = a;
-                b1 = b;
+                c.s0 = c.s1 >> (d - 64);
+                c.s1 = 0;
             }
+        }
 
+        public static void RightShiftOneEquals(ref UInt128 c)
+        {
+            c.s0 = c.s1 << 63 | c.s0 >> 1;
+            c.s1 >>= 1;
+        }
+
+        public static void LeftShiftEquals(ref UInt128 c, int d)
+        {
+            if (d < 64)
+            {
+                if (d != 0)
+                {
+                    c.s1 = c.s1 << d | c.s0 >> (64 - d);
+                    c.s0 <<= d;
+                }
+            }
+            else
+            {
+                c.s1 = c.s0 << (d - 64);
+                c.s0 = 0;
+            }
+        }
+
+        public static void LeftShiftOneEquals(ref UInt128 c)
+        {
+            c.s1 = c.s1 << 1 | c.s0 >> 63;
+            c.s0 <<= 1;
+        }
+
+        public static int OddPart(out UInt128 c, ref UInt128 a)
+        {
+            c = a;
+            if (c.IsZero)
+                return 0;
+            int shift;
+            for (shift = 0; c.IsEven; shift++)
+                RightShiftOneEquals(ref c);
+            return shift;
+        }
+
+        public static void Swap(ref UInt128 a, ref UInt128 b)
+        {
+            var as0 = a.s0;
+            var as1 = a.s1;
+            a.s0 = b.s0;
+            a.s1 = b.s1;
+            b.s0 = as0;
+            b.s1 = as1;
+        }
+
+        public static void GreatestCommonDivisor(out UInt128 c, ref UInt128 a, ref UInt128 b)
+        {
+            if (a.IsZero)
+            {
+                c = b;
+                return;
+            }
+            if (b.IsZero)
+            {
+                c = a;
+                return;
+            }
+            UInt128 a1;
+            UInt128 b1;
+            var ashift = UInt128.OddPart(out a1, ref a);
+            var bshift = UInt128.OddPart(out b1, ref b);
+            var shift = Math.Min(ashift, bshift);
+
+#if false
             while (a1.s1 != 0 && !b.IsZero)
             {
                 UInt128 rem;
@@ -1923,22 +2009,37 @@ namespace Decompose.Numerics
                 a1 = b1;
                 b1 = rem;
             }
+#else
+            do
+            {
+                while (b1.IsEven)
+                    RightShiftOneEquals(ref b1);
+                if (LessThan(ref b1, ref a1))
+                    Swap(ref a1, ref b1);
+                if (b1.s1 == 0)
+                    break;
+                MinusEquals(ref b1, ref a1);
+            }
+            while (!b.IsZero);
+#endif
 
-            if (!b.IsZero)
+            if (!b1.IsZero)
             {
                 var a2 = a1.s0;
                 var b2 = b1.s0;
 
                 while (b2 != 0)
                 {
-                    var t = b2;
-                    b2 = a2 % b2;
-                    a2 = t;
+                    var rem = a2 % b2;
+                    a2 = b2;
+                    b2 = rem;
                 }
                 Create(out c, a2, 0);
             }
             else
                 c = a1;
+            if (shift > 0)
+                LeftShiftEquals(ref c, shift);
         }
     }
 }
