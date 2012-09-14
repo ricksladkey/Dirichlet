@@ -807,11 +807,27 @@ namespace Decompose.Numerics.Test
                 }
                 Assert.AreEqual((BigInteger)a * b, (UInt128)a * b);
                 Assert.AreEqual((BigInteger)a * b, a * (UInt128)b);
-                Assert.AreEqual((BigInteger)a * b % ((BigInteger)c * d), (UInt128)a * (UInt128)b % ((UInt128)c * (UInt128)d));
                 Assert.AreEqual((BigInteger)a * b, (UInt128)a * (UInt128)b);
+                if (b > 0)
+                {
+                    Assert.AreEqual((BigInteger)a % b, (UInt128)a % b);
+                    Assert.AreEqual((BigInteger)a % b, a % (UInt128)b);
+                    Assert.AreEqual((BigInteger)a % b, (UInt128)a % (UInt128)b);
+                }
                 Assert.AreEqual((BigInteger)a * b % n, (UInt128)a * b % n);
                 Assert.AreEqual((BigInteger)a * b % n, a * (UInt128)b % n);
                 Assert.AreEqual((BigInteger)a * b % n, (UInt128)a * (UInt128)b % (UInt128)n);
+                if (c > 0 && d > 0)
+                {
+                    Assert.AreEqual((BigInteger)a * b / ((BigInteger)c * d), (UInt128)a * (UInt128)b / ((UInt128)c * (UInt128)d));
+                    Assert.AreEqual((BigInteger)a * b % ((BigInteger)c * d), (UInt128)a * (UInt128)b % ((UInt128)c * (UInt128)d));
+                }
+                if (b > 0)
+                {
+                    Assert.AreEqual((BigInteger)a / b, (UInt128)a / b);
+                    Assert.AreEqual((BigInteger)a / b, a / (UInt128)b);
+                    Assert.AreEqual((BigInteger)a / b, (UInt128)a / (UInt128)b);
+                }
                 Assert.AreEqual((BigInteger)a * b / n, (UInt128)a * b / n);
                 Assert.AreEqual((BigInteger)a * b / n, a * (UInt128)b / n);
                 Assert.AreEqual((BigInteger)a * b / n, (UInt128)a * (UInt128)b / (UInt128)n);

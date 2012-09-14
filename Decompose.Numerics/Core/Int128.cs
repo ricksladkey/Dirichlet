@@ -1485,5 +1485,30 @@ namespace Decompose.Numerics
                     UInt128.GreatestCommonDivisor(out c.v, ref a.v, ref b.v);
             }
         }
+
+        public static void LeftShiftEquals(ref UInt128 c, int d)
+        {
+            UInt128.LeftShiftEquals(ref c, d);
+        }
+
+        public static void RightShiftOneEquals(ref UInt128 c, int d)
+        {
+            UInt128.RightShiftEquals(ref c, d);
+        }
+
+        public static void LeftShiftEquals(ref UInt128 c)
+        {
+            UInt128.LeftShiftOneEquals(ref c);
+        }
+
+        public static void RightShiftOneEquals(ref UInt128 c)
+        {
+            UInt128.RightShiftOneEquals(ref c);
+        }
+
+        public static void Swap(ref Int128 a, ref Int128 b)
+        {
+            UInt128.Swap(ref a.v, ref b.v);
+        }
     }
 }

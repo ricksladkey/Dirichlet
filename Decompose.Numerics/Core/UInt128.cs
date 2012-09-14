@@ -1146,10 +1146,20 @@ namespace Decompose.Numerics
 
         public static void Divide(out UInt128 c, ref UInt128 a, ref UInt128 b)
         {
-            if (b.s1 == 0)
+            if (LessThan(ref a, ref b))
+                c = Zero;
+            else if (b.s1 == 0)
                 Divide(out c, ref a, b.s0);
+            else if (b.r3 == 0)
+            {
+                UInt128 rem;
+                Create(out c, DivRem96(out rem, ref a, ref b), 0);
+            }
             else
-                throw new NotImplementedException();
+            {
+                UInt128 rem;
+                Create(out c, DivRem128(out rem, ref a, ref b), 0, 0, 0);
+            }
         }
 
         public static uint Remainder(ref UInt128 u, uint v)
@@ -1184,9 +1194,9 @@ namespace Decompose.Numerics
             else if (b.s1 == 0)
                 Create(out c, Remainder(ref a, b.s0), 0);
             else if (b.r3 == 0)
-                Remainder96(out c, ref a, ref b);
+                DivRem96(out c, ref a, ref b);
             else
-                Remainder128(out c, ref a, ref b);
+                DivRem128(out c, ref a, ref b);
         }
 
         private static void Divide64(out UInt128 w, ulong u, ulong v)
@@ -1345,91 +1355,35 @@ namespace Decompose.Numerics
             return ((ulong)r1 << 32 | r0) >> d;
         }
 
-        private static void Remainder96(out UInt128 w, ref UInt128 u, ref UInt128 v)
+        private static ulong DivRem96(out UInt128 rem, ref UInt128 a, ref UInt128 b)
         {
-#if false
-            var dneg = v.r2.GetBitLength();
-            var d = 32 - dneg;
-            var v1 = v.r2;
-            var v2 = v.r1;
-            var v3 = v.r0;
-            var r0 = u.r0;
-            var r1 = u.r1;
-            var r2 = u.r2;
-            var r3 = u.r3;
-            var r4 = (uint)0;
-            if (d != 0)
-            {
-                v1 = v1 << d | v2 >> dneg;
-                v2 = v2 << d | v3 >> dneg;
-                v3 <<= d;
-                r4 = r3 >> dneg;
-                r3 = r3 << d | r2 >> dneg;
-                r2 = r2 << d | r1 >> dneg;
-                r1 = r1 << d | r0 >> dneg;
-                r0 <<= d;
-            }
-            if (r4 != 0)
-                DivRem(r4, ref r3, ref r2, ref r1, v1, v2, v3);
-            DivRem(r3, ref r2, ref r1, ref r0, v1, v2, v3);
-            if (d != 0)
-            {
-                r0 = r1 << dneg | r0 >> d;
-                r1 = r2 << dneg | r1 >> d;
-                r2 >>= d;
-            }
-            Create(out w, r0, r1, r2, 0);
-#else
-            var d = 32 - v.r2.GetBitLength();
-            w = u;
-            var vv = v;
-            LeftShiftEquals(ref w, d);
-            LeftShiftEquals(ref vv, d);
-            var r4 = d != 0 ? v.r3 >> (32 - d) : 0;
-            if (r4 != 0)
-                DivRem(r4, ref w.r3, ref w.r2, ref w.r1, vv.r2, vv.r1, vv.r0);
-            DivRem(w.r3, ref w.r2, ref w.r1, ref w.r0, vv.r2, vv.r1, vv.r0);
-            w.r3 = 0;
-            RightShiftEquals(ref w, d);
-#endif
-            Debug.Assert((BigInteger)w == (BigInteger)u % (BigInteger)v);
+            var d = 32 - b.r2.GetBitLength();
+            var v = b;
+            LeftShift64Equals(ref v, d);
+            rem = a;
+            var r4 = (uint)LeftShift64Equals(ref rem, d);
+            var q1 = DivRem(r4, ref rem.r3, ref rem.r2, ref rem.r1, v.r2, v.r1, v.r0);
+            var q0 = DivRem(rem.r3, ref rem.r2, ref rem.r1, ref rem.r0, v.r2, v.r1, v.r0);
+            var div = (ulong)q1 << 32 | q0;
+            rem.r3 = 0;
+            RightShiftEquals(ref rem, d);
+            Debug.Assert((BigInteger)div == (BigInteger)a / (BigInteger)b);
+            Debug.Assert((BigInteger)rem == (BigInteger)a % (BigInteger)b);
+            return div;
         }
 
-        private static void Remainder128(out UInt128 w, ref UInt128 u, ref UInt128 v)
+        private static uint DivRem128(out UInt128 rem, ref UInt128 a, ref UInt128 b)
         {
-            var dneg = v.r3.GetBitLength();
-            var d = 32 - dneg;
-            var v1 = v.r3;
-            var v2 = v.r2;
-            var v3 = v.r1;
-            var v4 = v.r0;
-            var r0 = u.r0;
-            var r1 = u.r1;
-            var r2 = u.r2;
-            var r3 = u.r3;
-            var r4 = (uint)0;
-            if (d != 0)
-            {
-                v1 = v1 << d | v2 >> dneg;
-                v2 = v2 << d | v3 >> dneg;
-                v3 = v3 << d | v4 >> dneg;
-                v4 <<= d;
-                r4 = r3 >> dneg;
-                r3 = r3 << d | r2 >> dneg;
-                r2 = r2 << d | r1 >> dneg;
-                r1 = r1 << d | r0 >> dneg;
-                r0 <<= d;
-            }
-            DivRem(r4, ref r3, ref r2, ref r1, ref r0, v1, v2, v3, v4);
-            if (d != 0)
-            {
-                r0 = r1 << dneg | r0 >> d;
-                r1 = r2 << dneg | r1 >> d;
-                r2 = r3 << dneg | r2 >> d;
-                r3 >>= d;
-            }
-            Create(out w, r0, r1, r2, r3);
-            Debug.Assert((BigInteger)w == (BigInteger)u % (BigInteger)v);
+            var d = 32 - b.r3.GetBitLength();
+            var v = b;
+            LeftShift64Equals(ref v, d);
+            rem = a;
+            var r4 = (uint)LeftShift64Equals(ref rem, d);
+            var div = DivRem(r4, ref rem.r3, ref rem.r2, ref rem.r1, ref rem.r0, v.r3, v.r2, v.r1, v.r0);
+            RightShiftEquals(ref rem, d);
+            Debug.Assert((BigInteger)div == (BigInteger)a / (BigInteger)b);
+            Debug.Assert((BigInteger)rem == (BigInteger)a % (BigInteger)b);
+            return div;
         }
 
         private static uint DivRem(uint u0, ref uint u1, ref uint u2, uint v1, uint v2)
@@ -1485,6 +1439,8 @@ namespace Decompose.Numerics
                     r += v1;
                 }
             }
+            if (qhat == 0)
+                return 0;
             var carry = qhat * v3;
             var borrow = (long)u3 - (uint)carry;
             carry >>= 32;
@@ -1939,16 +1895,21 @@ namespace Decompose.Numerics
             c.s1 >>= 1;
         }
 
+        private static ulong LeftShift64Equals(ref UInt128 c, int d)
+        {
+            if (d == 0)
+                return 0;
+            var dneg = 64 - d;
+            var result = c.s1 >> dneg;
+            c.s1 = c.s1 << d | c.s0 >> dneg;
+            c.s0 <<= d;
+            return result;
+        }
+
         public static void LeftShiftEquals(ref UInt128 c, int d)
         {
             if (d < 64)
-            {
-                if (d != 0)
-                {
-                    c.s1 = c.s1 << d | c.s0 >> (64 - d);
-                    c.s0 <<= d;
-                }
-            }
+                LeftShift64Equals(ref c, d);
             else
             {
                 c.s1 = c.s0 << (d - 64);
@@ -1962,7 +1923,7 @@ namespace Decompose.Numerics
             c.s0 <<= 1;
         }
 
-        public static int OddPart(out UInt128 c, ref UInt128 a)
+        private static int OddPart(out UInt128 c, ref UInt128 a)
         {
             c = a;
             if (c.IsZero)
@@ -2001,15 +1962,6 @@ namespace Decompose.Numerics
             var bshift = UInt128.OddPart(out b1, ref b);
             var shift = Math.Min(ashift, bshift);
 
-#if false
-            while (a1.s1 != 0 && !b.IsZero)
-            {
-                UInt128 rem;
-                UInt128.Remainder(out rem, ref a1, ref b1);
-                a1 = b1;
-                b1 = rem;
-            }
-#else
             do
             {
                 while (b1.IsEven)
@@ -2021,7 +1973,6 @@ namespace Decompose.Numerics
                 MinusEquals(ref b1, ref a1);
             }
             while (!b.IsZero);
-#endif
 
             if (!b1.IsZero)
             {
@@ -2038,8 +1989,7 @@ namespace Decompose.Numerics
             }
             else
                 c = a1;
-            if (shift > 0)
-                LeftShiftEquals(ref c, shift);
+            LeftShiftEquals(ref c, shift);
         }
     }
 }
