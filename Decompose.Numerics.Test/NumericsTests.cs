@@ -849,6 +849,7 @@ namespace Decompose.Numerics.Test
                 Assert.AreEqual((BigInteger)a != b, (UInt128)a != b);
                 Assert.AreEqual((BigInteger)a != b, a != (UInt128)b);
                 Assert.AreEqual((BigInteger)a != b, (UInt128)a != (UInt128)b);
+                Assert.AreEqual((BigInteger)a * a, UInt128.Square(a));
                 Assert.AreEqual(BigInteger.Abs(a), UInt128.Abs(a));
                 Assert.AreEqual(BigInteger.Abs((BigInteger)a * b), UInt128.Abs((UInt128)a * b));
                 Assert.AreEqual(BigInteger.Min(a, b), UInt128.Min(a, b));
