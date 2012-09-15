@@ -23,11 +23,11 @@ namespace Sandbox
             output = new ConsoleLogger("Decompose.log");
             try
             {
-                //GreatestCommonDivisorPerformanceTest();
+                GreatestCommonDivisorPerformanceTest();
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
                 //ParityTest();
-                DivisorSummatoryFunctionOddTest();
+                //DivisorSummatoryFunctionOddTest();
                 //MertensPerformanceTest();
                 //PiMod2PerformanceTest();
                 //PerfectPowerTest();
@@ -637,7 +637,7 @@ namespace Sandbox
             for (var j = 0; j < 1; j++)
             {
                 var timer = new Stopwatch();
-                var count = 1000000;
+                var count = 5000000;
                 var random1 = new MersenneTwister(0).Create<UInt128>();
                 var random2 = new MersenneTwister(0).Create<UInt128>();
                 var sum1 = (UInt128)0;

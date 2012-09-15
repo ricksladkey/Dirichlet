@@ -740,6 +740,12 @@ namespace Decompose.Numerics
             return a.s1 < b.s1 || a.s1 == b.s1 && a.s0 < b.s0;
         }
 
+
+        public static bool Equals(ref UInt128 a, ref UInt128 b)
+        {
+            return a.s0 == b.s0 && a.s1 == b.s1;
+        }
+
         public bool Equals(UInt128 other)
         {
             return s0 == other.s0 && s1 == other.s1;
@@ -1876,17 +1882,6 @@ namespace Decompose.Numerics
             c.s0 <<= 1;
         }
 
-        private static int OddPart(out UInt128 c, ref UInt128 a)
-        {
-            c = a;
-            if (c.IsZero)
-                return 0;
-            int shift;
-            for (shift = 0; c.IsEven; shift++)
-                RightShiftOneEquals(ref c);
-            return shift;
-        }
-
         public static void Swap(ref UInt128 a, ref UInt128 b)
         {
             var as0 = a.s0;
@@ -1899,156 +1894,133 @@ namespace Decompose.Numerics
 
         public static void GreatestCommonDivisor(out UInt128 c, ref UInt128 a, ref UInt128 b)
         {
-            UInt128 a0, b0;
-            if ((a.s1 == 0) != (b.s1 == 0))
+            // Check whether one number is > 64 bits and the other is <= 64 bits and both are non-zero.
+            UInt128 a1, b1;
+            if ((a.s1 == 0) != (b.s1 == 0) && !a.IsZero && !b.IsZero)
             {
-                // Perform a normal step to ensure that a and b are approximately the same size.
+                // Perform a normal step so that both a and b are <= 64 bits.
                 if (LessThan(ref a, ref b))
                 {
-                    a0 = a;
-                    UInt128.Remainder(out b0, ref b, ref a);
+                    a1 = a;
+                    UInt128.Remainder(out b1, ref b, ref a);
                 }
                 else
                 {
-                    b0 = b;
-                    UInt128.Remainder(out a0, ref a, ref b);
+                    b1 = b;
+                    UInt128.Remainder(out a1, ref a, ref b);
                 }
             }
             else
             {
-                a0 = a;
-                b0 = b;
+                a1 = a;
+                b1 = b;
             }
 
             // Make sure neither is zero.
-            if (a0.IsZero)
+            if (a1.IsZero)
             {
-                c = b0;
+                c = b1;
                 return;
             }
-            if (b0.IsZero)
+            if (b1.IsZero)
             {
-                c = a0;
+                c = a1;
                 return;
             }
 
-            // Remove factors of two.
-            UInt128 a1, b1;
-            var ashift = UInt128.OddPart(out a1, ref a0);
-            var bshift = UInt128.OddPart(out b1, ref b0);
-            var shift = Math.Min(ashift, bshift);
-
-#if false
-            // Standard Euclidean algorithm.
+            // Ensure a >= b.
             if (LessThan(ref a1, ref b1))
                 Swap(ref a1, ref b1);
-            UInt128 rem;
+
+            // Lehmer algorithm.
             while (a1.s1 != 0 && !b.IsZero)
             {
-                Remainder(out rem, ref a1, ref b1);
-                a1 = b1;
-                b1 = rem;
-            }
-#endif
-#if false
-            // Binary Euclidean algorithm.
-            do
-            {
-                while (b1.IsEven)
-                    RightShiftOneEquals(ref b1);
-                if (LessThan(ref b1, ref a1))
-                    Swap(ref a1, ref b1);
-                if (b1.s1 == 0)
-                    break;
-                MinusEquals(ref b1, ref a1);
-            }
-            while (!b.IsZero);
-#endif
-#if true
-            // Lehmer algorithm.
-            if (LessThan(ref a1, ref b1))
-                Swap(ref a1, ref b1);
-            if (a1.s1 != 0 && !b.IsZero)
-            {
-                while (a1.s1 != 0 && !b.IsZero)
+                // Extract the high 63 bits of a and b.
+                var norm = 63 - a1.s1.GetBitLength();
+                UInt128 a2, b2;
+                if (norm < 0)
                 {
-                    // Extract the high 63 bits of a and b.
-                    var norm = 63 - a1.s1.GetBitLength();
-                    UInt128 a2, b2;
-                    if (norm < 0)
-                    {
-                        norm = -norm;
-                        RightShift(out a2, ref a1, norm);
-                        RightShift(out b2, ref b1, norm);
-                    }
-                    else
-                    {
-                        LeftShift(out a2, ref a1, norm);
-                        LeftShift(out b2, ref b1, norm);
-                    }
-                    var uhat = (long)a2.s1;
-                    var vhat = (long)b2.s1;
-
-                    // Perform main loop using signed single-precision arithmetic.
-                    var x0 = (long)1;
-                    var y0 = (long)0;
-                    var x1 = (long)0;
-                    var y1 = (long)1;
-                    var i = 0;
-                    while (true)
-                    {
-                        // Calculate quotient, cosquence pair, and update uhat and vhat.
-                        var q = uhat / vhat;
-                        var x2 = x0 - q * x1;
-                        var y2 = y0 - q * y1;
-                        var t = uhat;
-                        uhat = vhat;
-                        vhat = t - q * vhat;
-                        i = 1 - i;
-
-                        // Apply Jebelean's termination condition
-                        // to check whether q is valid.
-                        if (i == 0)
-                        {
-                            if (vhat < -x2 || uhat - vhat < y2 - y1)
-                                break;
-                        }
-                        else
-                        {
-                            if (vhat < -y2 || uhat - vhat < x2 - x1)
-                                break;
-                        }
-
-                        // Adjust cosequence history.
-                        x0 = x1; y0 = y1; x1 = x2; y1 = y2;
-                    }
-
-                    // Back calculate a and b from the last valid cosequence pairs.
-                    UInt128 anew, bnew;
-                    if (i == 0)
-                    {
-                        SubtractProducts(out anew, ref b1, (ulong)y0, ref a1, (ulong)(-x0));
-                        SubtractProducts(out bnew, ref a1, (ulong)x1, ref b1, (ulong)(-y1));
-                    }
-                    else
-                    {
-                        SubtractProducts(out anew, ref a1, (ulong)x0, ref b1, (ulong)(-y0));
-                        SubtractProducts(out bnew, ref b1, (ulong)y1, ref a1, (ulong)(-x1));
-                    }
-                    a1 = anew;
-                    b1 = bnew;
-
-                    // Check whether a normal step is necessary.
-                    if (!b1.IsZero)
-                    {
-                        UInt128 rem;
-                        Remainder(out rem, ref a1, ref  b1);
-                        a1 = b1;
-                        b1 = rem;
-                    }
+                    norm = -norm;
+                    RightShift(out a2, ref a1, norm);
+                    RightShift(out b2, ref b1, norm);
                 }
+                else
+                {
+                    LeftShift(out a2, ref a1, norm);
+                    LeftShift(out b2, ref b1, norm);
+                }
+                var uhat = (long)a2.s1;
+                var vhat = (long)b2.s1;
+
+                // Check whether q exceeds single-precision.
+                if (vhat == 0)
+                {
+                    // Perform a normal step and try again.
+                    UInt128 rem;
+                    Remainder(out rem, ref a1, ref  b1);
+                    a1 = b1;
+                    b1 = rem;
+                    continue;
+                }
+
+                // Perform main loop using signed single-precision arithmetic.
+                var x0 = (long)1;
+                var y0 = (long)0;
+                var x1 = (long)0;
+                var y1 = (long)1;
+                var even = true;
+                while (true)
+                {
+                    // Calculate quotient, cosquence pair, and update uhat and vhat.
+                    var q = uhat / vhat;
+                    var x2 = x0 - q * x1;
+                    var y2 = y0 - q * y1;
+                    var t = uhat;
+                    uhat = vhat;
+                    vhat = t - q * vhat;
+                    even = !even;
+
+                    // Apply Jebelean's termination condition
+                    // to check whether q is valid.
+                    if (even)
+                    {
+                        if (vhat < -x2 || uhat - vhat < y2 - y1)
+                            break;
+                    }
+                    else
+                    {
+                        if (vhat < -y2 || uhat - vhat < x2 - x1)
+                            break;
+                    }
+
+                    // Adjust cosequence history.
+                    x0 = x1; y0 = y1; x1 = x2; y1 = y2;
+                }
+
+                // Check whether a normal step is necessary.
+                if (x0 == 1 && y0 == 0)
+                {
+                    UInt128 rem;
+                    Remainder(out rem, ref a1, ref  b1);
+                    a1 = b1;
+                    b1 = rem;
+                }
+
+                // Back calculate a and b from the last valid cosequence pairs.
+                UInt128 anew, bnew;
+                if (even)
+                {
+                    AddProducts(out anew, y0, ref b1, x0, ref a1);
+                    AddProducts(out bnew, x1, ref a1, y1, ref b1);
+                }
+                else
+                {
+                    AddProducts(out anew, x0, ref a1, y0, ref b1);
+                    AddProducts(out bnew, y1, ref b1, x1, ref a1);
+                }
+                a1 = anew;
+                b1 = bnew;
             }
-#endif
 
             // Check whether we have any 64 bit work left.
             if (!b1.IsZero)
@@ -2056,6 +2028,7 @@ namespace Decompose.Numerics
                 var a2 = a1.s0;
                 var b2 = b1.s0;
 
+                // Perform 64 bit steps.
                 while (a2 > int.MaxValue && b2 != 0)
                 {
                     var t = a2 % b2;
@@ -2068,12 +2041,15 @@ namespace Decompose.Numerics
                 {
                     var a3 = (uint)a2;
                     var b3 = (uint)b2;
+
+                    // Perform 32 bit steps.
                     while (b3 != 0)
                     {
                         var t = a3 % b3;
                         a3 = b3;
                         b3 = t;
                     }
+
                     Create(out c, a3, 0, 0, 0);
                 }
                 else
@@ -2081,19 +2057,16 @@ namespace Decompose.Numerics
             }
             else
                 c = a1;
-
-            // Adjust final result for factors of two.
-            LeftShiftEquals(ref c, shift);
         }
 
-        private static void SubtractProducts(out UInt128 result, ref UInt128 u, ulong x, ref UInt128 v, ulong y)
+        private static void AddProducts(out UInt128 result, long x, ref UInt128 u, long y, ref UInt128 v)
         {
-            // Compute u * x - v * y assuming the result is positive and fits in 128 bits.
-            UInt128 ux;
-            Multiply(out ux, ref u, x);
-            UInt128 vy;
-            Multiply(out vy, ref v, y);
-            Subtract(out result, ref ux, ref vy);
+            // Compute x * u - y * v assuming the result is positive and fits in 128 bits.
+            UInt128 xu;
+            Multiply(out xu, ref u, (ulong)x);
+            UInt128 yv;
+            Multiply(out yv, ref v, (ulong)(-y));
+            Subtract(out result, ref xu, ref yv);
         }
 
         public static int Compare(UInt128 a, UInt128 b)
