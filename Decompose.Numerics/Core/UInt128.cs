@@ -201,7 +201,7 @@ namespace Decompose.Numerics
         {
             if (a.s1 == 0)
                 return a.s0;
-            return a.s1 * (double)~(ulong)0 + a.s0;
+            return a.s1 * (double)ulong.MaxValue + a.s0;
         }
 
         public static explicit operator int(UInt128 a)
@@ -792,7 +792,7 @@ namespace Decompose.Numerics
                 Multiply64(out c, a.r0, a.r1, b);
             else
                 Multiply128(out c, ref a, b);
-            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
+            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b % ((BigInteger)1 << 128));
         }
 
         public static void Multiply(out UInt128 c, ref UInt128 a, ulong b)
@@ -801,7 +801,7 @@ namespace Decompose.Numerics
                 Multiply64(out c, a.r0, a.r1, (uint)b, (uint)(b >> 32));
             else
                 Multiply128(out c, ref a, b);
-            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
+            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b % ((BigInteger)1 << 128));
         }
 
         public static void Multiply(out UInt128 c, ref UInt128 a, ref UInt128 b)
@@ -814,7 +814,7 @@ namespace Decompose.Numerics
                 Multiply128(out c, ref a, b.s0);
             else
                 Multiply128(out c, ref a, ref b);
-            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
+            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b % ((BigInteger)1 << 128));
         }
 
         public static UInt128 Abs(UInt128 a)
@@ -857,9 +857,10 @@ namespace Decompose.Numerics
 
         public static void Square(out UInt128 c, ref UInt128 a)
         {
-            if (a.s1 != 0)
-                throw new NotImplementedException();
-            Square64(out c, a.r0, a.r1);
+            if (a.s1 == 0)
+                Square64(out c, a.r0, a.r1);
+            else
+                Multiply128(out c, ref a, ref a);
         }
 
         public static UInt128 Cube(ulong a)
@@ -885,9 +886,17 @@ namespace Decompose.Numerics
 
         public static void Cube(out UInt128 c, ref UInt128 a)
         {
-            if (a.s1 != 0)
-                throw new NotImplementedException();
-            Cube(out c, a.s0);
+            UInt128 square;
+            if (a.s1 == 0)
+            {
+                Square64(out square, a.r0, a.r1);
+                Multiply(out c, ref square, a.s0);
+            }
+            else
+            {
+                Multiply128(out square, ref a, ref a);
+                Multiply128(out c, ref square, ref a);
+            }
         }
 
         public static void Add(out UInt128 c, ref UInt128 a, ulong b)
