@@ -23,11 +23,11 @@ namespace Sandbox
             output = new ConsoleLogger("Decompose.log");
             try
             {
-                GreatestCommonDivisorPerformanceTest();
+                //GreatestCommonDivisorPerformanceTest();
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
                 //ParityTest();
-                //DivisorSummatoryFunctionOddTest();
+                DivisorSummatoryFunctionOddTest();
                 //MertensPerformanceTest();
                 //PiMod2PerformanceTest();
                 //PerfectPowerTest();

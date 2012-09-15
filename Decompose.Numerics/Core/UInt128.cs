@@ -201,10 +201,7 @@ namespace Decompose.Numerics
         {
             if (a.s1 == 0)
                 return a.s0;
-            var shift = a.GetBitLength() - 64;
-            UInt128 ashift;
-            RightShift(out ashift, ref a, shift);
-            return ashift.s0 * Math.Pow(2, shift);
+            return a.s1 * (double)~(ulong)0 + a.s0;
         }
 
         public static explicit operator int(UInt128 a)
@@ -1325,7 +1322,7 @@ namespace Decompose.Numerics
             var q0 = DivRem(rem.r3, ref rem.r2, ref rem.r1, ref rem.r0, v.r2, v.r1, v.r0);
             var div = (ulong)q1 << 32 | q0;
             rem.r3 = 0;
-            RightShiftEquals(ref rem, d);
+            RightShift64Equals(ref rem, d);
             Debug.Assert((BigInteger)div == (BigInteger)a / (BigInteger)b);
             Debug.Assert((BigInteger)rem == (BigInteger)a % (BigInteger)b);
             return div;
@@ -1339,13 +1336,13 @@ namespace Decompose.Numerics
             rem = a;
             var r4 = (uint)LeftShift64Equals(ref rem, d);
             var div = DivRem(r4, ref rem.r3, ref rem.r2, ref rem.r1, ref rem.r0, v.r3, v.r2, v.r1, v.r0);
-            RightShiftEquals(ref rem, d);
+            RightShift64Equals(ref rem, d);
             Debug.Assert((BigInteger)div == (BigInteger)a / (BigInteger)b);
             Debug.Assert((BigInteger)rem == (BigInteger)a % (BigInteger)b);
             return div;
         }
 
-        private static uint DivRem(uint u0, ref uint u1, ref uint u2, uint v1, uint v2)
+        private static ulong Q(uint u0, uint u1, uint u2, uint v1, uint v2)
         {
             var u0u1 = (ulong)u0 << 32 | u1;
             var qhat = u0 == v1 ? uint.MaxValue : u0u1 / v1;
@@ -1360,6 +1357,12 @@ namespace Decompose.Numerics
                     r += v1;
                 }
             }
+            return qhat;
+        }
+
+        private static uint DivRem(uint u0, ref uint u1, ref uint u2, uint v1, uint v2)
+        {
+            var qhat = Q(u0, u1, u2, v1, v2);
             var carry = qhat * v2;
             var borrow = (long)u2 - (uint)carry;
             carry >>= 32;
@@ -1385,21 +1388,7 @@ namespace Decompose.Numerics
 
         private static uint DivRem(uint u0, ref uint u1, ref uint u2, ref uint u3, uint v1, uint v2, uint v3)
         {
-            var u0u1 = (ulong)u0 << 32 | u1;
-            var qhat = u0 == v1 ? uint.MaxValue : u0u1 / v1;
-            var r = u0u1 - qhat * v1;
-            if (r == (uint)r && v2 * qhat > (r << 32 | u2))
-            {
-                --qhat;
-                r += v1;
-                if (r == (uint)r && v2 * qhat > (r << 32 | u2))
-                {
-                    --qhat;
-                    r += v1;
-                }
-            }
-            if (qhat == 0)
-                return 0;
+            var qhat = Q(u0, u1, u2, v1, v2);
             var carry = qhat * v3;
             var borrow = (long)u3 - (uint)carry;
             carry >>= 32;
@@ -1433,19 +1422,7 @@ namespace Decompose.Numerics
 
         private static uint DivRem(uint u0, ref uint u1, ref uint u2, ref uint u3, ref uint u4, uint v1, uint v2, uint v3, uint v4)
         {
-            var u0u1 = (ulong)u0 << 32 | u1;
-            var qhat = u0 == v1 ? uint.MaxValue : u0u1 / v1;
-            var r = u0u1 - qhat * v1;
-            if (r == (uint)r && v2 * qhat > (r << 32 | u2))
-            {
-                --qhat;
-                r += v1;
-                if (r == (uint)r && v2 * qhat > (r << 32 | u2))
-                {
-                    --qhat;
-                    r += v1;
-                }
-            }
+            var qhat = Q(u0, u1, u2, v1, v2);
             var carry = qhat * v4;
             var borrow = (long)u4 - (uint)carry;
             carry >>= 32;
@@ -1831,16 +1808,18 @@ namespace Decompose.Numerics
             return c;
         }
 
+        private static void RightShift64Equals(ref UInt128 c, int d)
+        {
+            if (d == 0)
+                return;
+            c.s0 = c.s1 << (64 - d) | c.s0 >> d;
+            c.s1 >>= d;
+        }
+
         public static void RightShiftEquals(ref UInt128 c, int d)
         {
             if (d < 64)
-            {
-                if (d != 0)
-                {
-                    c.s0 = c.s1 << (64 - d) | c.s0 >> d;
-                    c.s1 >>= d;
-                }
-            }
+                RightShift64Equals(ref c, d);
             else
             {
                 c.s0 = c.s1 >> (d - 64);
@@ -1933,24 +1912,25 @@ namespace Decompose.Numerics
                 Swap(ref a1, ref b1);
 
             // Lehmer algorithm.
+            // See: http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.31.693
             while (a1.s1 != 0 && !b.IsZero)
             {
                 // Extract the high 63 bits of a and b.
                 var norm = 63 - a1.s1.GetBitLength();
-                UInt128 a2, b2;
+                UInt128 ahat, bhat;
                 if (norm < 0)
                 {
                     norm = -norm;
-                    RightShift(out a2, ref a1, norm);
-                    RightShift(out b2, ref b1, norm);
+                    RightShift(out ahat, ref a1, norm);
+                    RightShift(out bhat, ref b1, norm);
                 }
                 else
                 {
-                    LeftShift(out a2, ref a1, norm);
-                    LeftShift(out b2, ref b1, norm);
+                    LeftShift(out ahat, ref a1, norm);
+                    LeftShift(out bhat, ref b1, norm);
                 }
-                var uhat = (long)a2.s1;
-                var vhat = (long)b2.s1;
+                var uhat = (long)ahat.s1;
+                var vhat = (long)bhat.s1;
 
                 // Check whether q exceeds single-precision.
                 if (vhat == 0)
@@ -1963,7 +1943,7 @@ namespace Decompose.Numerics
                     continue;
                 }
 
-                // Perform main loop using signed single-precision arithmetic.
+                // Perform steps using signed single-precision arithmetic.
                 var x0 = (long)1;
                 var y0 = (long)0;
                 var x1 = (long)0;
@@ -2004,6 +1984,7 @@ namespace Decompose.Numerics
                     Remainder(out rem, ref a1, ref  b1);
                     a1 = b1;
                     b1 = rem;
+                    continue;
                 }
 
                 // Back calculate a and b from the last valid cosequence pairs.
@@ -2061,7 +2042,7 @@ namespace Decompose.Numerics
 
         private static void AddProducts(out UInt128 result, long x, ref UInt128 u, long y, ref UInt128 v)
         {
-            // Compute x * u - y * v assuming the result is positive and fits in 128 bits.
+            // Compute x * u + y * v assuming y is negative and the result is positive and fits in 128 bits.
             UInt128 xu;
             Multiply(out xu, ref u, (ulong)x);
             UInt128 yv;
