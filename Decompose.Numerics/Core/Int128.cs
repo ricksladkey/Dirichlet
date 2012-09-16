@@ -45,13 +45,13 @@ namespace Decompose.Numerics
                 result = Int128.Zero;
                 return false;
             }
-            Create(out result, a);
+            UInt128.Create(out result.v, a);
             return true;
         }
 
         public Int128(long value)
         {
-            Create(out this, value);
+            UInt128.Create(out v, value);
         }
 
         public Int128(ulong value)
@@ -72,47 +72,6 @@ namespace Decompose.Numerics
         public Int128(BigInteger value)
         {
             UInt128.Create(out v, value);
-        }
-
-        public static void Create(out Int128 c, long a)
-        {
-            if (a < 0)
-                UInt128.Create(out c.v, (ulong)a, ulong.MaxValue);
-            else
-                UInt128.Create(out c.v, (ulong)a, 0);
-        }
-
-        public static void Create(out Int128 c, double a)
-        {
-            if (a < 0)
-            {
-                UInt128.Create(out c.v, -a);
-                UInt128.Negate(ref c.v);
-            }
-            else
-                UInt128.Create(out c.v, a);
-        }
-
-        public static void Create(out Int128 c, decimal a)
-        {
-            if (a < 0)
-            {
-                UInt128.Create(out c.v, -a);
-                UInt128.Negate(ref c.v);
-            }
-            else
-                UInt128.Create(out c.v, a);
-        }
-
-        public static void Create(out Int128 c, BigInteger a)
-        {
-            if (a < 0)
-            {
-                UInt128.Create(out c.v, -a);
-                UInt128.Negate(ref c.v);
-            }
-            else
-                UInt128.Create(out c.v, a);
         }
 
         public uint R0 { get { return v.R0; } }
@@ -163,14 +122,14 @@ namespace Decompose.Numerics
         public static explicit operator Int128(double a)
         {
             Int128 c;
-            Create(out c, a);
+            UInt128.Create(out c.v, a);
             return c;
         }
 
         public static implicit operator Int128(int a)
         {
             Int128 c;
-            Create(out c, a);
+            UInt128.Create(out c.v, a);
             return c;
         }
 
@@ -184,7 +143,7 @@ namespace Decompose.Numerics
         public static implicit operator Int128(long a)
         {
             Int128 c;
-            Create(out c, a);
+            UInt128.Create(out c.v, a);
             return c;
         }
 
@@ -198,7 +157,7 @@ namespace Decompose.Numerics
         public static explicit operator Int128(decimal a)
         {
             Int128 c;
-            Create(out c, a);
+            UInt128.Create(out c.v, a);
             return c;
         }
 
@@ -217,7 +176,7 @@ namespace Decompose.Numerics
         public static explicit operator Int128(BigInteger a)
         {
             Int128 c;
-            Create(out c, a);
+            UInt128.Create(out c.v, a);
             return c;
         }
 
@@ -328,8 +287,6 @@ namespace Decompose.Numerics
 
         public static int operator &(Int128 a, int b)
         {
-            if (b < 0)
-                throw new NotImplementedException();
             return (int)(a.v & (uint)b);
         }
 
@@ -1512,7 +1469,7 @@ namespace Decompose.Numerics
         public static void Pow(out Int128 result, ref Int128 value, int exponent)
         {
             if (exponent < 0)
-                throw new InvalidOperationException();
+                throw new ArgumentException("exponent must not be negative");
             if (value.IsNegative)
             {
                 UInt128 valueneg;
@@ -1539,14 +1496,14 @@ namespace Decompose.Numerics
         public static ulong FloorSqrt(Int128 a)
         {
             if (a.IsNegative)
-                throw new InvalidOperationException();
+                throw new ArgumentException("argument must not be negative");
             return UInt128.FloorSqrt(a.v);
         }
 
         public static ulong CeilingSqrt(Int128 a)
         {
             if (a.IsNegative)
-                throw new InvalidOperationException();
+                throw new ArgumentException("argument must not be negative");
             return UInt128.CeilingSqrt(a.v);
         }
 
@@ -1599,7 +1556,7 @@ namespace Decompose.Numerics
         public static double Log(Int128 a, double b)
         {
             if (a.IsNegative || a.IsZero)
-                throw new InvalidOperationException();
+                throw new ArgumentException("argument must be positive");
             return Math.Log(UInt128.ConvertToDouble(ref a.v), b);
         }
 

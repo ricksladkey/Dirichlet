@@ -57,6 +57,11 @@ namespace Decompose.Numerics
             return true;
         }
 
+        public UInt128(long value)
+        {
+            Create(out this, value);
+        }
+
         public UInt128(ulong value)
         {
             Create(out this, value);
@@ -93,10 +98,17 @@ namespace Decompose.Numerics
             c.s1 = s1;
         }
 
-        public static void Create(out UInt128 c, ulong s0)
+        public static void Create(out UInt128 c, long a)
         {
             c.r0 = c.r1 = c.r2 = c.r3 = 0;
-            c.s0 = s0;
+            c.s0 = (ulong)a;
+            c.s1 = a < 0 ? ulong.MaxValue : 0;
+        }
+
+        public static void Create(out UInt128 c, ulong a)
+        {
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = a;
             c.s1 = 0;
         }
 
@@ -126,14 +138,27 @@ namespace Decompose.Numerics
 
         public static void Create(out UInt128 c, double a)
         {
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            var negate = false;
             if (a < 0)
-                throw new InvalidOperationException();
-            UInt128 m;
-            var shift = Math.Max((int)Math.Ceiling(Math.Log(a, 2)) - 63, 0);
-            m.r0 = m.r1 = m.r2 = m.r3 = 0;
-            m.s0 = (ulong)(a / Math.Pow(2, shift));
-            m.s1 = 0;
-            LeftShift(out c, ref m, shift);
+            {
+                negate = true;
+                a = -a;
+            }
+            if (a <= ulong.MaxValue)
+            {
+                c.s0 = (ulong)a;
+                c.s1 = 0;
+            }
+            else
+            {
+                var shift = Math.Max((int)Math.Ceiling(Math.Log(a, 2)) - 63, 0);
+                c.s0 = (ulong)(a / Math.Pow(2, shift));
+                c.s1 = 0;
+                LeftShift(ref c, shift);
+            }
+            if (negate)
+                Negate(ref c);
         }
 
         public uint R0 { get { return r0; } }
@@ -188,8 +213,6 @@ namespace Decompose.Numerics
 
         public static explicit operator UInt128(double a)
         {
-            if (a < 0)
-                throw new InvalidCastException();
             UInt128 c;
             Create(out c, a);
             return c;
@@ -197,10 +220,8 @@ namespace Decompose.Numerics
 
         public static explicit operator UInt128(int a)
         {
-            if (a < 0)
-                throw new InvalidCastException();
             UInt128 c;
-            Create(out c, (ulong)a);
+            Create(out c, a);
             return c;
         }
 
@@ -213,10 +234,8 @@ namespace Decompose.Numerics
 
         public static explicit operator UInt128(long a)
         {
-            if (a < 0)
-                throw new InvalidCastException();
             UInt128 c;
-            Create(out c, (ulong)a);
+            Create(out c, a);
             return c;
         }
 
@@ -1858,8 +1877,6 @@ namespace Decompose.Numerics
 
         public static double Log(UInt128 a, double b)
         {
-            if (a.IsZero)
-                throw new InvalidOperationException();
             return Math.Log(ConvertToDouble(ref a), b);
         }
 
