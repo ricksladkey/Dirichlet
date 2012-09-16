@@ -45,15 +45,74 @@ namespace Decompose.Numerics
                 result = Int128.Zero;
                 return false;
             }
+            Create(out result, a);
+            return true;
+        }
+
+        public Int128(long value)
+        {
+            Create(out this, value);
+        }
+
+        public Int128(ulong value)
+        {
+            UInt128.Create(out v, value);
+        }
+
+        public Int128(double value)
+        {
+            UInt128.Create(out v, value);
+        }
+
+        public Int128(decimal value)
+        {
+            UInt128.Create(out v, value);
+        }
+
+        public Int128(BigInteger value)
+        {
+            UInt128.Create(out v, value);
+        }
+
+        public static void Create(out Int128 c, long a)
+        {
+            if (a < 0)
+                UInt128.Create(out c.v, (ulong)a, ulong.MaxValue);
+            else
+                UInt128.Create(out c.v, (ulong)a, 0);
+        }
+
+        public static void Create(out Int128 c, double a)
+        {
             if (a < 0)
             {
-                UInt128 cneg;
-                UInt128.Create(out cneg, ref a);
-                UInt128.Negate(out result.v, ref cneg);
+                UInt128.Create(out c.v, -a);
+                UInt128.NegateEquals(ref c.v);
             }
             else
-                UInt128.Create(out result.v, ref a);
-            return true;
+                UInt128.Create(out c.v, a);
+        }
+
+        public static void Create(out Int128 c, decimal a)
+        {
+            if (a < 0)
+            {
+                UInt128.Create(out c.v, -a);
+                UInt128.NegateEquals(ref c.v);
+            }
+            else
+                UInt128.Create(out c.v, a);
+        }
+
+        public static void Create(out Int128 c, BigInteger a)
+        {
+            if (a < 0)
+            {
+                UInt128.Create(out c.v, -a);
+                UInt128.NegateEquals(ref c.v);
+            }
+            else
+                UInt128.Create(out c.v, a);
         }
 
         public uint R0 { get { return v.R0; } }
@@ -104,48 +163,42 @@ namespace Decompose.Numerics
         public static explicit operator Int128(double a)
         {
             Int128 c;
-            if (a < 0)
-            {
-                UInt128 cneg;
-                UInt128.Create(out cneg, -a);
-                UInt128.Negate(out c.v, ref cneg);
-            }
-            else
-                UInt128.Create(out c.v, a);
+            Create(out c, a);
             return c;
         }
 
         public static implicit operator Int128(int a)
         {
             Int128 c;
-            if (a < 0)
-                UInt128.Create(out c.v, (ulong)(long)a, ulong.MaxValue);
-            else
-                UInt128.Create(out c.v, (ulong)a, 0);
+            Create(out c, a);
             return c;
         }
 
         public static implicit operator Int128(uint a)
         {
             Int128 c;
-            UInt128.Create(out c.v, (ulong)a, 0);
+            UInt128.Create(out c.v, (ulong)a);
             return c;
         }
 
         public static implicit operator Int128(long a)
         {
             Int128 c;
-            if (a < 0)
-                UInt128.Create(out c.v, (ulong)a, ulong.MaxValue);
-            else
-                UInt128.Create(out c.v, (ulong)a, 0);
+            Create(out c, a);
             return c;
         }
 
         public static implicit operator Int128(ulong a)
         {
             Int128 c;
-            UInt128.Create(out c.v, a, 0);
+            UInt128.Create(out c.v, a);
+            return c;
+        }
+
+        public static explicit operator Int128(decimal a)
+        {
+            Int128 c;
+            Create(out c, a);
             return c;
         }
 
@@ -164,16 +217,28 @@ namespace Decompose.Numerics
         public static explicit operator Int128(BigInteger a)
         {
             Int128 c;
-            if (a < 0)
-            {
-                UInt128 b;
-                var aneg = -a;
-                UInt128.Create(out b, ref aneg);
-                UInt128.Negate(out c.v, ref b);
-            }
-            else
-                UInt128.Create(out c.v, ref a);
+            Create(out c, a);
             return c;
+        }
+
+        public static explicit operator sbyte(Int128 a)
+        {
+            return (sbyte)a.R0;
+        }
+
+        public static explicit operator byte(Int128 a)
+        {
+            return (byte)a.R0;
+        }
+
+        public static explicit operator short(Int128 a)
+        {
+            return (short)a.R0;
+        }
+
+        public static explicit operator ushort(Int128 a)
+        {
+            return (ushort)a.R0;
         }
 
         public static explicit operator int(Int128 a)
@@ -196,6 +261,17 @@ namespace Decompose.Numerics
             return a.v.S0;
         }
 
+        public static explicit operator decimal(Int128 a)
+        {
+            if (a.IsNegative)
+            {
+                UInt128 c;
+                UInt128.Negate(out c, ref a.v);
+                return -(decimal)c;
+            }
+            return (decimal)a.v;
+        }
+
         public static implicit operator BigInteger(Int128 a)
         {
             if (a.IsNegative)
@@ -205,6 +281,17 @@ namespace Decompose.Numerics
                 return -(BigInteger)c;
             }
             return (BigInteger)a.v;
+        }
+
+        public static explicit operator float(Int128 a)
+        {
+            if (a.IsNegative)
+            {
+                UInt128 c;
+                UInt128.Negate(out c, ref a.v);
+                return -UInt128.ConvertToFloat(ref c);
+            }
+            return UInt128.ConvertToFloat(ref a.v);
         }
 
         public static explicit operator double(Int128 a)
@@ -870,18 +957,16 @@ namespace Decompose.Numerics
                     UInt128.Multiply(out c.v, ref aneg, (uint)(-b));
                 else
                 {
-                    UInt128 cneg;
-                    UInt128.Multiply(out cneg, ref aneg, (uint)b);
-                    UInt128.Negate(out c.v, ref cneg);
+                    UInt128.Multiply(out c.v, ref aneg, (uint)b);
+                    UInt128.NegateEquals(ref c.v);
                 }
             }
             else
             {
                 if (b < 0)
                 {
-                    UInt128 cneg;
-                    UInt128.Multiply(out cneg, ref a.v, (uint)(-b));
-                    UInt128.Negate(out c.v, ref cneg);
+                    UInt128.Multiply(out c.v, ref a.v, (uint)(-b));
+                    UInt128.NegateEquals(ref c.v);
                 }
                 else
                     UInt128.Multiply(out c.v, ref a.v, (uint)b);
@@ -899,18 +984,16 @@ namespace Decompose.Numerics
                     UInt128.Multiply(out c.v, ref aneg, (ulong)(-b));
                 else
                 {
-                    UInt128 cneg;
-                    UInt128.Multiply(out cneg, ref aneg, (ulong)b);
-                    UInt128.Negate(out c.v, ref cneg);
+                    UInt128.Multiply(out c.v, ref aneg, (ulong)b);
+                    UInt128.NegateEquals(ref c.v);
                 }
             }
             else
             {
                 if (b < 0)
                 {
-                    UInt128 cneg;
-                    UInt128.Multiply(out cneg, ref a.v, (ulong)(-b));
-                    UInt128.Negate(out c.v, ref cneg);
+                    UInt128.Multiply(out c.v, ref a.v, (ulong)(-b));
+                    UInt128.NegateEquals(ref c.v);
                 }
                 else
                     UInt128.Multiply(out c.v, ref a.v, (ulong)b);
@@ -932,9 +1015,8 @@ namespace Decompose.Numerics
                 }
                 else
                 {
-                    UInt128 cneg;
-                    UInt128.Multiply(out cneg, ref aneg, ref b.v);
-                    UInt128.Negate(out c.v, ref cneg);
+                    UInt128.Multiply(out c.v, ref aneg, ref b.v);
+                    UInt128.NegateEquals(ref c.v);
                 }
             }
             else
@@ -942,10 +1024,9 @@ namespace Decompose.Numerics
                 if (b.IsNegative)
                 {
                     UInt128 bneg;
-                    UInt128 cneg;
                     UInt128.Negate(out bneg, ref b.v);
-                    UInt128.Multiply(out cneg, ref a.v, ref bneg);
-                    UInt128.Negate(out c.v, ref cneg);
+                    UInt128.Multiply(out c.v, ref a.v, ref bneg);
+                    UInt128.NegateEquals(ref c.v);
                 }
                 else
                     UInt128.Multiply(out c.v, ref a.v, ref b.v);
@@ -963,18 +1044,16 @@ namespace Decompose.Numerics
                     UInt128.Multiply(out c.v, ref aneg, (uint)(-b));
                 else
                 {
-                    UInt128 cneg;
-                    UInt128.Multiply(out cneg, ref aneg, (uint)b);
-                    UInt128.Negate(out c.v, ref cneg);
+                    UInt128.Multiply(out c.v, ref aneg, (uint)b);
+                    UInt128.NegateEquals(ref c.v);
                 }
             }
             else
             {
                 if (b < 0)
                 {
-                    UInt128 cneg;
-                    UInt128.Multiply(out cneg, ref a.v, (uint)(-b));
-                    UInt128.Negate(out c.v, ref cneg);
+                    UInt128.Multiply(out c.v, ref a.v, (uint)(-b));
+                    UInt128.NegateEquals(ref c.v);
                 }
                 else
                     UInt128.Multiply(out c.v, ref a.v, (uint)b);
@@ -992,18 +1071,16 @@ namespace Decompose.Numerics
                     UInt128.Divide(out c.v, ref aneg, (ulong)(-b));
                 else
                 {
-                    UInt128 cneg;
-                    UInt128.Divide(out cneg, ref aneg, (ulong)b);
-                    UInt128.Negate(out c.v, ref cneg);
+                    UInt128.Divide(out c.v, ref aneg, (ulong)b);
+                    UInt128.NegateEquals(ref c.v);
                 }
             }
             else
             {
                 if (b < 0)
                 {
-                    UInt128 cneg;
-                    UInt128.Divide(out cneg, ref a.v, (ulong)(-b));
-                    UInt128.Negate(out c.v, ref cneg);
+                    UInt128.Divide(out c.v, ref a.v, (ulong)(-b));
+                    UInt128.NegateEquals(ref c.v);
                 }
                 else
                     UInt128.Divide(out c.v, ref a.v, (ulong)b);
@@ -1025,9 +1102,8 @@ namespace Decompose.Numerics
                 }
                 else
                 {
-                    UInt128 cneg;
-                    UInt128.Divide(out cneg, ref aneg, ref b.v);
-                    UInt128.Negate(out c.v, ref cneg);
+                    UInt128.Divide(out c.v, ref aneg, ref b.v);
+                    UInt128.NegateEquals(ref c.v);
                 }
             }
             else
@@ -1035,10 +1111,9 @@ namespace Decompose.Numerics
                 if (b.IsNegative)
                 {
                     UInt128 bneg;
-                    UInt128 cneg;
                     UInt128.Negate(out bneg, ref b.v);
-                    UInt128.Divide(out cneg, ref a.v, ref bneg);
-                    UInt128.Negate(out c.v, ref cneg);
+                    UInt128.Divide(out c.v, ref a.v, ref bneg);
+                    UInt128.NegateEquals(ref c.v);
                 }
                 else
                     UInt128.Divide(out c.v, ref a.v, ref b.v);
@@ -1100,9 +1175,8 @@ namespace Decompose.Numerics
                 }
                 else
                 {
-                    UInt128 cneg;
-                    UInt128.Remainder(out cneg, ref aneg, ref b.v);
-                    UInt128.Negate(out c.v, ref cneg);
+                    UInt128.Remainder(out c.v, ref aneg, ref b.v);
+                    UInt128.NegateEquals(ref c.v);
                 }
             }
             else
@@ -1110,10 +1184,9 @@ namespace Decompose.Numerics
                 if (b.IsNegative)
                 {
                     UInt128 bneg;
-                    UInt128 cneg;
                     UInt128.Negate(out bneg, ref b.v);
-                    UInt128.Remainder(out cneg, ref a.v, ref bneg);
-                    UInt128.Negate(out c.v, ref cneg);
+                    UInt128.Remainder(out c.v, ref a.v, ref bneg);
+                    UInt128.NegateEquals(ref c.v);
                 }
                 else
                     UInt128.Remainder(out c.v, ref a.v, ref b.v);
@@ -1165,9 +1238,8 @@ namespace Decompose.Numerics
             Int128 c;
             if (a < 0)
             {
-                UInt128 cneg;
-                UInt128.Cube(out cneg, (ulong)(-a));
-                UInt128.Negate(out c.v, ref cneg);
+                UInt128.Cube(out c.v, (ulong)(-a));
+                UInt128.NegateEquals(ref c.v);
             }
             else
                 UInt128.Cube(out c.v, (ulong)a);
@@ -1181,9 +1253,8 @@ namespace Decompose.Numerics
             {
                 UInt128 aneg;
                 UInt128.Negate(out aneg, ref a.v);
-                UInt128 cneg;
-                UInt128.Cube(out cneg, ref aneg);
-                UInt128.Negate(out c.v, ref cneg);
+                UInt128.Cube(out c.v, ref aneg);
+                UInt128.NegateEquals(ref c.v);
             }
             else
                 UInt128.Cube(out c.v, ref a.v);
@@ -1318,9 +1389,8 @@ namespace Decompose.Numerics
                     UInt128.Pow(out result.v, ref valueneg, (uint)exponent);
                 else
                 {
-                    UInt128 resultneg;
-                    UInt128.Pow(out resultneg, ref valueneg, (uint)exponent);
-                    UInt128.Negate(out result.v, ref resultneg);
+                    UInt128.Pow(out result.v, ref valueneg, (uint)exponent);
+                    UInt128.NegateEquals(ref result.v);
                 }
             }
             else

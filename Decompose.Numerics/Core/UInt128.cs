@@ -50,11 +50,31 @@ namespace Decompose.Numerics
             BigInteger a;
             if (!BigInteger.TryParse(value, style, provider, out a))
             {
-                result = UInt128.Zero;
+                result = Zero;
                 return false;
             }
-            UInt128.Create(out result, ref a);
+            Create(out result, a);
             return true;
+        }
+
+        public UInt128(ulong value)
+        {
+            Create(out this, value);
+        }
+
+        public UInt128(decimal value)
+        {
+            Create(out this, value);
+        }
+
+        public UInt128(double value)
+        {
+            Create(out this, value);
+        }
+
+        public UInt128(BigInteger value)
+        {
+            Create(out this, value);
         }
 
         public static void Create(out UInt128 c, uint r0, uint r1, uint r2, uint r3)
@@ -73,13 +93,35 @@ namespace Decompose.Numerics
             c.s1 = s1;
         }
 
-        public static void Create(out UInt128 c, ref BigInteger a)
+        public static void Create(out UInt128 c, ulong s0)
         {
-            if (a < 0)
-                throw new InvalidOperationException();
             c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            c.s0 = s0;
+            c.s1 = 0;
+        }
+
+        public static void Create(out UInt128 c, decimal a)
+        {
+            c.s0 = c.s1 = 0;
+            var bits = decimal.GetBits(decimal.Truncate(a));
+            c.r0 = (uint)bits[0];
+            c.r1 = (uint)bits[1];
+            c.r2 = (uint)bits[2];
+            c.r3 = 0;
+            if (a < 0)
+                NegateEquals(ref c);
+        }
+
+        public static void Create(out UInt128 c, BigInteger a)
+        {
+            c.r0 = c.r1 = c.r2 = c.r3 = 0;
+            var sign = a.Sign;
+            if (sign == -1)
+                a = -a;
             c.s0 = (ulong)(a & ulong.MaxValue);
             c.s1 = (ulong)(a >> 64);
+            if (sign == -1)
+                NegateEquals(ref c);
         }
 
         public static void Create(out UInt128 c, double a)
@@ -158,14 +200,14 @@ namespace Decompose.Numerics
             if (a < 0)
                 throw new InvalidCastException();
             UInt128 c;
-            Create(out c, (uint)a, 0, 0, 0);
+            Create(out c, (ulong)a);
             return c;
         }
 
         public static implicit operator UInt128(uint a)
         {
             UInt128 c;
-            Create(out c, a, 0, 0, 0);
+            Create(out c, a);
             return c;
         }
 
@@ -174,22 +216,34 @@ namespace Decompose.Numerics
             if (a < 0)
                 throw new InvalidCastException();
             UInt128 c;
-            Create(out c, (ulong)a, 0);
+            Create(out c, (ulong)a);
             return c;
         }
 
         public static implicit operator UInt128(ulong a)
         {
             UInt128 c;
-            Create(out c, a, 0);
+            Create(out c, a);
+            return c;
+        }
+
+        public static explicit operator UInt128(decimal a)
+        {
+            UInt128 c;
+            Create(out c, a);
             return c;
         }
 
         public static explicit operator UInt128(BigInteger a)
         {
             UInt128 c;
-            Create(out c, ref a);
+            Create(out c, a);
             return c;
+        }
+
+        public static explicit operator float(UInt128 a)
+        {
+            return ConvertToFloat(ref a);
         }
 
         public static explicit operator double(UInt128 a)
@@ -197,11 +251,38 @@ namespace Decompose.Numerics
             return ConvertToDouble(ref a);
         }
 
+        public static float ConvertToFloat(ref UInt128 a)
+        {
+            if (a.s1 == 0)
+                return a.s0;
+            return a.s1 * (float)ulong.MaxValue + a.s0;
+        }
+
         public static double ConvertToDouble(ref UInt128 a)
         {
             if (a.s1 == 0)
                 return a.s0;
             return a.s1 * (double)ulong.MaxValue + a.s0;
+        }
+
+        public static explicit operator sbyte(UInt128 a)
+        {
+            return (sbyte)a.r0;
+        }
+
+        public static explicit operator byte(UInt128 a)
+        {
+            return (byte)a.r0;
+        }
+
+        public static explicit operator short(UInt128 a)
+        {
+            return (short)a.r0;
+        }
+
+        public static explicit operator ushort(UInt128 a)
+        {
+            return (ushort)a.r0;
         }
 
         public static explicit operator int(UInt128 a)
@@ -224,8 +305,20 @@ namespace Decompose.Numerics
             return a.s0;
         }
 
+        public static explicit operator decimal(UInt128 a)
+        {
+            if (a.s1 == 0)
+                return a.s0;
+            var shift = Math.Max(0, 32 - a.s1.GetBitLength());
+            UInt128 ashift;
+            RightShift(out ashift, ref a, shift);
+            return new decimal((int)a.r0, (int)a.r1, (int)a.r2, false, (byte)shift);
+        }
+
         public static implicit operator BigInteger(UInt128 a)
         {
+            if (a.s1 == 0)
+                return a.s0;
             return (BigInteger)a.s1 << 64 | a.s0;
         }
 
@@ -938,7 +1031,7 @@ namespace Decompose.Numerics
 
         public static void PlusEquals(ref UInt128 a, UInt128 b)
         {
-            UInt128.PlusEquals(ref a, ref b);
+            PlusEquals(ref a, ref b);
         }
 
         public static void Subtract(out UInt128 c, ref UInt128 a, ulong b)
@@ -988,7 +1081,7 @@ namespace Decompose.Numerics
 
         public static void MinusEquals(ref UInt128 a, UInt128 b)
         {
-            UInt128.MinusEquals(ref a, ref b);
+            MinusEquals(ref a, ref b);
         }
 
         private static void Add32(out UInt128 w, ref UInt128 u, ref UInt128 v)
@@ -1118,12 +1211,12 @@ namespace Decompose.Numerics
             else if (b.r3 == 0)
             {
                 UInt128 rem;
-                Create(out c, DivRem96(out rem, ref a, ref b), 0);
+                Create(out c, DivRem96(out rem, ref a, ref b));
             }
             else
             {
                 UInt128 rem;
-                Create(out c, DivRem128(out rem, ref a, ref b), 0, 0, 0);
+                Create(out c, DivRem128(out rem, ref a, ref b));
             }
         }
 
@@ -1157,7 +1250,7 @@ namespace Decompose.Numerics
             if (LessThan(ref a, ref b))
                 c = a;
             else if (b.s1 == 0)
-                Create(out c, Remainder(ref a, b.s0), 0);
+                Create(out c, Remainder(ref a, b.s0));
             else if (b.r3 == 0)
                 DivRem96(out c, ref a, ref b);
             else
@@ -1574,6 +1667,16 @@ namespace Decompose.Numerics
             c.s1 = ~a.s1;
         }
 
+        public static void NegateEquals(ref UInt128 a)
+        {
+            var s0 = a.s0;
+            a.s0 = 0 - s0;
+            a.s1 = 0 - a.s1;
+            if (s0 > 0)
+                --a.s1;
+        }
+
+
         public static void Negate(out UInt128 c, ref UInt128 a)
         {
             c.r0 = c.r1 = c.r2 = c.r3 = 0;
@@ -1623,7 +1726,7 @@ namespace Decompose.Numerics
             if (a.s1 < maxRepSquaredHigh)
             {
                 UInt128 s2;
-                UInt128.Square(out s2, s);
+                Square(out s2, s);
                 var r = a.s0 - s2.s0;
                 if (r > long.MaxValue)
                     --s;
@@ -1645,7 +1748,7 @@ namespace Decompose.Numerics
             if (a.s1 < maxRepSquaredHigh)
             {
                 UInt128 s2;
-                UInt128.Square(out s2, s);
+                Square(out s2, s);
                 var r = s2.s0 - a.s0;
                 if (r > long.MaxValue)
                     ++s;
@@ -1656,7 +1759,7 @@ namespace Decompose.Numerics
             }
             s = FloorSqrt(ref a, s);
             UInt128 square;
-            UInt128.Square(out square, s);
+            Square(out square, s);
             if (square.S0 != a.S0 || square.S1 != a.S1)
                 ++s;
             Debug.Assert((BigInteger)(s - 1) * (s - 1) < a && (BigInteger)s * s >= a);
@@ -1672,8 +1775,8 @@ namespace Decompose.Numerics
             {
                 // Equivalent to:
                 // snext = (a / s + s) / 2;
-                UInt128.Divide(out div, ref a, s);
-                UInt128.Add(out sum, ref div, s);
+                Divide(out div, ref a, s);
+                Add(out sum, ref div, s);
                 var snext = sum.S0 >> 1;
                 if (sum.S1 != 0)
                     snext |= (ulong)1 << 63;
@@ -1693,15 +1796,15 @@ namespace Decompose.Numerics
         {
             var s = (ulong)Math.Pow(ConvertToDouble(ref a), (double)1 / 3);
             UInt128 s3;
-            UInt128.Cube(out s3, s);
+            Cube(out s3, s);
             if (a < s3)
                 --s;
             else
             {
                 UInt128 sum;
-                UInt128.Multiply(out sum, 3 * s, s + 1);
+                Multiply(out sum, 3 * s, s + 1);
                 UInt128 diff;
-                UInt128.Subtract(out diff, ref a, ref s3);
+                Subtract(out diff, ref a, ref s3);
                 if (LessThan(ref sum, ref diff))
                     ++s;
             }
@@ -1713,15 +1816,15 @@ namespace Decompose.Numerics
         {
             var s = (ulong)Math.Ceiling(Math.Pow(ConvertToDouble(ref a), (double)1 / 3));
             UInt128 s3;
-            UInt128.Cube(out s3, s);
+            Cube(out s3, s);
             if (s3 < a)
                 ++s;
             else
             {
                 UInt128 sum;
-                UInt128.Multiply(out sum, 3 * s, s + 1);
+                Multiply(out sum, 3 * s, s + 1);
                 UInt128 diff;
-                UInt128.Subtract(out diff, ref s3, ref a);
+                Subtract(out diff, ref s3, ref a);
                 if (LessThan(ref sum, ref diff))
                     --s;
             }
@@ -1890,12 +1993,12 @@ namespace Decompose.Numerics
                 if (LessThan(ref a, ref b))
                 {
                     a1 = a;
-                    UInt128.Remainder(out b1, ref b, ref a);
+                    Remainder(out b1, ref b, ref a);
                 }
                 else
                 {
                     b1 = b;
-                    UInt128.Remainder(out a1, ref a, ref b);
+                    Remainder(out a1, ref a, ref b);
                 }
             }
             else
@@ -2040,10 +2143,10 @@ namespace Decompose.Numerics
                         b3 = t;
                     }
 
-                    Create(out c, a3, 0, 0, 0);
+                    Create(out c, a3);
                 }
                 else
-                    Create(out c, a2, 0);
+                    Create(out c, a2);
             }
             else
                 c = a1;
