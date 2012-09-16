@@ -127,7 +127,7 @@ namespace Decompose.Numerics
         public bool IsOne { get { return v.IsOne; } }
         public bool IsPowerOfTwo { get { return v.IsPowerOfTwo; } }
         public bool IsEven { get { return v.IsEven; } }
-        public bool IsNegative { get { return v.R3 > int.MaxValue; } }
+        public bool IsNegative { get { return v.S1 > long.MaxValue; } }
         public int Sign { get { return IsNegative ? -1 : v.Sign; } }
 
         public override string ToString()
@@ -223,22 +223,22 @@ namespace Decompose.Numerics
 
         public static explicit operator sbyte(Int128 a)
         {
-            return (sbyte)a.R0;
+            return (sbyte)a.v.R0;
         }
 
         public static explicit operator byte(Int128 a)
         {
-            return (byte)a.R0;
+            return (byte)a.v.R0;
         }
 
         public static explicit operator short(Int128 a)
         {
-            return (short)a.R0;
+            return (short)a.v.R0;
         }
 
         public static explicit operator ushort(Int128 a)
         {
-            return (ushort)a.R0;
+            return (ushort)a.v.R0;
         }
 
         public static explicit operator int(Int128 a)
@@ -453,6 +453,20 @@ namespace Decompose.Numerics
             return c;
         }
 
+        public static Int128 operator *(Int128 a, uint b)
+        {
+            Int128 c;
+            Multiply(out c, ref a, b);
+            return c;
+        }
+
+        public static Int128 operator *(uint a, Int128 b)
+        {
+            Int128 c;
+            Multiply(out c, ref b, a);
+            return c;
+        }
+
         public static Int128 operator *(Int128 a, long b)
         {
             Int128 c;
@@ -461,6 +475,20 @@ namespace Decompose.Numerics
         }
 
         public static Int128 operator *(long a, Int128 b)
+        {
+            Int128 c;
+            Multiply(out c, ref b, a);
+            return c;
+        }
+
+        public static Int128 operator *(Int128 a, ulong b)
+        {
+            Int128 c;
+            Multiply(out c, ref a, b);
+            return c;
+        }
+
+        public static Int128 operator *(ulong a, Int128 b)
         {
             Int128 c;
             Multiply(out c, ref b, a);
@@ -481,7 +509,21 @@ namespace Decompose.Numerics
             return c;
         }
 
+        public static Int128 operator /(Int128 a, uint b)
+        {
+            Int128 c;
+            Divide(out c, ref a, b);
+            return c;
+        }
+
         public static Int128 operator /(Int128 a, long b)
+        {
+            Int128 c;
+            Divide(out c, ref a, b);
+            return c;
+        }
+
+        public static Int128 operator /(Int128 a, ulong b)
         {
             Int128 c;
             Divide(out c, ref a, b);
@@ -500,7 +542,17 @@ namespace Decompose.Numerics
             return Remainder(ref a, b);
         }
 
+        public static int operator %(Int128 a, uint b)
+        {
+            return Remainder(ref a, b);
+        }
+
         public static long operator %(Int128 a, long b)
+        {
+            return Remainder(ref a, b);
+        }
+
+        public static long operator %(Int128 a, ulong b)
         {
             return Remainder(ref a, b);
         }
@@ -974,6 +1026,20 @@ namespace Decompose.Numerics
             Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
         }
 
+        public static void Multiply(out Int128 c, ref Int128 a, uint b)
+        {
+            if (a.IsNegative)
+            {
+                UInt128 aneg;
+                UInt128.Negate(out aneg, ref a.v);
+                UInt128.Multiply(out c.v, ref aneg, b);
+                UInt128.Negate(ref c.v);
+            }
+            else
+                UInt128.Multiply(out c.v, ref a.v, b);
+            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
+        }
+
         public static void Multiply(out Int128 c, ref Int128 a, long b)
         {
             if (a.IsNegative)
@@ -998,6 +1064,20 @@ namespace Decompose.Numerics
                 else
                     UInt128.Multiply(out c.v, ref a.v, (ulong)b);
             }
+            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
+        }
+
+        public static void Multiply(out Int128 c, ref Int128 a, ulong b)
+        {
+            if (a.IsNegative)
+            {
+                UInt128 aneg;
+                UInt128.Negate(out aneg, ref a.v);
+                UInt128.Multiply(out c.v, ref aneg, b);
+                UInt128.Negate(ref c.v);
+            }
+            else
+                UInt128.Multiply(out c.v, ref a.v, b);
             Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
         }
 
@@ -1061,6 +1141,20 @@ namespace Decompose.Numerics
             Debug.Assert((BigInteger)c == (BigInteger)a / (BigInteger)b);
         }
 
+        public static void Divide(out Int128 c, ref Int128 a, uint b)
+        {
+            if (a.IsNegative)
+            {
+                UInt128 aneg;
+                UInt128.Negate(out aneg, ref a.v);
+                UInt128.Divide(out c.v, ref aneg, b);
+                UInt128.Negate(ref c.v);
+            }
+            else
+                UInt128.Divide(out c.v, ref a.v, b);
+            Debug.Assert((BigInteger)c == (BigInteger)a / (BigInteger)b);
+        }
+
         public static void Divide(out Int128 c, ref Int128 a, long b)
         {
             if (a.IsNegative)
@@ -1085,6 +1179,20 @@ namespace Decompose.Numerics
                 else
                     UInt128.Divide(out c.v, ref a.v, (ulong)b);
             }
+            Debug.Assert((BigInteger)c == (BigInteger)a / (BigInteger)b);
+        }
+
+        public static void Divide(out Int128 c, ref Int128 a, ulong b)
+        {
+            if (a.IsNegative)
+            {
+                UInt128 aneg;
+                UInt128.Negate(out aneg, ref a.v);
+                UInt128.Divide(out c.v, ref aneg, b);
+                UInt128.Negate(ref c.v);
+            }
+            else
+                UInt128.Divide(out c.v, ref a.v, b);
             Debug.Assert((BigInteger)c == (BigInteger)a / (BigInteger)b);
         }
 
@@ -1141,6 +1249,18 @@ namespace Decompose.Numerics
             }
         }
 
+        public static int Remainder(ref Int128 a, uint b)
+        {
+            if (a.IsNegative)
+            {
+                UInt128 aneg;
+                UInt128.Negate(out aneg, ref a.v);
+                return -(int)UInt128.Remainder(ref aneg, b);
+            }
+            else
+                return (int)UInt128.Remainder(ref a.v, b);
+        }
+
         public static long Remainder(ref Int128 a, long b)
         {
             if (a.IsNegative)
@@ -1159,6 +1279,18 @@ namespace Decompose.Numerics
                 else
                     return (long)UInt128.Remainder(ref a.v, (ulong)b);
             }
+        }
+
+        public static long Remainder(ref Int128 a, ulong b)
+        {
+            if (a.IsNegative)
+            {
+                UInt128 aneg;
+                UInt128.Negate(out aneg, ref a.v);
+                return -(long)UInt128.Remainder(ref aneg, b);
+            }
+            else
+                return (long)UInt128.Remainder(ref a.v, b);
         }
 
         public static void Remainder(out Int128 c, ref Int128 a, ref Int128 b)

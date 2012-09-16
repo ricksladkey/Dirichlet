@@ -24,10 +24,10 @@ namespace Sandbox
             try
             {
                 //GreatestCommonDivisorPerformanceTest();
-                //DivisorsPerformanceTest();
+                DivisorsPerformanceTest();
                 //ModularSumTest();
                 //ParityTest();
-                DivisorSummatoryFunctionOddTest();
+                //DivisorSummatoryFunctionOddTest();
                 //MertensPerformanceTest();
                 //PiMod2PerformanceTest();
                 //PerfectPowerTest();
@@ -677,45 +677,57 @@ namespace Sandbox
             var timer = new Stopwatch();
             var nref = IntegerMath.Power((BigInteger)10, 22);
             var limitref = IntegerMath.FloorRoot(nref, 3);
-            var sum1 = (BigInteger)0;
+            for (var j = 0; j < 1; j++)
             {
-                var n = (BigInteger)nref;
-                var limit = (BigInteger)limitref;
-                timer.Restart();
-                for (var i = (long)1; i <= limitref; i++)
-                    sum1 += n / i;
-                Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                var sum1 = (BigInteger)0;
+                {
+                    var n = (BigInteger)nref;
+                    var limit = (BigInteger)limitref;
+                    timer.Restart();
+                    for (var i = (long)1; i <= limitref; i++)
+                        sum1 += n / i;
+                    Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                }
+                var sum2 = (UInt128)0;
+                {
+                    var n = (UInt128)nref;
+                    var limit = (UInt128)limitref;
+                    timer.Restart();
+                    for (var i = (ulong)1; i <= limit; i++)
+                        sum2 += n / i;
+                    Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                }
+                var sum3 = (Int128)0;
+                {
+                    var n = (Int128)nref;
+                    var limit = (Int128)limitref;
+                    timer.Restart();
+                    for (var i = (ulong)1; i <= limit; i++)
+                        sum3 += n / i;
+                    Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                }
+                var sum4 = (MutableInteger)0;
+                {
+                    var n = (MutableInteger)nref;
+                    var limit = (MutableInteger)limitref;
+                    var ni = (MutableInteger)0;
+                    var store = new MutableIntegerStore(4);
+                    timer.Restart();
+                    for (var i = (ulong)1; i <= limit; i++)
+                        sum4.Add(ni.SetQuotient(n, i, store));
+                    Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                }
+                var sum5 = (Int128)0;
+                {
+                    var n = -(Int128)nref;
+                    var limit = -(Int128)limitref;
+                    timer.Restart();
+                    for (var i = -(long)1; i >= limit; i--)
+                        sum5 += n / i;
+                    Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                }
+                Console.WriteLine("n = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}, sum4 = {4}, sum5 = {5}", nref, sum1, sum2, sum3, sum4, sum5);
             }
-            var sum2 = (UInt128)0;
-            {
-                var n = (UInt128)nref;
-                var limit = (UInt128)limitref;
-                timer.Restart();
-                for (var i = (ulong)1; i <= limit; i++)
-                    sum2 += n / i;
-                Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-            }
-            var sum3 = (Int128)0;
-            {
-                var n = (Int128)nref;
-                var limit = (Int128)limitref;
-                timer.Restart();
-                for (var i = (ulong)1; i <= limit; i++)
-                    sum3 += n / i;
-                Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-            }
-            var sum4 = (MutableInteger)0;
-            {
-                var n = (MutableInteger)nref;
-                var limit = (MutableInteger)limitref;
-                var ni = (MutableInteger)0;
-                var store = new MutableIntegerStore(4);
-                timer.Restart();
-                for (var i = (ulong)1; i <= limit; i++)
-                    sum4.Add(ni.SetQuotient(n, i, store));
-                Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-            }
-            Console.WriteLine("n = {0}, sum1 = {1}, sum2 = {2}, sum3 = {3}, sum4 = {4}", nref, sum1, sum2, sum3, sum4);
         }
 
         static void ModularSumTest()
