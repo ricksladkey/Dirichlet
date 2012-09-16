@@ -983,7 +983,7 @@ namespace Sandbox
                     var b = (UInt128)(ulong.MaxValue / 1000);
                     var s = (UInt128)0;
                     for (var i = 0; i < 100000000; i++)
-                        UInt128.PlusEquals(ref s, ref a);
+                        UInt128.Add(ref s, ref a);
                     return s;
                 });
                 var sum2 = EvaluateAndTime(() =>

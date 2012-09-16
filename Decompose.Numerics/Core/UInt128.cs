@@ -109,7 +109,7 @@ namespace Decompose.Numerics
             c.r2 = (uint)bits[2];
             c.r3 = 0;
             if (a < 0)
-                NegateEquals(ref c);
+                Negate(ref c);
         }
 
         public static void Create(out UInt128 c, BigInteger a)
@@ -121,7 +121,7 @@ namespace Decompose.Numerics
             c.s0 = (ulong)(a & ulong.MaxValue);
             c.s1 = (ulong)(a >> 64);
             if (sign == -1)
-                NegateEquals(ref c);
+                Negate(ref c);
         }
 
         public static void Create(out UInt128 c, double a)
@@ -1012,7 +1012,7 @@ namespace Decompose.Numerics
             Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 128));
         }
 
-        public static void PlusEquals(ref UInt128 a, ulong b)
+        public static void Add(ref UInt128 a, ulong b)
         {
             var sum = a.s0 + b;
             if (sum < a.s0 && sum < b)
@@ -1020,7 +1020,7 @@ namespace Decompose.Numerics
             a.s0 = sum;
         }
 
-        public static void PlusEquals(ref UInt128 a, ref UInt128 b)
+        public static void Add(ref UInt128 a, ref UInt128 b)
         {
             var sum = a.s0 + b.s0;
             if (sum < a.s0 && sum < b.s0)
@@ -1029,9 +1029,9 @@ namespace Decompose.Numerics
             a.s1 += b.s1;
         }
 
-        public static void PlusEquals(ref UInt128 a, UInt128 b)
+        public static void Add(ref UInt128 a, UInt128 b)
         {
-            PlusEquals(ref a, ref b);
+            Add(ref a, ref b);
         }
 
         public static void Subtract(out UInt128 c, ref UInt128 a, ulong b)
@@ -1064,14 +1064,14 @@ namespace Decompose.Numerics
             Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + ((BigInteger)1 << 128)) % ((BigInteger)1 << 128));
         }
 
-        public static void MinusEquals(ref UInt128 a, ulong b)
+        public static void Subtract(ref UInt128 a, ulong b)
         {
             if (a.s0 < b)
                 --a.s1;
             a.s0 -= b;
         }
 
-        public static void MinusEquals(ref UInt128 a, ref UInt128 b)
+        public static void Subtract(ref UInt128 a, ref UInt128 b)
         {
             if (a.s0 < b.s0)
                 --a.s1;
@@ -1079,9 +1079,9 @@ namespace Decompose.Numerics
             a.s1 -= b.s1;
         }
 
-        public static void MinusEquals(ref UInt128 a, UInt128 b)
+        public static void Subtract(ref UInt128 a, UInt128 b)
         {
-            MinusEquals(ref a, ref b);
+            Subtract(ref a, ref b);
         }
 
         private static void Add32(out UInt128 w, ref UInt128 u, ref UInt128 v)
@@ -1417,14 +1417,14 @@ namespace Decompose.Numerics
         {
             var d = 32 - b.r2.GetBitLength();
             var v = b;
-            LeftShift64Equals(ref v, d);
+            LeftShift64(ref v, d);
             rem = a;
-            var r4 = (uint)LeftShift64Equals(ref rem, d);
+            var r4 = (uint)LeftShift64(ref rem, d);
             var q1 = DivRem(r4, ref rem.r3, ref rem.r2, ref rem.r1, v.r2, v.r1, v.r0);
             var q0 = DivRem(rem.r3, ref rem.r2, ref rem.r1, ref rem.r0, v.r2, v.r1, v.r0);
             var div = (ulong)q1 << 32 | q0;
             rem.r3 = 0;
-            RightShift64Equals(ref rem, d);
+            RightShift64(ref rem, d);
             Debug.Assert((BigInteger)div == (BigInteger)a / (BigInteger)b);
             Debug.Assert((BigInteger)rem == (BigInteger)a % (BigInteger)b);
             return div;
@@ -1434,11 +1434,11 @@ namespace Decompose.Numerics
         {
             var d = 32 - b.r3.GetBitLength();
             var v = b;
-            LeftShift64Equals(ref v, d);
+            LeftShift64(ref v, d);
             rem = a;
-            var r4 = (uint)LeftShift64Equals(ref rem, d);
+            var r4 = (uint)LeftShift64(ref rem, d);
             var div = DivRem(r4, ref rem.r3, ref rem.r2, ref rem.r1, ref rem.r0, v.r3, v.r2, v.r1, v.r0);
-            RightShift64Equals(ref rem, d);
+            RightShift64(ref rem, d);
             Debug.Assert((BigInteger)div == (BigInteger)a / (BigInteger)b);
             Debug.Assert((BigInteger)rem == (BigInteger)a % (BigInteger)b);
             return div;
@@ -1667,7 +1667,7 @@ namespace Decompose.Numerics
             c.s1 = ~a.s1;
         }
 
-        public static void NegateEquals(ref UInt128 a)
+        public static void Negate(ref UInt128 a)
         {
             var s0 = a.s0;
             a.s0 = 0 - s0;
@@ -1920,7 +1920,7 @@ namespace Decompose.Numerics
             return c;
         }
 
-        private static void RightShift64Equals(ref UInt128 c, int d)
+        private static void RightShift64(ref UInt128 c, int d)
         {
             if (d == 0)
                 return;
@@ -1928,10 +1928,10 @@ namespace Decompose.Numerics
             c.s1 >>= d;
         }
 
-        public static void RightShiftEquals(ref UInt128 c, int d)
+        public static void RightShift(ref UInt128 c, int d)
         {
             if (d < 64)
-                RightShift64Equals(ref c, d);
+                RightShift64(ref c, d);
             else
             {
                 c.s0 = c.s1 >> (d - 64);
@@ -1939,13 +1939,38 @@ namespace Decompose.Numerics
             }
         }
 
-        public static void RightShiftOneEquals(ref UInt128 c)
+        public static void RightShift(ref UInt128 c)
         {
             c.s0 = c.s1 << 63 | c.s0 >> 1;
             c.s1 >>= 1;
         }
 
-        private static ulong LeftShift64Equals(ref UInt128 c, int d)
+        private static void ArithmeticRightShift64(ref UInt128 c, int d)
+        {
+            if (d == 0)
+                return;
+            c.s0 = c.s1 << (64 - d) | c.s0 >> d;
+            c.s1 = (ulong)((long)c.s1 >> d);
+        }
+
+        public static void ArithmeticRightShift(ref UInt128 c, int d)
+        {
+            if (d < 64)
+                ArithmeticRightShift64(ref c, d);
+            else
+            {
+                c.s0 = (ulong)((long)c.s1 >> (d - 64));
+                c.s1 = 0;
+            }
+        }
+
+        public static void ArithmeticRightShift(ref UInt128 c)
+        {
+            c.s0 = c.s1 << 63 | c.s0 >> 1;
+            c.s1 = (ulong)((long)c.s1 >> 1);
+        }
+
+        private static ulong LeftShift64(ref UInt128 c, int d)
         {
             if (d == 0)
                 return 0;
@@ -1956,10 +1981,10 @@ namespace Decompose.Numerics
             return result;
         }
 
-        public static void LeftShiftEquals(ref UInt128 c, int d)
+        public static void LeftShift(ref UInt128 c, int d)
         {
             if (d < 64)
-                LeftShift64Equals(ref c, d);
+                LeftShift64(ref c, d);
             else
             {
                 c.s1 = c.s0 << (d - 64);
@@ -1967,7 +1992,7 @@ namespace Decompose.Numerics
             }
         }
 
-        public static void LeftShiftOneEquals(ref UInt128 c)
+        public static void LeftShift(ref UInt128 c)
         {
             c.s1 = c.s1 << 1 | c.s0 >> 63;
             c.s0 <<= 1;

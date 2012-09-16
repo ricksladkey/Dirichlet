@@ -315,12 +315,12 @@ namespace Decompose.Numerics
                 t6 += t3;
                 t3 += 8;
 #else
-                UInt128.PlusEquals(ref s, (ulong)((t5 - UInt128.CeilingSqrt(t6)) / t4));
+                UInt128.Add(ref s, (ulong)((t5 - UInt128.CeilingSqrt(t6)) / t4));
                 if (u >= umax)
                     break;
-                UInt128.PlusEquals(ref t5, t1);
-                UInt128.PlusEquals(ref t6, ref t3);
-                UInt128.PlusEquals(ref t3, 8);
+                UInt128.Add(ref t5, t1);
+                UInt128.Add(ref t6, ref t3);
+                UInt128.Add(ref t3, 8);
 #endif
                 ++u;
             }
