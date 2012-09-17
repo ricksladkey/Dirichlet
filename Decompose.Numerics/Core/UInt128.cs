@@ -336,12 +336,12 @@ namespace Decompose.Numerics
 
         public static uint operator &(UInt128 a, uint b)
         {
-            return a.r0 & b;
+            return (uint)a.s0 & b;
         }
 
         public static uint operator &(uint a, UInt128 b)
         {
-            return a & b.r0;
+            return a & (uint)b.s0;
         }
 
         public static ulong operator &(UInt128 a, ulong b)
@@ -509,42 +509,42 @@ namespace Decompose.Numerics
 
         public static bool operator <(UInt128 a, int b)
         {
-            return a.CompareTo(b) < 0;
+            return LessThan(ref a, b);
         }
 
         public static bool operator <(int a, UInt128 b)
         {
-            return b.CompareTo(a) > 0;
+            return LessThan(a, ref b);
         }
 
         public static bool operator <(UInt128 a, uint b)
         {
-            return a.CompareTo(b) < 0;
+            return LessThan(ref a, b);
         }
 
         public static bool operator <(uint a, UInt128 b)
         {
-            return b.CompareTo(a) > 0;
+            return LessThan(a, ref b);
         }
 
         public static bool operator <(UInt128 a, long b)
         {
-            return a.CompareTo(b) < 0;
+            return LessThan(ref a, b);
         }
 
         public static bool operator <(long a, UInt128 b)
         {
-            return b.CompareTo(a) > 0;
+            return LessThan(a, ref b);
         }
 
         public static bool operator <(UInt128 a, ulong b)
         {
-            return a.CompareTo(b) < 0;
+            return LessThan(ref a, b);
         }
 
         public static bool operator <(ulong a, UInt128 b)
         {
-            return b.CompareTo(a) > 0;
+            return LessThan(a, ref b);
         }
 
         public static bool operator <=(UInt128 a, UInt128 b)
@@ -554,42 +554,42 @@ namespace Decompose.Numerics
 
         public static bool operator <=(UInt128 a, int b)
         {
-            return a.CompareTo(b) <= 0;
+            return !LessThan(b, ref a);
         }
 
         public static bool operator <=(int a, UInt128 b)
         {
-            return b.CompareTo(a) >= 0;
+            return !LessThan(ref b, a);
         }
 
         public static bool operator <=(UInt128 a, uint b)
         {
-            return a.CompareTo(b) <= 0;
+            return !LessThan(b, ref a);
         }
 
         public static bool operator <=(uint a, UInt128 b)
         {
-            return b.CompareTo(a) >= 0;
+            return !LessThan(ref b, a);
         }
 
         public static bool operator <=(UInt128 a, long b)
         {
-            return a.CompareTo(b) <= 0;
+            return !LessThan(b, ref a);
         }
 
         public static bool operator <=(long a, UInt128 b)
         {
-            return b.CompareTo(a) >= 0;
+            return !LessThan(ref b, a);
         }
 
         public static bool operator <=(UInt128 a, ulong b)
         {
-            return a.CompareTo(b) <= 0;
+            return !LessThan(b, ref a);
         }
 
         public static bool operator <=(ulong a, UInt128 b)
         {
-            return b.CompareTo(a) >= 0;
+            return !LessThan(ref b, a);
         }
 
         public static bool operator >(UInt128 a, UInt128 b)
@@ -599,42 +599,42 @@ namespace Decompose.Numerics
 
         public static bool operator >(UInt128 a, int b)
         {
-            return a.CompareTo(b) > 0;
+            return LessThan(b, ref a);
         }
 
         public static bool operator >(int a, UInt128 b)
         {
-            return b.CompareTo(a) < 0;
+            return LessThan(ref b, a);
         }
 
         public static bool operator >(UInt128 a, uint b)
         {
-            return a.CompareTo(b) > 0;
+            return LessThan(b, ref a);
         }
 
         public static bool operator >(uint a, UInt128 b)
         {
-            return b.CompareTo(a) < 0;
+            return LessThan(ref b, a);
         }
 
         public static bool operator >(UInt128 a, long b)
         {
-            return a.CompareTo(b) > 0;
+            return LessThan(b, ref a);
         }
 
         public static bool operator >(long a, UInt128 b)
         {
-            return b.CompareTo(a) < 0;
+            return LessThan(ref b, a);
         }
 
         public static bool operator >(UInt128 a, ulong b)
         {
-            return a.CompareTo(b) > 0;
+            return LessThan(b, ref a);
         }
 
         public static bool operator >(ulong a, UInt128 b)
         {
-            return b.CompareTo(a) < 0;
+            return LessThan(ref b, a);
         }
 
         public static bool operator >=(UInt128 a, UInt128 b)
@@ -644,42 +644,42 @@ namespace Decompose.Numerics
 
         public static bool operator >=(UInt128 a, int b)
         {
-            return a.CompareTo(b) >= 0;
+            return !LessThan(ref a, b);
         }
 
         public static bool operator >=(int a, UInt128 b)
         {
-            return b.CompareTo(a) <= 0;
+            return !LessThan(a, ref b);
         }
 
         public static bool operator >=(UInt128 a, uint b)
         {
-            return a.CompareTo(b) >= 0;
+            return !LessThan(ref a, b);
         }
 
         public static bool operator >=(uint a, UInt128 b)
         {
-            return b.CompareTo(a) <= 0;
+            return !LessThan(a, ref b);
         }
 
         public static bool operator >=(UInt128 a, long b)
         {
-            return a.CompareTo(b) >= 0;
+            return !LessThan(ref a, b);
         }
 
         public static bool operator >=(long a, UInt128 b)
         {
-            return b.CompareTo(a) <= 0;
+            return !LessThan(a, ref b);
         }
 
         public static bool operator >=(UInt128 a, ulong b)
         {
-            return a.CompareTo(b) >= 0;
+            return !LessThan(ref a, b);
         }
 
         public static bool operator >=(ulong a, UInt128 b)
         {
-            return b.CompareTo(a) <= 0;
+            return !LessThan(a, ref b);
         }
 
         public static bool operator ==(UInt128 a, UInt128 b)
@@ -816,11 +816,32 @@ namespace Decompose.Numerics
             return CompareTo((UInt128)obj);
         }
 
-        private static bool LessThan(ref UInt128 a, ref UInt128 b)
+        private static bool LessThan(ref UInt128 a, long b)
         {
-            return a.s1 < b.s1 || a.s1 == b.s1 && a.s0 < b.s0;
+            return b >= 0 && a.s1 == 0 && a.s0 < (ulong)b;
         }
 
+        private static bool LessThan(long a, ref UInt128 b)
+        {
+            return a < 0 || b.s1 != 0 || (ulong)a < b.s0;
+        }
+
+        private static bool LessThan(ref UInt128 a, ulong b)
+        {
+            return a.s1 == 0 && a.s0 < b;
+        }
+
+        private static bool LessThan(ulong a, ref UInt128 b)
+        {
+            return b.s1 != 0 || a < b.s0;
+        }
+
+        private static bool LessThan(ref UInt128 a, ref UInt128 b)
+        {
+            if (a.s1 != b.s1)
+                return a.s1 < b.s1;
+            return a.s0 < b.s0;
+        }
 
         public static bool Equals(ref UInt128 a, ref UInt128 b)
         {
@@ -1132,7 +1153,7 @@ namespace Decompose.Numerics
         {
             if (u.s1 == 0)
                 Divide64(out w, u.s0, v);
-            else if (u.r3 == 0)
+            else if (u.s1 <= int.MaxValue)
                 Divide96(out w, ref u, v);
             else
                 Divide128(out w, ref u, v);
@@ -1147,14 +1168,14 @@ namespace Decompose.Numerics
                 var v0 = (uint)v;
                 if (v == v0)
                 {
-                    if (u.r3 == 0)
+                    if (u.s1 <= int.MaxValue)
                         Divide96(out w, ref u, v0);
                     else
                         Divide128(out w, ref u, v0);
                 }
                 else
                 {
-                    if (u.r3 == 0)
+                    if (u.s1 <= int.MaxValue)
                         Divide96(out w, ref u, v);
                     else
                         Divide128(out w, ref u, v);
@@ -1168,7 +1189,7 @@ namespace Decompose.Numerics
                 c = Zero;
             else if (b.s1 == 0)
                 Divide(out c, ref a, b.s0);
-            else if (b.r3 == 0)
+            else if (b.s1 <= int.MaxValue)
             {
                 UInt128 rem;
                 Create(out c, DivRem96(out rem, ref a, ref b));
@@ -1184,7 +1205,7 @@ namespace Decompose.Numerics
         {
             if (u.s1 == 0)
                 return (uint)(u.s0 % v);
-            if (u.r3 == 0)
+            if (u.s1 <= int.MaxValue)
                 return Remainder96(ref u, v);
             return Remainder128(ref u, v);
         }
@@ -1196,11 +1217,11 @@ namespace Decompose.Numerics
             var v0 = (uint)v;
             if (v == v0)
             {
-                if (u.r3 == 0)
+                if (u.s1 <= int.MaxValue)
                     return Remainder96(ref u, v0);
                 return Remainder128(ref u, v0);
             }
-            if (u.r3 == 0)
+            if (u.s1 <= int.MaxValue)
                 return Remainder96(ref u, v);
             return Remainder128(ref u, v);
         }
@@ -1211,7 +1232,7 @@ namespace Decompose.Numerics
                 c = a;
             else if (b.s1 == 0)
                 Create(out c, Remainder(ref a, b.s0));
-            else if (b.r3 == 0)
+            else if (b.s1 <= int.MaxValue)
                 DivRem96(out c, ref a, ref b);
             else
                 DivRem128(out c, ref a, ref b);
@@ -1226,32 +1247,39 @@ namespace Decompose.Numerics
 
         private static void Divide96(out UInt128 w, ref UInt128 u, uint v)
         {
-            var r2 = u.r2 / v;
-            var u0 = (ulong)(u.r2 - r2 * v);
-            var u0u1 = u0 << 32 | u.r1;
-            var r1 = (uint)(u0u1 / v);
-            u0 = u0u1 - r1 * v;
-            u0u1 = u0 << 32 | u.r0;
-            var r0 = (uint)(u0u1 / v);
-            w.s1 = r2;
-            w.s0 = (ulong)r1 << 32 | r0;
+            var r2 = (uint)u.s1;
+            var r1 = (uint)(u.s0 >> 32);
+            var r0 = (uint)u.s0;
+            var w2 = r2 / v;
+            var u0 = (ulong)(r2 - w2 * v);
+            var u0u1 = u0 << 32 | r1;
+            var w1 = (uint)(u0u1 / v);
+            u0 = u0u1 - w1 * v;
+            u0u1 = u0 << 32 | r0;
+            var w0 = (uint)(u0u1 / v);
+            w.s1 = w2;
+            w.s0 = (ulong)w1 << 32 | w0;
             Debug.Assert((BigInteger)w == (BigInteger)u / v);
         }
 
         private static void Divide128(out UInt128 w, ref UInt128 u, uint v)
         {
-            var r3 = u.r3 / v;
-            var u0 = (ulong)(u.r3 - r3 * v);
-            var u0u1 = u0 << 32 | u.r2;
-            var r2 = (uint)(u0u1 / v);
-            u0 = u0u1 - r2 * v;
-            u0u1 = u0 << 32 | u.r1;
-            var r1 = (uint)(u0u1 / v);
-            u0 = u0u1 - r1 * v;
-            u0u1 = u0 << 32 | u.r0;
-            var r0 = (uint)(u0u1 / v);
-            w.s1 = (ulong)r3 << 32 | r2;
-            w.s0 = (ulong)r1 << 32 | r0;
+            var r3 = (uint)(u.s1 >> 32);
+            var r2 = (uint)u.s1;
+            var r1 = (uint)(u.s0 >> 32);
+            var r0 = (uint)u.s0;
+            var w3 = r3 / v;
+            var u0 = (ulong)(r3 - w3 * v);
+            var u0u1 = u0 << 32 | r2;
+            var w2 = (uint)(u0u1 / v);
+            u0 = u0u1 - w2 * v;
+            u0u1 = u0 << 32 | r1;
+            var w1 = (uint)(u0u1 / v);
+            u0 = u0u1 - w1 * v;
+            u0u1 = u0 << 32 | r0;
+            var w0 = (uint)(u0u1 / v);
+            w.s1 = (ulong)w3 << 32 | w2;
+            w.s0 = (ulong)w1 << 32 | w0;
             Debug.Assert((BigInteger)w == (BigInteger)u / v);
         }
 
@@ -1384,12 +1412,15 @@ namespace Decompose.Numerics
             UInt128 v;
             LeftShift64(out v, ref b, d);
             var r4 = (uint)LeftShift64(out rem, ref a, d);
+            var v1 = v.r2;
+            var v2 = v.r1;
+            var v3 = v.r0;
             var r3 = rem.r3;
             var r2 = rem.r2;
             var r1 = rem.r1;
             var r0 = rem.r0;
-            var q1 = DivRem(r4, ref r3, ref r2, ref r1, v.r2, v.r1, v.r0);
-            var q0 = DivRem(r3, ref r2, ref r1, ref r0, v.r2, v.r1, v.r0);
+            var q1 = DivRem(r4, ref r3, ref r2, ref r1, v1, v2, v3);
+            var q0 = DivRem(r3, ref r2, ref r1, ref r0, v1, v2, v3);
             Create(out rem, r0, r1, r2, 0);
             var div = (ulong)q1 << 32 | q0;
             RightShift64(ref rem, d);

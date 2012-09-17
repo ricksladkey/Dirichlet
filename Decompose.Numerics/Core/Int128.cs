@@ -533,42 +533,42 @@ namespace Decompose.Numerics
 
         public static bool operator <(Int128 a, int b)
         {
-            return a.CompareTo(b) < 0;
+            return LessThan(ref a.v, b);
         }
 
         public static bool operator <(int a, Int128 b)
         {
-            return b.CompareTo(a) > 0;
+            return LessThan(a, ref b.v);
         }
 
         public static bool operator <(Int128 a, uint b)
         {
-            return a.CompareTo(b) < 0;
+            return LessThan(ref a.v, b);
         }
 
         public static bool operator <(uint a, Int128 b)
         {
-            return b.CompareTo(a) > 0;
+            return LessThan(a, ref b.v);
         }
 
         public static bool operator <(Int128 a, long b)
         {
-            return a.CompareTo(b) < 0;
+            return LessThan(ref a.v, b);
         }
 
         public static bool operator <(long a, Int128 b)
         {
-            return b.CompareTo(a) > 0;
+            return LessThan(a, ref b.v);
         }
 
         public static bool operator <(Int128 a, ulong b)
         {
-            return a.CompareTo(b) < 0;
+            return LessThan(ref a.v, b);
         }
 
         public static bool operator <(ulong a, Int128 b)
         {
-            return b.CompareTo(a) > 0;
+            return LessThan(a, ref b.v);
         }
 
         public static bool operator <=(Int128 a, UInt128 b)
@@ -588,42 +588,42 @@ namespace Decompose.Numerics
 
         public static bool operator <=(Int128 a, int b)
         {
-            return a.CompareTo(b) <= 0;
+            return !LessThan(b, ref a.v);
         }
 
         public static bool operator <=(int a, Int128 b)
         {
-            return b.CompareTo(a) >= 0;
+            return !LessThan(ref b.v, a);
         }
 
         public static bool operator <=(Int128 a, uint b)
         {
-            return a.CompareTo(b) <= 0;
+            return !LessThan(b, ref a.v);
         }
 
         public static bool operator <=(uint a, Int128 b)
         {
-            return b.CompareTo(a) >= 0;
+            return !LessThan(ref b.v, a);
         }
 
         public static bool operator <=(Int128 a, long b)
         {
-            return a.CompareTo(b) <= 0;
+            return !LessThan(b, ref a.v);
         }
 
         public static bool operator <=(long a, Int128 b)
         {
-            return b.CompareTo(a) >= 0;
+            return !LessThan(ref b.v, a);
         }
 
         public static bool operator <=(Int128 a, ulong b)
         {
-            return a.CompareTo(b) <= 0;
+            return !LessThan(b, ref a.v);
         }
 
         public static bool operator <=(ulong a, Int128 b)
         {
-            return b.CompareTo(a) >= 0;
+            return !LessThan(ref b.v, a);
         }
 
         public static bool operator >(Int128 a, UInt128 b)
@@ -643,42 +643,42 @@ namespace Decompose.Numerics
 
         public static bool operator >(Int128 a, int b)
         {
-            return a.CompareTo(b) > 0;
+            return LessThan(b, ref a.v);
         }
 
         public static bool operator >(int a, Int128 b)
         {
-            return b.CompareTo(a) < 0;
+            return LessThan(ref b.v, a);
         }
 
         public static bool operator >(Int128 a, uint b)
         {
-            return a.CompareTo(b) > 0;
+            return LessThan(b, ref a.v);
         }
 
         public static bool operator >(uint a, Int128 b)
         {
-            return b.CompareTo(a) < 0;
+            return LessThan(ref b.v, a);
         }
 
         public static bool operator >(Int128 a, long b)
         {
-            return a.CompareTo(b) > 0;
+            return LessThan(b, ref a.v);
         }
 
         public static bool operator >(long a, Int128 b)
         {
-            return b.CompareTo(a) < 0;
+            return LessThan(ref b.v, a);
         }
 
         public static bool operator >(Int128 a, ulong b)
         {
-            return a.CompareTo(b) > 0;
+            return LessThan(b, ref a.v);
         }
 
         public static bool operator >(ulong a, Int128 b)
         {
-            return b.CompareTo(a) < 0;
+            return LessThan(ref b.v, a);
         }
 
         public static bool operator >=(Int128 a, UInt128 b)
@@ -698,42 +698,42 @@ namespace Decompose.Numerics
 
         public static bool operator >=(Int128 a, int b)
         {
-            return a.CompareTo(b) >= 0;
+            return !LessThan(ref a.v, b);
         }
 
         public static bool operator >=(int a, Int128 b)
         {
-            return b.CompareTo(a) <= 0;
+            return !LessThan(a, ref b.v);
         }
 
         public static bool operator >=(Int128 a, uint b)
         {
-            return a.CompareTo(b) >= 0;
+            return !LessThan(ref a.v, b);
         }
 
         public static bool operator >=(uint a, Int128 b)
         {
-            return b.CompareTo(a) <= 0;
+            return !LessThan(a, ref b.v);
         }
 
         public static bool operator >=(Int128 a, long b)
         {
-            return a.CompareTo(b) >= 0;
+            return !LessThan(ref a.v, b);
         }
 
         public static bool operator >=(long a, Int128 b)
         {
-            return b.CompareTo(a) <= 0;
+            return !LessThan(a, ref b.v);
         }
 
         public static bool operator >=(Int128 a, ulong b)
         {
-            return a.CompareTo(b) >= 0;
+            return !LessThan(ref a.v, b);
         }
 
         public static bool operator >=(ulong a, Int128 b)
         {
-            return b.CompareTo(a) <= 0;
+            return !LessThan(a, ref b.v);
         }
 
         public static bool operator ==(UInt128 a, Int128 b)
@@ -860,9 +860,7 @@ namespace Decompose.Numerics
 
         public int CompareTo(int other)
         {
-            if (other < 0)
-                return SignedCompare(ref v, (ulong)(long)other, ulong.MaxValue);
-            return SignedCompare(ref v, (ulong)other, 0);
+            return SignedCompare(ref v, (ulong)other, (ulong)(other >> 31));
         }
 
         public int CompareTo(uint other)
@@ -872,9 +870,7 @@ namespace Decompose.Numerics
 
         public int CompareTo(long other)
         {
-            if (other < 0)
-                return SignedCompare(ref v, (ulong)other, ulong.MaxValue);
-            return SignedCompare(ref v, (ulong)other, 0);
+            return SignedCompare(ref v, (ulong)other, (ulong)(other >> 63));
         }
 
         public int CompareTo(ulong other)
@@ -893,16 +889,53 @@ namespace Decompose.Numerics
 
         private static bool LessThan(ref UInt128 a, ref UInt128 b)
         {
-            if (a.S1 != b.S1)
-                return (a.S1 ^ ((ulong)1 << 63)) < (b.S1 ^ ((ulong)1 << 63));
+            var as1 = (long)a.S1;
+            var bs1 = (long)b.S1;
+            if (as1 != bs1)
+                return as1 < bs1;
             return a.S0 < b.S0;
         }
 
-        private static int SignedCompare(ref UInt128 a, ulong s0, ulong s1)
+        private static bool LessThan(ref UInt128 a, long b)
         {
-            if (a.S1 != s1)
-                return (a.S1 ^ ((ulong)1 << 63)).CompareTo(s1 ^ ((ulong)1 << 63));
-            return a.S0.CompareTo(s0);
+            var as1 = (long)a.S1;
+            var bs1 = b >> 63;
+            if (as1 != bs1)
+                return as1 < bs1;
+            return a.S0 < (ulong)b;
+        }
+
+        private static bool LessThan(long a, ref UInt128 b)
+        {
+            var as1 = a >> 63;
+            var bs1 = (long)b.S1;
+            if (as1 != bs1)
+                return as1 < bs1;
+            return (ulong)a < b.S0;
+        }
+
+        private static bool LessThan(ref UInt128 a, ulong b)
+        {
+            var as1 = (long)a.S1;
+            if (as1 != 0)
+                return as1 < 0;
+            return a.S0 < b;
+        }
+
+        private static bool LessThan(ulong a, ref UInt128 b)
+        {
+            var bs1 = (long)b.S1;
+            if (0 != bs1)
+                return 0 < bs1;
+            return a < b.S0;
+        }
+
+        private static int SignedCompare(ref UInt128 a, ulong bs0, ulong bs1)
+        {
+            var as1 = a.S1;
+            if (as1 != bs1)
+                return ((long)as1).CompareTo((long)bs1);
+            return a.S0.CompareTo(bs0);
         }
 
         public bool Equals(UInt128 other)
