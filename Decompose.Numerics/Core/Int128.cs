@@ -74,11 +74,6 @@ namespace Decompose.Numerics
             UInt128.Create(out v, value);
         }
 
-        public uint R0 { get { return v.R0; } }
-        public uint R1 { get { return v.R1; } }
-        public uint R2 { get { return v.R2; } }
-        public uint R3 { get { return v.R3; } }
-
         public ulong S0 { get { return v.S0; } }
         public ulong S1 { get { return v.S1; } }
 
@@ -182,32 +177,32 @@ namespace Decompose.Numerics
 
         public static explicit operator sbyte(Int128 a)
         {
-            return (sbyte)a.v.R0;
+            return (sbyte)a.v.S0;
         }
 
         public static explicit operator byte(Int128 a)
         {
-            return (byte)a.v.R0;
+            return (byte)a.v.S0;
         }
 
         public static explicit operator short(Int128 a)
         {
-            return (short)a.v.R0;
+            return (short)a.v.S0;
         }
 
         public static explicit operator ushort(Int128 a)
         {
-            return (ushort)a.v.R0;
+            return (ushort)a.v.S0;
         }
 
         public static explicit operator int(Int128 a)
         {
-            return (int)a.v.R0;
+            return (int)a.v.S0;
         }
 
         public static explicit operator uint(Int128 a)
         {
-            return a.v.R0;
+            return (uint)a.v.S0;
         }
 
         public static explicit operator long(Int128 a)

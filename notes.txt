@@ -1924,3 +1924,17 @@ s1 s0
 
 x0s1' x0s1.
       x0s0' x0s0.
+
+a  b
+   c
+
+(u1*b + u0) * v
+
+u1 * v * b + u0 * v
+
+      u1u0
+      v1v0
+    u1v0
+    u0v1
+  u1v1
+	  uv

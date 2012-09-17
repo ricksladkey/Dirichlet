@@ -177,10 +177,10 @@ namespace Decompose.Numerics
                 a = -a;
             }
             CheckLast(3);
-            bits[0] = a.R0;
-            bits[1] = a.R1;
-            bits[2] = a.R2;
-            bits[3] = a.R3;
+            bits[0] = (uint)a.S0;
+            bits[1] = (uint)(a.S0 >> 32);
+            bits[2] = (uint)a.S1;
+            bits[3] = (uint)(a.S1 >> 32);
             for (int i = 4; i <= last; i++)
                 bits[i] = 0;
             return SetLast(3);
@@ -189,10 +189,10 @@ namespace Decompose.Numerics
         public MutableInteger Set(UInt128 a)
         {
             CheckLast(3);
-            bits[0] = a.R0;
-            bits[1] = a.R1;
-            bits[2] = a.R2;
-            bits[3] = a.R3;
+            bits[0] = (uint)a.S0;
+            bits[1] = (uint)(a.S0 >> 32);
+            bits[2] = (uint)a.S1;
+            bits[3] = (uint)(a.S1 >> 32);
             for (int i = 4; i <= last; i++)
                 bits[i] = 0;
             sign = 1;

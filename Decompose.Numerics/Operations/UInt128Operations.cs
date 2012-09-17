@@ -36,7 +36,7 @@ namespace Decompose.Numerics
         public bool Equals(UInt128 x, UInt128 y) { return x.Equals(y); }
         public int GetHashCode(UInt128 obj) { return obj.GetHashCode(); }
         public int Compare(UInt128 x, UInt128 y) { return x.CompareTo(y); }
-        public uint LeastSignificantWord(UInt128 a) { return a.R0; }
+        public uint LeastSignificantWord(UInt128 a) { return (uint)a.S0; }
 
         public UInt128 Power(UInt128 a, UInt128 b) { return IntegerMath.Power(a, b); }
         public UInt128 Root(UInt128 a, UInt128 b) { return IntegerMath.Root(a, b); }
