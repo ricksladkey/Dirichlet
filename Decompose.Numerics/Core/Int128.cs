@@ -121,6 +121,34 @@ namespace Decompose.Numerics
             return c;
         }
 
+        public static implicit operator Int128(sbyte a)
+        {
+            Int128 c;
+            UInt128.Create(out c.v, a);
+            return c;
+        }
+
+        public static implicit operator Int128(byte a)
+        {
+            Int128 c;
+            UInt128.Create(out c.v, a);
+            return c;
+        }
+
+        public static implicit operator Int128(short a)
+        {
+            Int128 c;
+            UInt128.Create(out c.v, a);
+            return c;
+        }
+
+        public static implicit operator Int128(ushort a)
+        {
+            Int128 c;
+            UInt128.Create(out c.v, a);
+            return c;
+        }
+
         public static implicit operator Int128(int a)
         {
             Int128 c;

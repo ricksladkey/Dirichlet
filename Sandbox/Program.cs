@@ -672,8 +672,34 @@ namespace Sandbox
             }
         }
 
+        public struct Unsigned
+        {
+#if false
+            public static explicit operator Unsigned(long a) { return new Unsigned(); }
+#endif
+#if true
+            public static implicit operator Unsigned(long a) { return new Unsigned(); }
+#endif
+            public static implicit operator Unsigned(uint a) { return new Unsigned(); }
+            public static bool operator >(Unsigned a, long b) { return true; }
+            public static bool operator <(Unsigned a, long b) { return true; }
+            public static bool operator <(Unsigned a, Unsigned b) { return true; }
+            public static bool operator >(Unsigned a, Unsigned b) { return true; }
+
+            public static void Test(Unsigned a)
+            {
+#if true
+                if (a < 0)
+                    Console.WriteLine();
+#endif
+            }
+        }
+
         static void DivisorsPerformanceTest()
         {
+            var foo = (BigInteger)1;
+            if (foo > 1)
+                Console.WriteLine("xyzzy");
             var timer = new Stopwatch();
             var nref = IntegerMath.Power((BigInteger)10, 22);
             var limitref = IntegerMath.FloorRoot(nref, 3);
