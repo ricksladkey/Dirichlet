@@ -24,10 +24,10 @@ namespace Sandbox
             try
             {
                 //GreatestCommonDivisorPerformanceTest();
-                DivisorsPerformanceTest();
+                //DivisorsPerformanceTest();
                 //ModularSumTest();
                 //ParityTest();
-                //DivisorSummatoryFunctionOddTest();
+                DivisorSummatoryFunctionOddTest();
                 //MertensPerformanceTest();
                 //PiMod2PerformanceTest();
                 //PerfectPowerTest();

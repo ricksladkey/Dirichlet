@@ -805,6 +805,16 @@ namespace Decompose.Numerics.Test
                     value = (UInt128)a * b; Assert.AreEqual((BigInteger)a * b - 1, --value);
                     value = (UInt128)a * b; Assert.AreEqual((BigInteger)a * b, value--);
                 }
+                if (n <= uint.MaxValue)
+                {
+                    Assert.AreEqual((BigInteger)a * n, (UInt128)a * (uint)n);
+                    Assert.AreEqual((BigInteger)b * n, (UInt128)b * (uint)n);
+                    Assert.AreEqual((BigInteger)a * b * n % ((BigInteger)1 << 128), (UInt128)a * b * (uint)n);
+                    Assert.AreEqual((BigInteger)n * a, (uint)n * (UInt128)a);
+                    Assert.AreEqual((BigInteger)n * b, (uint)n * (UInt128)b);
+                    Assert.AreEqual((BigInteger)n * a * b % ((BigInteger)1 << 128), (uint)n * ((UInt128)a * (UInt128)b));
+                }
+                Assert.AreEqual((BigInteger)a * b, a * (UInt128)b);
                 Assert.AreEqual((BigInteger)a * b, (UInt128)a * b);
                 Assert.AreEqual((BigInteger)a * b, a * (UInt128)b);
                 Assert.AreEqual((BigInteger)a * b, (UInt128)a * (UInt128)b);

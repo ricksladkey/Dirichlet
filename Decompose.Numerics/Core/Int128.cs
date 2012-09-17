@@ -1730,5 +1730,15 @@ namespace Decompose.Numerics
         {
             return a.CompareTo(b);
         }
+
+        public static void Shift(out Int128 c, ref Int128 a, int d)
+        {
+            UInt128.ArithmeticShift(out c.v, ref a.v, d);
+        }
+
+        public static void Shift(ref Int128 c, int d)
+        {
+            UInt128.ArithmeticShift(ref c.v, d);
+        }
     }
 }
