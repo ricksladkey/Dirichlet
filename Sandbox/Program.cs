@@ -23,6 +23,7 @@ namespace Sandbox
             output = new ConsoleLogger("Decompose.log");
             try
             {
+                SquareFreeCountingTest();
                 //Operator128PerformanceTest();
                 //GreatestCommonDivisorPerformanceTest();
                 //DivisorsPerformanceTest();
@@ -30,7 +31,7 @@ namespace Sandbox
                 //ParityTest();
                 //DivisorSummatoryFunctionOddTest();
                 //MertensPerformanceTest();
-                PiMod2PerformanceTest();
+                //PiMod2PerformanceTest();
                 //PerfectPowerTest();
                 //FloorRootTest();
                 //FindPrimeTest1();
@@ -631,6 +632,22 @@ namespace Sandbox
             }
 #endif
 
+        }
+
+        static void SquareFreeCountingTest()
+        {
+            var threads = 8;
+            var algorithm = new SquareFreeCounting(threads, false);
+            var timer = new Stopwatch();
+            for (var i = 12; i <= 24; i++)
+            {
+                var n = IntegerMath.Power((BigInteger)10, i);
+                var sum1 = SquareFreeCounting.PowerOfTen(i);
+                timer.Restart();
+                var sum2 = algorithm.Evaluate(n);
+                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
+            }
         }
 
         static void Operator128PerformanceTest()
@@ -1450,21 +1467,6 @@ namespace Sandbox
                     }
                 }
                 Console.WriteLine("i = {0}, sum = {1}, % = {2}", i, sum, (double)count / x * 100);
-            }
-#endif
-
-#if false
-            var threads = 8;
-            var algorithm = new SquareFreeCounting(threads, false);
-            var timer = new Stopwatch();
-            for (var i = 24; i <= 24; i++)
-            {
-                var n = IntegerMath.Power((BigInteger)10, i);
-                var sum1 = SquareFreeCounting.PowerOfTen(i);
-                timer.Restart();
-                var sum2 = algorithm.Evaluate(n);
-                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-                Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
             }
 #endif
 

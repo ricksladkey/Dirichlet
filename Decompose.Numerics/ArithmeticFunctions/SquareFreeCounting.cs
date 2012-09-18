@@ -13,7 +13,7 @@ namespace Decompose.Numerics
 {
     public class SquareFreeCounting
     {
-        private const long maximumBatchSize = (long)1 << 24;
+        private const long maximumBatchSize = (long)1 << 25;
         private const long tmax = (long)1 << 62;
         private const long tmin = -tmax;
         private const long C1 = 1;
@@ -330,7 +330,7 @@ namespace Decompose.Numerics
                 Debug.Assert(gamma == beta - (BigInteger)(k - 1) * delta);
 
                 // Equivalent to:
-                // s += (T1Odd(beta) - T1Odd(beta - delta)) * m[k];
+                // s += (T1Odd(beta) - T1Odd(beta - delta)) * m[k - x];
                 s += ((delta + (beta & 1)) >> 1) * m[k - x1];
                 --k;
             }
@@ -342,8 +342,7 @@ namespace Decompose.Numerics
             // Add the remaining contributions to each mx from other mx values.
             for (var i = imax; i >= 1; i--)
             {
-                var xi = Xi(i);
-                var jmax = DownToOdd(xi / (xmax + 1));
+                var jmax = DownToOdd(xi[i] / (xmax + 1));
                 var s = (long)0;
                 for (var j = (long)3; j <= jmax; j += 2)
                     s += mx[j * j * i];
@@ -358,7 +357,7 @@ namespace Decompose.Numerics
 
         private long DownToOdd(long a)
         {
-            return a - (~a & 1);
+            return (a - 1) | 1;
         }
 
         private long T1Odd(long a)

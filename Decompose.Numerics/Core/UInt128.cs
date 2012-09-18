@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Numerics;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 
 namespace Decompose.Numerics
 {
