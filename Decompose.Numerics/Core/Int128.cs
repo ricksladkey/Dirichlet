@@ -1338,13 +1338,6 @@ namespace Decompose.Numerics
             return c;
         }
 
-        public static Int128 Double(Int128 a)
-        {
-            Int128 c;
-            UInt128.Double(out c.v, ref a.v);
-            return c;
-        }
-
         public static Int128 Square(long a)
         {
             if (a < 0)

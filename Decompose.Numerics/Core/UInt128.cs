@@ -943,19 +943,6 @@ namespace Decompose.Numerics
             return a;
         }
 
-        public static UInt128 Double(UInt128 a)
-        {
-            UInt128 c;
-            Double(out c, ref a);
-            return c;
-        }
-
-        public static void Double(out UInt128 c, ref UInt128 a)
-        {
-            c.s1 = a.s1 << 1 | a.s0 >> 63;
-            c.s0 = a.s0 << 1;
-        }
-
         public static UInt128 Square(ulong a)
         {
             UInt128 c;

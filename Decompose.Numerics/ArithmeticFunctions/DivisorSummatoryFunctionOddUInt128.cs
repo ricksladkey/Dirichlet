@@ -36,7 +36,7 @@ namespace Decompose.Numerics
             public UInt128 c2;
         }
 
-        private const long nMaxSimple = (long)1 << 40;
+        private const long nMaxSimple = (long)1 << 38;
         private static readonly UInt128 C1 = 175;
         private static readonly UInt128 C2 = 40;
 

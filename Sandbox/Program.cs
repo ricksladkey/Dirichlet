@@ -23,13 +23,14 @@ namespace Sandbox
             output = new ConsoleLogger("Decompose.log");
             try
             {
+                //Operator128PerformanceTest();
                 //GreatestCommonDivisorPerformanceTest();
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
                 //ParityTest();
-                DivisorSummatoryFunctionOddTest();
+                //DivisorSummatoryFunctionOddTest();
                 //MertensPerformanceTest();
-                //PiMod2PerformanceTest();
+                PiMod2PerformanceTest();
                 //PerfectPowerTest();
                 //FloorRootTest();
                 //FindPrimeTest1();
@@ -104,7 +105,7 @@ namespace Sandbox
 
 #if false
             var threads = 8;
-            for (int i = 60; i <= 80; i++)
+            for (int i = 30; i <= 40; i++)
             {
                 var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
                 var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads, false);
@@ -115,7 +116,7 @@ namespace Sandbox
 #else
                 var xmin = 1;
 #endif
-#if false
+#if true
                 var s1 = EvaluateAndTime(() => algorithm1.Evaluate(n, xmin, xmax));
 #else
                 var s1 = 0;
@@ -189,7 +190,7 @@ namespace Sandbox
             var algorithm2 = new PrimeCounting(threads);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 1; i <= 81; i++)
+            for (var i = 60; i <= 70; i++)
             {
                 var n = IntegerMath.Power((BigInteger)2, i);
                 var p0 = i <= 80 ? PrimeCountingMod2.PowerOfTwo(i) : -1;
@@ -632,6 +633,29 @@ namespace Sandbox
 
         }
 
+        static void Operator128PerformanceTest()
+        {
+            var sum1 = EvaluateAndTime(() =>
+            {
+                var a = (UInt128)(ulong.MaxValue / 1000);
+                var b = (UInt128)(ulong.MaxValue / 1000);
+                var s = (UInt128)0;
+                for (var i = 0; i < 1000000000; i++)
+                    s += a;
+                return s;
+            });
+            var sum2 = EvaluateAndTime(() =>
+            {
+                var a = (Int128)(ulong.MaxValue / 1000);
+                var b = (Int128)(ulong.MaxValue / 1000);
+                var s = (Int128)0;
+                for (var i = 0; i < 1000000000; i++)
+                    s += a;
+                return s;
+            });
+            Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);
+        }
+
         static void GreatestCommonDivisorPerformanceTest()
         {
             for (var j = 0; j < 1; j++)
@@ -1019,30 +1043,6 @@ namespace Sandbox
             }
             output.WriteLine("elapsed1 = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
-#endif
-
-#if true
-            {
-                var sum1 = EvaluateAndTime(() =>
-                {
-                    var a = (UInt128)(ulong.MaxValue / 1000);
-                    var b = (UInt128)(ulong.MaxValue / 1000);
-                    var s = (UInt128)0;
-                    for (var i = 0; i < 100000000; i++)
-                        UInt128.Add(ref s, ref a);
-                    return s;
-                });
-                var sum2 = EvaluateAndTime(() =>
-                {
-                    var a = (Int128)(ulong.MaxValue / 1000);
-                    var b = (Int128)(ulong.MaxValue / 1000);
-                    var s = (Int128)0;
-                    for (var i = 0; i < 100000000; i++)
-                        s += a;
-                    return s;
-                });
-                Console.WriteLine("sum1 = {0}, sum2 = {1}", sum1, sum2);
-            }
 #endif
 
 #if false
