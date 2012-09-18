@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using System.Globalization;
+using System.Linq;
 
 namespace Decompose.Numerics
 {
@@ -171,18 +171,6 @@ namespace Decompose.Numerics
             return ((BigInteger)this).ToString(format, provider);
         }
 
-        public int GetBitLength()
-        {
-            if (s1 != 0)
-                return s1.GetBitLength() + 64;
-            return s0.GetBitLength();
-        }
-
-        public int GetBitCount()
-        {
-            return s0.GetBitCount() + s1.GetBitCount();
-        }
-
         public static explicit operator UInt128(double a)
         {
             UInt128 c;
@@ -328,7 +316,7 @@ namespace Decompose.Numerics
         {
             if (a.s1 == 0)
                 return a.s0;
-            var shift = Math.Max(0, 32 - a.s1.GetBitLength());
+            var shift = Math.Max(0, 32 - GetBitLength(a.s1));
             UInt128 ashift;
             RightShift(out ashift, ref a, shift);
             return new decimal((int)a.r0, (int)a.r1, (int)a.r2, false, (byte)shift);
@@ -1321,7 +1309,7 @@ namespace Decompose.Numerics
         private static void Divide96(out UInt128 w, ref UInt128 u, ulong v)
         {
             w.s0 = w.s1 = 0;
-            var dneg = ((uint)(v >> 32)).GetBitLength();
+            var dneg = GetBitLength((uint)(v >> 32));
             var d = 32 - dneg;
             var vPrime = v << d;
             var v1 = (uint)(vPrime >> 32);
@@ -1347,7 +1335,7 @@ namespace Decompose.Numerics
         private static void Divide128(out UInt128 w, ref UInt128 u, ulong v)
         {
             w.s0 = w.s1 = 0;
-            var dneg = ((uint)(v >> 32)).GetBitLength();
+            var dneg = GetBitLength((uint)(v >> 32));
             var d = 32 - dneg;
             var vPrime = v << d;
             var v1 = (uint)(vPrime >> 32);
@@ -1394,7 +1382,7 @@ namespace Decompose.Numerics
 
         private static ulong Remainder96(ref UInt128 u, ulong v)
         {
-            var dneg = ((uint)(v >> 32)).GetBitLength();
+            var dneg = GetBitLength((uint)(v >> 32));
             var d = 32 - dneg;
             var vPrime = v << d;
             var v1 = (uint)(vPrime >> 32);
@@ -1417,7 +1405,7 @@ namespace Decompose.Numerics
 
         private static ulong Remainder128(ref UInt128 u, ulong v)
         {
-            var dneg = ((uint)(v >> 32)).GetBitLength();
+            var dneg = GetBitLength((uint)(v >> 32));
             var d = 32 - dneg;
             var vPrime = v << d;
             var v1 = (uint)(vPrime >> 32);
@@ -1443,7 +1431,7 @@ namespace Decompose.Numerics
 
         private static ulong DivRem96(out UInt128 rem, ref UInt128 a, ref UInt128 b)
         {
-            var d = 32 - b.r2.GetBitLength();
+            var d = 32 - GetBitLength(b.r2);
             UInt128 v;
             LeftShift64(out v, ref b, d);
             var r4 = (uint)LeftShift64(out rem, ref a, d);
@@ -1466,7 +1454,7 @@ namespace Decompose.Numerics
 
         private static uint DivRem128(out UInt128 rem, ref UInt128 a, ref UInt128 b)
         {
-            var d = 32 - b.r3.GetBitLength();
+            var d = 32 - GetBitLength(b.r3);
             UInt128 v;
             LeftShift64(out v, ref b, d);
             var r4 = (uint)LeftShift64(out rem, ref a, d);
@@ -2125,7 +2113,7 @@ namespace Decompose.Numerics
             while (a1.s1 != 0 && !b.IsZero)
             {
                 // Extract the high 63 bits of a and b.
-                var norm = 63 - a1.s1.GetBitLength();
+                var norm = 63 - GetBitLength(a1.s1);
                 UInt128 ahat, bhat;
                 Shift(out ahat, ref a1, norm);
                 Shift(out bhat, ref b1, norm);
@@ -2253,6 +2241,42 @@ namespace Decompose.Numerics
         public static int Compare(UInt128 a, UInt128 b)
         {
             return a.CompareTo(b);
+        }
+
+        private static byte[] bitLength = Enumerable.Range(0, byte.MaxValue + 1)
+            .Select(value =>
+            {
+                int count;
+                for (count = 0; value != 0; count++)
+                    value >>= 1;
+                return (byte)count;
+            }).ToArray();
+
+        private static int GetBitLength(uint value)
+        {
+            var tt = value >> 16;
+            if (tt != 0)
+            {
+                var t = tt >> 8;
+                if (t != 0)
+                    return bitLength[t] + 24;
+                return bitLength[tt] + 16;
+            }
+            else
+            {
+                var t = value >> 8;
+                if (t != 0)
+                    return bitLength[t] + 8;
+                return bitLength[value];
+            }
+        }
+
+        private static int GetBitLength(ulong value)
+        {
+            var r1 = value >> 32;
+            if (r1 != 0)
+                return GetBitLength((uint)r1) + 32;
+            return GetBitLength((uint)value);
         }
     }
 }

@@ -104,16 +104,6 @@ namespace Decompose.Numerics
             return ((BigInteger)this).ToString(format, provider);
         }
 
-        public int GetBitLength()
-        {
-            return v.GetBitLength();
-        }
-
-        public int GetBitCount()
-        {
-            return v.GetBitCount();
-        }
-
         public static explicit operator Int128(double a)
         {
             Int128 c;

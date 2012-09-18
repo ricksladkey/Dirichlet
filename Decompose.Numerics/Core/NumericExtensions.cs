@@ -57,6 +57,30 @@ namespace Decompose.Numerics
             return product;
         }
 
+        public static int GetBitLength(this Int128 value)
+        {
+            if (value.S0 != 0)
+                return value.S1.GetBitLength() + 64;
+            return value.S0.GetBitLength();
+        }
+
+        public static int GetBitCount(this Int128 value)
+        {
+            return value.S0.GetBitCount() + value.S0.GetBitCount();
+        }
+
+        public static int GetBitLength(this UInt128 value)
+        {
+            if (value.S0 != 0)
+                return value.S1.GetBitLength() + 64;
+            return value.S0.GetBitLength();
+        }
+
+        public static int GetBitCount(this UInt128 value)
+        {
+            return value.S0.GetBitCount() + value.S0.GetBitCount();
+        }
+
         public static int GetBitLength(this long value)
         {
             return GetBitLength((ulong)Math.Abs(value));
