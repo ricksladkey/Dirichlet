@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
+using Dirichlet.Numerics;
 
 namespace Decompose.Numerics
 {

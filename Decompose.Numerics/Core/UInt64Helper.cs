@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
+using Dirichlet.Numerics;
 
 namespace Decompose.Numerics
 {

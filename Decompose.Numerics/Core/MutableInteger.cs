@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Numerics;
 using System.Diagnostics;
+using Dirichlet.Numerics;
 
 namespace Decompose.Numerics
 {

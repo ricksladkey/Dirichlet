@@ -86,7 +86,6 @@
     <Compile Include="Collections\Graph.cs" />
     <Compile Include="Collections\SetBitMatrix.cs" />
     <Compile Include="Collections\IntegerSet.cs" />
-    <Compile Include="Core\Int128.cs" />
     <Compile Include="Core\MontgomeryHelper.cs" />
     <Compile Include="Core\Rational.cs" />
     <Compile Include="Core\UInt64Helper.cs" />
@@ -127,7 +126,6 @@
     <Compile Include="Operations\Operations.cs" />
     <Compile Include="IntegerMath\ModularSum.cs" />
     <Compile Include="IntegerMath\Primality.cs" />
-    <Compile Include="Core\UInt128.cs" />
     <Compile Include="Operations\RandomInteger.cs" />
     <Compile Include="Operations\RationalOperations.cs" />
     <Compile Include="Operations\UInt128Operations.cs" />
@@ -196,7 +194,12 @@
     <Compile Include="Unused.cs" />
     <Compile Include="Collections\Word64BitMatrix.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Dirichlet.Numerics\Dirichlet.Numerics.csproj">
+      <Project>{439D0878-C76E-452B-B17D-209A89E91D36}</Project>
+      <Name>Dirichlet.Numerics</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

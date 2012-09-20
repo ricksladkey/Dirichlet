@@ -122,6 +122,10 @@
       <Project>{D758D3C3-E06B-4BC3-B3EF-6B5B0780662F}</Project>
       <Name>Decompose.Numerics</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Dirichlet.Numerics\Dirichlet.Numerics.csproj">
+      <Project>{439D0878-C76E-452B-B17D-209A89E91D36}</Project>
+      <Name>Dirichlet.Numerics</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

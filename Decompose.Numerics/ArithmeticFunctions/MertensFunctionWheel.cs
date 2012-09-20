@@ -5,6 +5,7 @@ using System.Text;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using Dirichlet.Numerics;
 
 namespace Decompose.Numerics
 {

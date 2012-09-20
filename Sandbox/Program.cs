@@ -11,6 +11,7 @@ using Decompose.Numerics;
 using BigInt = Gnu.MP.Integer;
 using System.Threading.Tasks;
 using System.Threading;
+using Dirichlet.Numerics;
 
 namespace Sandbox
 {
@@ -23,13 +24,13 @@ namespace Sandbox
             output = new ConsoleLogger("Decompose.log");
             try
             {
-                SquareFreeCountingTest();
+                //SquareFreeCountingTest();
                 //Operator128PerformanceTest();
                 //GreatestCommonDivisorPerformanceTest();
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
                 //ParityTest();
-                //DivisorSummatoryFunctionOddTest();
+                DivisorSummatoryFunctionOddTest();
                 //MertensPerformanceTest();
                 //PiMod2PerformanceTest();
                 //PerfectPowerTest();

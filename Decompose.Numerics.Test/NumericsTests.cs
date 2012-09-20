@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Dirichlet.Numerics;
 
 namespace Decompose.Numerics.Test
 {

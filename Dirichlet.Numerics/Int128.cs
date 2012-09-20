@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 
-namespace Decompose.Numerics
+namespace Dirichlet.Numerics
 {
     public struct Int128 : IFormattable, IComparable, IComparable<Int128>, IEquatable<Int128>
     {
