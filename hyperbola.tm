@@ -1,4 +1,4 @@
-<TeXmacs|1.0.7.15>
+<TeXmacs|1.0.7.16>
 
 <style|article>
 
@@ -263,7 +263,7 @@
   <math|R<rsub|> > as a function of the eight values that define it:
 
   <\equation>
-    S<rsub|<rsub|R>>=S<rsub|R><around*|(|w,h,a<rsub|1>,b<rsub|1>,c<rsub|1>,a<rsub|2>,b<rsub|2>,c<rsub|2>|)>
+    S<rsub|R>=S<rsub|R><around*|(|w,h,a<rsub|1>,b<rsub|1>,c<rsub|1>,a<rsub|2>,b<rsub|2>,c<rsub|2>|)>
   </equation>
 
   If <math|H<around*|(|w,1|)>\<leq\>n>, then <math|v<rsub|w>\<geq\>1> and we
@@ -489,7 +489,7 @@
     S<rsub|2>=<around*|(|x<rsub|max>-x<rsub|min>+1|)>*y<rsub|min>+\<Delta\><around*|(|x<rsub|max>-x<rsub|min>|)>
   </equation*>
 
-  Because all slopes in this section of the algorithm are whole integers, we
+  Because all slopes in this section of the algorithm are whole numbers, we
   have:
 
   <\eqnarray*>
@@ -1224,7 +1224,7 @@
 
 <\initial>
   <\collection>
-    <associate|sfactor|4>
+    <associate|sfactor|3>
   </collection>
 </initial>
 

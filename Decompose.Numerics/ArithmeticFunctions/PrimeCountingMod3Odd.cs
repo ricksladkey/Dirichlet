@@ -9,23 +9,24 @@ namespace Decompose.Numerics
     public class PrimeCountingMod3Odd
     {
         private int threads;
+        private bool simple;
         private MobiusCollection mobius;
         private Dictionary<BigInteger, BigInteger> t3Map;
         private IDivisorSummatoryFunction<BigInteger> [] hyperbolicSum;
 
-        public PrimeCountingMod3Odd(int threads)
+        public PrimeCountingMod3Odd(int threads, bool simple)
         {
             this.threads = threads;
+            this.simple = simple;
             t3Map = new Dictionary<BigInteger, BigInteger>();
             var count = Math.Max(threads, 1);
             hyperbolicSum = new IDivisorSummatoryFunction<BigInteger>[count];
             for (var i = 0; i < count; i++)
             {
-#if true
-                hyperbolicSum[i] = new DivisionFreeDivisorSummatoryFunction(0, false, true);
-#else
-                hyperbolicSum[i] = new DivisorSummatoryFunctionOddUInt128(0);
-#endif
+                if (simple)
+                    hyperbolicSum[i] = new DivisionFreeDivisorSummatoryFunction(0, false, true);
+                else
+                    hyperbolicSum[i] = new DivisorSummatoryFunctionOddUInt128(0, false);
             }
         }
 

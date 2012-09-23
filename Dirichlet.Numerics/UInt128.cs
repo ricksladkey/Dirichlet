@@ -8,6 +8,36 @@ namespace Dirichlet.Numerics
 {
     public struct UInt128 : IFormattable, IComparable, IComparable<UInt128>, IEquatable<UInt128>
     {
+        private struct UInt256
+        {
+            public ulong s0;
+            public ulong s1;
+            public ulong s2;
+            public ulong s3;
+
+            public uint r0 { get { return (uint)s0; } }
+            public uint r1 { get { return (uint)(s0 >> 32); } }
+            public uint r2 { get { return (uint)s1; } }
+            public uint r3 { get { return (uint)(s1 >> 32); } }
+            public uint r4 { get { return (uint)s2; } }
+            public uint r5 { get { return (uint)(s2 >> 32); } }
+            public uint r6 { get { return (uint)s3; } }
+            public uint r7 { get { return (uint)(s3 >> 32); } }
+
+            public UInt128 t0 { get { UInt128 result; UInt128.Create(out result, s0, s1); return result; } }
+            public UInt128 t1 { get { UInt128 result; UInt128.Create(out result, s2, s3); return result; } }
+
+            public static implicit operator BigInteger(UInt256 a)
+            {
+                return (BigInteger)a.s3 << 192 | (BigInteger)a.s2 << 128 | (BigInteger)a.s1 << 64 | a.s0;
+            }
+
+            public override string ToString()
+            {
+                return ((BigInteger)this).ToString();
+            }
+        }
+
         private ulong s0;
         private ulong s1;
 
@@ -938,6 +968,25 @@ namespace Dirichlet.Numerics
             Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b % ((BigInteger)1 << 128));
         }
 
+        private static void Multiply(out UInt256 c, ref UInt128 a, ref UInt128 b)
+        {
+            ulong a0 = a.S0;
+            ulong a1 = a.S1;
+            ulong b0 = b.S0;
+            ulong b1 = b.S1;
+            UInt128 c00, c01, c10, c11;
+            UInt128.Multiply(out c00, a0, b0);
+            UInt128.Multiply(out c01, a0, b1);
+            UInt128.Multiply(out c10, a1, b0);
+            UInt128.Multiply(out c11, a1, b1);
+            var carry1 = (uint)0;
+            var carry2 = (uint)0;
+            c.s0 = c00.S0;
+            c.s1 = Add(Add(c00.S1, c01.S0, ref carry1), c10.S0, ref carry1);
+            c.s2 = Add(Add(Add(c01.S1, c10.S1, ref carry2), c11.S0, ref carry2), carry1, ref carry2);
+            c.s3 = c11.S1 + carry2;
+        }
+
         public static UInt128 Abs(UInt128 a)
         {
             return a;
@@ -1022,6 +1071,14 @@ namespace Dirichlet.Numerics
             if (c.s0 < a.s0 && c.s0 < b.s0)
                 ++c.s1;
             Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 128));
+        }
+
+        private static ulong Add(ulong a, ulong b, ref uint carry)
+        {
+            var c = a + b;
+            if (c < a && c < b)
+                ++carry;
+            return c;
         }
 
         public static void Add(ref UInt128 a, ulong b)
@@ -1253,6 +1310,17 @@ namespace Dirichlet.Numerics
                 DivRem128(out c, ref a, ref b);
         }
 
+        public static void Remainder(ref UInt128 a, ref UInt128 b)
+        {
+            UInt128 a2 = a;
+            Remainder(out a, ref a2, ref b);
+        }
+
+        private static void Remainder(out UInt128 c, ref UInt256 a, ref UInt128 b)
+        {
+            Remainder256(out c, ref a, ref b);
+        }
+
         private static void Divide64(out UInt128 w, ulong u, ulong v)
         {
             w.s1 = 0;
@@ -1457,6 +1525,35 @@ namespace Dirichlet.Numerics
             return div;
         }
 
+        private static void Remainder256(out UInt128 c, ref UInt256 a, ref UInt128 b)
+        {
+            var d = 32 - GetBitLength(b.r3);
+            UInt128 v;
+            LeftShift64(out v, ref b, d);
+            var v1 = v.r3;
+            var v2 = v.r2;
+            var v3 = v.r1;
+            var v4 = v.r0;
+            UInt256 rem;
+            var r8 = (uint)LeftShift64(out rem, ref a, d);
+            var r7 = rem.r7;
+            var r6 = rem.r6;
+            var r5 = rem.r5;
+            var r4 = rem.r4;
+            var r3 = rem.r3;
+            var r2 = rem.r2;
+            var r1 = rem.r1;
+            var r0 = rem.r0;
+            DivRem(r8, ref r7, ref r6, ref r5, ref r4, v1, v2, v3, v4);
+            DivRem(r7, ref r6, ref r5, ref r4, ref r3, v1, v2, v3, v4);
+            DivRem(r6, ref r5, ref r4, ref r3, ref r2, v1, v2, v3, v4);
+            DivRem(r5, ref r4, ref r3, ref r2, ref r1, v1, v2, v3, v4);
+            DivRem(r4, ref r3, ref r2, ref r1, ref r0, v1, v2, v3, v4);
+            Create(out c, r0, r1, r2, r3);
+            RightShift64(ref c, d);
+            Debug.Assert((BigInteger)c == (BigInteger)a % (BigInteger)b);
+        }
+
         private static ulong Q(uint u0, uint u1, uint u2, uint v1, uint v2)
         {
             var u0u1 = (ulong)u0 << 32 | u1;
@@ -1604,6 +1701,21 @@ namespace Dirichlet.Numerics
             c.s1 = a.s1 << d | a.s0 >> dneg;
             c.s0 = a.s0 << d;
             return a.s1 >> dneg;
+        }
+
+        private static ulong LeftShift64(out UInt256 c, ref UInt256 a, int d)
+        {
+            if (d == 0)
+            {
+                c = a;
+                return 0;
+            }
+            var dneg = 64 - d;
+            c.s3 = a.s3 << d | a.s2 >> dneg;
+            c.s2 = a.s2 << d | a.s1 >> dneg;
+            c.s1 = a.s1 << d | a.s0 >> dneg;
+            c.s0 = a.s0 << d;
+            return a.s3 >> dneg;
         }
 
         public static void LeftShift(out UInt128 c, ref UInt128 a, int b)
@@ -1927,6 +2039,13 @@ namespace Dirichlet.Numerics
             UInt128 c;
             Remainder(out c, ref a, ref b);
             return c;
+        }
+
+        public static void MulRem(out UInt128 c, ref UInt128 a, ref UInt128 b, ref UInt128 modulus)
+        {
+            UInt256 product;
+            Multiply(out product, ref a, ref b);
+            Remainder(out c, ref product, ref modulus);
         }
 
         public static UInt128 DivRem(UInt128 a, UInt128 b, out UInt128 remainder)

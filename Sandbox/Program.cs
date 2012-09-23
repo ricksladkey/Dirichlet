@@ -24,15 +24,17 @@ namespace Sandbox
             output = new ConsoleLogger("Decompose.log");
             try
             {
+                //ParityTest();
+                Modular128Test();
                 //SquareFreeCountingTest();
                 //Operator128PerformanceTest();
                 //GreatestCommonDivisorPerformanceTest();
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
-                //ParityTest();
-                DivisorSummatoryFunctionOddTest();
+                //DivisorSummatoryFunctionOddTest();
                 //MertensPerformanceTest();
                 //PiMod2PerformanceTest();
+                //PiMod3PerformanceTest();
                 //PerfectPowerTest();
                 //FloorRootTest();
                 //FindPrimeTest1();
@@ -78,6 +80,59 @@ namespace Sandbox
             output.WriteLine("Stack trace:");
             output.WriteLine(ex.StackTrace);
             return true;
+        }
+
+        static void Modular128Test()
+        {
+            var timer = new Stopwatch();
+            var iterations = 1000000;
+            {
+                var random = new MersenneTwister(0).Create<UInt128>();
+                timer.Restart();
+                for (int i = 0; i < iterations; i++)
+                {
+                    var a = random.Next(0);
+                    var b = random.Next(0);
+                    var c = random.Next(0);
+                    var a2 = (BigInteger)a;
+                    var b2 = (BigInteger)b;
+                    var c2 = (BigInteger)c;
+                }
+                Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
+            {
+                var random = new MersenneTwister(0).Create<UInt128>();
+                timer.Restart();
+                for (int i = 0; i < iterations; i++)
+                {
+                    var a = random.Next(0);
+                    var b = random.Next(0);
+                    var c = random.Next(0);
+                    var a2 = (BigInteger)a;
+                    var b2 = (BigInteger)b;
+                    var c2 = (BigInteger)c;
+                    UInt128 e;
+                    UInt128.MulRem(out e, ref a, ref b, ref c);
+                    Debug.Assert((BigInteger)a * b % c == e);
+                }
+                Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
+            {
+                var random = new MersenneTwister(0).Create<UInt128>();
+                timer.Restart();
+                for (int i = 0; i < iterations; i++)
+                {
+                    var a = random.Next(0);
+                    var b = random.Next(0);
+                    var c = random.Next(0);
+                    var a2 = (BigInteger)a;
+                    var b2 = (BigInteger)b;
+                    var c2 = (BigInteger)c;
+                    var d2 = a2 * b2;
+                    var e2 = d2 % c2;
+                }
+                Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            }
         }
 
         static void DivisorSummatoryFunctionOddTest()
@@ -223,6 +278,28 @@ namespace Sandbox
             }
 #endif
 
+        }
+
+        static void PiMod3PerformanceTest()
+        {
+            var threads = 8;
+            var algorithm1 = new PrimeCountingMod3Odd(threads, true);
+            var algorithm2 = new PrimeCountingMod3Odd(threads, false);
+            var timer = new Stopwatch();
+            timer.Restart();
+            for (var i = 21; i <= 21; i++)
+            {
+                timer.Restart();
+                for (var iterations = 0; iterations < 1; iterations++)
+                {
+                    var n = IntegerMath.Power((BigInteger)10, i);
+                    var p1 = PrimeCounting.PiPowerOfTen(i) % 3;
+                    var p2 = EvaluateAndTime(() => algorithm1.Evaluate(n));
+                    var p3 = EvaluateAndTime(() => algorithm2.Evaluate(n));
+                    if (iterations == 0)
+                        Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}, p3 = {3}", i, p1, p2, p3);
+                }
+            }
         }
 
         static Rational SawToothStar(BigInteger xn, BigInteger xd)
@@ -979,25 +1056,6 @@ namespace Sandbox
                     Console.WriteLine("not odd\n");
                 sum = (sum - 1) / 2 % 2;
                 Console.WriteLine("power = {0}, sum = {1}", power, sum);
-            }
-#endif
-
-#if false
-            var algorithm2 = new PrimeCountingMod3Odd(8);
-            var timer = new Stopwatch();
-            timer.Restart();
-            for (var i = 1; i <= 20; i++)
-            {
-                timer.Restart();
-                for (var iterations = 0; iterations < 1; iterations++)
-                {
-                    var n = IntegerMath.Power((BigInteger)10, i);
-                    var p1 = PrimeCounting.PiPowerOfTen(i) % 3;
-                    var p2 = algorithm2.Evaluate(n);
-                    if (iterations == 0)
-                        Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}", i, p1, p2);
-                }
-                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 #endif
 
