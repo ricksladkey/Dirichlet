@@ -1721,5 +1721,33 @@ namespace Dirichlet.Numerics
         {
             UInt128.ArithmeticShift(ref c.v, d);
         }
+
+        public static Int128 ModAdd(Int128 a, Int128 b, Int128 modulus)
+        {
+            Int128 c;
+            UInt128.ModAdd(out c.v, ref a.v, ref b.v, ref modulus.v);
+            return c;
+        }
+
+        public static Int128 ModSub(Int128 a, Int128 b, Int128 modulus)
+        {
+            Int128 c;
+            UInt128.ModSub(out c.v, ref a.v, ref b.v, ref modulus.v);
+            return c;
+        }
+
+        public static Int128 ModMul(Int128 a, Int128 b, Int128 modulus)
+        {
+            Int128 c;
+            UInt128.ModMul(out c.v, ref a.v, ref b.v, ref modulus.v);
+            return c;
+        }
+
+        public static Int128 ModPow(Int128 value, Int128 exponent, Int128 modulus)
+        {
+            Int128 result;
+            UInt128.ModPow(out result.v, ref value.v, ref exponent.v, ref modulus.v);
+            return result;
+        }
     }
 }

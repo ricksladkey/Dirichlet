@@ -12,7 +12,7 @@ namespace Decompose.Numerics
         public static BigInteger ModularSquareRoot(BigInteger n, BigInteger p)
         {
             var r = ModularSquareRootCore(n, p);
-            if (r > p / BigIntegers.Two)
+            if (r > p / 2)
                 return p - r;
             return r;
         }
@@ -30,7 +30,7 @@ namespace Decompose.Numerics
             }
             if (s == 1)
                 return ModularPower(n, (p + 1) / 4, p);
-            var z = BigIntegers.Two;
+            var z = (BigInteger)2;
             while (JacobiSymbol(z, p) != -1)
                 ++z;
             var c = ModularPower(z, q, p);
@@ -46,7 +46,7 @@ namespace Decompose.Numerics
                     k = k * k % p;
                     ++i;
                 }
-                var b = ModularPower(c, BigInteger.Pow(BigIntegers.Two, m - i - 1), p);
+                var b = ModularPower(c, BigInteger.Pow(2, m - i - 1), p);
                 r = r * b % p;
                 var b2 = b * b % p;
                 t = t * b2 % p;

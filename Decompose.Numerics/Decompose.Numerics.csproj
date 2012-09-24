@@ -141,7 +141,6 @@
     <Compile Include="Random\IRandomNumberGenerator.cs" />
     <Compile Include="Random\RandomNumberGenerator.cs" />
     <Compile Include="Reduction\Performance\BarrettReduction.cs" />
-    <Compile Include="Core\BigIntegers.cs" />
     <Compile Include="Collections\BoolBitArray.cs" />
     <Compile Include="Collections\BoolBitMatrix.cs" />
     <Compile Include="Collections\Word64BitArray.cs" />

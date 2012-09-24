@@ -6,9 +6,10 @@ namespace Decompose.Numerics
     public sealed class DoubleOperations : IOperations<double>
     {
         public Type Type { get { return typeof(double); } }
+        public double MinValue { get { return double.MinValue; } }
+        public double MaxValue { get { return double.MaxValue; } }
         public double Zero { get { return 0; } }
         public double One { get { return 1; } }
-        public double Two { get { return 2; } }
         public bool IsUnsigned { get { return false; } }
         public double Convert(int a) { return (double)a; }
         public double Convert(BigInteger a) { return (double)a; }

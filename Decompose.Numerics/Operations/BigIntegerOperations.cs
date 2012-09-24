@@ -6,9 +6,10 @@ namespace Decompose.Numerics
     public sealed class BigIntegerOperations : IOperations<BigInteger>
     {
         public Type Type { get { return typeof(BigInteger); } }
+        public BigInteger MinValue { get { return BigInteger.Zero; } }
+        public BigInteger MaxValue { get { return BigInteger.Zero; } }
         public BigInteger Zero { get { return BigInteger.Zero; } }
         public BigInteger One { get { return BigInteger.One; } }
-        public BigInteger Two { get { return 2; } }
         public bool IsUnsigned { get { return false; } }
         public BigInteger Convert(int a) { return a; }
         public BigInteger Convert(BigInteger a) { return a; }

@@ -6,9 +6,10 @@ namespace Decompose.Numerics
     public sealed class ComplexOperations : IOperations<Complex>
     {
         public Type Type { get { return typeof(Complex); } }
+        public Complex MinValue { get { return double.MinValue; } }
+        public Complex MaxValue { get { return double.MaxValue; } }
         public Complex Zero { get { return 0; } }
         public Complex One { get { return 1; } }
-        public Complex Two { get { return 2; } }
         public bool IsUnsigned { get { return false; } }
         public Complex Convert(int a) { return (Complex)a; }
         public Complex Convert(BigInteger a) { return (Complex)a; }

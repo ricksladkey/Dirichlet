@@ -12,9 +12,10 @@ namespace Decompose.Numerics
     public interface IOperations<T> : IOperations, IEqualityComparer<T>, IComparer<T>
     {
         bool IsUnsigned { get; }
+        T MinValue { get; }
+        T MaxValue { get; }
         T Zero { get; }
         T One { get; }
-        T Two { get; }
         T Convert(int a);
         T Convert(BigInteger a);
         T Convert(double a);

@@ -6,9 +6,10 @@ namespace Decompose.Numerics
     public sealed class UInt64Operations : IOperations<ulong>
     {
         public Type Type { get { return typeof(ulong); } }
+        public ulong MinValue { get { return ulong.MinValue; } }
+        public ulong MaxValue { get { return ulong.MaxValue; } }
         public ulong Zero { get { return 0; } }
         public ulong One { get { return 1; } }
-        public ulong Two { get { return 2; } }
         public bool IsUnsigned { get { return true; } }
         public ulong Convert(int a) { return (ulong)a; }
         public ulong Convert(BigInteger a) { return (ulong)a; }

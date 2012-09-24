@@ -1038,7 +1038,7 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void FloorRootTest1()
         {
-            var max = IntegerMath.Power(BigIntegers.Two, 3 * 64);
+            var max = IntegerMath.Power((BigInteger)2, 3 * 64);
             var random = new MersenneTwister(0).Create<BigInteger>();
             for (var i = 0; i < 100000; i++)
             {
@@ -1064,7 +1064,7 @@ namespace Decompose.Numerics.Test
         [TestMethod]
         public void PerfectPowerTest1()
         {
-            var max = IntegerMath.Power(BigIntegers.Two, 3 * 64);
+            var max = IntegerMath.Power((BigInteger)2, 3 * 64);
             var random = new MersenneTwister(0).Create<BigInteger>();
             for (var i = 0; i < 1000; i++)
             {

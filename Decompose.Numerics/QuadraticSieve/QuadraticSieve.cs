@@ -623,7 +623,7 @@ namespace Decompose.Numerics
         public BigInteger GetDivisor(BigInteger nOrig)
         {
             if (nOrig.IsEven)
-                return BigIntegers.Two;
+                return 2;
 
             var power = IntegerMath.PerfectPower(nOrig);
             if (power != 1)

@@ -7,9 +7,10 @@ namespace Decompose.Numerics
     public sealed class UInt128Operations : IOperations<UInt128>
     {
         public Type Type { get { return typeof(UInt128); } }
+        public UInt128 MinValue { get { return UInt128.MinValue; } }
+        public UInt128 MaxValue { get { return UInt128.MaxValue; } }
         public UInt128 Zero { get { return UInt128.Zero; } }
         public UInt128 One { get { return UInt128.One; } }
-        public UInt128 Two { get { return 2; } }
         public bool IsUnsigned { get { return true; } }
         public UInt128 Convert(int a) { return (UInt128)a; }
         public UInt128 Convert(BigInteger a) { return (UInt128)a; }
@@ -41,12 +42,12 @@ namespace Decompose.Numerics
 
         public UInt128 Power(UInt128 a, UInt128 b) { return IntegerMath.Power(a, b); }
         public UInt128 Root(UInt128 a, UInt128 b) { return IntegerMath.Root(a, b); }
-        public UInt128 GreatestCommonDivisor(UInt128 a, UInt128 b) { return (UInt128)IntegerMath.GreatestCommonDivisor(a, b); }
-        public UInt128 ModularSum(UInt128 a, UInt128 b, UInt128 modulus) { return (UInt128)IntegerMath.ModularSum(a, b, modulus); }
-        public UInt128 ModularDifference(UInt128 a, UInt128 b, UInt128 modulus) { return (UInt128)IntegerMath.ModularDifference(a, b, modulus); }
-        public UInt128 ModularProduct(UInt128 a, UInt128 b, UInt128 modulus) { return (UInt128)IntegerMath.ModularProduct(a, b, modulus); }
+        public UInt128 GreatestCommonDivisor(UInt128 a, UInt128 b) { return UInt128.GreatestCommonDivisor(a, b); }
+        public UInt128 ModularSum(UInt128 a, UInt128 b, UInt128 modulus) { return UInt128.ModAdd(a, b, modulus); }
+        public UInt128 ModularDifference(UInt128 a, UInt128 b, UInt128 modulus) { return UInt128.ModSub(a, b, modulus); }
+        public UInt128 ModularProduct(UInt128 a, UInt128 b, UInt128 modulus) { return UInt128.ModMul(a, b, modulus); }
         public UInt128 ModularQuotient(UInt128 a, UInt128 b, UInt128 modulus) { return (UInt128)IntegerMath.ModularQuotient(a, b, modulus); }
-        public UInt128 ModularPower(UInt128 value, UInt128 exponent, UInt128 modulus) { return (UInt128)IntegerMath.ModularPower(value, exponent, modulus); }
+        public UInt128 ModularPower(UInt128 value, UInt128 exponent, UInt128 modulus) { return UInt128.ModPow(value, exponent, modulus); }
         public UInt128 ModularRoot(UInt128 value, UInt128 exponent, UInt128 modulus) { return (UInt128)IntegerMath.ModularRoot(value, exponent, modulus); }
         public UInt128 ModularInverse(UInt128 value, UInt128 modulus) { return (UInt128)IntegerMath.ModularInverse(value, modulus); }
 

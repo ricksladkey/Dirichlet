@@ -970,21 +970,17 @@ namespace Dirichlet.Numerics
 
         private static void Multiply(out UInt256 c, ref UInt128 a, ref UInt128 b)
         {
-            ulong a0 = a.S0;
-            ulong a1 = a.S1;
-            ulong b0 = b.S0;
-            ulong b1 = b.S1;
             UInt128 c00, c01, c10, c11;
-            UInt128.Multiply(out c00, a0, b0);
-            UInt128.Multiply(out c01, a0, b1);
-            UInt128.Multiply(out c10, a1, b0);
-            UInt128.Multiply(out c11, a1, b1);
+            Multiply64(out c00, a.s0, b.s0);
+            Multiply64(out c01, a.s0, b.s1);
+            Multiply64(out c10, a.s1, b.s0);
+            Multiply64(out c11, a.s1, b.s1);
             var carry1 = (uint)0;
             var carry2 = (uint)0;
             c.s0 = c00.S0;
-            c.s1 = Add(Add(c00.S1, c01.S0, ref carry1), c10.S0, ref carry1);
-            c.s2 = Add(Add(Add(c01.S1, c10.S1, ref carry2), c11.S0, ref carry2), carry1, ref carry2);
-            c.s3 = c11.S1 + carry2;
+            c.s1 = Add(Add(c00.s1, c01.s0, ref carry1), c10.s0, ref carry1);
+            c.s2 = Add(Add(Add(c01.s1, c10.s1, ref carry2), c11.s0, ref carry2), carry1, ref carry2);
+            c.s3 = c11.s1 + carry2;
         }
 
         public static UInt128 Abs(UInt128 a)
@@ -1674,6 +1670,61 @@ namespace Dirichlet.Numerics
             return (uint)qhat;
         }
 
+        public static void ModAdd(out UInt128 c, ref UInt128 a, ref UInt128 b, ref UInt128 modulus)
+        {
+            Add(out c, ref a, ref b);
+            if (!LessThan(ref c, ref modulus) || LessThan(ref c, ref a) && LessThan(ref c, ref b))
+                Subtract(ref c, ref modulus);
+        }
+
+        public static void ModSub(out UInt128 c, ref UInt128 a, ref UInt128 b, ref UInt128 modulus)
+        {
+            Subtract(out c, ref a, ref b);
+            if (LessThan(ref a, ref b))
+                Add(ref c, ref modulus);
+        }
+
+        public static void ModMul(out UInt128 c, ref UInt128 a, ref UInt128 b, ref UInt128 modulus)
+        {
+            UInt256 product;
+            Multiply(out product, ref a, ref b);
+            Remainder(out c, ref product, ref modulus);
+        }
+
+        public static void ModMul(ref UInt128 a, ref UInt128 b, ref UInt128 modulus)
+        {
+            UInt256 product;
+            Multiply(out product, ref a, ref b);
+            Remainder(out a, ref product, ref modulus);
+        }
+
+        public static void ModPow(out UInt128 result, ref UInt128 value, ref UInt128 exponent, ref UInt128 modulus)
+        {
+            result = one;
+            var v = value;
+            var e = exponent.s0;
+            if (exponent.s1 != 0)
+            {
+                for (var i = 0; i < 64; i++)
+                {
+                    if ((e & 1) != 0)
+                        ModMul(ref result, ref v, ref modulus);
+                    ModMul(ref v, ref v, ref modulus);
+                    e >>= 1;
+                }
+                e = exponent.s1;
+            }
+            while (e != 0)
+            {
+                if ((e & 1) != 0)
+                    ModMul(ref result, ref v, ref modulus);
+                if (e != 1)
+                    ModMul(ref v, ref v, ref modulus);
+                e >>= 1;
+            }
+            Debug.Assert(BigInteger.ModPow(value, exponent, modulus) == result);
+        }
+
         public static void Shift(out UInt128 c, ref UInt128 a, int d)
         {
             if (d < 0)
@@ -2041,19 +2092,40 @@ namespace Dirichlet.Numerics
             return c;
         }
 
-        public static void MulRem(out UInt128 c, ref UInt128 a, ref UInt128 b, ref UInt128 modulus)
-        {
-            UInt256 product;
-            Multiply(out product, ref a, ref b);
-            Remainder(out c, ref product, ref modulus);
-        }
-
         public static UInt128 DivRem(UInt128 a, UInt128 b, out UInt128 remainder)
         {
             UInt128 c;
             Divide(out c, ref a, ref b);
             Remainder(out remainder, ref a, ref b);
             return c;
+        }
+
+        public static UInt128 ModAdd(UInt128 a, UInt128 b, UInt128 modulus)
+        {
+            UInt128 c;
+            ModAdd(out c, ref a, ref b, ref modulus);
+            return c;
+        }
+
+        public static UInt128 ModSub(UInt128 a, UInt128 b, UInt128 modulus)
+        {
+            UInt128 c;
+            ModSub(out c, ref a, ref b, ref modulus);
+            return c;
+        }
+
+        public static UInt128 ModMul(UInt128 a, UInt128 b, UInt128 modulus)
+        {
+            UInt128 c;
+            ModMul(out c, ref a, ref b, ref modulus);
+            return c;
+        }
+
+        public static UInt128 ModPow(UInt128 value, UInt128 exponent, UInt128 modulus)
+        {
+            UInt128 result;
+            ModPow(out result, ref value, ref exponent, ref modulus);
+            return result;
         }
 
         public static UInt128 Negate(UInt128 a)

@@ -7,9 +7,10 @@ namespace Decompose.Numerics
     public sealed class Int128Operations : IOperations<Int128>
     {
         public Type Type { get { return typeof(Int128); } }
+        public Int128 MinValue { get { return Int128.MinValue; } }
+        public Int128 MaxValue { get { return Int128.MaxValue; } }
         public Int128 Zero { get { return Int128.Zero; } }
         public Int128 One { get { return Int128.One; } }
-        public Int128 Two { get { return 2; } }
         public bool IsUnsigned { get { return false; } }
         public Int128 Convert(int a) { return (Int128)a; }
         public Int128 Convert(BigInteger a) { return (Int128)a; }
@@ -41,16 +42,16 @@ namespace Decompose.Numerics
 
         public Int128 Power(Int128 a, Int128 b) { return IntegerMath.Power(a, b); }
         public Int128 Root(Int128 a, Int128 b) { return IntegerMath.Root(a, b); }
-        public Int128 GreatestCommonDivisor(Int128 a, Int128 b) { return (Int128)IntegerMath.GreatestCommonDivisor(a, b); }
-        public Int128 ModularSum(Int128 a, Int128 b, Int128 modulus) { return (Int128)IntegerMath.ModularSum(a, b, modulus); }
-        public Int128 ModularDifference(Int128 a, Int128 b, Int128 modulus) { return (Int128)IntegerMath.ModularDifference(a, b, modulus); }
-        public Int128 ModularProduct(Int128 a, Int128 b, Int128 modulus) { return (Int128)IntegerMath.ModularProduct(a, b, modulus); }
+        public Int128 GreatestCommonDivisor(Int128 a, Int128 b) { return Int128.GreatestCommonDivisor(a, b); }
+        public Int128 ModularSum(Int128 a, Int128 b, Int128 modulus) { return Int128.ModAdd(a, b, modulus); }
+        public Int128 ModularDifference(Int128 a, Int128 b, Int128 modulus) { return Int128.ModSub(a, b, modulus); }
+        public Int128 ModularProduct(Int128 a, Int128 b, Int128 modulus) { return Int128.ModMul(a, b, modulus); }
         public Int128 ModularQuotient(Int128 a, Int128 b, Int128 modulus) { return (Int128)IntegerMath.ModularQuotient(a, b, modulus); }
-        public Int128 ModularPower(Int128 value, Int128 exponent, Int128 modulus) { return (Int128)IntegerMath.ModularPower(value, exponent, modulus); }
+        public Int128 ModularPower(Int128 value, Int128 exponent, Int128 modulus) { return Int128.ModPow(value, exponent, modulus); }
         public Int128 ModularRoot(Int128 value, Int128 exponent, Int128 modulus) { return (Int128)IntegerMath.ModularRoot(value, exponent, modulus); }
         public Int128 ModularInverse(Int128 value, Int128 modulus) { return (Int128)IntegerMath.ModularInverse(value, modulus); }
 
-        public Int128 AbsoluteValue(Int128 a) { return a; }
+        public Int128 AbsoluteValue(Int128 a) { return Int128.Abs(a); }
         public Complex Log(Int128 a) { return Math.Log((double)a); }
         public Int128 Factorial(Int128 a) { return (Int128)IntegerMath.Factorial(a); }
     }

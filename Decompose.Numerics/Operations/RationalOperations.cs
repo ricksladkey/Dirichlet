@@ -6,9 +6,10 @@ namespace Decompose.Numerics
     public sealed class RationalOperations : IOperations<Rational>
     {
         public Type Type { get { return typeof(Rational); } }
+        public Rational MinValue { get { return 0; } }
+        public Rational MaxValue { get { return 0; } }
         public Rational Zero { get { return 0; } }
         public Rational One { get { return 1; } }
-        public Rational Two { get { return 2; } }
         public bool IsUnsigned { get { return false; } }
         public Rational Convert(int a) { return a; }
         public Rational Convert(BigInteger a) { return a; }

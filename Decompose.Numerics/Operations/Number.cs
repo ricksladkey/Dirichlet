@@ -6,24 +6,27 @@ namespace Decompose.Numerics
     public struct Number<T> : IComparable, IComparable<Number<T>>, IEquatable<Number<T>>
     {
         private static IOperations<T> ops;
+        private static Number<T> minValue;
+        private static Number<T> maxValue;
         private static Number<T> zero;
         private static Number<T> one;
-        private static Number<T> two;
 
         static Number()
         {
             ops = Operations.Get<T>();
-            zero = new Number<T>(ops.Zero);
-            one = new Number<T>(ops.One);
-            two = new Number<T>(ops.Two);
+            minValue = ops.MinValue;
+            maxValue = ops.MaxValue;
+            zero = ops.Zero;
+            one = ops.One;
         }
 
         private T value;
         public Number(T value) { this.value = value; }
         public T Value { get { return value; } }
+        public static Number<T> MinValue { get { return minValue; } }
+        public static Number<T> MaxValue { get { return maxValue; } }
         public static Number<T> Zero { get { return zero; } }
         public static Number<T> One { get { return one; } }
-        public static Number<T> Two { get { return two; } }
         public bool IsZero { get { return ops.IsZero(value); } }
         public bool IsOne { get { return ops.IsOne(value); } }
         public bool IsEven { get { return ops.IsEven(value); } }

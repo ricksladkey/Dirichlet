@@ -85,7 +85,7 @@ namespace Sandbox
         static void Modular128Test()
         {
             var timer = new Stopwatch();
-            var iterations = 1000000;
+            var iterations = 100000;
             {
                 var random = new MersenneTwister(0).Create<UInt128>();
                 timer.Restart();
@@ -111,9 +111,8 @@ namespace Sandbox
                     var a2 = (BigInteger)a;
                     var b2 = (BigInteger)b;
                     var c2 = (BigInteger)c;
-                    UInt128 e;
-                    UInt128.MulRem(out e, ref a, ref b, ref c);
-                    Debug.Assert((BigInteger)a * b % c == e);
+                    UInt128 result;
+                    UInt128.ModPow(out result, ref a, ref b, ref c);
                 }
                 Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
@@ -128,8 +127,7 @@ namespace Sandbox
                     var a2 = (BigInteger)a;
                     var b2 = (BigInteger)b;
                     var c2 = (BigInteger)c;
-                    var d2 = a2 * b2;
-                    var e2 = d2 % c2;
+                    var result2 = BigInteger.ModPow(a2, b2, c2);
                 }
                 Console.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
@@ -3171,7 +3169,7 @@ namespace Sandbox
         {
             var timer = new Stopwatch();
             timer.Restart();
-            var max = IntegerMath.Power(BigIntegers.Two, 3 * 64);
+            var max = IntegerMath.Power((BigInteger)2, 3 * 64);
             var random = new MersenneTwister(0).Create<BigInteger>();
             var samples = random.Sequence(max).Take(500).ToArray();
             var primes = samples.Select(sample => IntegerMath.NextPrime(sample)).ToArray();

@@ -35,9 +35,9 @@ namespace Decompose.Numerics
 
         public bool IsPrime(BigInteger n)
         {
-            if (n < BigIntegers.Two)
+            if (n < 2)
                 return false;
-            if (n != BigIntegers.Two && n.IsEven)
+            if (n != 2 && n.IsEven)
                 return false;
             var nMinusOne = n - 1;
             var s = nMinusOne;
@@ -52,7 +52,7 @@ namespace Decompose.Numerics
                 while (temp != nMinusOne && mod != 1 && mod != nMinusOne)
                 {
                     mod = mod * mod % n;
-                    temp = temp * BigIntegers.Two;
+                    temp *= 2;
                 }
                 if (mod != nMinusOne && temp.IsEven)
                     return false;

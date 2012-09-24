@@ -6,9 +6,10 @@ namespace Decompose.Numerics
     public sealed class Int64Operations : IOperations<long>
     {
         public Type Type { get { return typeof(long); } }
+        public long MinValue { get { return long.MinValue; } }
+        public long MaxValue { get { return long.MaxValue; } }
         public long Zero { get { return 0; } }
         public long One { get { return 1; } }
-        public long Two { get { return 2; } }
         public bool IsUnsigned { get { return true; } }
         public long Convert(int a) { return (long)a; }
         public long Convert(BigInteger a) { return (long)a; }

@@ -6,9 +6,10 @@ namespace Decompose.Numerics
     public sealed class Int32Operations : IOperations<int>
     {
         public Type Type { get { return typeof(int); } }
+        public int MinValue { get { return int.MinValue; } }
+        public int MaxValue { get { return int.MaxValue; } }
         public int Zero { get { return 0; } }
         public int One { get { return 1; } }
-        public int Two { get { return 2; } }
         public bool IsUnsigned { get { return false; } }
         public int Convert(int a) { return (int)a; }
         public int Convert(BigInteger a) { return (int)a; }
