@@ -27,7 +27,6 @@ namespace Decompose.Numerics
         private const int blockSize = 1 << 16;
         private const int cycleLimitMax = 4;
         private const int cycleSquaredLimitMax = 4;
-        private const sbyte squareSentinel = sbyte.MinValue;
 
         private long size;
         private int threads;

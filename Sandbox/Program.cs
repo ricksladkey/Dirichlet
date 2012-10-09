@@ -25,7 +25,7 @@ namespace Sandbox
             try
             {
                 //ParityTest();
-                Modular128Test();
+                //Modular128Test();
                 //SquareFreeCountingTest();
                 //Operator128PerformanceTest();
                 //GreatestCommonDivisorPerformanceTest();
@@ -33,7 +33,7 @@ namespace Sandbox
                 //ModularSumTest();
                 //DivisorSummatoryFunctionOddTest();
                 //MertensPerformanceTest();
-                //PiMod2PerformanceTest();
+                PiMod2PerformanceTest();
                 //PiMod3PerformanceTest();
                 //PerfectPowerTest();
                 //FloorRootTest();
@@ -245,7 +245,7 @@ namespace Sandbox
             var algorithm2 = new PrimeCounting(threads);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 60; i <= 70; i++)
+            for (var i = 70; i <= 70; i++)
             {
                 var n = IntegerMath.Power((BigInteger)2, i);
                 var p0 = i <= 80 ? PrimeCountingMod2.PowerOfTwo(i) : -1;
@@ -285,14 +285,18 @@ namespace Sandbox
             var algorithm2 = new PrimeCountingMod3Odd(threads, false);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 21; i <= 21; i++)
+            for (var i = 16; i <= 20; i++)
             {
                 timer.Restart();
                 for (var iterations = 0; iterations < 1; iterations++)
                 {
                     var n = IntegerMath.Power((BigInteger)10, i);
                     var p1 = PrimeCounting.PiPowerOfTen(i) % 3;
+#if false
                     var p2 = EvaluateAndTime(() => algorithm1.Evaluate(n));
+#else
+                    var p2 = -1;
+#endif
                     var p3 = EvaluateAndTime(() => algorithm2.Evaluate(n));
                     if (iterations == 0)
                         Console.WriteLine("i = {0}, p1 = {1}, p2 = {2}, p3 = {3}", i, p1, p2, p3);

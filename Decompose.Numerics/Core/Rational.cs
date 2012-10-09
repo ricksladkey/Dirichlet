@@ -40,6 +40,7 @@ namespace Decompose.Numerics
         public static Rational operator -(Rational a, Rational b) { return new Rational(a.n * b.d - b.n * a.d, a.d * b.d); }
         public static Rational operator *(Rational a, Rational b) { return new Rational(a.n * b.n, a.d * b.d); }
         public static Rational operator /(Rational a, Rational b) { return new Rational(a.n * b.d, a.d * b.n); }
+        public static Rational operator +(Rational a) { return a; }
         public static Rational operator -(Rational a) { return new Rational(-a.n, a.d); }
         public static Rational operator ++(Rational a) { return new Rational(a.n + a.d, a.d); }
         public static Rational operator --(Rational a) { return new Rational(a.n - a.d, a.d); }

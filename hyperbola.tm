@@ -848,7 +848,7 @@
   The next algorithm formalizes the steps of the division-free counting
   method which can be used for the summation <math|S<rsub|1>>. \ Whether this
   is actually faster depends on many things but for example if
-  <math|n\<less\>2<rsup|94>>, then <math|\<beta\>,\<delta\>,<around*|\||\<gamma\>|\|>,<around*|\||\<varepsilon\>|\|>\<less\>2<rsup|63>>
+  <math|n=2<rsup|94>>, then <math|\<beta\>,\<delta\>,<around*|\||\<gamma\>|\|>,<around*|\||\<varepsilon\>|\|>\<less\>2<rsup|63>>
   for <math|2<rsup|32>\<less\>x\<less\>2<rsup|47>> and if signed 64-bit
   addition is a single-cycle operation, then a computation of <math|\<beta\>>
   using this method is about ten cycles vs. say a hundred \ cycles for a
@@ -1185,7 +1185,7 @@
   In [<reference|bib:Gal00>], Galway presents an improved sieving algorithm
   that also features region decomposition based on extended Farey fractions
   as well as coordinate transformation. In [<reference|bib:Tao11>],
-  applications for the divisor summatory are function presented including
+  applications for the divisor summatory function are presented including
   computing the parity of <math|\<pi\><around*|(|x|)>>, the prime counting
   function, as well as a sketch for a different
   <math|O<around*|(|n<rsup|1/3>|)>> algorithm. In [<reference|bib:Sil12>],

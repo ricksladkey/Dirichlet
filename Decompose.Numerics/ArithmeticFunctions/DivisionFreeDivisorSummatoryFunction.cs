@@ -553,7 +553,73 @@ namespace Decompose.Numerics
             var xmin = (uint)x1;
             var x = (x2 - 1) | 1;
             var s = (uint)0;
-            var nRep = (ulong)n;
+            var nRep = (long)n;
+#if true
+            var beta2 = nRep / (x + 4);
+            var beta1 = nRep / (x + 2);
+            var eps = nRep % (x + 2);
+            var delta1 = beta1 - beta2;
+            var delta2 = delta1 - (beta2 - nRep / (x + 6));
+            var gamma = 2 * beta1 - x * delta1;
+            var alpha = x * delta2;
+            var beta = (uint)((beta1 + 1) & 3);
+            while (x >= x1)
+            {
+                eps += gamma - alpha;
+                if (eps >= x)
+                {
+                    ++delta2;
+                    alpha += x;
+                    eps -= x;
+                    if (eps >= x)
+                    {
+                        ++delta2;
+                        alpha += x;
+                        eps -= x;
+                        if (eps >= x)
+                        {
+                            ++delta2;
+                            alpha += x;
+                            eps -= x;
+                            if (eps >= x)
+                                break;
+                        }
+                    }
+                }
+                else if (eps < 0)
+                {
+                    --delta2;
+                    alpha -= x;
+                    eps += x;
+                    if (eps < 0)
+                    {
+                        --delta2;
+                        alpha -= x;
+                        eps += x;
+                        if (eps < 0)
+                        {
+                            --delta2;
+                            alpha -= x;
+                            eps += x;
+                        }
+                    }
+                }
+                delta1 += delta2;
+                beta += (uint)delta1;
+                gamma += (delta1 << 2) - alpha;
+                alpha -= (delta2 << 1);
+
+                Debug.Assert(eps == n % x);
+                Debug.Assert((beta & 3) == (n / x + 1) % 4);
+                Debug.Assert(delta1 == n / x - n / (x + 2));
+                Debug.Assert(delta2 == delta1 - (n / (x + 2) - n / (x + 4)));
+                Debug.Assert(gamma == 2 * (n / x) - (x - 2) * delta1);
+                Debug.Assert(alpha == (x - 2) * delta2);
+
+                s ^= beta;
+                x -= 2;
+            }
+#endif
             while (x >= x1)
             {
                 s ^= (uint)(nRep / (uint)x) + 1;
