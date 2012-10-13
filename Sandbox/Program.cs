@@ -24,6 +24,7 @@ namespace Sandbox
             output = new ConsoleLogger("Decompose.log");
             try
             {
+                Montgomery128Test();
                 //ParityTest();
                 //Modular128Test();
                 //SquareFreeCountingTest();
@@ -31,7 +32,7 @@ namespace Sandbox
                 //GreatestCommonDivisorPerformanceTest();
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
-                DivisorSummatoryFunctionOddTest();
+                //DivisorSummatoryFunctionOddTest();
                 //MertensPerformanceTest();
                 //PiMod2PerformanceTest();
                 //PiMod3PerformanceTest();
@@ -924,6 +925,32 @@ namespace Sandbox
                     return 0;
                 });
             }
+        }
+
+        static void Montgomery128Test()
+        {
+            var random = new MersenneTwister(0).Create<UInt128>();
+            var modulus = random.Next(0) | 1;
+            var a = random.Next(0) % modulus;
+            var b = random.Next(0) % modulus;
+            var c0 = UInt128.ModMul(a, b, modulus);
+            Console.WriteLine("a       = {0}", a);
+            Console.WriteLine("b       = {0}", b);
+            Console.WriteLine("modulus = {0}", modulus);
+            Console.WriteLine("c0      = {0}", c0);
+            Console.WriteLine("c1      = {0}", (BigInteger)a * b % modulus);
+
+            int rLength = 128;
+            var rMinusOne = UInt128.MaxValue;
+            var rModN = rMinusOne % modulus + 1;
+            var rSquaredModN = UInt128.ModMul(rModN, rModN, modulus);
+            var nInv = IntegerMath.ModularInversePowerOfTwoModulus(modulus, rLength);
+            var k0 = (ulong)IntegerMath.TwosComplement(nInv);
+            var aBar = UInt128.Reduce(a, rSquaredModN, modulus, k0);
+            var bBar = UInt128.Reduce(b, rSquaredModN, modulus, k0);
+            var cBar = UInt128.Reduce(aBar, bBar, modulus, k0);
+            var c2 = UInt128.Reduce(cBar, 1, modulus, k0);
+            Console.WriteLine("c2      = {0}", c2);
         }
 
         static void ParityTest()

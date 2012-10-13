@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Numerics;
+using Dirichlet.Numerics;
 
 namespace Decompose.Numerics
 {
@@ -190,6 +191,20 @@ namespace Decompose.Numerics
                 dInv *= 2 - dInv * d;
             if (n < 64)
                 dInv &= ((ulong)1 << n) - 1;
+            return dInv;
+        }
+
+        public static UInt128 ModularInversePowerOfTwoModulus(UInt128 d, int n)
+        {
+            // See 9.2 in: http://gmplib.org/~tege/divcnst-pldi94.pdf
+            if ((d & 1) == 0)
+                throw new InvalidOperationException("not relatively prime");
+            Debug.Assert(d > 0 && n > 0 && n <= 128);
+            var dInv = d;
+            for (int m = 3; m < n; m *= 2)
+                dInv *= 2 - dInv * d;
+            if (n < 128)
+                dInv &= ((UInt128)1 << n) - 1;
             return dInv;
         }
 

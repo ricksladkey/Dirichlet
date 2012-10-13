@@ -1052,6 +1052,15 @@ namespace Dirichlet.Numerics
             }
         }
 
+        public static void Add(out UInt128 c, ulong a, ulong b)
+        {
+            c.s0 = a + b;
+            c.s1 = 0;
+            if (c.s0 < a && c.s0 < b)
+                ++c.s1;
+            Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b));
+        }
+
         public static void Add(out UInt128 c, ref UInt128 a, ulong b)
         {
             c.s0 = a.s0 + b;
@@ -2456,6 +2465,64 @@ namespace Dirichlet.Numerics
             if (r1 != 0)
                 return GetBitLength((uint)r1) + 32;
             return GetBitLength((uint)value);
+        }
+
+        private static void MultiplyAdd(out UInt128 result, ulong a, ulong b, ulong c)
+        {
+            Multiply64(out result, a, b);
+            Add(ref result, c);
+        }
+
+        private static void MultiplyAdd(out UInt128 result, ulong a, ulong b, ulong c, ulong d)
+        {
+            Multiply64(out result, a, b);
+            Add(ref result, c);
+            Add(ref result, d);
+        }
+
+        public static void Reduce(out UInt128 w, ref UInt128 u, ref UInt128 v, ref UInt128 n, ulong k0)
+        {
+            UInt128 carry;
+            Multiply64(out carry, u.s0, v.s0);
+            var t0 = carry.s0;
+            MultiplyAdd(out carry, u.s1, v.s0, carry.s1);
+            var t1 = carry.s0;
+            var t2 = carry.s1;
+
+            var m = t0 * k0;
+            MultiplyAdd(out carry, m, n.s0, t0);
+            MultiplyAdd(out carry, m, n.s1, carry.s1, t1);
+            t0 = carry.s0;
+            Add(out carry, carry.s1, t2);
+            t1 = carry.s0;
+            t2 = carry.s1;
+
+            MultiplyAdd(out carry, u.s0, v.s1, t0);
+            t0 = carry.s0;
+            MultiplyAdd(out carry, u.s1, v.s1, carry.s1, t1);
+            t1 = carry.s0;
+            Add(out carry, carry.s1, t2);
+            t2 = carry.s0;
+            var t3 = carry.s1;
+
+            m = t0 * k0;
+            MultiplyAdd(out carry, m, n.s0, t0);
+            MultiplyAdd(out carry, m, n.s1, carry.s1, t1);
+            t0 = carry.s0;
+            Add(out carry, carry.s1, t2);
+            t1 = carry.s0;
+            t2 = t3 + carry.s1;
+
+            Create(out w, t0, t1);
+            if (t2 != 0 || !LessThan(ref w, ref n))
+                Subtract(ref w, ref n);
+        }
+
+        public static UInt128 Reduce(UInt128 u, UInt128 v, UInt128 n, ulong k0)
+        {
+            UInt128 w;
+            Reduce(out w, ref u, ref v, ref n, k0);
+            return w;
         }
     }
 }
