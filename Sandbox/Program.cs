@@ -933,9 +933,10 @@ namespace Sandbox
         {
             var repetitions = 10000000;
             var random = new MersenneTwister(0).Create<UInt128>();
-            var modulus = random.Next(0) | 1;
-            var a = random.Next(0) % modulus;
-            var b = random.Next(0) % modulus;
+            var max = (UInt128)1 << 96;
+            var modulus = random.Next(max) | 1;
+            var a = random.Next(max) % modulus;
+            var b = random.Next(max) % modulus;
             Console.WriteLine("a       = {0}", a);
             Console.WriteLine("b       = {0}", b);
             Console.WriteLine("modulus = {0}", modulus);

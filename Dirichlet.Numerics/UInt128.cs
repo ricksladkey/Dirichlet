@@ -1222,6 +1222,19 @@ namespace Dirichlet.Numerics
             Debug.Assert((BigInteger)w == (BigInteger)u * v + c);
         }
 
+        private static ulong MultiplyHigh64(ulong u, ulong v, ulong c)
+        {
+            var u0 = (ulong)(uint)u;
+            var u1 = u >> 32;
+            var v0 = (ulong)(uint)v;
+            var v1 = v >> 32;
+            var carry = u0 * v0 + (uint)c;
+            carry = (carry >> 32) + u0 * v1 + (c >> 32);
+            var r2 = carry >> 32;
+            carry = (uint)carry + u1 * v0;
+            return (carry >> 32) + r2 + u1 * v1;
+        }
+
         private static void Multiply128(out UInt128 w, ref UInt128 u, uint v)
         {
             Multiply64(out w, u.s0, v);
@@ -2493,8 +2506,7 @@ namespace Dirichlet.Numerics
             var t2 = carry.s1;
 
             var m = t0 * k0;
-            Multiply64(out carry, m, n.s0, t0);
-            Multiply64(out carry, m, n.s1, carry.s1);
+            Multiply64(out carry, m, n.s1, MultiplyHigh64(m, n.s0, t0));
             Add(ref carry, t1);
             t0 = carry.s0;
             Add(out carry, carry.s1, t2);
@@ -2511,8 +2523,7 @@ namespace Dirichlet.Numerics
             var t3 = carry.s1;
 
             m = t0 * k0;
-            Multiply64(out carry, m, n.s0, t0);
-            Multiply64(out carry, m, n.s1, carry.s1);
+            Multiply64(out carry, m, n.s1, MultiplyHigh64(m, n.s0, t0));
             Add(ref carry, t1);
             t0 = carry.s0;
             Add(out carry, carry.s1, t2);
@@ -2534,8 +2545,7 @@ namespace Dirichlet.Numerics
             for (var i = 0; i < 2; i++)
             {
                 var m = t0 * k0;
-                Multiply64(out carry, m, n.s0, t0);
-                Multiply64(out carry, m, n.s1, carry.s1);
+                Multiply64(out carry, m, n.s1, MultiplyHigh64(m, n.s0, t0));
                 Add(ref carry, t1);
                 t0 = carry.s0;
                 Add(out carry, carry.s1, t2);
