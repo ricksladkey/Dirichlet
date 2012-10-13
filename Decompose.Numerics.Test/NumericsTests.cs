@@ -83,6 +83,10 @@ namespace Decompose.Numerics.Test
             TestPrimality3<ulong>(0, 10000, primalityOld, new UInt64MontgomeryReduction());
             TestPrimality3<ulong>(ulong.MaxValue - 10000 - 1, 10000, primalityOld, new UInt64Reduction());
             TestPrimality3<ulong>(ulong.MaxValue - 10000 - 1, 10000, primalityOld, new UInt64MontgomeryReduction());
+            TestPrimality3<UInt128>(0, 10000, primalityOld, new UInt128Reduction());
+            TestPrimality3<UInt128>(0, 10000, primalityOld, new UInt128MontgomeryReduction());
+            TestPrimality3<UInt128>(UInt128.MaxValue - 10000 - 1, 10000, primalityOld, new UInt128Reduction());
+            TestPrimality3<UInt128>(UInt128.MaxValue - 10000 - 1, 10000, primalityOld, new UInt128MontgomeryReduction());
             TestPrimality3<BigInteger>(0, 10000, primalityOld, new BigIntegerReduction());
             TestPrimality3<BigInteger>(0, 10000, primalityOld, new BigIntegerMontgomeryReduction());
             TestPrimality3<BigInteger>((BigInteger)ulong.MaxValue * ulong.MaxValue, 10000, primalityOld, new BigIntegerReduction());

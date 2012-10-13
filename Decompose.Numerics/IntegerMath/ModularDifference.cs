@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
+using Dirichlet.Numerics;
 
 namespace Decompose.Numerics
 {
@@ -30,6 +31,11 @@ namespace Decompose.Numerics
             if (a < b)
                 sum += modulus;
             return sum;
+        }
+
+        public static UInt128 ModularDifference(UInt128 a, UInt128 b, UInt128 modulus)
+        {
+            return UInt128.ModSub(a, b, modulus);
         }
 
         public static BigInteger ModularDifference(BigInteger a, BigInteger b, BigInteger modulus)

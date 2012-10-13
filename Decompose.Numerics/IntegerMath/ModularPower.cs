@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using System.Diagnostics;
+using Dirichlet.Numerics;
 
 namespace Decompose.Numerics
 {
@@ -80,6 +81,11 @@ namespace Decompose.Numerics
                 exponent >>= 1;
             }
             return result;
+        }
+
+        public static UInt128 ModularPower(UInt128 value, UInt128 exponent, UInt128 modulus)
+        {
+            return UInt128.ModPow(value, exponent, modulus);
         }
 
         public static BigInteger ModularPower(BigInteger value, BigInteger exponent, BigInteger modulus)

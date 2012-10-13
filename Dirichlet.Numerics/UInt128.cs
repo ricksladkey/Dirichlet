@@ -1725,16 +1725,34 @@ namespace Dirichlet.Numerics
 
         public static void ModMul(out UInt128 c, ref UInt128 a, ref UInt128 b, ref UInt128 modulus)
         {
-            UInt256 product;
-            Multiply(out product, ref a, ref b);
-            Remainder(out c, ref product, ref modulus);
+            if (modulus.s1 == 0)
+            {
+                UInt128 product;
+                Multiply64(out product, a.s0, b.s0);
+                Create(out c, UInt128.Remainder(ref product, modulus.s0));
+            }
+            else
+            {
+                UInt256 product;
+                Multiply(out product, ref a, ref b);
+                Remainder(out c, ref product, ref modulus);
+            }
         }
 
         public static void ModMul(ref UInt128 a, ref UInt128 b, ref UInt128 modulus)
         {
-            UInt256 product;
-            Multiply(out product, ref a, ref b);
-            Remainder(out a, ref product, ref modulus);
+            if (modulus.s1 == 0)
+            {
+                UInt128 product;
+                Multiply64(out product, a.s0, b.s0);
+                Create(out a, UInt128.Remainder(ref product, modulus.s0));
+            }
+            else
+            {
+                UInt256 product;
+                Multiply(out product, ref a, ref b);
+                Remainder(out a, ref product, ref modulus);
+            }
         }
 
         public static void ModPow(out UInt128 result, ref UInt128 value, ref UInt128 exponent, ref UInt128 modulus)

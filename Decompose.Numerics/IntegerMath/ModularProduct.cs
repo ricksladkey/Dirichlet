@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Numerics;
+using Dirichlet.Numerics;
 
 namespace Decompose.Numerics
 {
@@ -26,6 +27,11 @@ namespace Decompose.Numerics
         public static ulong ModularProduct(ulong a, ulong b, ulong modulus)
         {
             return UInt64Helper.ModularProduct(a, b, modulus);
+        }
+
+        public static UInt128 ModularProduct(UInt128 a, UInt128 b, UInt128 modulus)
+        {
+            return UInt128.ModMul(a, b, modulus);
         }
 
         public static BigInteger ModularProduct(BigInteger a, BigInteger b, BigInteger modulus)

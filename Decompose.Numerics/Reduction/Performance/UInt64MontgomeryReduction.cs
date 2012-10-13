@@ -15,7 +15,7 @@ namespace Decompose.Numerics
                     get
                     {
                         if (reducer.oneRep == 0)
-                            reducer.oneRep = reducer.Reduce(1, reducer.rSquaredModN);
+                            reducer.oneRep = reducer.Reduce(reducer.rSquaredModN);
                         return r == reducer.oneRep;
                     }
                 }
@@ -28,7 +28,9 @@ namespace Decompose.Numerics
 
                 public override IResidue<ulong> Set(ulong x)
                 {
-                    r = reducer.Reduce(x % reducer.modulus, reducer.rSquaredModN);
+                    if (x >= reducer.modulus)
+                        x %= reducer.modulus;
+                    r = reducer.Reduce(x, reducer.rSquaredModN);
                     return this;
                 }
 

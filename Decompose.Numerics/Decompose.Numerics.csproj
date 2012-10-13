@@ -154,11 +154,13 @@
     <Compile Include="Factorization\IFactorizationAlgorithm.cs" />
     <Compile Include="Primality\IPrimalityAlgorithm.cs" />
     <Compile Include="Random\IRandomNumberAlgorithm.cs" />
+    <Compile Include="Reduction\Performance\UInt128MontgomeryReduction.cs" />
     <Compile Include="Reduction\Reference\Int32Reduction.cs" />
     <Compile Include="Reduction\Reference\Int64Reduction.cs" />
     <Compile Include="Reduction\IReducer.cs" />
     <Compile Include="Reduction\IReductionAlgorithm.cs" />
     <Compile Include="IntegerMath\IntegerMath.cs" />
+    <Compile Include="Reduction\Reference\UInt128Reduction.cs" />
     <Compile Include="SquareRoot\ISqrtAlgorithm.cs" />
     <Compile Include="Random\MersenneTwister.cs" />
     <Compile Include="Primality\MillerRabin.cs" />

@@ -1,9 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
+using Dirichlet.Numerics;
 
 namespace Decompose.Numerics
 {
-    public class OldMillerRabin : IPrimalityAlgorithm<int>, IPrimalityAlgorithm<uint>, IPrimalityAlgorithm<long>, IPrimalityAlgorithm<ulong>, IPrimalityAlgorithm<BigInteger>
+    public class OldMillerRabin : IPrimalityAlgorithm<int>, IPrimalityAlgorithm<uint>, IPrimalityAlgorithm<long>, IPrimalityAlgorithm<ulong>, IPrimalityAlgorithm<UInt128>, IPrimalityAlgorithm<BigInteger>
     {
         private IRandomNumberGenerator generator = new MersenneTwister(0);
         private int k;
@@ -29,6 +30,11 @@ namespace Decompose.Numerics
         }
 
         public bool IsPrime(ulong n)
+        {
+            return IsPrime((BigInteger)n);
+        }
+
+        public bool IsPrime(UInt128 n)
         {
             return IsPrime((BigInteger)n);
         }

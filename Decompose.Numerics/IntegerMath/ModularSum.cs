@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using Dirichlet.Numerics;
 
 namespace Decompose.Numerics
 {
@@ -45,6 +46,11 @@ namespace Decompose.Numerics
             if (sum >= modulus || sum < a && sum < b)
                 sum -= modulus;
             return sum;
+        }
+
+        public static UInt128 ModularSum(UInt128 a, UInt128 b, UInt128 modulus)
+        {
+            return UInt128.ModAdd(a, b, modulus);
         }
 
         public static BigInteger ModularSum(BigInteger a, BigInteger b, BigInteger modulus)
