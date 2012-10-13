@@ -31,9 +31,9 @@ namespace Sandbox
                 //GreatestCommonDivisorPerformanceTest();
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
-                //DivisorSummatoryFunctionOddTest();
+                DivisorSummatoryFunctionOddTest();
                 //MertensPerformanceTest();
-                PiMod2PerformanceTest();
+                //PiMod2PerformanceTest();
                 //PiMod3PerformanceTest();
                 //PerfectPowerTest();
                 //FloorRootTest();
@@ -137,7 +137,7 @@ namespace Sandbox
         {
 #if true
             var threads = 8;
-            for (int i = 16; i <= 24; i++)
+            for (int i = 25; i <= 25; i++)
             {
                 var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
                 var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads, false);

@@ -187,7 +187,7 @@ namespace Decompose.Numerics
             Debug.Assert(d > 0 && n > 0 && n <= 64);
             var dInv = d;
             for (int m = 3; m < n; m *= 2)
-                dInv = dInv * (2 - dInv * d);
+                dInv *= 2 - dInv * d;
             if (n < 64)
                 dInv &= ((ulong)1 << n) - 1;
             return dInv;

@@ -981,6 +981,7 @@ namespace Dirichlet.Numerics
             c.s1 = Add(Add(c00.s1, c01.s0, ref carry1), c10.s0, ref carry1);
             c.s2 = Add(Add(Add(c01.s1, c10.s1, ref carry2), c11.s0, ref carry2), carry1, ref carry2);
             c.s3 = c11.s1 + carry2;
+            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
         }
 
         public static UInt128 Abs(UInt128 a)
@@ -1158,14 +1159,14 @@ namespace Dirichlet.Numerics
             carry = (uint)carry + u0u1;
             w.s0 = carry << 32 | r0;
             w.s1 = (carry >> 32) + r2 + u1 * u1;
-            Debug.Assert((BigInteger)w == (BigInteger)u * u % ((BigInteger)1 << 128));
+            Debug.Assert((BigInteger)w == (BigInteger)u * u);
         }
 
         private static void Multiply64(out UInt128 w, uint u, uint v)
         {
             w.s0 = (ulong)u * v;
             w.s1 = 0;
-            Debug.Assert((BigInteger)w == (BigInteger)u * v % ((BigInteger)1 << 128));
+            Debug.Assert((BigInteger)w == (BigInteger)u * v);
         }
 
         private static void Multiply64(out UInt128 w, ulong u, uint v)
@@ -1177,7 +1178,7 @@ namespace Dirichlet.Numerics
             carry = (carry >> 32) + u1 * v;
             w.s0 = carry << 32 | r0;
             w.s1 = carry >> 32;
-            Debug.Assert((BigInteger)w == (BigInteger)u * v % ((BigInteger)1 << 128));
+            Debug.Assert((BigInteger)w == (BigInteger)u * v);
         }
 
         private static void Multiply64(out UInt128 w, ulong u, ulong v)
@@ -1193,7 +1194,7 @@ namespace Dirichlet.Numerics
             carry = (uint)carry + u1 * v0;
             w.s0 = carry << 32 | r0;
             w.s1 = (carry >> 32) + r2 + u1 * v1;
-            Debug.Assert((BigInteger)w == (BigInteger)u * v % ((BigInteger)1 << 128));
+            Debug.Assert((BigInteger)w == (BigInteger)u * v);
         }
 
         private static void Multiply128(out UInt128 w, ref UInt128 u, uint v)
