@@ -50,47 +50,49 @@
             return t;
         }
 
-        public static uint Reduce(uint u0, uint v0, uint n0, uint k0)
+        public static ulong Reduce(ulong t, ulong n, uint k0)
         {
-#if false
-            var carry = (ulong)u0 * v0;
-            var t0 = (uint)carry;
-            var t1 = (uint)(carry >> 32);
+            var t0 = (uint)t;
+            var t1 = (uint)(t >> 32);
+            var t2 = (uint)0;
+            var n0 = (uint)n;
+            var n1 = (uint)(n >> 32);
 
-            var m = (ulong)(t0 * k0);
-            carry = t0 + m * n0;
-            var t = (carry >> 32) + t1;
+            if (n1 == 0)
+                return Reduce(t0, n0, k0);
 
-            if (t >= n0)
-                t -= n0;
-            return (uint)t;
-#endif
-#if false
-            var uv = (ulong)u0 * v0;
-            var mn = (ulong)((uint)uv * k0) * n0;
-            var t = (uv >> 32) + (mn >> 32);
-            if ((ulong)(uint)uv + (uint)mn >> 32 != 0)
-                ++t;
-            if (t >= n0)
-                t -= n0;
-            return (uint)t;
-#endif
-#if false
-            // Only works if n0 <= int.MaxValue.
-            var uv = (ulong)u0 * v0;
-            var mn = (ulong)((uint)uv * k0) * n0;
-            var t = (uv + mn) >> 32;
-            if (t >= n0)
-                t -= n0;
-            return (uint)t;
-#endif
-#if true
-            var uv = (ulong)u0 * v0;
-            var mn = (ulong)(0 - (uint)uv * k0) * n0;
+            for (var i = 0; i < 2; i++)
+            {
+                var m = t0 * k0;
+                var carry = t0 + (ulong)m * n0;
+                carry = (carry >> 32) + t1 + (ulong)m * n1;
+                t0 = (uint)carry;
+                carry = (carry >> 32) + t2;
+                t1 = (uint)carry;
+                t2 = (uint)(carry >> 32);
+            }
+
+            t = (ulong)t1 << 32 | t0;
+            if (t2 != 0 || t >= n)
+                t -= n;
+            return t;
+        }
+
+        public static uint Reduce(uint u, uint v, uint n, uint k)
+        {
+            var uv = (ulong)u * v;
+            var mn = (ulong)(0 - (uint)uv * k) * n;
             if (uv < mn)
-                return (uint)(n0 - ((mn - uv) >> 32));
+                return (uint)(n - ((mn - uv) >> 32));
             return (uint)((uv - mn) >> 32);
-#endif
+        }
+
+        public static uint Reduce(uint t, uint n, uint k)
+        {
+            var mn = (ulong)(0 - (uint)t * k) * n;
+            if (t < mn)
+                return (uint)(n - ((mn - t) >> 32));
+            return (uint)((t - mn) >> 32);
         }
     }
 }

@@ -1206,6 +1206,22 @@ namespace Dirichlet.Numerics
             Debug.Assert((BigInteger)w == (BigInteger)u * v);
         }
 
+        private static void Multiply64(out UInt128 w, ulong u, ulong v, ulong c)
+        {
+            var u0 = (ulong)(uint)u;
+            var u1 = u >> 32;
+            var v0 = (ulong)(uint)v;
+            var v1 = v >> 32;
+            var carry = u0 * v0 + (uint)c;
+            var r0 = (uint)carry;
+            carry = (carry >> 32) + u0 * v1 + (c >> 32);
+            var r2 = carry >> 32;
+            carry = (uint)carry + u1 * v0;
+            w.s0 = carry << 32 | r0;
+            w.s1 = (carry >> 32) + r2 + u1 * v1;
+            Debug.Assert((BigInteger)w == (BigInteger)u * v + c);
+        }
+
         private static void Multiply128(out UInt128 w, ref UInt128 u, uint v)
         {
             Multiply64(out w, u.s0, v);
@@ -2467,47 +2483,37 @@ namespace Dirichlet.Numerics
             return GetBitLength((uint)value);
         }
 
-        private static void MultiplyAdd(out UInt128 result, ulong a, ulong b, ulong c)
-        {
-            Multiply64(out result, a, b);
-            Add(ref result, c);
-        }
-
-        private static void MultiplyAdd(out UInt128 result, ulong a, ulong b, ulong c, ulong d)
-        {
-            Multiply64(out result, a, b);
-            Add(ref result, c);
-            Add(ref result, d);
-        }
-
         public static void Reduce(out UInt128 w, ref UInt128 u, ref UInt128 v, ref UInt128 n, ulong k0)
         {
             UInt128 carry;
             Multiply64(out carry, u.s0, v.s0);
             var t0 = carry.s0;
-            MultiplyAdd(out carry, u.s1, v.s0, carry.s1);
+            Multiply64(out carry, u.s1, v.s0, carry.s1);
             var t1 = carry.s0;
             var t2 = carry.s1;
 
             var m = t0 * k0;
-            MultiplyAdd(out carry, m, n.s0, t0);
-            MultiplyAdd(out carry, m, n.s1, carry.s1, t1);
+            Multiply64(out carry, m, n.s0, t0);
+            Multiply64(out carry, m, n.s1, carry.s1);
+            Add(ref carry, t1);
             t0 = carry.s0;
             Add(out carry, carry.s1, t2);
             t1 = carry.s0;
             t2 = carry.s1;
 
-            MultiplyAdd(out carry, u.s0, v.s1, t0);
+            Multiply64(out carry, u.s0, v.s1, t0);
             t0 = carry.s0;
-            MultiplyAdd(out carry, u.s1, v.s1, carry.s1, t1);
+            Multiply64(out carry, u.s1, v.s1, carry.s1);
+            Add(ref carry, t1);
             t1 = carry.s0;
             Add(out carry, carry.s1, t2);
             t2 = carry.s0;
             var t3 = carry.s1;
 
             m = t0 * k0;
-            MultiplyAdd(out carry, m, n.s0, t0);
-            MultiplyAdd(out carry, m, n.s1, carry.s1, t1);
+            Multiply64(out carry, m, n.s0, t0);
+            Multiply64(out carry, m, n.s1, carry.s1);
+            Add(ref carry, t1);
             t0 = carry.s0;
             Add(out carry, carry.s1, t2);
             t1 = carry.s0;
@@ -2518,10 +2524,41 @@ namespace Dirichlet.Numerics
                 Subtract(ref w, ref n);
         }
 
+        public static void Reduce(out UInt128 w, ref UInt128 t, ref UInt128 n, ulong k0)
+        {
+            UInt128 carry;
+            var t0 = t.s0;
+            var t1 = t.s1;
+            var t2 = (ulong)0;
+
+            for (var i = 0; i < 2; i++)
+            {
+                var m = t0 * k0;
+                Multiply64(out carry, m, n.s0, t0);
+                Multiply64(out carry, m, n.s1, carry.s1);
+                Add(ref carry, t1);
+                t0 = carry.s0;
+                Add(out carry, carry.s1, t2);
+                t1 = carry.s0;
+                t2 = carry.s1;
+            }
+
+            Create(out w, t0, t1);
+            if (t2 != 0 || !LessThan(ref w, ref n))
+                Subtract(ref w, ref n);
+        }
+
         public static UInt128 Reduce(UInt128 u, UInt128 v, UInt128 n, ulong k0)
         {
             UInt128 w;
             Reduce(out w, ref u, ref v, ref n, k0);
+            return w;
+        }
+
+        public static UInt128 Reduce(UInt128 t, UInt128 n, ulong k0)
+        {
+            UInt128 w;
+            Reduce(out w, ref t, ref n, k0);
             return w;
         }
     }

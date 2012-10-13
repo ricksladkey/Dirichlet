@@ -581,13 +581,15 @@ namespace Sandbox
             }
         }
 
-        static T EvaluateAndTime<T>(Func<T> expr)
+        static T EvaluateAndTime<T>(Func<T> expr, int repetitions = 1)
         {
             var timer = new Stopwatch();
             var process = Process.GetCurrentProcess();
             var cpu1 = process.TotalProcessorTime;
             timer.Restart();
-            var result = expr();
+            T result = expr();
+            for (var i = 1; i < repetitions; i++)
+                result = expr();
             var elapsed = timer.ElapsedTicks;
             var cpu2 = process.TotalProcessorTime;
             output.WriteLine("elapsed = {0:F3} msec, cpu = {1:F3}, ratio = {2:F3}",
@@ -929,16 +931,23 @@ namespace Sandbox
 
         static void Montgomery128Test()
         {
+            var repetitions = 10000000;
             var random = new MersenneTwister(0).Create<UInt128>();
             var modulus = random.Next(0) | 1;
             var a = random.Next(0) % modulus;
             var b = random.Next(0) % modulus;
-            var c0 = UInt128.ModMul(a, b, modulus);
             Console.WriteLine("a       = {0}", a);
             Console.WriteLine("b       = {0}", b);
             Console.WriteLine("modulus = {0}", modulus);
+
+            var c0 = EvaluateAndTime(() => UInt128.ModMul(a, b, modulus), repetitions);
             Console.WriteLine("c0      = {0}", c0);
-            Console.WriteLine("c1      = {0}", (BigInteger)a * b % modulus);
+
+            var a1 = (BigInteger)a;
+            var b1 = (BigInteger)b;
+            var modulus1 = (BigInteger)modulus;
+            var c1 = EvaluateAndTime(() => a1 * b1 % modulus1, repetitions);
+            Console.WriteLine("c1      = {0}", c1);
 
             int rLength = 128;
             var rMinusOne = UInt128.MaxValue;
@@ -948,8 +957,8 @@ namespace Sandbox
             var k0 = (ulong)IntegerMath.TwosComplement(nInv);
             var aBar = UInt128.Reduce(a, rSquaredModN, modulus, k0);
             var bBar = UInt128.Reduce(b, rSquaredModN, modulus, k0);
-            var cBar = UInt128.Reduce(aBar, bBar, modulus, k0);
-            var c2 = UInt128.Reduce(cBar, 1, modulus, k0);
+            var cBar = EvaluateAndTime(() => UInt128.Reduce(aBar, bBar, modulus, k0), repetitions);
+            var c2 = UInt128.Reduce(cBar, modulus, k0);
             Console.WriteLine("c2      = {0}", c2);
         }
 

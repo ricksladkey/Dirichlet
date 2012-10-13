@@ -85,7 +85,7 @@ namespace Decompose.Numerics
 
                 public override ulong Value
                 {
-                    get { return reducer.Reduce(r, 1); }
+                    get { return reducer.Reduce(r); }
                 }
             }
 
@@ -115,6 +115,11 @@ namespace Decompose.Numerics
             private ulong Reduce(ulong u, ulong v)
             {
                 return MontgomeryHelper.Reduce(u, v, modulus, k0);
+            }
+
+            private ulong Reduce(ulong t)
+            {
+                return MontgomeryHelper.Reduce(t, modulus, k0);
             }
         }
 
