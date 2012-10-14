@@ -1352,7 +1352,10 @@ namespace Dirichlet.Numerics
 
         private static void Remainder(out UInt128 c, ref UInt256 a, ref UInt128 b)
         {
-            Remainder256(out c, ref a, ref b);
+            if (b.r3 == 0)
+                Remainder192(out c, ref a, ref b);
+            else
+                Remainder256(out c, ref a, ref b);
         }
 
         private static void Divide64(out UInt128 w, ulong u, ulong v)
@@ -1557,6 +1560,32 @@ namespace Dirichlet.Numerics
             Debug.Assert((BigInteger)div == (BigInteger)a / (BigInteger)b);
             Debug.Assert((BigInteger)rem == (BigInteger)a % (BigInteger)b);
             return div;
+        }
+
+        private static void Remainder192(out UInt128 c, ref UInt256 a, ref UInt128 b)
+        {
+            var d = 32 - GetBitLength(b.r2);
+            UInt128 v;
+            LeftShift64(out v, ref b, d);
+            var v1 = v.r2;
+            var v2 = v.r1;
+            var v3 = v.r0;
+            UInt256 rem;
+            LeftShift64(out rem, ref a, d);
+            var r6 = rem.r6;
+            var r5 = rem.r5;
+            var r4 = rem.r4;
+            var r3 = rem.r3;
+            var r2 = rem.r2;
+            var r1 = rem.r1;
+            var r0 = rem.r0;
+            DivRem(r6, ref r5, ref r4, ref r3, v1, v2, v3);
+            DivRem(r5, ref r4, ref r3, ref r2, v1, v2, v3);
+            DivRem(r4, ref r3, ref r2, ref r1, v1, v2, v3);
+            DivRem(r3, ref r2, ref r1, ref r0, v1, v2, v3);
+            Create(out c, r0, r1, r2, 0);
+            RightShift64(ref c, d);
+            Debug.Assert((BigInteger)c == (BigInteger)a % (BigInteger)b);
         }
 
         private static void Remainder256(out UInt128 c, ref UInt256 a, ref UInt128 b)

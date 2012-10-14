@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
+using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
@@ -60,10 +61,15 @@ namespace Decompose.Numerics
                 return Rho(n, xInit, c, reducer);
             }
 
-            private Number<T> Rho(Number<T> n, Number<T> xInit, T c, IReducer<T> reducer)
+            private Number<T> Rho(Number<T> n, Number<T> xInit, Number<T> c, IReducer<T> reducer)
             {
 #if DIAG
-                Console.WriteLine("xInit = {0}", xInit);
+#if true
+                Console.WriteLine("forcing initial values");
+                xInit = (Number<T>)BigInteger.Parse("937386379231237298815982594");
+                c = (Number<T>)BigInteger.Parse("214106292608131669695721288");
+#endif
+                Console.WriteLine("xInit = {0}, c = {1}", xInit, c);
 #endif
                 if (n.IsEven)
                     return 2;

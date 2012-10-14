@@ -3375,7 +3375,7 @@ namespace Sandbox
 
         static void FactorTest1()
         {
-            for (var k = 15; k <= 15; k++)
+            for (var k = 14; k <= 14; k++)
                 FactorTest1Core(k);
         }
 
@@ -4825,15 +4825,18 @@ namespace Sandbox
             for (int i = 0; i < iterations; i++)
                 results.Add(algorithm.Factor(n).OrderBy(factor => factor).ToArray());
             var elapsed = (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000;
-            foreach (var factors in results)
+            if (true)
             {
-                if (factors.Length < 2)
-                    throw new InvalidOperationException("too few factors");
-                var product = (Number<T>)factors.Aggregate((sofar, current) => (Number<T>)sofar * current);
-                if (factors.Select(factor => (Number<T>)factor).Any(factor => factor.IsOne || factor == n || !IntegerMath.IsPrime(factor)))
-                    throw new InvalidOperationException("invalid factor");
-                if (n != product)
-                    throw new InvalidOperationException("validation failure");
+                foreach (var factors in results)
+                {
+                    if (factors.Length < 2)
+                        throw new InvalidOperationException("too few factors");
+                    var product = (Number<T>)factors.Aggregate((sofar, current) => (Number<T>)sofar * current);
+                    if (factors.Select(factor => (Number<T>)factor).Any(factor => factor.IsOne || factor == n || !IntegerMath.IsPrime(factor)))
+                        throw new InvalidOperationException("invalid factor");
+                    if (n != product)
+                        throw new InvalidOperationException("validation failure");
+                }
             }
             output.WriteLine("{0} iterations in {1:F0} msec, {2:F3} msec/iteration ({3})", iterations, elapsed, elapsed / iterations, label);
             return results[0];
