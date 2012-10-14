@@ -5,12 +5,12 @@ using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
-    public class PollardRhoReduction : PollardRhoBase
+    public class BigIntegerPollardRhoReduction : PollardRhoBase
     {
         const int batchSize = 100;
         IReductionAlgorithm<BigInteger> reduction;
 
-        public PollardRhoReduction(int threads, int iterations, IReductionAlgorithm<BigInteger> reduction)
+        public BigIntegerPollardRhoReduction(int threads, int iterations, IReductionAlgorithm<BigInteger> reduction)
             : base(threads, iterations)
         {
             this.reduction = reduction;

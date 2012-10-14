@@ -3420,9 +3420,9 @@ namespace Sandbox
             int threads = 4;
             bool debug = false;
             FactorTest(debug, 25, n, new PollardRhoBrent(threads, 0));
-            FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new MutableIntegerReduction()));
-            FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new BarrettReduction()));
-            FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new BigIntegerMontgomeryReduction()));
+            FactorTest(debug, 25, n, new BigIntegerPollardRhoReduction(threads, 0, new MutableIntegerReduction()));
+            FactorTest(debug, 25, n, new BigIntegerPollardRhoReduction(threads, 0, new BarrettReduction()));
+            FactorTest(debug, 25, n, new BigIntegerPollardRhoReduction(threads, 0, new BigIntegerMontgomeryReduction()));
         }
 
         static void FactorTest3()
@@ -3437,7 +3437,7 @@ namespace Sandbox
                 int threads = 4;
                 var factors = null as BigInteger[];
                 //factors = FactorTest(true, 1, n, new PollardRho(threads, 0));
-                factors = FactorTest(true, 5, n, new PollardRhoReduction(threads, 0, new MutableIntegerReduction()));
+                factors = FactorTest(true, 5, n, new BigIntegerPollardRhoReduction(threads, 0, new MutableIntegerReduction()));
                 //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, 0, new BarrettReduction()));
                 //factors = FactorTest(true, 5, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
                 foreach (var factor in factors)
@@ -3460,7 +3460,7 @@ namespace Sandbox
                 var factors = null as BigInteger[];
                 //factors = FactorTest(true, 1, n, new PollardRho(threads, 0));
                 //factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, 0, new MutableIntegerReduction()));
-                factors = FactorTest(true, 1, n, new PollardRhoReduction(threads, 0, new BigIntegerMontgomeryReduction()));
+                factors = FactorTest(true, 1, n, new BigIntegerPollardRhoReduction(threads, 0, new BigIntegerMontgomeryReduction()));
                 //factors = FactorTest(true, 1, n, new QuadraticSieve(new QuadraticSieve.Config { Threads = threads }));
             }
         }

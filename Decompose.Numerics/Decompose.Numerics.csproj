@@ -170,7 +170,7 @@
     <Compile Include="Factorization\PollardRho.cs" />
     <Compile Include="Factorization\PollardRhoBase.cs" />
     <Compile Include="Factorization\PollardRhoBrent.cs" />
-    <Compile Include="Factorization\PollardRhoReduction.cs" />
+    <Compile Include="Factorization\BigIntegerPollardRhoReduction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QuadraticSieve\QuadraticSieve.cs" />
     <Compile Include="Collections\ByRowSetBitMatrix.cs" />

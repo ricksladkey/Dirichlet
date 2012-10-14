@@ -1228,8 +1228,7 @@ namespace Dirichlet.Numerics
             var u1 = u >> 32;
             var v0 = (ulong)(uint)v;
             var v1 = v >> 32;
-            var carry = u0 * v0 + (uint)c;
-            carry = (carry >> 32) + u0 * v1 + (c >> 32);
+            var carry = ((u0 * v0 + (uint)c) >> 32) + u0 * v1 + (c >> 32);
             var r2 = carry >> 32;
             carry = (uint)carry + u1 * v0;
             return (carry >> 32) + r2 + u1 * v1;

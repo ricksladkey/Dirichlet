@@ -8,9 +8,9 @@ namespace Decompose.Numerics
     {
         public static ulong ModularProduct(ulong a, ulong b, ulong modulus)
         {
-            UInt128 ab;
-            UInt128.Multiply(out ab, a, b);
-            var c = UInt128.Remainder(ref ab, modulus);
+            UInt128 product;
+            UInt128.Multiply(out product, a, b);
+            var c = UInt128.Remainder(ref product, modulus);
             Debug.Assert((BigInteger)a * b % modulus == c);
             return c;
         }
@@ -31,28 +31,11 @@ namespace Decompose.Numerics
 
         public static ulong MultiplyHigh(ulong a, ulong b)
         {
-#if false
-            UInt128 c;
-            Multiply(out c, (uint)a, (uint)(a >> 32), (uint)b, (uint)(b >> 32));
-            return (ulong)c.r3 << 32 | c.r2;
-#endif
-#if true
             var u0 = (uint)a;
             var u1 = (uint)(a >> 32);
             var v0 = (uint)b;
             var v1 = (uint)(b >> 32);
             var carry = (((ulong)u0 * v0) >> 32) + (ulong)u0 * v1;
-            return (((uint)carry + (ulong)u1 * v0) >> 32) + (carry >> 32) + (ulong)u1 * v1;
-#endif
-        }
-
-        public static ulong MultiplyHighApprox(ulong a, ulong b)
-        {
-            var u0 = (uint)a;
-            var u1 = (uint)(a >> 32);
-            var v0 = (uint)b;
-            var v1 = (uint)(b >> 32);
-            var carry = (ulong)u0 * v1;
             return (((uint)carry + (ulong)u1 * v0) >> 32) + (carry >> 32) + (ulong)u1 * v1;
         }
     }

@@ -13,7 +13,7 @@ namespace Decompose.Numerics
 
         public HybridPollardRhoQuadraticSieve(int threads, int iterations, QuadraticSieve.Config config)
         {
-            pollard = new PollardRhoReduction(threads, iterations, new BigIntegerMontgomeryReduction());
+            pollard = new BigIntegerPollardRhoReduction(threads, iterations, new BigIntegerMontgomeryReduction());
             quadraticSieve = new QuadraticSieve(config);
         }
 
