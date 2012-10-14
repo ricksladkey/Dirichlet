@@ -1,4 +1,6 @@
-﻿using System;
+﻿#undef DIAG
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -60,6 +62,9 @@ namespace Decompose.Numerics
 
             private Number<T> Rho(Number<T> n, Number<T> xInit, T c, IReducer<T> reducer)
             {
+#if DIAG
+                Console.WriteLine("xInit = {0}", xInit);
+#endif
                 if (n.IsEven)
                     return 2;
 
@@ -73,12 +78,16 @@ namespace Decompose.Numerics
                 var diff = one.Copy();
                 var q = one.Copy();
                 var g = (Number<T>)1;
+                var count = 0;
 
                 do
                 {
                     x.Set(y);
                     for (int i = 0; i < r; i++)
+                    {
+                        ++count;
                         AdvanceF(y, cPrime);
+                    }
                     var k = 0;
                     while (k < r && g == 1)
                     {
@@ -87,6 +96,7 @@ namespace Decompose.Numerics
                         q.Set(one);
                         for (int i = 0; i < limit; i++)
                         {
+                            ++count;
                             AdvanceF(y, cPrime);
                             q.Multiply(diff.Set(x).Subtract(y));
                         }
@@ -96,6 +106,9 @@ namespace Decompose.Numerics
                     r <<= 1;
                 }
                 while (g == 1);
+#if DIAG
+                Console.WriteLine("count = {0}", count);
+#endif
 
                 if (g.CompareTo(n) == 0)
                 {

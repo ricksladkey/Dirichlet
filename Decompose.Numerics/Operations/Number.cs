@@ -5,20 +5,11 @@ namespace Decompose.Numerics
 {
     public struct Number<T> : IComparable, IComparable<Number<T>>, IEquatable<Number<T>>
     {
-        private static IOperations<T> ops;
-        private static Number<T> minValue;
-        private static Number<T> maxValue;
-        private static Number<T> zero;
-        private static Number<T> one;
-
-        static Number()
-        {
-            ops = Operations.Get<T>();
-            minValue = ops.MinValue;
-            maxValue = ops.MaxValue;
-            zero = ops.Zero;
-            one = ops.One;
-        }
+        private static IOperations<T> ops = Operations.Get<T>();
+        private static Number<T> minValue = ops.MinValue;
+        private static Number<T> maxValue = ops.MaxValue;
+        private static Number<T> zero = ops.Zero;
+        private static Number<T> one = ops.One;
 
         private T value;
         public Number(T value) { this.value = value; }

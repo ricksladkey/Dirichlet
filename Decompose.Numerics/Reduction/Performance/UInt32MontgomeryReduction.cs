@@ -22,6 +22,11 @@ namespace Decompose.Numerics
                     }
                 }
 
+                public Residue(Reducer reducer)
+                    : base(reducer)
+                {
+                }
+
                 public Residue(Reducer reducer, uint x)
                     : base(reducer)
                 {
@@ -42,7 +47,9 @@ namespace Decompose.Numerics
 
                 public override IResidue<uint> Copy()
                 {
-                    return new Residue(reducer, r);
+                    var residue = new Residue(reducer);
+                    residue.r = r;
+                    return residue;
                 }
 
                 public override IResidue<uint> Multiply(IResidue<uint> x)

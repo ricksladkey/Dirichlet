@@ -3375,44 +3375,61 @@ namespace Sandbox
 
         static void FactorTest1()
         {
-            var n = ulong.Parse("10023859281455311421");
+            for (var k = 15; k <= 15; k++)
+                FactorTest1Core(k);
+        }
+
+        static void FactorTest1Core(int k)
+        {
+            //var n = BigInteger.Parse("10023859281455311421");
+            output.WriteLine("k = {0}", k);
+            var n = samples[k].N;
             var threads = 1;
+            var iterations = 1;
             bool debug = false;
-
-            output.WriteLine("bits = {0}", n.GetBitLength());
-
-            FactorTest(debug, 100, n, PollardRhoReduction.Create(new BigIntegerReduction()));
-            FactorTest(debug, 100, n, PollardRhoReduction.Create(new UInt64Reduction()));
-            FactorTest(debug, 100, n, PollardRhoReduction.Create(new UInt64MontgomeryReduction()));
-            FactorTest(debug, 100, n, PollardRhoReduction.Create(new UInt128Reduction()));
-            FactorTest(debug, 100, n, PollardRhoReduction.Create(new UInt128MontgomeryReduction()));
-            FactorTest(debug, 100, n, new UInt64PollardRhoReduction(new UInt64MontgomeryReduction()));
-            //FactorTest(debug, 100, (long)n, new ShanksSquareForms());
-
             var config = new QuadraticSieve.Config
             {
                 DiagnosticsOutput = output,
                 IntervalSize = 32 * 1024,
                 BlockSize = 32 * 1024,
                 Multiplier = 1,
-                Diagnostics = QuadraticSieve.Diag.Verbose,
+                Diagnostics = QuadraticSieve.Diag.None,
+                //Diagnostics = QuadraticSieve.Diag.Verbose,
                 ThresholdExponent = 1.05,
                 ErrorLimit = 1,
                 FactorBaseSize = 80,
                 Threads = threads,
             };
-            for (int i = 0; i < 1; i++)
+
+            output.WriteLine("bits = {0}", n.GetBitLength());
+            output.WriteLine();
+
+            for (var i = 0; i < 2; i++)
             {
+                if (n <= long.MaxValue)
+                {
+                    FactorTest(debug, iterations, (long)n, new ShanksSquareForms(), "ShanksSquareForms");
+                }
+                if (n <= ulong.MaxValue)
+                {
+                    FactorTest(debug, iterations, (ulong)n, PollardRhoReduction.Create(new UInt64Reduction()), "PollardRho/UInt64");
+                    FactorTest(debug, iterations, (ulong)n, PollardRhoReduction.Create(new UInt64MontgomeryReduction()), "PollardRho/UInt64Montgomery");
+                    FactorTest(debug, iterations, (ulong)n, new UInt64PollardRhoReduction(new UInt64Reduction()), "UInt64PollardRho/UInt64");
+                    FactorTest(debug, iterations, (ulong)n, new UInt64PollardRhoReduction(new UInt64MontgomeryReduction()), "UInt64PollardRho/UInt64Montgomery");
+                }
+                if (n <= UInt128.MaxValue)
+                {
+                    FactorTest(debug, iterations, (UInt128)n, PollardRhoReduction.Create(new UInt128Reduction()), "PollardRho/UInt128");
+                    FactorTest(debug, iterations, (UInt128)n, PollardRhoReduction.Create(new UInt128MontgomeryReduction()), "PollardRho/UInt128Montgomery");
+                }
+                if (true)
+                {
+                    FactorTest(debug, iterations, n, PollardRhoReduction.Create(new BigIntegerReduction()), "PollardRho/BigInteger");
+                    FactorTest(debug, iterations, n, PollardRhoReduction.Create(new BigIntegerMontgomeryReduction()), "PollardRho/BigIntegerMontgomery");
+                    FactorTest(debug, iterations, n, new QuadraticSieve(config), "QuadraticSieve");
+                }
                 output.WriteLine();
-                //FactorTest(debug, 100, n, new PollardRhoBrent(threads, 0));
-                //FactorTest(debug, 100, n, new PollardRhoReduction(threads, 0, new MutableIntegerReduction()));
-                //FactorTest(debug, 100, n, new PollardRhoReduction(threads, 0, new BarrettReduction()));
-                //FactorTest(debug, 100, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
-                FactorTest(debug, 1, n, new QuadraticSieve(config));
             }
-            config.Diagnostics = QuadraticSieve.Diag.None;
-            FactorTest(debug, 1, n, new QuadraticSieve(config));
-            FactorTest(debug, 100, n, new QuadraticSieve(config));
         }
 
         static void FactorTest2()
@@ -4797,9 +4814,11 @@ namespace Sandbox
             return IntegerMath.NextPrime(n);
         }
 
-        private static T[] FactorTest<T>(bool debug, int iterations, T n, IFactorizationAlgorithm<T> algorithm)
+        private static T[] FactorTest<T>(bool debug, int iterations, T n, IFactorizationAlgorithm<T> algorithm, string label = "unknown")
         {
             var results = new List<T[]>();
+            if (iterations > 0)
+                algorithm.Factor(n);
             GC.Collect();
             var timer = new Stopwatch();
             timer.Start();
@@ -4816,7 +4835,7 @@ namespace Sandbox
                 if (n != product)
                     throw new InvalidOperationException("validation failure");
             }
-            output.WriteLine("{0} iterations in {1:F0} msec, {2:F3} msec/iteration", iterations, elapsed, elapsed / iterations);
+            output.WriteLine("{0} iterations in {1:F0} msec, {2:F3} msec/iteration ({3})", iterations, elapsed, elapsed / iterations, label);
             return results[0];
         }
 

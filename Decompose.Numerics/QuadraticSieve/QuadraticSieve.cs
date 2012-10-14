@@ -2082,7 +2082,7 @@ namespace Decompose.Numerics
             Debug.Assert(cofactors.Length == cycle.Count + 1);
             var cofactor = cofactors.Select(i => (BigInteger)i).Product();
 
-            // Add the reation.
+            // Add the relation.
             AddRelation(CreateRelation(x, interval.Exponents.Entries, cofactor));
         }
 

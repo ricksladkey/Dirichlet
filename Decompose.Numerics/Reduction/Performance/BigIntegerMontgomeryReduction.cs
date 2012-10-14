@@ -13,6 +13,11 @@ namespace Decompose.Numerics
                 public override bool IsZero { get { return r == 0; } }
                 public override bool IsOne { get { return r == reducer.oneRep; } }
 
+                public Residue(Reducer reducer)
+                    : base(reducer, reducer.CreateRep())
+                {
+                }
+
                 public Residue(Reducer reducer, BigInteger x)
                     : base(reducer, reducer.CreateRep())
                 {
@@ -34,7 +39,7 @@ namespace Decompose.Numerics
 
                 public override IResidue<BigInteger> Copy()
                 {
-                    var residue = new Residue(reducer, reducer.CreateRep());
+                    var residue = new Residue(reducer);
                     residue.r.Set(r);
                     return residue;
                 }

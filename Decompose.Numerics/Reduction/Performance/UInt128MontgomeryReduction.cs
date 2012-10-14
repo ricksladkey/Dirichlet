@@ -1,5 +1,6 @@
 ﻿using System;
 using Dirichlet.Numerics;
+using System.Diagnostics;
 
 namespace Decompose.Numerics
 {
@@ -19,6 +20,11 @@ namespace Decompose.Numerics
                             reducer.Reduce(out reducer.oneRep, ref reducer.rSquaredModN);
                         return r == reducer.oneRep;
                     }
+                }
+
+                public Residue(Reducer reducer)
+                    : base(reducer)
+                {
                 }
 
                 public Residue(Reducer reducer, UInt128 x)
@@ -43,13 +49,16 @@ namespace Decompose.Numerics
 
                 public override IResidue<UInt128> Copy()
                 {
-                    return new Residue(reducer, r);
+                    var residue = new Residue(reducer);
+                    residue.r = r;
+                    return residue;
                 }
 
                 public override IResidue<UInt128> Multiply(IResidue<UInt128> x)
                 {
                     var xRep = GetRep(x);
-                    reducer.Reduce(out r, ref r, ref xRep);
+                    var rRep = r;
+                    reducer.Reduce(out r, ref rRep, ref xRep);
                     return this;
                 }
 
