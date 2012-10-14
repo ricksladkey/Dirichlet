@@ -185,7 +185,7 @@
     <Compile Include="Reduction\Performance\UInt64MontgomeryReduction.cs" />
     <Compile Include="Reduction\Reference\UInt64Reduction.cs" />
     <Compile Include="Reduction\Performance\UInt32MontgomeryReduction.cs" />
-    <Compile Include="Reduction\Performance\MutableIntegerReduction.cs" />
+    <Compile Include="Reduction\Reference\MutableIntegerReduction.cs" />
     <Compile Include="Core\MutableIntegerStore.cs" />
     <Compile Include="Core\SieveOfEratosthenes.cs" />
     <Compile Include="SquareRoot\SqrtBinarySearch.cs" />
