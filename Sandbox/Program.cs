@@ -24,7 +24,7 @@ namespace Sandbox
             output = new ConsoleLogger("Decompose.log");
             try
             {
-                Montgomery128Test();
+                //Montgomery128Test();
                 //ParityTest();
                 //Modular128Test();
                 //SquareFreeCountingTest();
@@ -42,7 +42,7 @@ namespace Sandbox
                 //BarrettReductionTest1();
                 //BarrettReductionTest2();
                 //MutableIntegerTest1();
-                //FactorTest1();
+                FactorTest1();
                 //FactorTest2();
                 //FactorTest3();
                 //FactorTest4();
@@ -3375,17 +3375,19 @@ namespace Sandbox
 
         static void FactorTest1()
         {
-            var n = BigInteger.Parse("10023859281455311421");
-            //int threads = 1;
+            var n = ulong.Parse("10023859281455311421");
+            var threads = 1;
             bool debug = false;
 
             output.WriteLine("bits = {0}", n.GetBitLength());
 
-            //FactorTest(debug, 25, n, new PollardRhoBrent(threads, 0));
-            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new BigIntegerReduction()));
-            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new Radix32IntegerReduction()));
-            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new BarrettReduction()));
-            //FactorTest(debug, 25, n, new PollardRhoReduction(threads, 0, new MontgomeryReduction()));
+            FactorTest(debug, 100, n, PollardRhoReduction.Create(new BigIntegerReduction()));
+            FactorTest(debug, 100, n, PollardRhoReduction.Create(new UInt64Reduction()));
+            FactorTest(debug, 100, n, PollardRhoReduction.Create(new UInt64MontgomeryReduction()));
+            FactorTest(debug, 100, n, PollardRhoReduction.Create(new UInt128Reduction()));
+            FactorTest(debug, 100, n, PollardRhoReduction.Create(new UInt128MontgomeryReduction()));
+            FactorTest(debug, 100, n, new UInt64PollardRhoReduction(new UInt64MontgomeryReduction()));
+            //FactorTest(debug, 100, (long)n, new ShanksSquareForms());
 
             var config = new QuadraticSieve.Config
             {
@@ -3397,6 +3399,7 @@ namespace Sandbox
                 ThresholdExponent = 1.05,
                 ErrorLimit = 1,
                 FactorBaseSize = 80,
+                Threads = threads,
             };
             for (int i = 0; i < 1; i++)
             {
@@ -3409,7 +3412,7 @@ namespace Sandbox
             }
             config.Diagnostics = QuadraticSieve.Diag.None;
             FactorTest(debug, 1, n, new QuadraticSieve(config));
-            FactorTest(debug, 3000, n, new QuadraticSieve(config));
+            FactorTest(debug, 100, n, new QuadraticSieve(config));
         }
 
         static void FactorTest2()
@@ -4794,9 +4797,9 @@ namespace Sandbox
             return IntegerMath.NextPrime(n);
         }
 
-        private static BigInteger[] FactorTest(bool debug, int iterations, BigInteger n, IFactorizationAlgorithm<BigInteger> algorithm)
+        private static T[] FactorTest<T>(bool debug, int iterations, T n, IFactorizationAlgorithm<T> algorithm)
         {
-            var results = new List<BigInteger[]>();
+            var results = new List<T[]>();
             GC.Collect();
             var timer = new Stopwatch();
             timer.Start();
@@ -4807,8 +4810,8 @@ namespace Sandbox
             {
                 if (factors.Length < 2)
                     throw new InvalidOperationException("too few factors");
-                var product = factors.Aggregate((sofar, current) => sofar * current);
-                if (factors.Any(factor => factor == BigInteger.One || factor == n || !IntegerMath.IsPrime(factor)))
+                var product = (Number<T>)factors.Aggregate((sofar, current) => (Number<T>)sofar * current);
+                if (factors.Select(factor => (Number<T>)factor).Any(factor => factor.IsOne || factor == n || !IntegerMath.IsPrime(factor)))
                     throw new InvalidOperationException("invalid factor");
                 if (n != product)
                     throw new InvalidOperationException("validation failure");

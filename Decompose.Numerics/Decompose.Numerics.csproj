@@ -89,6 +89,7 @@
     <Compile Include="Core\MontgomeryHelper.cs" />
     <Compile Include="Core\Rational.cs" />
     <Compile Include="Core\UInt64Helper.cs" />
+    <Compile Include="Factorization\PollardRhoReduction.cs" />
     <Compile Include="GnuMP\Integer.cs" />
     <Compile Include="GnuMP\Rational.cs" />
     <Compile Include="GnuMP\Real.cs" />

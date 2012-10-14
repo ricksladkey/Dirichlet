@@ -3,9 +3,9 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public class MillerRabin
+    public static class MillerRabin
     {
-        private class PrimalityAlgorithm<T> : IPrimalityAlgorithm<T>
+        private class PrimalityAlgorithm<T> : IPrimalityAlgorithm<T>, IPrimalityAlgorithm<Number<T>>
         {
             private IReductionAlgorithm<T> reduction;
             private IRandomNumberAlgorithm<Number<T>> random = new RandomInteger<T>(0);
@@ -17,9 +17,13 @@ namespace Decompose.Numerics
                 this.reduction = reduction;
             }
 
-            public bool IsPrime(T nValue)
+            public bool IsPrime(T n)
             {
-                var n = (Number<T>)nValue;
+                return IsPrime((Number<T>)n);
+            }
+
+            public bool IsPrime(Number<T> n)
+            {
                 if (n < 2)
                     return false;
                 if (n == 2 || n == 3)

@@ -775,13 +775,13 @@ namespace Decompose.Numerics
         private void ChooseMultiplier()
         {
             if (config.Multiplier != 0)
-            {
                 multiplier = config.Multiplier;
-                return;
+            else
+            {
+                multiplier = multiplierCandidates
+                    .OrderByDescending(value => ScoreMultiplier(value))
+                    .First();
             }
-            multiplier = multiplierCandidates
-                .OrderByDescending(value => ScoreMultiplier(value))
-                .First();
             multiplierFactors = smallIntegerFactorer.Factor(multiplier).ToArray();
         }
 
