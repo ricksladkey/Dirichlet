@@ -27,6 +27,22 @@ namespace Decompose.Numerics
             }
         }
 
+        private class NumberRandomNumberAlgorithm<T> : RandomNumberAlgorithm<Number<T>>
+        {
+            private IRandomNumberAlgorithm<T> trandom;
+
+            public NumberRandomNumberAlgorithm(IRandomNumberGenerator random)
+                : base(random)
+            {
+                trandom = random.Create<T>();
+            }
+
+            public override Number<T> Next(Number<T> n)
+            {
+                return trandom.Next(n);
+            }
+        }
+
         private class Int32RandomNumberAlgorithm : RandomNumberAlgorithm<int>
         {
             public Int32RandomNumberAlgorithm(IRandomNumberGenerator random)
@@ -209,6 +225,11 @@ namespace Decompose.Numerics
         public object SyncRoot { get { return syncRoot; } }
 
         public abstract uint Next();
+
+        public IRandomNumberAlgorithm<Number<T>> CreateNumber<T>()
+        {
+            return new NumberRandomNumberAlgorithm<T>(this);
+        }
 
         public IRandomNumberAlgorithm<T> Create<T>()
         {

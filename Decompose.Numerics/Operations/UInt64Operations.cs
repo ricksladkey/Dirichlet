@@ -3,55 +3,55 @@ using System.Numerics;
 
 namespace Decompose.Numerics
 {
-    public sealed class UInt64Operations : IOperations<ulong>
+    public sealed class UInt64Operations : Operations<ulong>
     {
-        public Type Type { get { return typeof(ulong); } }
-        public ulong MinValue { get { return ulong.MinValue; } }
-        public ulong MaxValue { get { return ulong.MaxValue; } }
-        public ulong Zero { get { return 0; } }
-        public ulong One { get { return 1; } }
-        public bool IsUnsigned { get { return true; } }
-        public ulong Convert(int a) { return (ulong)a; }
-        public ulong Convert(BigInteger a) { return (ulong)a; }
-        public ulong Convert(double a) { return (ulong)a; }
-        public int ToInt32(ulong a) { return (int)a; }
-        public BigInteger ToBigInteger(ulong a) { return a; }
-        public double ToDouble(ulong a) { return (double)a; }
-        public ulong Add(ulong a, ulong b) { return a + b; }
-        public ulong Subtract(ulong a, ulong b) { return a - b; }
-        public ulong Multiply(ulong a, ulong b) { return a * b; }
-        public ulong Divide(ulong a, ulong b) { return a / b; }
-        public ulong Remainder(ulong a, ulong b) { return a % b; }
-        public ulong Modulo(ulong a, ulong b) { return a % b; }
-        public ulong Negate(ulong a) { return 0 - a; }
-        public ulong LeftShift(ulong a, int n) { return n < 64 ? a << n : 0; }
-        public ulong RightShift(ulong a, int n) { return n < 64 ? a >> n : 0; }
-        public ulong And(ulong a, ulong b) { return a & b; }
-        public ulong Or(ulong a, ulong b) { return a | b; }
-        public ulong ExclusiveOr(ulong a, ulong b) { return a ^ b; }
-        public ulong OnesComplement(ulong a) { return ~a; }
-        public int Sign(ulong a) { return a != 0 ? 1 : 0; }
-        public bool IsZero(ulong a) { return a == 0; }
-        public bool IsOne(ulong a) { return a == 1; }
-        public bool IsEven(ulong a) { return (a & 1) == 0; }
-        public bool Equals(ulong x, ulong y) { return x.Equals(y); }
-        public int GetHashCode(ulong obj) { return obj.GetHashCode(); }
-        public int Compare(ulong x, ulong y) { return x.CompareTo(y); }
-        public uint LeastSignificantWord(ulong a) { return (uint)(a & uint.MaxValue); }
+        public override Type Type { get { return typeof(ulong); } }
+        public override ulong MinValue { get { return ulong.MinValue; } }
+        public override ulong MaxValue { get { return ulong.MaxValue; } }
+        public override ulong Zero { get { return 0; } }
+        public override ulong One { get { return 1; } }
+        public override bool IsUnsigned { get { return true; } }
+        public override ulong Convert(int a) { return (ulong)a; }
+        public override ulong Convert(BigInteger a) { return (ulong)a; }
+        public override ulong Convert(double a) { return (ulong)a; }
+        public override int ToInt32(ulong a) { return (int)a; }
+        public override BigInteger ToBigInteger(ulong a) { return a; }
+        public override double ToDouble(ulong a) { return (double)a; }
+        public override ulong Add(ulong a, ulong b) { return a + b; }
+        public override ulong Subtract(ulong a, ulong b) { return a - b; }
+        public override ulong Multiply(ulong a, ulong b) { return a * b; }
+        public override ulong Divide(ulong a, ulong b) { return a / b; }
+        public override ulong Remainder(ulong a, ulong b) { return a % b; }
+        public override ulong Modulo(ulong a, ulong b) { return a % b; }
+        public override ulong Negate(ulong a) { return 0 - a; }
+        public override ulong LeftShift(ulong a, int n) { return n < 64 ? a << n : 0; }
+        public override ulong RightShift(ulong a, int n) { return n < 64 ? a >> n : 0; }
+        public override ulong And(ulong a, ulong b) { return a & b; }
+        public override ulong Or(ulong a, ulong b) { return a | b; }
+        public override ulong ExclusiveOr(ulong a, ulong b) { return a ^ b; }
+        public override ulong OnesComplement(ulong a) { return ~a; }
+        public override int Sign(ulong a) { return a != 0 ? 1 : 0; }
+        public override bool IsZero(ulong a) { return a == 0; }
+        public override bool IsOne(ulong a) { return a == 1; }
+        public override bool IsEven(ulong a) { return (a & 1) == 0; }
+        public override bool Equals(ulong x, ulong y) { return x.Equals(y); }
+        public override int GetHashCode(ulong obj) { return obj.GetHashCode(); }
+        public override int Compare(ulong x, ulong y) { return x.CompareTo(y); }
+        public override uint LeastSignificantWord(ulong a) { return (uint)(a & uint.MaxValue); }
 
-        public ulong Power(ulong a, ulong b) { return IntegerMath.Power(a, b); }
-        public ulong Root(ulong a, ulong b) { return IntegerMath.Root(a, b); }
-        public ulong GreatestCommonDivisor(ulong a, ulong b) { return IntegerMath.GreatestCommonDivisor(a, b); }
-        public ulong ModularSum(ulong a, ulong b, ulong modulus) { return IntegerMath.ModularSum(a, b, modulus); }
-        public ulong ModularDifference(ulong a, ulong b, ulong modulus) { return IntegerMath.ModularDifference(a, b, modulus); }
-        public ulong ModularProduct(ulong a, ulong b, ulong modulus) { return IntegerMath.ModularProduct(a, b, modulus); }
-        public ulong ModularQuotient(ulong a, ulong b, ulong modulus) { return IntegerMath.ModularQuotient(a, b, modulus); }
-        public ulong ModularPower(ulong value, ulong exponent, ulong modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
-        public ulong ModularRoot(ulong value, ulong exponent, ulong modulus) { return IntegerMath.ModularRoot(value, exponent, modulus); }
-        public ulong ModularInverse(ulong value, ulong modulus) { return IntegerMath.ModularInverse(value, modulus); }
+        public override ulong Power(ulong a, ulong b) { return IntegerMath.Power(a, b); }
+        public override ulong Root(ulong a, ulong b) { return IntegerMath.Root(a, b); }
+        public override ulong GreatestCommonDivisor(ulong a, ulong b) { return IntegerMath.GreatestCommonDivisor(a, b); }
+        public override ulong ModularSum(ulong a, ulong b, ulong modulus) { return IntegerMath.ModularSum(a, b, modulus); }
+        public override ulong ModularDifference(ulong a, ulong b, ulong modulus) { return IntegerMath.ModularDifference(a, b, modulus); }
+        public override ulong ModularProduct(ulong a, ulong b, ulong modulus) { return IntegerMath.ModularProduct(a, b, modulus); }
+        public override ulong ModularQuotient(ulong a, ulong b, ulong modulus) { return IntegerMath.ModularQuotient(a, b, modulus); }
+        public override ulong ModularPower(ulong value, ulong exponent, ulong modulus) { return IntegerMath.ModularPower(value, exponent, modulus); }
+        public override ulong ModularRoot(ulong value, ulong exponent, ulong modulus) { return IntegerMath.ModularRoot(value, exponent, modulus); }
+        public override ulong ModularInverse(ulong value, ulong modulus) { return IntegerMath.ModularInverse(value, modulus); }
 
-        public ulong AbsoluteValue(ulong a) { return a; }
-        public Complex Log(ulong a) { return Math.Log(a); }
-        public ulong Factorial(ulong a) { return IntegerMath.Factorial(a); }
+        public override ulong AbsoluteValue(ulong a) { return a; }
+        public override Complex Log(ulong a) { return Math.Log(a); }
+        public override ulong Factorial(ulong a) { return IntegerMath.Factorial(a); }
     }
 }

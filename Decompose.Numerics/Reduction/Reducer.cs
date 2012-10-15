@@ -10,7 +10,7 @@ namespace Decompose.Numerics
     {
         protected TReduction reduction;
         protected TValue modulus;
-        protected IOperations<TValue> ops;
+        protected Operations<TValue> ops;
 
         protected Reducer(TReduction reduction, TValue modulus)
         {

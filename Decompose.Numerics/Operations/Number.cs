@@ -5,7 +5,7 @@ namespace Decompose.Numerics
 {
     public struct Number<T> : IComparable, IComparable<Number<T>>, IEquatable<Number<T>>
     {
-        private static IOperations<T> ops = Operations.Get<T>();
+        private static Operations<T> ops = Operations.Get<T>();
         private static Number<T> minValue = ops.MinValue;
         private static Number<T> maxValue = ops.MaxValue;
         private static Number<T> zero = ops.Zero;

@@ -42,7 +42,7 @@ namespace Sandbox
                 //BarrettReductionTest1();
                 //BarrettReductionTest2();
                 //MutableIntegerTest1();
-                FactorTest1();
+                //FactorTest1();
                 //FactorTest2();
                 //FactorTest3();
                 //FactorTest4();
@@ -60,7 +60,7 @@ namespace Sandbox
                 //ModularInverseTest1();
                 //ModularInverseTest2();
                 //PrimalityTest();
-                //OperationsTest();
+                OperationsTest();
                 //DivisionTest1();
                 //DivisionTest2();
             }
@@ -3404,7 +3404,7 @@ namespace Sandbox
             output.WriteLine("bits = {0}", n.GetBitLength());
             output.WriteLine();
 
-            for (var i = 0; i < 2; i++)
+            for (var i = 0; i < 1; i++)
             {
                 if (n <= long.MaxValue)
                 {
@@ -3422,7 +3422,7 @@ namespace Sandbox
                     FactorTest(debug, iterations, (UInt128)n, PollardRhoReduction.Create(new UInt128Reduction()), "PollardRho/UInt128");
                     FactorTest(debug, iterations, (UInt128)n, PollardRhoReduction.Create(new UInt128MontgomeryReduction()), "PollardRho/UInt128Montgomery");
                 }
-                if (true)
+                if (false)
                 {
                     FactorTest(debug, iterations, n, PollardRhoReduction.Create(new BigIntegerReduction()), "PollardRho/BigInteger");
                     FactorTest(debug, iterations, n, PollardRhoReduction.Create(new BigIntegerMontgomeryReduction()), "PollardRho/BigIntegerMontgomery");
@@ -4467,7 +4467,7 @@ namespace Sandbox
 #endif
 #if true
             {
-                Console.WriteLine("using Integer<T>");
+                Console.WriteLine("using Number<T>");
                 GC.Collect();
                 var timer = new Stopwatch();
                 var random = new MersenneTwister(0).Create<T>();

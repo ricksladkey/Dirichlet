@@ -117,7 +117,6 @@
     <Compile Include="Operations\Int32Operations.cs" />
     <Compile Include="Operations\Int64Operations.cs" />
     <Compile Include="Operations\Number.cs" />
-    <Compile Include="Operations\IOperations.cs" />
     <Compile Include="IntegerMath\JacobiSymbol.cs" />
     <Compile Include="IntegerMath\ModularDifference.cs" />
     <Compile Include="IntegerMath\ModularInverse.cs" />

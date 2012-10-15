@@ -1,4 +1,5 @@
-﻿#undef DIAG
+﻿#define USE_RELIABLE_RANDOM
+#define DIAG
 
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,11 @@ namespace Decompose.Numerics
         private class FactorizationAlgorithm<T> : IFactorizationAlgorithm<T>, IFactorizationAlgorithm<Number<T>>
         {
             const int batchSize = 100;
+#if USE_RELIABLE_RANDOM
+            private IRandomNumberAlgorithm<BigInteger> random = new MersenneTwister(0).Create<BigInteger>();
+#else
             private IRandomNumberAlgorithm<T> random = new MersenneTwister(0).Create<T>();
+#endif
             private IReductionAlgorithm<T> reduction;
             private IPrimalityAlgorithm<T> primality;
 
@@ -55,7 +60,7 @@ namespace Decompose.Numerics
 
             public Number<T> GetDivisor(Number<T> n)
             {
-                var xInit = random.Next(n);
+                var xInit = (Number<T>)random.Next(n);
                 var c = (Number<T>)random.Next(n - 1) + 1;
                 var reducer = reduction.GetReducer(n);
                 return Rho(n, xInit, c, reducer);
@@ -64,11 +69,6 @@ namespace Decompose.Numerics
             private Number<T> Rho(Number<T> n, Number<T> xInit, Number<T> c, IReducer<T> reducer)
             {
 #if DIAG
-#if true
-                Console.WriteLine("forcing initial values");
-                xInit = (Number<T>)BigInteger.Parse("937386379231237298815982594");
-                c = (Number<T>)BigInteger.Parse("214106292608131669695721288");
-#endif
                 Console.WriteLine("xInit = {0}, c = {1}", xInit, c);
 #endif
                 if (n.IsEven)
@@ -77,24 +77,24 @@ namespace Decompose.Numerics
                 var x = reducer.ToResidue(xInit);
                 var y = x.Copy();
                 var ys = x.Copy();
-                var r = 1;
+                var r = (long)1;
                 var m = batchSize;
                 var cPrime = reducer.ToResidue(c);
                 var one = reducer.ToResidue(1);
                 var diff = one.Copy();
                 var q = one.Copy();
                 var g = (Number<T>)1;
-                var count = 0;
+                var count = (long)0;
 
                 do
                 {
                     x.Set(y);
                     for (int i = 0; i < r; i++)
                     {
-                        ++count;
                         AdvanceF(y, cPrime);
+                        ++count;
                     }
-                    var k = 0;
+                    var k = (long)0;
                     while (k < r && g == 1)
                     {
                         ys.Set(y);
@@ -102,12 +102,12 @@ namespace Decompose.Numerics
                         q.Set(one);
                         for (int i = 0; i < limit; i++)
                         {
-                            ++count;
                             AdvanceF(y, cPrime);
                             q.Multiply(diff.Set(x).Subtract(y));
                         }
                         g = Number<T>.GreatestCommonDivisor(q.Value, n);
                         k += limit;
+                        count += limit << 1;
                     }
                     r <<= 1;
                 }
