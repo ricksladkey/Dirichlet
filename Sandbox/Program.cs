@@ -60,9 +60,10 @@ namespace Sandbox
                 //ModularInverseTest1();
                 //ModularInverseTest2();
                 //PrimalityTest();
-                OperationsTest();
+                //OperationsTest();
                 //DivisionTest1();
                 //DivisionTest2();
+                MertensPrimorialTest();
             }
             catch (AggregateException ex)
             {
@@ -81,6 +82,28 @@ namespace Sandbox
             output.WriteLine("Stack trace:");
             output.WriteLine(ex.StackTrace);
             return true;
+        }
+
+        static void MertensPrimorialTest()
+        {
+            var m = (int)IntegerMath.PrimorialCount((BigInteger)7);
+            for (var i = 1; i <= 2 * m; i += 10000)
+            {
+                var x = i;
+                var sum = 0;
+                for (var n = 1; n <= x; n++)
+                {
+                    if (IntegerMath.GreatestCommonDivisor(n, m) == 1)
+                        sum += IntegerMath.Mertens(x / n);
+                }
+
+                var expected = 0;
+                foreach (var factor in IntegerMath.Factors(m))
+                    expected += IntegerMath.Mobius(factor) * (x >= factor ? 1 : 0);
+                sum -= expected;
+
+                Console.WriteLine("i = {0}, sum = {1}", i, sum);
+            }
         }
 
         static void Modular128Test()
@@ -1546,25 +1569,6 @@ namespace Sandbox
                 }
                 var sum2 = IntegerMath.Mertens(x) - IntegerMath.Mertens(x / 2);
                 Console.WriteLine("i = {0}, sum1 = {1}, sum2 = {2}", i, sum1, sum2);
-            }
-#endif
-
-#if false
-            var pp = (long)IntegerMath.Primorial((BigInteger)7);
-            for (var i = 1; i <= 7; i++)
-            {
-                var x = IntegerMath.Power(10, i);
-                var sum = 0;
-                var count = 0;
-                for (var n = 1; n <= x; n++)
-                {
-                    if (IntegerMath.GreatestCommonDivisor(n, pp) == 1)
-                    {
-                        sum += IntegerMath.Mertens(x / n);
-                        ++count;
-                    }
-                }
-                Console.WriteLine("i = {0}, sum = {1}, % = {2}", i, sum, (double)count / x * 100);
             }
 #endif
 

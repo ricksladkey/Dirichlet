@@ -1010,6 +1010,27 @@
     cyan>|<table|<row|<cell|<big|sum><rsub|n\<leq\>x,gcd<around*|(|n,m#|)>=1>M<around*|(|<frac|x|n>|)>>|<cell|=>|<cell|0<space|1em><around*|(|x\<geq\>m#|)>>>>>
   </eqnarray*>
 
+  Expand range of validity to <math|n\<geq\>0>:
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|n\<leq\>x,gcd<around*|(|n,30|)>=1>M<around*|(|<frac|x|n>|)>>|<cell|=>|<cell|<big|sum><rsub|n\<leq\>x>M<around*|(|<frac|x|n>|)>>>|<row|<cell|>|<cell|->|<cell|<around*|[|<big|sum><rsub|n\<leq\>x/2>M<around*|(|<frac|x/2|n>|)>+<big|sum><rsub|n\<leq\>x/3>M<around*|(|<frac|x/3|n>|)>+<big|sum><rsub|n\<leq\>x/5>M<around*|(|<frac|x/5|n>|)>|]>>>|<row|<cell|>|<cell|+>|<cell|<around*|[|<big|sum><rsub|n\<leq\>x/6>M<around*|(|<frac|x/6|n>|)>+<big|sum><rsub|n\<leq\>x/10>M<around*|(|<frac|x/10|n>|)>-<big|sum><rsub|n\<leq\>x/15>M<around*|(|<frac|x/15|n>|)>|]>>>|<row|<cell|>|<cell|->|<cell|<around*|[|<big|sum><rsub|n\<leq\>x/30>M<around*|(|<frac|x/30|n>|)>|]>>>|<row|<cell|>|<cell|=>|<cell|<around*|[|x\<geq\>1|]>>>|<row|<cell|>|<cell|->|<cell|<around*|(|<around*|[|x\<geq\>2|]>+<around*|[|x\<geq\>3|]>+<around*|[|x\<geq\>5|]>|)>>>|<row|<cell|>|<cell|+>|<cell|<around*|(|<around*|[|x\<geq\>6|]>+<around*|[|x\<geq\>10|]>+<around*|[|x\<geq\>15|]>|)>>>|<row|<cell|>|<cell|->|<cell|<around*|[|x\<geq\>30|]>>>|<row|<cell|>|<cell|=>|<cell|<around*|[|x\<geq\>1|]>>>|<row|<cell|>|<cell|->|<cell|<big|sum><rsub|n=p<rsub|<rsub|i>>,p<rsub|i><around*|\||30|\<nobracket\>>><around*|[|x\<geq\>n|]>>>|<row|<cell|>|<cell|+>|<cell|<big|sum><rsub|n=p<rsub|<rsub|i>>*p<rsub|j>,p<rsub|i>*p<rsub|j><around*|\||30|\<nobracket\>>><around*|[|x\<geq\>n|]>>>|<row|<cell|>|<cell|->|<cell|<big|sum><rsub|n=p<rsub|<rsub|i>>*p<rsub|j>*p<rsub|k>,p<rsub|i*>*p<rsub|j>*p<rsub|k><around*|\||30|\<nobracket\>>><around*|[|x\<geq\>n|]>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|d<around*|\||30|\<nobracket\>>>\<mu\><around*|(|d|)>*<around*|[|x\<geq\>d|]>>>>>
+  </eqnarray*>
+
+  Generalizing:
+
+  <\eqnarray*>
+    <tformat|<cwith|1|-1|1|-1|cell-background|pastel
+    cyan>|<table|<row|<cell|<big|sum><rsub|n\<leq\>x,gcd<around*|(|n,m|)>=1>M<around*|(|<frac|x|n>|)>>|<cell|=>|<cell|<big|sum><rsub|d<around*|\||m|\<nobracket\>>>\<mu\>*<around*|(|d|)>*<around*|[|x\<geq\>d|]>>>>>
+  </eqnarray*>
+
+  Or more efficiently:
+
+  <\eqnarray*>
+    <tformat|<cwith|1|1|1|3|cell-background|pastel
+    cyan>|<table|<row|<cell|<big|sum><rsub|n\<leq\>x,gcd<around*|(|n,m|)>=1>M<around*|(|<frac|x|n>|)>>|<cell|=>|<cell|<choice|<tformat|<table|<row|<cell|1>|<cell|if
+    m=1>>|<row|<cell|0>|<cell|if x\<geq\>m>>|<row|<cell|<big|sum><rsub|d<around*|\||m|\<nobracket\>>>\<mu\>*<around*|(|d|)>*<around*|[|x\<geq\>d|]>>|<cell|otherwise>>>>>>>>>
+  </eqnarray*>
+
   <\eqnarray*>
     <tformat|<table|<row|<cell|g<around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|1\<leq\>k\<leq\>n>f<around*|(|<around*|\<lfloor\>|<frac|n|k>|\<rfloor\>>|)>>>|<row|<cell|g<around*|(|<frac|n|2>|)>>|<cell|=>|<cell|<big|sum><rsub|1\<leq\>k\<leq\>n/2>f<around*|(|<around*|\<lfloor\>|<frac|n|2*k>|\<rfloor\>>|)>=<big|sum><rsub|1\<leq\>k\<leq\>n,k
     even\<nocomma\>>f<around*|(|<around*|\<lfloor\>|<frac|n|k>|\<rfloor\>>|)>>>|<row|<cell|g<around*|(|n|)>-g<around*|(|<frac|n|2>|)>>|<cell|=>|<cell|<big|sum><rsub|1\<leq\>k\<leq\>n,k

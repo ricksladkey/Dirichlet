@@ -15,6 +15,33 @@ namespace Decompose.Numerics
             return factorerInt.Factor(n).ToArray();
         }
 
+        public static int[] Factors(int n)
+        {
+            return Factors(PrimeFactors(n)
+                .OrderBy(factor => factor)
+                .GroupBy(factor => factor))
+                .OrderBy(factor => factor).ToArray();
+        }
+
+        public static IEnumerable<int> Factors(IEnumerable<IGrouping<int, int>> primeFactors)
+        {
+            if (!primeFactors.Any())
+            {
+                yield return 1;
+                yield break;
+            }
+            var first = primeFactors.First();
+            var rest = primeFactors.Skip(1);
+            var prime = first.Key;
+            var n = first.Count();
+            for (var i = 0; i <= n; i++)
+            {
+                var power = IntegerMath.Power(prime, i);
+                foreach (var factor in Factors(rest))
+                    yield return power * factor;
+            }
+        }
+
         public static bool IsSquareFree(int n)
         {
             return Abs(Mobius(n)) == 1;
