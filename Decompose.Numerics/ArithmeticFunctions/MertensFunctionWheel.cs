@@ -108,7 +108,7 @@ namespace Decompose.Numerics
                     next = 0;
             }
 
-            wheelFactors = IntegerMath.Factors(wheelSize);
+            wheelFactors = IntegerMath.Factors(wheelSize).ToArray();
             wheelMobius = wheelFactors.Select(factor => IntegerMath.Mobius(factor)).ToArray();
         }
 

@@ -10,52 +10,47 @@ namespace Decompose.Numerics
     {
         private static IFactorizationAlgorithm<int> factorerInt = new TrialDivisionFactorization();
 
-        public static int[] PrimeFactors(int n)
+        public static IEnumerable<int> PrimeFactors(int n)
         {
-            return factorerInt.Factor(n).ToArray();
+            return factorerInt.Factor(n);
         }
 
-        public static int[] Factors(int n)
+        public static IEnumerable<int> Factors(int n)
         {
-            return Factors(PrimeFactors(n)
-                .OrderBy(factor => factor)
-                .GroupBy(factor => factor))
-                .OrderBy(factor => factor).ToArray();
-        }
-
-        public static IEnumerable<int> Factors(IEnumerable<IGrouping<int, int>> primeFactors)
-        {
-            if (!primeFactors.Any())
+            var factors = new List<int> { 1 };
+            foreach (var primeFactor in PrimeFactors(n).GroupBy(factor => factor))
             {
-                yield return 1;
-                yield break;
+                var prime = primeFactor.Key;
+                var count = primeFactor.Count();
+                var sofar = factors.Count;
+                var i = 1;
+                var multiplier = prime;
+                while (true)
+                {
+                    for (var j = 0; j < sofar; j++)
+                        factors.Add(factors[j] * multiplier);
+                    if (++i > count)
+                        break;
+                    multiplier *= prime;
+                }
             }
-            var first = primeFactors.First();
-            var rest = primeFactors.Skip(1);
-            var prime = first.Key;
-            var n = first.Count();
-            for (var i = 0; i <= n; i++)
-            {
-                var power = IntegerMath.Power(prime, i);
-                foreach (var factor in Factors(rest))
-                    yield return power * factor;
-            }
+            factors.Sort();
+            return factors;
         }
 
         public static bool IsSquareFree(int n)
         {
-            return Abs(Mobius(n)) == 1;
+            return Mobius(n) != 0;
         }
 
         public static bool IsSquareFree(BigInteger n)
         {
-            return Abs(Mobius(n)) == 1;
+            return Mobius(n) != 0;
         }
 
         public static int LittleOmega(int n)
         {
             return PrimeFactors(n)
-                .OrderBy(factor => factor)
                 .GroupBy(factor => factor)
                 .Count();
         }
@@ -95,7 +90,6 @@ namespace Decompose.Numerics
         {
             var factors = factorerInt.Factor(n).ToArray();
             bool squareFree = factors
-                .OrderBy(factor => factor)
                 .GroupBy(factor => factor)
                 .All(grouping => grouping.Count() < 2);
             if (!squareFree)

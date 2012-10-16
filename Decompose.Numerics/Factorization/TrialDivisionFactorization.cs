@@ -6,6 +6,11 @@ namespace Decompose.Numerics
 {
     public class TrialDivisionFactorization : IFactorizationAlgorithm<int>, IFactorizationAlgorithm<long>
     {
+        /// <summary>
+        /// Enumerates the prime factors, in order, of the supplied number.
+        /// </summary>
+        /// <param name="n">The number to be factored.</param>
+        /// <returns>An enumeration of prime factors.</returns>
         public IEnumerable<int> Factor(int n)
         {
             if (n == 0)
@@ -48,6 +53,11 @@ namespace Decompose.Numerics
             return Factor(n).First();
         }
 
+        /// <summary>
+        /// Enumerates the prime factors, in order, of the supplied number.
+        /// </summary>
+        /// <param name="n">The number to be factored.</param>
+        /// <returns>An enumeration of prime factors.</returns>
         public IEnumerable<long> Factor(long n)
         {
             if (n < 2)
