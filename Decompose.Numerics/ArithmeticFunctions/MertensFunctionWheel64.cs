@@ -105,11 +105,7 @@ namespace Decompose.Numerics
             u = Math.Max((long)IntegerMath.FloorPower((BigInteger)n, 2, 3) * C1 / C2, IntegerMath.CeilingSquareRoot(n));
 
             if (u <= wheelSize)
-            {
-                mobius = new MobiusRange(n + 1, threads);
-                m = new int[n];
-                return mobius.GetSums(1, n + 1, m, 0);
-            }
+                return new MertensFunctionDR(threads).Evaluate(n);
 
             imax = (int)(n / u);
             mobius = new MobiusRange(u + 1, threads);

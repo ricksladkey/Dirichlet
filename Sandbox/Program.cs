@@ -33,7 +33,7 @@ namespace Sandbox
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
                 //DivisorSummatoryFunctionOddTest();
-                //MertensPerformanceTest();
+                MertensPerformanceTest();
                 //PiMod2PerformanceTest();
                 //PiMod3PerformanceTest();
                 //PerfectPowerTest();
@@ -63,7 +63,7 @@ namespace Sandbox
                 //OperationsTest();
                 //DivisionTest1();
                 //DivisionTest2();
-                MertensPrimorialTest();
+                //MertensPrimorialTest();
             }
             catch (AggregateException ex)
             {
@@ -210,13 +210,13 @@ namespace Sandbox
         {
             var threads = 8;
             var timer = new Stopwatch();
-            for (var power = 12; power <= 16; power++)
+            for (var power = 1; power <= 16; power++)
             {
                 var n = IntegerMath.Power((BigInteger)10, power);
 #if false
                 var algorithm1 = new MertensFunctionWheel64(threads);
                 timer.Restart();
-                Console.Write("BigInteger.Parse(\"{0}\"),", algorithm1.Evaluate((long)n));
+                Console.Write("{{ {0}, {1} }},", power, algorithm1.Evaluate((long)n));
                 Console.WriteLine(" // elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
 #if true

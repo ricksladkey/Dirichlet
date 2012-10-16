@@ -75,6 +75,8 @@ namespace Decompose.Numerics
         private int[] wheelSubtotal;
         private bool[] wheelInclude;
         private int[] wheelNext;
+        private int[] wheelFactors;
+        private int[] wheelMobius;
 
         public MertensFunctionWheel(int threads)
         {
@@ -105,6 +107,9 @@ namespace Decompose.Numerics
                 if (wheelInclude[i])
                     next = 0;
             }
+
+            wheelFactors = IntegerMath.Factors(wheelSize);
+            wheelMobius = wheelFactors.Select(factor => IntegerMath.Mobius(factor)).ToArray();
         }
 
         public BigInteger Evaluate(BigInteger n)
@@ -122,9 +127,6 @@ namespace Decompose.Numerics
 
             this.n = n;
             u = (long)IntegerMath.Max(IntegerMath.FloorPower(n, 2, 3) * C1 / C2, IntegerMath.CeilingSquareRoot(n));
-
-            if (u <= wheelSize)
-                return new MertensFunctionDR(threads).Evaluate((long)n);
 
             imax = (int)(n / (ulong)u);
             mobius = new MobiusRangeAdditive(u + 1, threads);
@@ -163,11 +165,9 @@ namespace Decompose.Numerics
                         addto = bucket;
                     }
                 }
+                niLarge[i] = ni;
                 if (large)
-                {
-                    niLarge[i] = ni;
                     bucketListsLarge[addto].Add(i);
-                }
                 else
                 {
                     niSmall[i] = (long)ni;
@@ -711,9 +711,21 @@ namespace Decompose.Numerics
             for (var l = r.Length - 1; l >= 0; l--)
             {
                 var i = r[l];
+                var ni = niLarge[i];
                 var s = (Int128)0;
+
+                // Include values of smaller isolated values of n/i.
                 for (var ij = 2 * i; ij <= imax; ij += i)
                     s += mx[ij];
+
+                // Values not less than the wheel size all cancel to zero.
+                if (ni < wheelSize)
+                {
+                    // Correction for values of n/i less than the wheel size.
+                    for (var k = 0; k < wheelFactors.Length; k++)
+                        s -= wheelMobius[k] * (ni >= wheelFactors[k] ? 1 : 0);
+                }
+
                 mx[i] -= s;
             }
         }
