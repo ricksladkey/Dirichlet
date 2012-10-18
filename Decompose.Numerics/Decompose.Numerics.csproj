@@ -51,6 +51,7 @@
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunction2.cs" />
     <Compile Include="ArithmeticFunctions\DivisionFreeDivisorSummatoryFunction.cs" />
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunctionArticle.cs" />
+    <Compile Include="ArithmeticFunctions\DivisorSummatoryFunctionOdd.cs" />
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunctionOddBigInteger.cs" />
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunctionOddGnuMP.cs" />
     <Compile Include="ArithmeticFunctions\DivisorSummatoryFunctionOddUInt128.cs" />

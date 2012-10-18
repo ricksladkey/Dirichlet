@@ -32,11 +32,11 @@ namespace Sandbox
                 //GreatestCommonDivisorPerformanceTest();
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
-                //DivisorSummatoryFunctionOddTest();
+                DivisorSummatoryFunctionOddTest();
                 //MertensPerformanceTest();
                 //MertensFormulaTest();
                 //PiMod2PerformanceTest();
-                PiMod3PerformanceTest();
+                //PiMod3PerformanceTest();
                 //PerfectPowerTest();
                 //FloorRootTest();
                 //FindPrimeTest1();
@@ -162,13 +162,13 @@ namespace Sandbox
         {
 #if true
             var threads = 0;
-            int repetitions = 500;
+            int repetitions = 100;
             for (var j = 0; j < 2; j++)
             {
-                for (var i = 1; i <= 12; i++)
+                for (var i = 17; i <= 17; i++)
                 {
-                    var algorithm1 = new DivisorSummatoryFunctionOddUInt64(threads, false);
-                    var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads, false);
+                    var algorithm1 = new DivisorSummatoryFunctionOddUInt128(threads, false);
+                    var algorithm2 = new DivisorSummatoryFunctionOddUInt64(threads, false);
                     var n = IntegerMath.Power((BigInteger)10, i);
                     var xmax = IntegerMath.FloorSquareRoot(n);
 #if false
@@ -176,7 +176,7 @@ namespace Sandbox
 #else
                     var xmin = 1;
 #endif
-#if true
+#if false
                     var s1 = EvaluateAndTime(() => algorithm1.Evaluate(n, xmin, xmax), repetitions);
 #else
                     var s1 = 0;
@@ -327,7 +327,7 @@ namespace Sandbox
             var algorithm2 = new PrimeCountingMod3Odd(threads, false);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 12; i <= 20; i++)
+            for (var i = 19; i <= 22; i++)
             {
                 timer.Restart();
                 for (var iterations = 0; iterations < 1; iterations++)
