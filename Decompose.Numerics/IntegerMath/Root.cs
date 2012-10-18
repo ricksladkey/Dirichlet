@@ -215,6 +215,16 @@ namespace Decompose.Numerics
             return (UInt128)FloorRoot((BigInteger)a, (BigInteger)b);
         }
 
+        public static long CeilingRoot(long a, long b)
+        {
+            return (long)CeilingRoot((BigInteger)a, (BigInteger)b);
+        }
+
+        public static ulong CeilingRoot(ulong a, ulong b)
+        {
+            return (ulong)CeilingRoot((BigInteger)a, (BigInteger)b);
+        }
+
         public static Int128 CeilingRoot(Int128 a, Int128 b)
         {
             return (Int128)CeilingRoot((BigInteger)a, (BigInteger)b);

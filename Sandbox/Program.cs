@@ -33,9 +33,10 @@ namespace Sandbox
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
                 //DivisorSummatoryFunctionOddTest();
-                MertensPerformanceTest();
+                //MertensPerformanceTest();
+                //MertensFormulaTest();
                 //PiMod2PerformanceTest();
-                //PiMod3PerformanceTest();
+                PiMod3PerformanceTest();
                 //PerfectPowerTest();
                 //FloorRootTest();
                 //FindPrimeTest1();
@@ -160,25 +161,29 @@ namespace Sandbox
         static void DivisorSummatoryFunctionOddTest()
         {
 #if true
-            var threads = 8;
-            for (int i = 25; i <= 25; i++)
+            var threads = 0;
+            int repetitions = 500;
+            for (var j = 0; j < 2; j++)
             {
-                var algorithm1 = new DivisionFreeDivisorSummatoryFunction(threads, false, true);
-                var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads, false);
-                var n = IntegerMath.Power((BigInteger)10, i);
-                var xmax = IntegerMath.FloorSquareRoot(n);
+                for (var i = 1; i <= 12; i++)
+                {
+                    var algorithm1 = new DivisorSummatoryFunctionOddUInt64(threads, false);
+                    var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads, false);
+                    var n = IntegerMath.Power((BigInteger)10, i);
+                    var xmax = IntegerMath.FloorSquareRoot(n);
 #if false
-                var xmin = IntegerMath.Min(600 * IntegerMath.CeilingRoot(2 * n, 3), xmax);
+                    var xmin = IntegerMath.Min(600 * IntegerMath.CeilingRoot(2 * n, 3), xmax);
 #else
-                var xmin = 1;
+                    var xmin = 1;
 #endif
-#if false
-                var s1 = EvaluateAndTime(() => algorithm1.Evaluate(n, xmin, xmax));
+#if true
+                    var s1 = EvaluateAndTime(() => algorithm1.Evaluate(n, xmin, xmax), repetitions);
 #else
-                var s1 = 0;
+                    var s1 = 0;
 #endif
-                var s2 = EvaluateAndTime(() => algorithm2.Evaluate(n, xmin, xmax));
-                Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
+                    var s2 = EvaluateAndTime(() => algorithm2.Evaluate(n, xmin, xmax), repetitions);
+                    Console.WriteLine("i = {0}, s1 = {1}, s2 = {2}", i, s1, s2);
+                }
             }
 #endif
 
@@ -210,11 +215,11 @@ namespace Sandbox
         {
             var threads = 8;
             var timer = new Stopwatch();
-            for (var power = 1; power <= 16; power++)
+            for (var power = 16; power <= 16; power++)
             {
                 var n = IntegerMath.Power((BigInteger)10, power);
 #if false
-                var algorithm1 = new MertensFunctionWheel64(threads);
+                var algorithm1 = new MertensFunctionDR(threads);
                 timer.Restart();
                 Console.Write("{{ {0}, {1} }},", power, algorithm1.Evaluate((long)n));
                 Console.WriteLine(" // elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
@@ -225,6 +230,19 @@ namespace Sandbox
                 Console.Write("{{ {0}, {1} }},", power, algorithm2.Evaluate(n));
                 Console.WriteLine(" // elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 #endif
+            }
+        }
+
+        static void MertensFormulaTest()
+        {
+            for (var power = 1; power <= 5; power++)
+            {
+                var n = IntegerMath.Power(10, power);
+                var sum = IntegerMath.MertensOdd(n / 2);
+                for (var i = 3; i <= n; i += 2)
+                    sum += IntegerMath.MertensOdd(n / i);
+                sum = 1 - sum;
+                Console.WriteLine("power = {0}, M({1}) = {2}, sum = {3}", power, n, IntegerMath.Mertens(n), sum);
             }
         }
 
@@ -309,7 +327,7 @@ namespace Sandbox
             var algorithm2 = new PrimeCountingMod3Odd(threads, false);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 16; i <= 20; i++)
+            for (var i = 12; i <= 20; i++)
             {
                 timer.Restart();
                 for (var iterations = 0; iterations < 1; iterations++)

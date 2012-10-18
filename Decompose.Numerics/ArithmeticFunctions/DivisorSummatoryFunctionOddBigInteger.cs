@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Decompose.Numerics
 {
-    public class DivisorSummatoryFunctionOdd : IDivisorSummatoryFunction<BigInteger>
+    public class DivisorSummatoryFunctionOddBigInteger : IDivisorSummatoryFunction<BigInteger>
     {
         private struct Region
         {
@@ -51,7 +51,7 @@ namespace Decompose.Numerics
         private DivisionFreeDivisorSummatoryFunction manualAlgorithm;
         private IStore<MutableInteger>[] stores;
 
-        public DivisorSummatoryFunctionOdd(int threads)
+        public DivisorSummatoryFunctionOddBigInteger(int threads)
         {
             this.threads = threads;
             queue = new BlockingCollection<Region>();

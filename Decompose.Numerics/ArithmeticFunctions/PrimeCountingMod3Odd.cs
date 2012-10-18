@@ -26,7 +26,7 @@ namespace Decompose.Numerics
                 if (simple)
                     hyperbolicSum[i] = new DivisionFreeDivisorSummatoryFunction(0, false, true);
                 else
-                    hyperbolicSum[i] = new DivisorSummatoryFunctionOddUInt128(0, false);
+                    hyperbolicSum[i] = new DivisorSummatoryFunctionOddBigInteger(0);
             }
         }
 
