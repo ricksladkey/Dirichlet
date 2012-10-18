@@ -8,6 +8,7 @@ using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Dirichlet.Numerics;
+using System.Collections.Generic;
 
 namespace Decompose.Numerics
 {
@@ -48,6 +49,7 @@ namespace Decompose.Numerics
         private int unprocessed;
         private UInt128 xmanual;
         private ManualResetEventSlim finished;
+        private Stack<Region> stack;
         private BlockingCollection<Region> queue;
         private DivisionFreeDivisorSummatoryFunction manualAlgorithm;
 
@@ -91,7 +93,10 @@ namespace Decompose.Numerics
             if (n <= nMaxSimple)
                 return (UInt128)manualAlgorithm.Evaluate(n, x0, xmax);
 
-            queue = new BlockingCollection<Region>();
+            if (threads == 0)
+                stack = new Stack<Region>();
+            else
+                queue = new BlockingCollection<Region>();
             sum = 0;
 #if RECORD_SIZES
             amax = 0;
@@ -158,8 +163,16 @@ namespace Decompose.Numerics
 
         private void Enqueue(Region r)
         {
-            Interlocked.Add(ref unprocessed, 1);
-            queue.Add(r);
+            if (threads == 0)
+            {
+                ++unprocessed;
+                stack.Push(r);
+            }
+            else
+            {
+                Interlocked.Add(ref unprocessed, 1);
+                queue.Add(r);
+            }
         }
 
         private UInt128 Processed(UInt128 result)
@@ -202,9 +215,9 @@ namespace Decompose.Numerics
                 if (threads == 0)
                 {
                     s += ProcessRegion(0, (ulong)(a1 * x2 + y2 - c5), (ulong)(a2 * x5 + y5 - c2), a1, 1, c5, a2, 1, c2);
-                    while (queue.Count > 0)
+                    while (stack.Count > 0)
                     {
-                        var r = queue.Take();
+                        var r = stack.Pop();
                         s += ProcessRegion(0, r.w, r.h, r.a1, r.b1, r.c1, r.a2, r.b2, r.c2);
                     }
                 }

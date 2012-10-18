@@ -32,11 +32,11 @@ namespace Sandbox
                 //GreatestCommonDivisorPerformanceTest();
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
-                DivisorSummatoryFunctionOddTest();
+                //DivisorSummatoryFunctionOddTest();
                 //MertensPerformanceTest();
                 //MertensFormulaTest();
                 //PiMod2PerformanceTest();
-                //PiMod3PerformanceTest();
+                PiMod3PerformanceTest();
                 //PerfectPowerTest();
                 //FloorRootTest();
                 //FindPrimeTest1();
@@ -327,7 +327,7 @@ namespace Sandbox
             var algorithm2 = new PrimeCountingMod3Odd(threads, false);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 19; i <= 22; i++)
+            for (var i = 16; i <= 19; i++)
             {
                 timer.Restart();
                 for (var iterations = 0; iterations < 1; iterations++)
