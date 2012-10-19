@@ -7,8 +7,11 @@ using Dirichlet.Numerics;
 
 namespace Decompose.Numerics
 {
-    public class DivisorSummatoryFunctionOdd : IDivisorSummatoryFunction<BigInteger>
+    public class DivisorSummatoryFunctionOdd : IDivisorSummatoryFunction<ulong>, IDivisorSummatoryFunction<UInt128>, IDivisorSummatoryFunction<BigInteger>
     {
+        private const ulong maxUInt64 = (ulong)1 << 60;
+        private readonly BigInteger maxUInt128 = (BigInteger)1 << 96;
+
         private IDivisorSummatoryFunction<ulong> hyperbolicSumUInt64;
         private IDivisorSummatoryFunction<UInt128> hyperbolicSumUInt128;
         private IDivisorSummatoryFunction<BigInteger> hyperbolicSumBigInteger;
@@ -20,26 +23,46 @@ namespace Decompose.Numerics
             hyperbolicSumBigInteger = new DivisorSummatoryFunctionOddBigInteger(threads);
         }
 
-        #region IDivisorSummatoryFunction<BigInteger> Members
+        public ulong Evaluate(ulong n)
+        {
+            return hyperbolicSumUInt64.Evaluate((ulong)n);
+        }
+
+        public ulong Evaluate(ulong n, ulong x1, ulong x2)
+        {
+            return hyperbolicSumUInt64.Evaluate((ulong)n, (ulong)x1, (ulong)x2);
+        }
+
+        public UInt128 Evaluate(UInt128 n)
+        {
+            if (n <= maxUInt64)
+                return hyperbolicSumUInt64.Evaluate((ulong)n);
+            return hyperbolicSumUInt128.Evaluate((UInt128)n);
+        }
+
+        public UInt128 Evaluate(UInt128 n, UInt128 x1, UInt128 x2)
+        {
+            if (n <= maxUInt64)
+                return hyperbolicSumUInt64.Evaluate((ulong)n, (ulong)x1, (ulong)x2);
+            return hyperbolicSumUInt128.Evaluate((UInt128)n, (UInt128)x1, (UInt128)x2);
+        }
 
         public BigInteger Evaluate(BigInteger n)
         {
-            if (n <= ((ulong)1 << 60))
+            if (n <= maxUInt64)
                 return hyperbolicSumUInt64.Evaluate((ulong)n);
-            if (n <= UInt128.MaxValue)
+            if (n <= maxUInt128)
                 return hyperbolicSumUInt128.Evaluate((UInt128)n);
             return hyperbolicSumBigInteger.Evaluate(n);
         }
 
         public BigInteger Evaluate(BigInteger n, BigInteger x1, BigInteger x2)
         {
-            if (n <= ((ulong)1 << 60))
+            if (n <= maxUInt64)
                 return hyperbolicSumUInt64.Evaluate((ulong)n, (ulong)x1, (ulong)x2);
-            if (n <= UInt128.MaxValue)
+            if (n <= maxUInt128)
                 return hyperbolicSumUInt128.Evaluate((UInt128)n, (UInt128)x1, (UInt128)x2);
             return hyperbolicSumBigInteger.Evaluate(n);
         }
-
-        #endregion
     }
 }

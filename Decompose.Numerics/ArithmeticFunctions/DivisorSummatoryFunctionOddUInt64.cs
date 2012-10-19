@@ -39,8 +39,8 @@ namespace Decompose.Numerics
         }
 
         private const long nMaxSimple = (long)1 << 32;
-        private static readonly ulong C1 = 25;
-        private static readonly ulong C2 = 30;
+        private static readonly ulong C1 = 20;
+        private static readonly ulong C2 = 25;
 
         private int threads;
         private bool mod2;
@@ -316,6 +316,7 @@ namespace Decompose.Numerics
             var t4 = (a1 * b1) << 2;
             var t5 = t1 * (1 + c1) - a1 + b1 - t4 * c2;
             var t6 = IntegerMath.Square(t2 + 2) - t4 * n;
+            Debug.Assert(t6 == UInt128.Square(t2 + 2) - t4 * (UInt128)n);
 
             var u = (ulong)1;
             while (true)

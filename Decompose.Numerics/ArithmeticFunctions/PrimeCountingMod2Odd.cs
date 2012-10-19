@@ -45,8 +45,8 @@ namespace Decompose.Numerics
             var count = Math.Max(threads, 1);
             hyperbolicSum = new IDivisorSummatoryFunction<UInt128>[count];
             for (var i = 0; i < count; i++)
-                hyperbolicSum[i] = new DivisorSummatoryFunctionOddUInt128(0, true);
-            hyperbolicSumParallel = new DivisorSummatoryFunctionOddUInt128(threads, true);
+                hyperbolicSum[i] = new DivisorSummatoryFunctionOdd(0, true);
+            hyperbolicSumParallel = new DivisorSummatoryFunctionOdd(threads, true);
         }
 
         public int Evaluate(BigInteger n)

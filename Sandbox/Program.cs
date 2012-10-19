@@ -35,8 +35,8 @@ namespace Sandbox
                 //DivisorSummatoryFunctionOddTest();
                 //MertensPerformanceTest();
                 //MertensFormulaTest();
-                //PiMod2PerformanceTest();
-                PiMod3PerformanceTest();
+                PiMod2PerformanceTest();
+                //PiMod3PerformanceTest();
                 //PerfectPowerTest();
                 //FloorRootTest();
                 //FindPrimeTest1();
@@ -287,7 +287,7 @@ namespace Sandbox
             var algorithm2 = new PrimeCounting(threads);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 70; i <= 70; i++)
+            for (var i = 59; i <= 72; i++)
             {
                 var n = IntegerMath.Power((BigInteger)2, i);
                 var p0 = i <= 80 ? PrimeCountingMod2.PowerOfTwo(i) : -1;
@@ -327,7 +327,7 @@ namespace Sandbox
             var algorithm2 = new PrimeCountingMod3Odd(threads, false);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 16; i <= 19; i++)
+            for (var i = 17; i <= 17; i++)
             {
                 timer.Restart();
                 for (var iterations = 0; iterations < 1; iterations++)
