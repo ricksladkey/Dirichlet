@@ -392,7 +392,9 @@ namespace Decompose.Numerics
 
         private long S3Odd(long x1, long x2)
         {
-            if (n < ulong.MaxValue)
+            if (n <= uint.MaxValue)
+                return S3OddUInt32((int)x1, (int)x2);
+            if (n <= ulong.MaxValue)
                 return S3OddUInt64(x1, x2);
 
             var s = (UInt128)0;
@@ -432,6 +434,23 @@ namespace Decompose.Numerics
             }
             s += t;
             s >>= 1;
+            AddToSum(ref s);
+            return x;
+        }
+
+        private long S3OddUInt32(int x1, int x2)
+        {
+            var t = (ulong)0;
+            var nRep = (uint)n;
+            var x = (x2 - 1) | 1;
+            while (x >= x1)
+            {
+                var beta = nRep / (uint)x;
+                t += beta + (beta & 1);
+                x -= 2;
+            }
+            t >>= 1;
+            var s = (UInt128)t;
             AddToSum(ref s);
             return x;
         }

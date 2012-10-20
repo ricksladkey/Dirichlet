@@ -76,7 +76,7 @@ namespace Decompose.Numerics
         {
             var xmax = IntegerMath.FloorSquareRoot(n);
             var s = Evaluate(n, 1, xmax);
-            var xmax2 = (xmax + 1) / 2;
+            var xmax2 = T1(xmax);
             return 2 * s - (ulong)xmax2 * (ulong)xmax2;
         }
 

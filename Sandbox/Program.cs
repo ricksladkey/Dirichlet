@@ -35,8 +35,9 @@ namespace Sandbox
                 //DivisorSummatoryFunctionOddTest();
                 //MertensPerformanceTest();
                 //MertensFormulaTest();
-                PiMod2PerformanceTest();
-                //PiMod3PerformanceTest();
+                //PiMod2PerformanceTest();
+                //PiMod2PerformanceTestPowerOfTwo();
+                PiMod3PerformanceTest();
                 //PerfectPowerTest();
                 //FloorRootTest();
                 //FindPrimeTest1();
@@ -162,10 +163,10 @@ namespace Sandbox
         {
 #if true
             var threads = 0;
-            int repetitions = 100;
+            int repetitions = 100000;
             for (var j = 0; j < 2; j++)
             {
-                for (var i = 17; i <= 17; i++)
+                for (var i = 1; i <= 9; i++)
                 {
                     var algorithm1 = new DivisorSummatoryFunctionOddUInt128(threads, false);
                     var algorithm2 = new DivisorSummatoryFunctionOddUInt64(threads, false);
@@ -176,7 +177,7 @@ namespace Sandbox
 #else
                     var xmin = 1;
 #endif
-#if false
+#if true
                     var s1 = EvaluateAndTime(() => algorithm1.Evaluate(n, xmin, xmax), repetitions);
 #else
                     var s1 = 0;
@@ -248,40 +249,41 @@ namespace Sandbox
 
         static void PiMod2PerformanceTest()
         {
-#if false
             var threads = 8;
-            var algorithm1 = new PrimeCountingMod2Odd(threads);
-            var algorithm2 = new PrimeCounting(threads);
+            var algorithm1 = new PrimeCounting(threads);
+            var algorithm2 = new PrimeCountingMod2Odd(threads);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 21; i <= 21; i++)
+            for (var i = 24; i <= 27; i++)
             {
                 var n = IntegerMath.Power((BigInteger)10, i);
-                var p0 = PrimeCounting.PiPowerOfTen(i) % 2;
-#if true
-                timer.Restart();
-                var p1 = EvaluateAndTime(() => algorithm1.Evaluate(n));
-                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                var p0 = i <= 24 ? PrimeCounting.PiPowerOfTen(i) % 2 : -1;
+#if false
+                var p1 = algorithm1.ParityOfPi(n);
 #else
                 var p1 = -1;
 #endif
-#if false
-                timer.Restart();
-                var p2 = algorithm2.ParityOfPi(n);
-                output.WriteLine("elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+#if true
+                var p2 = EvaluateAndTime(() => algorithm2.Evaluate(n));
 #else
                 var p2 = -1;
 #endif
                 Console.WriteLine("i = {0}, p0 = {1}, p1 = {2}, p2 = {3}", i, p0, p1, p2);
-                if (p0 != p1)
+                if (p0 != -1 && p1 != -1 && p0 != p1)
+                {
+                    Console.WriteLine("mismatch!");
+                    break;
+                }
+                if (p0 != -1 && p2 != -1 && p0 != p2)
                 {
                     Console.WriteLine("mismatch!");
                     break;
                 }
             }
-#endif
+        }
 
-#if true
+        static void PiMod2PerformanceTestPowerofTwo()
+        {
             var threads = 8;
             var algorithm1 = new PrimeCountingMod2Odd(threads);
             var algorithm2 = new PrimeCounting(threads);
@@ -316,8 +318,6 @@ namespace Sandbox
                     break;
                 }
             }
-#endif
-
         }
 
         static void PiMod3PerformanceTest()
@@ -327,7 +327,7 @@ namespace Sandbox
             var algorithm2 = new PrimeCountingMod3Odd(threads, false);
             var timer = new Stopwatch();
             timer.Restart();
-            for (var i = 17; i <= 17; i++)
+            for (var i = 16; i <= 19; i++)
             {
                 timer.Restart();
                 for (var iterations = 0; iterations < 1; iterations++)

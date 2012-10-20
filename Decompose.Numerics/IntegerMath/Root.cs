@@ -32,6 +32,11 @@ namespace Decompose.Numerics
             return (uint)Math.Sqrt(n);
         }
 
+        public static uint CeilingSquareRoot(uint n)
+        {
+            return CeilingUInt32(Math.Sqrt(n));
+        }
+
         public static long FloorSquareRoot(long a)
         {
             return (long)FloorSquareRoot((ulong)a);
@@ -179,6 +184,16 @@ namespace Decompose.Numerics
         public static UInt128 FloorRoot(UInt128 a, UInt128 b)
         {
             return (UInt128)FloorRoot((BigInteger)a, (BigInteger)b);
+        }
+
+        public static int CeilingRoot(int a, int b)
+        {
+            return (int)CeilingRoot((BigInteger)a, (BigInteger)b);
+        }
+
+        public static uint CeilingRoot(uint a, uint b)
+        {
+            return (uint)CeilingRoot((BigInteger)a, (BigInteger)b);
         }
 
         public static long CeilingRoot(long a, long b)

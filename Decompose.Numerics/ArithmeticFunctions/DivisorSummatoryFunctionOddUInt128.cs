@@ -76,7 +76,7 @@ namespace Decompose.Numerics
         {
             var xmax = UInt128.FloorSqrt(n);
             var s = Evaluate(n, 1, xmax);
-            var xmax2 = (xmax + 1) / 2;
+            var xmax2 = T1(xmax);
             return 2 * s - (UInt128)xmax2 * (UInt128)xmax2;
         }
 
