@@ -33,11 +33,11 @@ namespace Sandbox
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
                 //DivisorSummatoryFunctionOddTest();
-                //MertensPerformanceTest();
+                MertensPerformanceTest();
                 //MertensFormulaTest();
                 //PiMod2PerformanceTest();
                 //PiMod2PerformanceTestPowerOfTwo();
-                PiMod3PerformanceTest();
+                //PiMod3PerformanceTest();
                 //PerfectPowerTest();
                 //FloorRootTest();
                 //FindPrimeTest1();

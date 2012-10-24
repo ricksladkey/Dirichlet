@@ -70,11 +70,16 @@ namespace Decompose.Numerics
         private const int wheelSize = 2 * 3 * 5 * 7 * 11 * 13 * 17 * 19;
         private const int wheelCount = (2 - 1) * (3 - 1) * (5 - 1) * (7 - 1) * (11 - 1) * (13 - 1) * (17 - 1) * (19 - 1);
 #endif
+#if false
+        private const int wheelSize = 2 * 3 * 5 * 7 * 11 * 13 * 17 * 19 * 23;
+        private const int wheelCount = (2 - 1) * (3 - 1) * (5 - 1) * (7 - 1) * (11 - 1) * (13 - 1) * (17 - 1) * (19 - 1) * (23 - 1);
+#endif
         private const int wheelSize2 = wheelSize >> 1;
 
         private int[] wheelSubtotal;
         private bool[] wheelInclude;
-        private int[] wheelNext;
+        private byte[] wheelNext;
+        private byte[] wheelPrev;
         private int[] wheelFactors;
         private int[] wheelMobius;
 
@@ -83,30 +88,58 @@ namespace Decompose.Numerics
             this.threads = threads;
             wheelSubtotal = new int[wheelSize];
             wheelInclude = new bool[wheelSize >> 1];
-            wheelNext = new int[wheelSize >> 1];
+            wheelNext = new byte[wheelSize >> 1];
+            wheelPrev = new byte[wheelSize >> 1];
             var total = 0;
-            var first = -1;
             for (var i = 0; i < wheelSize; i++)
             {
                 var include = IntegerMath.GreatestCommonDivisor(i, wheelSize) == 1;
                 if (include)
-                {
-                    if (first == -1)
-                        first = i;
                     ++total;
-                }
                 wheelSubtotal[i] = total;
                 wheelInclude[i >> 1] = include;
             }
             Debug.Assert(total == wheelCount);
-            var next = first - 1;
+            var next = 0;
             for (var i = (wheelSize >> 1) - 1; i >= 0; i--)
             {
                 next += 2;
-                wheelNext[i] = next;
+                wheelNext[i] = (byte)next;
                 if (wheelInclude[i])
                     next = 0;
             }
+            var prev = 0;
+            for (var i = 0; i < (wheelSize >> 1); i++)
+            {
+                prev += 2;
+                wheelPrev[i] = (byte)prev;
+                if (wheelInclude[i])
+                    prev = 0;
+            }
+#if DEBUG
+            for (var i = 1; i < wheelSize; i += 2)
+            {
+                var skip = wheelNext[i >> 1];
+                for (var j = 2; j < skip; j += 2)
+                {
+                    if (wheelInclude[((i + j) % wheelSize) >> 1])
+                        Debugger.Break();
+                }
+                if (!wheelInclude[((i + skip) % wheelSize) >> 1])
+                    Debugger.Break();
+            }
+            for (var i = 1; i < wheelSize; i += 2)
+            {
+                var skip = wheelPrev[i >> 1];
+                for (var j = 2; j < skip; j += 2)
+                {
+                    if (wheelInclude[((i - j + wheelSize) % wheelSize) >> 1])
+                        Debugger.Break();
+                }
+                if (!wheelInclude[((i - skip + wheelSize) % wheelSize) >> 1])
+                    Debugger.Break();
+            }
+#endif
 
             wheelFactors = IntegerMath.Factors(wheelSize).ToArray();
             wheelMobius = wheelFactors.Select(factor => IntegerMath.Mobius(factor)).ToArray();
@@ -396,6 +429,7 @@ namespace Decompose.Numerics
 
         private long JSumSmall2(long x, long jmin, long jmax, long x1)
         {
+#if true
             var s = (long)0;
             var j = UpToWheel(jmin);
             var mod = j % wheelSize;
@@ -409,6 +443,41 @@ namespace Decompose.Numerics
                     mod -= wheelSize;
             }
             return s;
+#else
+            var s = (long)0;
+            var j = DownToWheel(jmax);
+            var mod = j % wheelSize;
+            var xj = x / j;
+            while (j >= jmin)
+            {
+                var test = x - xj * j;
+                var count = 0;
+                while (test >= j)
+                {
+                    ++xj;
+                    test -= j;
+                    if (++count == 20)
+                        goto simple;
+                }
+                s += m[xj - x1];
+                var skip = wheelPrev[mod >> 1];
+                j -= skip;
+                mod -= skip;
+                if (mod < 0)
+                    mod += wheelSize;
+            }
+        simple:
+            while (j >= jmin)
+            {
+                s += m[x / j - x1];
+                var skip = wheelPrev[mod >> 1];
+                j -= skip;
+                mod -= skip;
+                if (mod < 0)
+                    mod += wheelSize;
+            }
+            return s;
+#endif
         }
 
         private long KSumSmall1Mu(long x, long k1, ref long k2, long offset)
@@ -744,6 +813,12 @@ namespace Decompose.Numerics
         {
             var b = (a % wheelSize) >> 1;
             return wheelInclude[b] ? a : a + wheelNext[b];
+        }
+
+        private long DownToWheel(long a)
+        {
+            var b = (a % wheelSize) >> 1;
+            return wheelInclude[b] ? a : a - wheelPrev[b];
         }
 
         private long T1Wheel(long a)

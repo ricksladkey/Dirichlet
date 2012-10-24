@@ -24,7 +24,7 @@
   </eqnarray*>
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|T<rsub|2><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|n><rsub|x=1>\<tau\><rsub|2><around*|(|x|)>=<big|sum><rsup|n><rsub|x=1>T<rsub|1><around*|(|<frac|n|x>|)>>>|<row|<cell|T<rsub|1><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|n><rsub|x=1>\<mu\><around*|(|x|)>*T<rsub|2><around*|(|<frac|n|x>|)>>>|<row|<cell|T<rsub|3><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|n><rsub|x=1><big|sum><rsub|d<around*|\||x|\<nobracket\>>>\<tau\><rsub|2><around*|(|d|)>>>|<row|<cell|\<tau\><rsub|3><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|d<around*|\||n|\<nobracket\>>>\<tau\><rsub|2><around*|(|d|)>>>|<row|<cell|\<tau\><rsub|2><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|d<around*|\||n|\<nobracket\>>>\<mu\><around*|(|d|)>*\<tau\><rsub|3><around*|(|<frac|n|d>|)>>>|<row|<cell|T<rsub|2><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|n><rsub|d=1>\<mu\><around*|(|d|)>*\<tau\><rsub|3><around*|(|<frac|n|d>|)>>>>>
+    <tformat|<table|<row|<cell|T<rsub|2><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|n><rsub|x=1>\<tau\><rsub|2><around*|(|x|)>=<big|sum><rsup|n><rsub|x=1>T<rsub|1><around*|(|<frac|n|x>|)>>>|<row|<cell|T<rsub|1><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|n><rsub|x=1>\<mu\><around*|(|x|)>*T<rsub|2><around*|(|<frac|n|x>|)>>>|<row|<cell|T<rsub|3><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|n><rsub|x=1><big|sum><rsub|d<around*|\||x|\<nobracket\>>>\<tau\><rsub|2><around*|(|d|)>>>|<row|<cell|\<tau\><rsub|3><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|d<around*|\||n|\<nobracket\>>>\<tau\><rsub|2><around*|(|d|)>>>|<row|<cell|\<tau\><rsub|2><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|d<around*|\||n|\<nobracket\>>>\<mu\><around*|(|d|)>*\<tau\><rsub|3><around*|(|<frac|n|d>|)>>>|<row|<cell|T<rsub|2><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsup|n><rsub|d=1>\<mu\><around*|(|d|)>*T<rsub|3><around*|(|<frac|n|d>|)>>>>>
   </eqnarray*>
 
   <\eqnarray*>
@@ -1198,8 +1198,31 @@
   </eqnarray*>
 
   <\eqnarray*>
-    <tformat|<table|<row|<cell|<big|sum><rsub|x\<leq\>n>M<around*|(|<frac|n|x>|)>>|<cell|=>|<cell|1>>|<row|<cell|M<around*|(|n|)>>|<cell|=>|<cell|1-<big|sum><rsub|2\<leq\>x\<leq\>n>M<around*|(|<frac|n|x>|)>>>|<row|<cell|>|<cell|=>|<cell|1-<big|sum><rsub|2\<leq\>x\<leq\>n><around*|[|M<rsub|odd><around*|(|<frac|n|x>|)><rsub|>+M<rsub|odd><around*|(|<frac|n/2|x>|)>|]>>>|<row|<cell|>|<cell|=>|<cell|1-M<rsub|odd><around*|(|<frac|n|2>|)>-<big|sum><rsub|3\<leq\>x\<leq\>n,x
+    <tformat|<table|<row|<cell|<big|sum><rsub|4\<leq\>x\<leq\>n,x
+    even>M<rsub|odd><around*|(|<frac|n|x>|)>>|<cell|=>|<cell|M<rsub|odd><around*|(|<frac|n|4>|)>+M<rsub|odd><around*|(|<frac|n|6>|)>+M<rsub|odd><around*|(|<frac|n|8>|)>+M<rsub|odd><around*|(|<frac|n|10>|)>+\<ldots\>>>|<row|<cell|>|<cell|=>|<cell|-M<rsub|odd><around*|(|<frac|n/2|1>|)>>>|<row|<cell|>|<cell|+>|<cell|<big|sum><rsub|x\<leq\>n/2,x
+    even>M<rsub|odd><around*|(|<frac|n/2|x>|)>+<big|sum><rsub|x\<leq\>n/2,x
+    odd>M<rsub|odd><around*|(|<frac|n/2|x>|)>>>|<row|<cell|>|<cell|=>|<cell|-M<rsub|odd><around*|(|<frac|n|2>|)>+<around*|\<lfloor\>|log<rsub|2>
+    n|\<rfloor\>>+1>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|x\<leq\>n>M<around*|(|<frac|n|x>|)>>|<cell|=>|<cell|1>>|<row|<cell|M<around*|(|n|)>>|<cell|=>|<cell|1-<big|sum><rsub|2\<leq\>x\<leq\>n>M<around*|(|<frac|n|x>|)>>>|<row|<cell|>|<cell|=>|<cell|1-<big|sum><rsub|2\<leq\>x\<leq\>n><around*|[|M<rsub|odd><around*|(|<frac|n|x>|)><rsub|>-M<rsub|odd><around*|(|<frac|n/2|x>|)>|]>>>|<row|<cell|>|<cell|=>|<cell|1-M<rsub|odd><around*|(|<frac|n|2>|)>-<big|sum><rsub|3\<leq\>x\<leq\>n,x
+    odd>M<rsub|odd><around*|(|<frac|n|x>|)>>>|<row|<cell|>|<cell|=>|<cell|1-<around*|[|<big|sum><rsub|2\<leq\>x\<leq\>n>M<rsub|odd><around*|(|<frac|n|x>|)>-<big|sum><rsub|4\<leq\>x\<leq\>n,x
+    even>M<rsub|odd><around*|(|<frac|n|x>|)>|]>>>|<row|<cell|>|<cell|=>|<cell|1-<around*|[|1-<big|sum><rsub|3\<leq\>x\<leq\>n/2,x
+    odd>M<rsub|odd><around*|(|<frac|n/2|x>|)>|]>-<big|sum><rsub|3\<leq\>x\<leq\>n,x
     odd>M<rsub|odd><around*|(|<frac|n|x>|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|T<rsub|2><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|x\<leq\>n>T<rsub|1><around*|(|<frac|n|x>|)>>>|<row|<cell|T<rsub|1><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|x\<leq\>n>\<mu\><around*|(|x|)>*T<rsub|2><around*|(|<frac|n|x>|)>>>|<row|<cell|T<rsub|2><around*|(|n|)><rsub|>>|<cell|=>|<cell|T<rsub|1><around*|(|n|)>-<big|sum><rsub|2\<leq\>x\<leq\>n>\<mu\><around*|(|x|)>*T<rsub|2><around*|(|<frac|n|x>|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|<big|sum><rsub|m\<leq\>u>\<mu\><around*|(|m|)>*<big|sum><rsub|n\<leq\>x/m>\<mu\><around*|(|n|)>*T<rsub|2><around*|(|<frac|x|m*n>|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>u>\<mu\><around*|(|m|)>*T<rsub|1><around*|(|<frac|x|m>|)>>>>>
+  </eqnarray*>
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|T<rsub|3><around*|(|n|)>>|<cell|=>|<cell|<big|sum><rsub|x\<leq\>n>T<rsub|2><around*|(|<frac|n|x>|)>>>|<row|<cell|<big|sum><rsub|m\<leq\>n>\<mu\><around*|(|<frac|n|m>|)>*<big|sum><rsub|x\<leq\>m>T<rsub|2><around*|(|<frac|m|x>|)>>|<cell|=>|<cell|<big|sum><rsub|m\<leq\>n>\<mu\><around*|(|<frac|n|m>|)>*T<rsub|3><around*|(|m|)>>>|<row|<cell|>|<cell|=>|<cell|>>>>
   </eqnarray*>
 </body>
 
