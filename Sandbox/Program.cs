@@ -24,7 +24,7 @@ namespace Sandbox
             output = new ConsoleLogger("Decompose.log");
             try
             {
-                //Montgomery128Test();
+                Montgomery128Test();
                 //ParityTest();
                 //Modular128Test();
                 //SquareFreeCountingTest();
@@ -33,7 +33,7 @@ namespace Sandbox
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
                 //DivisorSummatoryFunctionOddTest();
-                MertensPerformanceTest();
+                //MertensPerformanceTest();
                 //MertensFormulaTest();
                 //PiMod2PerformanceTest();
                 //PiMod2PerformanceTestPowerOfTwo();
@@ -970,7 +970,7 @@ namespace Sandbox
         {
             var repetitions = 10000000;
             var random = new MersenneTwister(0).Create<UInt128>();
-            var max = (UInt128)1 << 96;
+            var max = (UInt128)1 << 127;
             var modulus = random.Next(max) | 1;
             var a = random.Next(max) % modulus;
             var b = random.Next(max) % modulus;

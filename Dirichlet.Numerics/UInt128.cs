@@ -970,6 +970,7 @@ namespace Dirichlet.Numerics
 
         private static void Multiply(out UInt256 c, ref UInt128 a, ref UInt128 b)
         {
+#if true
             UInt128 c00, c01, c10, c11;
             Multiply64(out c00, a.s0, b.s0);
             Multiply64(out c01, a.s0, b.s1);
@@ -981,6 +982,22 @@ namespace Dirichlet.Numerics
             c.s1 = Add(Add(c00.s1, c01.s0, ref carry1), c10.s0, ref carry1);
             c.s2 = Add(Add(Add(c01.s1, c10.s1, ref carry2), c11.s0, ref carry2), carry1, ref carry2);
             c.s3 = c11.s1 + carry2;
+#else
+            // Karatsuba method.
+            // Warning: doesn't correctly handle overflow.
+            UInt128 z0, z1, z2;
+            Multiply64(out z0, a.s0, b.s0);
+            Multiply64(out z2, a.s1, b.s1);
+            Multiply64(out z1, a.s0 + a.s1, b.s0 + b.s1);
+            Subtract(ref z1, ref z2);
+            Subtract(ref z1, ref z0);
+            var carry1 = (uint)0;
+            var carry2 = (uint)0;
+            c.s0 = z0.S0;
+            c.s1 = Add(z0.s1, z1.s0, ref carry1);
+            c.s2 = Add(Add(z1.s1, z2.s0, ref carry2), carry1, ref carry2);
+            c.s3 = z2.s1 + carry2;
+#endif
             Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
         }
 
