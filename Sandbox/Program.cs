@@ -216,20 +216,16 @@ namespace Sandbox
         {
             var threads = 8;
             var timer = new Stopwatch();
-            for (var power = 16; power <= 16; power++)
+            for (var power = 15; power <= 15; power++)
             {
                 var n = IntegerMath.Power((BigInteger)10, power);
 #if false
                 var algorithm1 = new MertensFunctionDR(threads);
-                timer.Restart();
-                Console.Write("{{ {0}, {1} }},", power, algorithm1.Evaluate((long)n));
-                Console.WriteLine(" // elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                Console.WriteLine("{{ {0}, {1} }},", power, EvaluateAndTime(() => algorithm1.Evaluate((long)n)));
 #endif
 #if true
                 var algorithm2 = new MertensFunctionWheel(threads);
-                timer.Restart();
-                Console.Write("{{ {0}, {1} }},", power, algorithm2.Evaluate(n));
-                Console.WriteLine(" // elapsed = {0:F3} msec", (double)timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+                Console.WriteLine("{{ {0}, {1} }},", power, EvaluateAndTime(() => algorithm2.Evaluate(n)));
 #endif
             }
         }

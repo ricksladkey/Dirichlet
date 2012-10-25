@@ -11,11 +11,19 @@ namespace Decompose.Numerics
 {
     public class MertensFunctionWheel
     {
+        // The algorithm used by this class is based on the following identity:
+        //
+        //  $\sum_{n \leq x, \gcd ( n, m) = 1} M \left( \frac{x}{n} \right) =
+        //   \sum_{d | m \nobracket} \mu ( d)  [ x \geq d]$
+        //
+        // where $m$ is the wheel size.
+
         private const long maximumSmallBatchSize = (long)1 << 19;
         private const long maximumBatchSize = (long)1 << 26;
         private const long largeLimit = long.MaxValue;
         private const long tmax = (long)1 << 62;
         private const long tmin = -tmax;
+        private const int maxSubtractions = 32;
         private const long C1 = 1;
         private const long C2 = 4;
         private const long C3 = 4;
@@ -429,7 +437,7 @@ namespace Decompose.Numerics
 
         private long JSumSmall2(long x, long jmin, long jmax, long x1)
         {
-#if true
+#if false
             var s = (long)0;
             var j = UpToWheel(jmin);
             var mod = j % wheelSize;
@@ -448,15 +456,33 @@ namespace Decompose.Numerics
             var j = DownToWheel(jmax);
             var mod = j % wheelSize;
             var xj = x / j;
+            var eps = x - xj * j;
             while (j >= jmin)
             {
-                var test = x - xj * j;
                 var count = 0;
-                while (test >= j)
+                var j2 = j << 1;
+                var j4 = j2 << 1;
+                while (eps >= j4)
+                {
+                    xj += 4;
+                    eps -= j4;
+                    if (++count == (maxSubtractions >> 2))
+                        goto simple;
+                }
+                count <<= 1;
+                while (eps >= j2)
+                {
+                    xj += 2;
+                    eps -= j2;
+                    if (++count == (maxSubtractions >> 1))
+                        goto simple;
+                }
+                count <<= 1;
+                while (eps >= j)
                 {
                     ++xj;
-                    test -= j;
-                    if (++count == 20)
+                    eps -= j;
+                    if (++count == maxSubtractions)
                         goto simple;
                 }
                 s += m[xj - x1];
@@ -465,6 +491,7 @@ namespace Decompose.Numerics
                 mod -= skip;
                 if (mod < 0)
                     mod += wheelSize;
+                eps += skip * xj;
             }
         simple:
             while (j >= jmin)
