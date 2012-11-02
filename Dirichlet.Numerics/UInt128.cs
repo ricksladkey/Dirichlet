@@ -1073,7 +1073,7 @@ namespace Dirichlet.Numerics
         {
             c.s0 = a + b;
             c.s1 = 0;
-            if (c.s0 < a && c.s0 < b)
+            if (c.s0 < b)
                 ++c.s1;
             Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b));
         }
@@ -1082,7 +1082,7 @@ namespace Dirichlet.Numerics
         {
             c.s0 = a.s0 + b;
             c.s1 = a.s1;
-            if (c.s0 < a.s0 && c.s0 < b)
+            if (c.s0 < b)
                 ++c.s1;
             Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 128));
         }
@@ -1091,7 +1091,7 @@ namespace Dirichlet.Numerics
         {
             c.s0 = a.s0 + b.s0;
             c.s1 = a.s1 + b.s1;
-            if (c.s0 < a.s0 && c.s0 < b.s0)
+            if (c.s0 < b.s0)
                 ++c.s1;
             Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 128));
         }
@@ -1099,7 +1099,7 @@ namespace Dirichlet.Numerics
         private static ulong Add(ulong a, ulong b, ref uint carry)
         {
             var c = a + b;
-            if (c < a && c < b)
+            if (c < b)
                 ++carry;
             return c;
         }
@@ -1107,7 +1107,7 @@ namespace Dirichlet.Numerics
         public static void Add(ref UInt128 a, ulong b)
         {
             var sum = a.s0 + b;
-            if (sum < a.s0 && sum < b)
+            if (sum < b)
                 ++a.s1;
             a.s0 = sum;
         }
@@ -1115,7 +1115,7 @@ namespace Dirichlet.Numerics
         public static void Add(ref UInt128 a, ref UInt128 b)
         {
             var sum = a.s0 + b.s0;
-            if (sum < a.s0 && sum < b.s0)
+            if (sum < b.s0)
                 ++a.s1;
             a.s0 = sum;
             a.s1 += b.s1;

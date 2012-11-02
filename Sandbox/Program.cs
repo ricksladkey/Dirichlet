@@ -24,7 +24,7 @@ namespace Sandbox
             output = new ConsoleLogger("Decompose.log");
             try
             {
-                Montgomery128Test();
+                //Montgomery128Test();
                 //ParityTest();
                 //Modular128Test();
                 //SquareFreeCountingTest();
@@ -32,7 +32,7 @@ namespace Sandbox
                 //GreatestCommonDivisorPerformanceTest();
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
-                //DivisorSummatoryFunctionOddTest();
+                DivisorSummatoryFunctionOddTest();
                 //MertensPerformanceTest();
                 //MertensFormulaTest();
                 //PiMod2PerformanceTest();
@@ -162,14 +162,14 @@ namespace Sandbox
         static void DivisorSummatoryFunctionOddTest()
         {
 #if true
-            var threads = 0;
-            int repetitions = 100000;
-            for (var j = 0; j < 2; j++)
+            var threads = 8;
+            int repetitions = 1;
+            for (var j = 0; j < 1; j++)
             {
-                for (var i = 1; i <= 9; i++)
+                for (var i = 16; i <= 24; i++)
                 {
-                    var algorithm1 = new DivisorSummatoryFunctionOddUInt128(threads, false);
-                    var algorithm2 = new DivisorSummatoryFunctionOddUInt64(threads, false);
+                    var algorithm1 = new DivisorSummatoryFunctionOddUInt64(threads, false);
+                    var algorithm2 = new DivisorSummatoryFunctionOddUInt128(threads, false);
                     var n = IntegerMath.Power((BigInteger)10, i);
                     var xmax = IntegerMath.FloorSquareRoot(n);
 #if false
@@ -177,7 +177,7 @@ namespace Sandbox
 #else
                     var xmin = 1;
 #endif
-#if true
+#if false
                     var s1 = EvaluateAndTime(() => algorithm1.Evaluate(n, xmin, xmax), repetitions);
 #else
                     var s1 = 0;
@@ -216,7 +216,7 @@ namespace Sandbox
         {
             var threads = 8;
             var timer = new Stopwatch();
-            for (var power = 15; power <= 15; power++)
+            for (var power = 16; power <= 16; power++)
             {
                 var n = IntegerMath.Power((BigInteger)10, power);
 #if false
