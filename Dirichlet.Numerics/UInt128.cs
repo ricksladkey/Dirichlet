@@ -6,6 +6,20 @@ using System.Numerics;
 
 namespace Dirichlet.Numerics
 {
+    /// <summary>
+    /// A 128 bit unsigned integer data type.
+    /// </summary>
+    /// <remarks>
+    /// UInt128 is a value type that provides a complete managed-only implementation of 128
+    /// unsigned arithmetic, the next size up in the series of types UInt16, UInt32, UInt64.
+    /// UInt128 is considerably faster, typically between two and twenty times faster, than
+    /// BigInteger for 128 bit operands.  Furthermore, UInt128 is a pure value type whose
+    /// core operations never allocate heap memory and are therefore particularly suitable for
+    /// highly parallel algorithms.  Additional methods are provided to support integer square
+    /// and cube roots as well as all modular arithmetic operations.  All methods are optimized
+    /// for speed.  The checked or unchecked context has no effect on UInt128 but conversions
+    /// act as though they were performed in an unchecked context.
+    /// </remarks>
     public struct UInt128 : IFormattable, IComparable, IComparable<UInt128>, IEquatable<UInt128>
     {
         private struct UInt256

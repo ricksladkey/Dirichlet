@@ -6,6 +6,20 @@ using System.Numerics;
 
 namespace Dirichlet.Numerics
 {
+    /// <summary>
+    /// A 128 bit signed integer data type.
+    /// </summary>
+    /// <remarks>
+    /// Int128 is a value type that provides a complete managed-only implementation of 128
+    /// signed arithmetic, the next size up in the series of types Int16, Int32, Int64.
+    /// Int128 is considerably faster, typically between two and twenty times faster, than
+    /// BigInteger for 128 bit operands.  Furthermore, Int128 is a pure value type whose
+    /// core operations never allocate heap memory and are therefore particularly suitable for
+    /// highly parallel algorithms.  Additional methods are provided to support integer square
+    /// and cube roots as well as all modular arithmetic operations.  All methods are optimized
+    /// for speed.  The checked or unchecked context has no effect on Int128 but conversions
+    /// act as though they were performed in an unchecked context.
+    /// </remarks>
     public struct Int128 : IFormattable, IComparable, IComparable<Int128>, IEquatable<Int128>
     {
         private UInt128 v;
