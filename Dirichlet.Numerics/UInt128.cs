@@ -16,7 +16,7 @@ namespace Dirichlet.Numerics
     /// BigInteger for 128 bit operands.  Furthermore, UInt128 is a pure value type whose
     /// core operations never allocate heap memory and are therefore particularly suitable for
     /// highly parallel algorithms.  Additional methods are provided to support integer square
-    /// and cube roots as well as all modular arithmetic operations.  All methods are optimized
+    /// and cube roots as well as all modular arithmetic operations and all methods are optimized
     /// for speed.  The checked or unchecked context has no effect on UInt128 but conversions
     /// act as though they were performed in an unchecked context.
     /// </remarks>
