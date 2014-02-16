@@ -1,4 +1,5 @@
-﻿// (c) 2008 Witold Bołt
+﻿#if GNU_MP
+// (c) 2008 Witold Bołt
 // License: LGPL v2.1
 // www.codeplex.com/gnumpnet
 
@@ -433,3 +434,4 @@ namespace Gnu.MP
         #endregion
     }
 }
+#endif

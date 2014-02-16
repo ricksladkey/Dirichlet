@@ -8,7 +8,9 @@ using System.Linq.Expressions;
 using System.Numerics;
 using System.Reflection;
 using Decompose.Numerics;
+#if GNU_MP
 using BigInt = Gnu.MP.Integer;
+#endif
 using System.Threading.Tasks;
 using System.Threading;
 using Dirichlet.Numerics;
@@ -32,8 +34,8 @@ namespace Sandbox
                 //GreatestCommonDivisorPerformanceTest();
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
-                DivisorSummatoryFunctionOddTest();
-                //MertensPerformanceTest();
+                //DivisorSummatoryFunctionOddTest();
+                MertensPerformanceTest();
                 //MertensFormulaTest();
                 //PiMod2PerformanceTest();
                 //PiMod2PerformanceTestPowerOfTwo();

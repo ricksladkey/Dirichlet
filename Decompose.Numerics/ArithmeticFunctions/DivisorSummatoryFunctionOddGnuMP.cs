@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if GNU_MP
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -288,3 +289,5 @@ namespace Decompose.Numerics
         }
     }
 }
+#endif
+
