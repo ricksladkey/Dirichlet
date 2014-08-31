@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Decompose", "Decompose\Decompose.csproj", "{C01E1A28-CB10-42BD-941C-B7A752E9E285}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Decompose.Numerics", "Decompose.Numerics\Decompose.Numerics.csproj", "{D758D3C3-E06B-4BC3-B3EF-6B5B0780662F}"
@@ -27,8 +25,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Decompose.Scripting", "Decompose.Scripting\Decompose.Scripting.csproj", "{4CEB2160-4319-4D46-9366-29734E8D3885}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Decompose.Scripting.Test", "Decompose.Scripting.Test\Decompose.Scripting.Test.csproj", "{4C909521-E833-404E-8E7E-B17ED184D7C0}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PiModK", "PiModK\PiModK.vcxproj", "{CF360E96-E3E7-4876-9433-91CE460233B2}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PiModKMinGW", "PiModKMinGW\PiModKMinGW.vcxproj", "{F1F26FA6-4A2A-4541-9552-A33A954B4B93}"
 EndProject
@@ -134,17 +130,6 @@ Global
 		{4C909521-E833-404E-8E7E-B17ED184D7C0}.Release|x64.Build.0 = Release|Any CPU
 		{4C909521-E833-404E-8E7E-B17ED184D7C0}.Release|x86.ActiveCfg = Release|Any CPU
 		{4C909521-E833-404E-8E7E-B17ED184D7C0}.Release|x86.Build.0 = Release|Any CPU
-		{CF360E96-E3E7-4876-9433-91CE460233B2}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{CF360E96-E3E7-4876-9433-91CE460233B2}.Debug|Win32.ActiveCfg = Debug|Win32
-		{CF360E96-E3E7-4876-9433-91CE460233B2}.Debug|Win32.Build.0 = Debug|Win32
-		{CF360E96-E3E7-4876-9433-91CE460233B2}.Debug|x64.ActiveCfg = Debug|x64
-		{CF360E96-E3E7-4876-9433-91CE460233B2}.Debug|x86.ActiveCfg = Debug|Win32
-		{CF360E96-E3E7-4876-9433-91CE460233B2}.Debug|x86.Build.0 = Debug|Win32
-		{CF360E96-E3E7-4876-9433-91CE460233B2}.Release|Any CPU.ActiveCfg = Release|Win32
-		{CF360E96-E3E7-4876-9433-91CE460233B2}.Release|Win32.ActiveCfg = Release|Win32
-		{CF360E96-E3E7-4876-9433-91CE460233B2}.Release|Win32.Build.0 = Release|Win32
-		{CF360E96-E3E7-4876-9433-91CE460233B2}.Release|x64.ActiveCfg = Release|x64
-		{CF360E96-E3E7-4876-9433-91CE460233B2}.Release|x86.ActiveCfg = Release|Win32
 		{F1F26FA6-4A2A-4541-9552-A33A954B4B93}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{F1F26FA6-4A2A-4541-9552-A33A954B4B93}.Debug|Win32.ActiveCfg = Debug|Win32
 		{F1F26FA6-4A2A-4541-9552-A33A954B4B93}.Debug|Win32.Build.0 = Debug|Win32

@@ -96,7 +96,7 @@ namespace Decompose.Numerics
                 // Handle left-overs.
                 if (x1a < xmin)
                 {
-                    // Remove all the points we addded between xfirst and x0.
+                    // Remove all the points we added between xfirst and x0.
                     var rest = x0 - xfirst;
                     sum -= (r0 - m0 * x0) * rest + m0 * rest * (rest + 1) / 2;
                     xmin = x0;
@@ -104,8 +104,8 @@ namespace Decompose.Numerics
                 }
 
                 // Invariants:
-                // The value before x1a aInteger L1a is on or below the hyperbola.
-                // The value after x1b aInteger l2b is on or below the hyperbola.
+                // The value before x1a along L1a is on or below the hyperbola.
+                // The value after x1b along L2b is on or below the hyperbola.
                 // The new slope is one greater than the old slope.
                 Debug.Assert((x1a - 1) * (r1a - m1 * (x1a - 1)) <= n);
                 Debug.Assert((x1b + 1) * (r1b - m1 * (x1b + 1)) <= n);
@@ -159,8 +159,8 @@ namespace Decompose.Numerics
             // Line L1 has slope m1 = -a1/b1.
             // Both lines pass through P01 = (x0, y0).
             // The region is a parallelogram with the left side bounded L1,
-            // the bottom bounded by L0, with width w (aInteger L0) and height h
-            // (aInteger L1).  The lower-left corner is P01 (the intersection of
+            // the bottom bounded by L0, with width w (along L0) and height h
+            // (along L1).  The lower-left corner is P01 (the intersection of
             // L0 and L1) and represents (u, v) = (0, 0).
             // Both w and h are counted in terms of lattice points, not length.
 

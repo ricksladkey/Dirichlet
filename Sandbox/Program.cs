@@ -35,7 +35,7 @@ namespace Sandbox
                 //DivisorsPerformanceTest();
                 //ModularSumTest();
                 //DivisorSummatoryFunctionOddTest();
-                MertensPerformanceTest();
+                //MertensPerformanceTest();
                 //MertensFormulaTest();
                 //PiMod2PerformanceTest();
                 //PiMod2PerformanceTestPowerOfTwo();
@@ -68,6 +68,9 @@ namespace Sandbox
                 //DivisionTest1();
                 //DivisionTest2();
                 //MertensPrimorialTest();
+                //DivisorCubeTest1();
+                //DivisorCubeTest2();
+                DivisorCubeTest3();
             }
             catch (AggregateException ex)
             {
@@ -86,6 +89,98 @@ namespace Sandbox
             output.WriteLine("Stack trace:");
             output.WriteLine(ex.StackTrace);
             return true;
+        }
+
+        static void DivisorCubeTest1()
+        {
+            for (var n = 1; n <= 50; n++)
+            {
+                var sqrtn = IntegerMath.FloorSquareRoot(n);
+                var cubed = IntegerMath.Cube(n);
+                var h = IntegerMath.NumberOfDivisors(cubed);
+                var f1 = 0;
+                foreach (var factor in IntegerMath.Factors(n))
+                {
+                    f1 += IntegerMath.Square(IntegerMath.Mobius(factor)) *
+                        IntegerMath.NumberOfDivisors(factor) *
+                        IntegerMath.NumberOfDivisors(n / factor);
+                }
+                var f2 = 0;
+                for (var d = 1; d <= sqrtn; d++)
+                {
+                    var dsquared = d * d;
+                    if (n % dsquared == 0)
+                    {
+                        var mu = IntegerMath.Mobius(d);
+                        if (mu != 0)
+                        {
+                            var m = n / dsquared;
+                            var sum = 0;
+                            foreach (var factor in IntegerMath.Factors(m))
+                            {
+                                sum += IntegerMath.NumberOfDivisors(factor * d * d) *
+                                    IntegerMath.NumberOfDivisors(m / factor);
+                            }
+                            f2 += mu * sum;
+                        }
+                    }
+                }
+                Console.WriteLine("n = {0}, h(n) = {1}, f1(n) = {2}, f2(n) = {3}", n, h, f1, f2);
+            }
+        }
+
+        static void DivisorCubeTest2()
+        {
+            var threads = 8;
+            var n = IntegerMath.Power((long)10, 10);
+            var divisors = new DivisorRange(n + 1, threads);
+            var batchSize = 1 << 24;
+            var sums = new ulong[batchSize];
+            var sum0 = (ulong)0;
+            for (var k = (long)1; k <= n; k += batchSize)
+            {
+                var kmin = k;
+                var kmax = Math.Min(kmin + batchSize, n + 1);
+                sum0 = divisors.GetSums(k, kmax, sums, sum0);
+            }
+
+            Console.WriteLine("sieve: {0}", sum0);
+
+            var algorithm = new DivisorSummatoryFunction();
+            var sum1 = (ulong)algorithm.Evaluate(n);
+
+            Console.WriteLine("algorithm: {0}", sum1);
+        }
+
+        static void DivisorCubeTest3()
+        {
+            var x = 1000;
+            var sum = 0;
+            for (var n = 1; n <= x; n++)
+            {
+                sum += IntegerMath.NumberOfDivisors(IntegerMath.Cube(n));
+            }
+            Console.WriteLine("direct sum = {0}", sum);
+
+            sum = 0;
+            var sqrtx = IntegerMath.FloorSquareRoot(x);
+            for (var e = 1; e <= sqrtx; e++)
+            {
+                var mu = IntegerMath.Mobius(e);
+                if (mu != 0)
+                {
+                    var fmax = x / (e * e);
+                    var fsum = 0;
+                    for (var f = 1; f <= fmax; f++)
+                    {
+                        var t1 = IntegerMath.NumberOfDivisors(e * e * f);
+                        var t2 = IntegerMath.SumOfNumberOfDivisors(x / (e * e * f));
+                        fsum += t1 * t2;
+                    }
+                    sum += mu * fsum;
+                }
+            }
+            Console.WriteLine("formula sum = {0}", sum);
         }
 
         static void MertensPrimorialTest()
