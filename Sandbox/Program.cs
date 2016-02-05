@@ -3537,12 +3537,14 @@ namespace Sandbox
                     FactorTest(debug, iterations, (UInt128)n, PollardRhoReduction.Create(new UInt128Reduction()), "PollardRho/UInt128");
                     FactorTest(debug, iterations, (UInt128)n, PollardRhoReduction.Create(new UInt128MontgomeryReduction()), "PollardRho/UInt128Montgomery");
                 }
+#if false
                 if (false)
                 {
                     FactorTest(debug, iterations, n, PollardRhoReduction.Create(new BigIntegerReduction()), "PollardRho/BigInteger");
                     FactorTest(debug, iterations, n, PollardRhoReduction.Create(new BigIntegerMontgomeryReduction()), "PollardRho/BigIntegerMontgomery");
                     FactorTest(debug, iterations, n, new QuadraticSieve(config), "QuadraticSieve");
                 }
+#endif
                 output.WriteLine();
             }
         }
