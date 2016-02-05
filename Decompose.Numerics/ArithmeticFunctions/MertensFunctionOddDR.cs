@@ -22,7 +22,6 @@ namespace Decompose.Numerics
         private int[] m;
         private long sum;
         private long mi1;
-        private long mi2;
 
         public MertensFunctionOddDR(int threads)
         {
@@ -54,7 +53,7 @@ namespace Decompose.Numerics
                 m0 = mobiusOdd.GetSums(xstart, xend + 2, m, m0);
                 ProcessBatch(xstart, xend);
             }
-            return mi1 - mi2 - sum;
+            return mi1 - sum;
         }
 
         private void ProcessBatch(long x1, long x2)
