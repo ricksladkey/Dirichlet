@@ -106,7 +106,7 @@ namespace Decompose.Numerics
         public static bool IsProbablePrime(ulong n)
         {
             if ((n & 1) == 0)
-                return false;
+                return n == 2;
             if (n <= uint.MaxValue)
                 return IsProbablePrime((uint)n);
             return ModularPowerOfTwo(n - 1, n) == 1;
