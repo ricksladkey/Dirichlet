@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nethermind.Decompose.Numerics", "Nethermind.Decompose.Numerics\Nethermind.Decompose.Numerics.csproj", "{546645CB-5938-4B83-9148-325B838E96C3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nethermind.Dirichlet.Numerics", "Nethermind.Dirichlet.Numerics\Nethermind.Dirichlet.Numerics.csproj", "{21BE1F2E-6EED-4FC5-9A3D-DAEA5EFEC93A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nethermind.Decompose.Numerics.Test", "Nethermind.Decompose.Numerics.Test\Nethermind.Decompose.Numerics.Test.csproj", "{645496DD-198B-4C2A-9DC4-40FA3825CF23}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{546645CB-5938-4B83-9148-325B838E96C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{546645CB-5938-4B83-9148-325B838E96C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{546645CB-5938-4B83-9148-325B838E96C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{546645CB-5938-4B83-9148-325B838E96C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21BE1F2E-6EED-4FC5-9A3D-DAEA5EFEC93A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21BE1F2E-6EED-4FC5-9A3D-DAEA5EFEC93A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21BE1F2E-6EED-4FC5-9A3D-DAEA5EFEC93A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21BE1F2E-6EED-4FC5-9A3D-DAEA5EFEC93A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{645496DD-198B-4C2A-9DC4-40FA3825CF23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{645496DD-198B-4C2A-9DC4-40FA3825CF23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{645496DD-198B-4C2A-9DC4-40FA3825CF23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{645496DD-198B-4C2A-9DC4-40FA3825CF23}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
