@@ -166,3 +166,6 @@ pip-log.txt
 # MinGW files
 *.o
 *.exe
+
+# Idea
+.idea/
