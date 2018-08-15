@@ -138,6 +138,32 @@ namespace Nethermind.Decompose.Numerics.Test
         }
         
         [TestMethod]
+        public void Add_carry_twice()
+        {
+            UInt256.Create(out UInt256 a, 1);
+            UInt256.Create(out UInt256 b, ulong.MaxValue, ulong.MaxValue, 0, 0);
+            var result = a + b;
+            
+            Assert.AreEqual(0UL, result.S0);
+            Assert.AreEqual(0UL, result.S1);
+            Assert.AreEqual(1UL, result.S2);
+            Assert.AreEqual(0UL, result.S3);
+        }
+        
+        [TestMethod]
+        public void Add_carry_thrice()
+        {
+            UInt256.Create(out UInt256 a, 1);
+            UInt256.Create(out UInt256 b, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, 0);
+            var result = a + b;
+            
+            Assert.AreEqual(0UL, result.S0);
+            Assert.AreEqual(0UL, result.S1);
+            Assert.AreEqual(0UL, result.S2);
+            Assert.AreEqual(1UL, result.S3);
+        }
+        
+        [TestMethod]
         public void Add_carry_all_UL()
         {
             UInt256.Create(out UInt256 a, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue);
