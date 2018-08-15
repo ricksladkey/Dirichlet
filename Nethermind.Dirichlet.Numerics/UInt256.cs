@@ -179,7 +179,7 @@ namespace Nethermind.Dirichlet.Numerics
             if (span.Length % 8 != 0)
             {
                 Span<byte> bytes = new byte[span.Length + (8 - span.Length % 8)];
-                span.CopyTo(bytes.Slice(0, span.Length));
+                span.CopyTo(bytes.Slice(bytes.Length - span.Length, span.Length));
                 span = bytes;
             }
             
