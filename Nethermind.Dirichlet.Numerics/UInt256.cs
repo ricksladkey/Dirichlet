@@ -1041,7 +1041,7 @@ namespace Nethermind.Dirichlet.Numerics
 //                Multiply64(out c, a.s0, b);
 //            else
 //                Multiply128(out c, ref a, b);
-//            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b % ((BigInteger)1 << 128));
+//            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b % ((BigInteger)1 << 256));
         }
 
         public static void Multiply(out UInt256 c, ref UInt256 a, ulong b)
@@ -1051,7 +1051,7 @@ namespace Nethermind.Dirichlet.Numerics
 //                Multiply64(out c, a.s0, b);
 //            else
 //                Multiply128(out c, ref a, b);
-//            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b % ((BigInteger)1 << 128));
+//            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b % ((BigInteger)1 << 256));
         }
 
         public static void Multiply(out UInt256 c, ref UInt256 a, ref UInt256 b)
@@ -1065,7 +1065,7 @@ namespace Nethermind.Dirichlet.Numerics
 //                Multiply128(out c, ref a, b.s0);
 //            else
 //                Multiply128(out c, ref a, ref b);
-//            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b % ((BigInteger)1 << 128));
+//            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b % ((BigInteger)1 << 256));
         }
 
         private static void Multiply(out UInt512 c, ref UInt256 a, ref UInt256 b)
@@ -1195,7 +1195,7 @@ namespace Nethermind.Dirichlet.Numerics
                 ++c.s2;
             if (c.s2 < a.s2)
                 ++c.s3;
-            Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 128));
+            Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 256));
         }
 
         public static void Add(out UInt256 c, ref UInt256 a, ref UInt256 b)
@@ -1210,7 +1210,7 @@ namespace Nethermind.Dirichlet.Numerics
                 ++c.s2;
             if (c.s2 < a.s2)
                 ++c.s3;
-            Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 128));
+            Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 256));
         }
 
         private static ulong Add(ulong a, ulong b, ref uint carry)
@@ -1256,7 +1256,7 @@ namespace Nethermind.Dirichlet.Numerics
                 --c.s3; // check what should be here
             }
 
-            Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + ((BigInteger)1 << 128)) % ((BigInteger)1 << 128));
+            Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + ((BigInteger)1 << 256)) % ((BigInteger)1 << 256));
         }
 
         public static void Subtract(out UInt256 c, ulong a, ref UInt256 b)
@@ -1272,7 +1272,7 @@ namespace Nethermind.Dirichlet.Numerics
                 --c.s3; // check what should be here
             }
 
-            Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + ((BigInteger)1 << 128)) % ((BigInteger)1 << 128));
+            Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + ((BigInteger)1 << 256)) % ((BigInteger)1 << 256));
         }
 
         public static void Subtract(out UInt256 c, ref UInt256 a, ref UInt256 b)
@@ -1288,7 +1288,7 @@ namespace Nethermind.Dirichlet.Numerics
                 --c.s3; // check what should be here
             }
 
-            Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + ((BigInteger)1 << 128)) % ((BigInteger)1 << 128));
+            Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + ((BigInteger)1 << 256)) % ((BigInteger)1 << 256));
         }
 
         public static void Subtract(ref UInt256 a, ulong b)
@@ -1411,7 +1411,7 @@ namespace Nethermind.Dirichlet.Numerics
             throw new NotImplementedException();
 //            Multiply64(out w, u.s0, v);
 //            w.s1 += u.s1 * v;
-//            Debug.Assert((BigInteger)w == (BigInteger)u * v % ((BigInteger)1 << 128));
+//            Debug.Assert((BigInteger)w == (BigInteger)u * v % ((BigInteger)1 << 256));
         }
 
         private static void Multiply128(out UInt128 w, ref UInt128 u, ulong v)
@@ -1419,7 +1419,7 @@ namespace Nethermind.Dirichlet.Numerics
             throw new NotImplementedException();
 //            Multiply64(out w, u.s0, v);
 //            w.s1 += u.s1 * v;
-//            Debug.Assert((BigInteger)w == (BigInteger)u * v % ((BigInteger)1 << 128));
+//            Debug.Assert((BigInteger)w == (BigInteger)u * v % ((BigInteger)1 << 256));
         }
 
         private static void Multiply128(out UInt128 w, ref UInt128 u, ref UInt128 v)
@@ -1427,7 +1427,7 @@ namespace Nethermind.Dirichlet.Numerics
             throw new NotImplementedException();
 //            Multiply64(out w, u.s0, v.s0);
 //            w.s1 += u.s1 * v.s0 + u.s0 * v.s1;
-//            Debug.Assert((BigInteger)w == (BigInteger)u * v % ((BigInteger)1 << 128));
+//            Debug.Assert((BigInteger)w == (BigInteger)u * v % ((BigInteger)1 << 256));
         }
 
         public static void Divide(out UInt256 w, ref UInt256 u, uint v)

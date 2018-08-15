@@ -85,5 +85,56 @@ namespace Nethermind.Decompose.Numerics.Test
             Assert.AreEqual(3UL, result.S2);
             Assert.AreEqual(4UL, result.S3);
         }
+        
+        [TestMethod]
+        public void Add()
+        {
+            byte[] bytesA = new byte[32];
+            bytesA[0] = 1;
+            bytesA[8] = 2;
+            bytesA[16] = 3;
+            bytesA[24] = 4;
+            
+            byte[] bytesB = new byte[32];
+            bytesB[0] = 10;
+            bytesB[8] = 20;
+            bytesB[16] = 30;
+            bytesB[24] = 40;
+            
+            UInt256.Create(out UInt256 a, bytesA);
+            UInt256.Create(out UInt256 b, bytesB);
+            var result = a + b;
+            
+            Assert.AreEqual(11UL, result.S0);
+            Assert.AreEqual(22UL, result.S1);
+            Assert.AreEqual(33UL, result.S2);
+            Assert.AreEqual(44UL, result.S3);
+        }
+        
+        [TestMethod]
+        public void Add_carry_all()
+        {
+            UInt256.Create(out UInt256 a, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue);
+            UInt256.Create(out UInt256 b, 1);
+            var result = a + b;
+            
+            Assert.AreEqual(0UL, result.S0);
+            Assert.AreEqual(0UL, result.S1);
+            Assert.AreEqual(0UL, result.S2);
+            Assert.AreEqual(0UL, result.S3);
+        }
+        
+        [TestMethod]
+        public void Add_carry_one()
+        {
+            UInt256.Create(out UInt256 a, ulong.MaxValue, 0, 0, 0);
+            UInt256.Create(out UInt256 b, 1);
+            var result = a + b;
+            
+            Assert.AreEqual(0UL, result.S0);
+            Assert.AreEqual(1UL, result.S1);
+            Assert.AreEqual(0UL, result.S2);
+            Assert.AreEqual(0UL, result.S3);
+        }
     }
 }
