@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace Nethermind.Dirichlet.Numerics
 {
@@ -141,6 +142,20 @@ namespace Nethermind.Dirichlet.Numerics
             Create(out this, value);
         }
 
+        public static void Create(out UInt256 c, Span<byte> span)
+        {
+            if (span.Length != 32)
+            {
+                throw new ArgumentException(nameof(span));
+            }
+
+            Span<ulong> ulongs = MemoryMarshal.Cast<byte, ulong>(span);
+            c.s0 = ulongs[0];
+            c.s1 = ulongs[1];
+            c.s2 = ulongs[2];
+            c.s3 = ulongs[3];
+        }
+        
         public static void Create(out UInt256 c, uint r0, uint r1, uint r2, uint r3, uint r4, uint r5, uint r6, uint r7)
         {
             c.s0 = (ulong)r1 << 32 | r0;
@@ -153,8 +168,8 @@ namespace Nethermind.Dirichlet.Numerics
         {
             c.s0 = t0.S0;
             c.s1 = t0.S1;
-            c.s2 = t0.S0;
-            c.s3 = t0.S1;
+            c.s2 = t1.S0;
+            c.s3 = t1.S1;
         }
         
         public static void Create(out UInt256 c, ulong s0, ulong s1, ulong s2, ulong s3)
@@ -230,19 +245,25 @@ namespace Nethermind.Dirichlet.Numerics
                 Negate(ref c);
         }
 
-        private uint r0 { get { return (uint)s0; } }
-        private uint r1 { get { return (uint)(s0 >> 32); } }
-        private uint r2 { get { return (uint)s1; } }
-        private uint r3 { get { return (uint)(s1 >> 32); } }
+        private uint r0 => (uint)s0;
+        private uint r1 => (uint)(s0 >> 32);
+        private uint r2 => (uint)s1;
+        private uint r3 => (uint)(s1 >> 32);
+        private uint r4 => (uint)s2;
+        private uint r5 => (uint)(s2 >> 32);
+        private uint r6 => (uint)s3;
+        private uint r7 => (uint)(s3 >> 32);
 
-        public ulong S0 { get { return s0; } }
-        public ulong S1 { get { return s1; } }
+        public ulong S0 => s0;
+        public ulong S1 => s1;
+        public ulong S2 => s2;
+        public ulong S3 => s3;
 
-        public bool IsZero { get { return (s0 | s1) == 0; } }
-        public bool IsOne { get { return (s1 ^ s0) == 1; } }
-        public bool IsPowerOfTwo { get { return (this & (this - 1)).IsZero; } }
-        public bool IsEven { get { return (s0 & 1) == 0; } }
-        public int Sign { get { return IsZero ? 0 : 1; } }
+        public bool IsZero => (s0 | s1 | s2 | s3) == 0;
+        public bool IsOne => (s0 | s1 | s2 | s3) == 1;
+        public bool IsPowerOfTwo => (this & (this - 1)).IsZero;
+        public bool IsEven => (s0 & 1) == 0;
+        public int Sign => IsZero ? 0 : 1;
 
         public override string ToString()
         {
@@ -1081,7 +1102,7 @@ namespace Nethermind.Dirichlet.Numerics
 //            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
         }
 
-        public static UInt128 Abs(UInt128 a)
+        public static UInt256 Abs(UInt256 a)
         {
             return a;
         }
