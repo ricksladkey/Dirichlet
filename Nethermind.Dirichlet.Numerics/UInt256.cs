@@ -438,13 +438,23 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static implicit operator BigInteger(UInt256 a)
         {
-            if (a.s3 == 0)
-                return (BigInteger)a.s2 << 128 | (BigInteger)a.s1 << 64 | a.s0;
-            if (a.s2 == 0)
-                return (BigInteger)a.s1 << 64 | a.s0;
-            if (a.s1 == 0)
-                return a.s0;
-            return (BigInteger)a.s3 << 192 | (BigInteger)a.s2 << 128 | (BigInteger)a.s1 << 64 | a.s0;
+            BigInteger result = a.s0;
+            if (a.s1 != 0)
+            {
+                result |= (BigInteger) a.s1 << 64;
+            }
+            
+            if (a.s2 != 0)
+            {
+                result |= (BigInteger) a.s2 << 128;
+            }
+            
+            if (a.s3 != 0)
+            {
+                result |= (BigInteger) a.s3 << 192;
+            }
+
+            return result;
         }
 
         public static UInt256 operator <<(UInt256 a, int b)
@@ -1210,6 +1220,15 @@ namespace Nethermind.Dirichlet.Numerics
                 ++c.s2;
             if (c.s2 < a.s2)
                 ++c.s3;
+
+            BigInteger cBig = (BigInteger) c;
+            BigInteger abBig = ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 256);
+
+            byte[] aBytes = ((BigInteger)a).ToByteArray(true, false);
+            byte[] bBytes = ((BigInteger)b).ToByteArray(true, false);
+            byte[] cBytes = cBig.ToByteArray(true, false);
+            byte[] abBytes = abBig.ToByteArray(true, false);
+            
             Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 256));
         }
 

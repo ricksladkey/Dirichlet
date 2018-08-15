@@ -136,5 +136,18 @@ namespace Nethermind.Decompose.Numerics.Test
             Assert.AreEqual(0UL, result.S2);
             Assert.AreEqual(0UL, result.S3);
         }
+        
+        [TestMethod]
+        public void Add_regression()
+        {
+            UInt256.Create(out UInt256 a, 0, 0, 0, 7809331261766606202);
+            UInt256.Create(out UInt256 b, 0, 18446744069414584320, 18446744073709551615, 18446744073709551615);
+            var result = a + b;
+            
+            Assert.AreEqual(0UL, result.S0);
+            Assert.AreEqual(18446744069414584320UL, result.S1);
+            Assert.AreEqual(18446744073709551615UL, result.S2);
+            Assert.AreEqual(7809331261766606201UL, result.S3);
+        }
     }
 }
