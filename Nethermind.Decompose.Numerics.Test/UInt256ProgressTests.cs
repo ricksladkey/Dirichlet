@@ -138,6 +138,30 @@ namespace Nethermind.Decompose.Numerics.Test
         }
         
         [TestMethod]
+        public void Add_carry_all_UL()
+        {
+            UInt256.Create(out UInt256 a, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue);
+            var result = a + 1UL;
+            
+            Assert.AreEqual(0UL, result.S0);
+            Assert.AreEqual(0UL, result.S1);
+            Assert.AreEqual(0UL, result.S2);
+            Assert.AreEqual(0UL, result.S3);
+        }
+        
+        [TestMethod]
+        public void Add_carry_one_UL()
+        {
+            UInt256.Create(out UInt256 a, ulong.MaxValue, 0, 0, 0);
+            var result = a + 1UL;
+            
+            Assert.AreEqual(0UL, result.S0);
+            Assert.AreEqual(1UL, result.S1);
+            Assert.AreEqual(0UL, result.S2);
+            Assert.AreEqual(0UL, result.S3);
+        }
+        
+        [TestMethod]
         public void Add_regression()
         {
             UInt256.Create(out UInt256 a, 0, 0, 0, 7809331261766606202);
@@ -148,6 +172,56 @@ namespace Nethermind.Decompose.Numerics.Test
             Assert.AreEqual(18446744069414584320UL, result.S1);
             Assert.AreEqual(18446744073709551615UL, result.S2);
             Assert.AreEqual(7809331261766606201UL, result.S3);
+        }
+        
+        [TestMethod]
+        public void Subtract_carry_all()
+        {
+            UInt256.Create(out UInt256 a, 0, 0, 0, 0);
+            UInt256.Create(out UInt256 b, 1);
+            var result = a - b;
+            
+            Assert.AreEqual(ulong.MaxValue, result.S0);
+            Assert.AreEqual(ulong.MaxValue, result.S1);
+            Assert.AreEqual(ulong.MaxValue, result.S2);
+            Assert.AreEqual(ulong.MaxValue, result.S3);
+        }
+        
+        [TestMethod]
+        public void Subtract_carry_one()
+        {
+            UInt256.Create(out UInt256 a, 0, 1, 0, 0);
+            UInt256.Create(out UInt256 b, 1);
+            var result = a - b;
+            
+            Assert.AreEqual(ulong.MaxValue, result.S0);
+            Assert.AreEqual(0UL, result.S1);
+            Assert.AreEqual(0UL, result.S2);
+            Assert.AreEqual(0UL, result.S3);
+        }
+        
+        [TestMethod]
+        public void Subtract_carry_all_UL()
+        {
+            UInt256.Create(out UInt256 a, 0, 0, 0, 0);
+            var result = a - 1UL;
+            
+            Assert.AreEqual(ulong.MaxValue, result.S0);
+            Assert.AreEqual(ulong.MaxValue, result.S1);
+            Assert.AreEqual(ulong.MaxValue, result.S2);
+            Assert.AreEqual(ulong.MaxValue, result.S3);
+        }
+        
+        [TestMethod]
+        public void Subtract_carry_one_UL()
+        {
+            UInt256.Create(out UInt256 a, 0, 1, 0, 0);
+            var result = a - 1UL;
+            
+            Assert.AreEqual(ulong.MaxValue, result.S0);
+            Assert.AreEqual(0UL, result.S1);
+            Assert.AreEqual(0UL, result.S2);
+            Assert.AreEqual(0UL, result.S3);
         }
     }
 }

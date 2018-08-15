@@ -1770,6 +1770,7 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static void ModAdd(out UInt128 c, ref UInt128 a, ref UInt128 b, ref UInt128 modulus)
         {
+            // this is wrong I guess
             Add(out c, ref a, ref b);
             if (!LessThan(ref c, ref modulus) || LessThan(ref c, ref a) && LessThan(ref c, ref b))
                 Subtract(ref c, ref modulus);
@@ -1777,6 +1778,7 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static void ModSub(out UInt128 c, ref UInt128 a, ref UInt128 b, ref UInt128 modulus)
         {
+            // this is wrong I guess
             Subtract(out c, ref a, ref b);
             if (LessThan(ref a, ref b))
                 Add(ref c, ref modulus);

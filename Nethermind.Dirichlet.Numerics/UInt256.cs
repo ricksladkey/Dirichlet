@@ -82,6 +82,9 @@ namespace Nethermind.Dirichlet.Numerics
         private ulong s1;
         private ulong s2;
         private ulong s3;
+        
+        public UInt128 t0 { get { UInt128.Create(out UInt128 result, s0, s1); return result; } }
+        public UInt128 t1 { get { UInt128.Create(out UInt128 result, s2, s3); return result; } }
 
         private static readonly UInt256 maxValue = ~(UInt256)0;
         private static readonly UInt256 zero = (UInt256)0;
@@ -142,6 +145,45 @@ namespace Nethermind.Dirichlet.Numerics
             Create(out this, value);
         }
 
+        public static void CreateFromBigEndian(out UInt256 c, Span<byte> span)
+        {
+            if (span.Length != 32)
+            {
+                throw new ArgumentException(nameof(span));
+            }
+
+            Span<ulong> ulongs = MemoryMarshal.Cast<byte, ulong>(span);
+            c.s0 = SwapUInt64(ulongs[3]);
+            c.s1 = SwapUInt64(ulongs[2]);
+            c.s2 = SwapUInt64(ulongs[1]);
+            c.s3 = SwapUInt64(ulongs[0]);
+        }
+
+        public void ToBigEndian(Span<byte> target)
+        {
+            Span<ulong> ulongs = MemoryMarshal.Cast<byte, ulong>(target);
+            ulongs[0] = SwapUInt64(s3);
+            ulongs[1] = SwapUInt64(s2);
+            ulongs[2] = SwapUInt64(s1);
+            ulongs[3] = SwapUInt64(s0);
+        }
+        
+        private static ushort SwapUInt16(ushort v)
+        {
+            return (ushort)(((v & 0xff) << 8) | ((v >> 8) & 0xff));
+        }
+        
+        private static uint SwapUInt32(uint v)
+        {
+            return (uint)(((SwapUInt16((ushort)v) & 0xffff) << 0x10) | (SwapUInt16((ushort)(v >> 0x10)) & 0xffff));
+
+        }
+        
+        private static ulong SwapUInt64(ulong v)
+        {
+            return (ulong)(((SwapUInt32((uint)v) & 0xffffffffL) << 0x20) | (SwapUInt32((uint)(v >> 0x20)) & 0xffffffffL));
+        }
+        
         public static void Create(out UInt256 c, Span<byte> span)
         {
             if (span.Length != 32)
@@ -1189,7 +1231,8 @@ namespace Nethermind.Dirichlet.Numerics
             c.s2 = 0;
             c.s3 = 0;
             if (c.s0 < b)
-                ++c.s1;
+                c.s1 = 1;
+            
             Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b));
         }
 
@@ -1220,14 +1263,6 @@ namespace Nethermind.Dirichlet.Numerics
                 ++c.s2;
             if (c.s2 < a.s2)
                 ++c.s3;
-
-            BigInteger cBig = (BigInteger) c;
-            BigInteger abBig = ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 256);
-
-            byte[] aBytes = ((BigInteger)a).ToByteArray(true, false);
-            byte[] bBytes = ((BigInteger)b).ToByteArray(true, false);
-            byte[] cBytes = cBig.ToByteArray(true, false);
-            byte[] abBytes = abBig.ToByteArray(true, false);
             
             Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 256));
         }
@@ -1244,17 +1279,46 @@ namespace Nethermind.Dirichlet.Numerics
         {
             var sum = a.s0 + b;
             if (sum < b)
+            {
                 ++a.s1;
+                if (a.s1 == 0)
+                {
+                    ++a.s2;
+                    if (a.s2 == 0)
+                    {
+                        a.s3++;
+                    }
+                }
+            }
+
             a.s0 = sum;
         }
 
         public static void Add(ref UInt256 a, ref UInt256 b)
         {
-            var sum = a.s0 + b.s0;
-            if (sum < b.s0)
-                ++a.s1;
-            a.s0 = sum;
-            a.s1 += b.s1;
+            UInt256 c;
+            c.s0 = a.s0 + b.s0;
+            c.s1 = a.s1 + b.s1;
+            c.s2 = a.s2 + b.s2;
+            c.s3 = a.s3 + b.s3;
+            if (c.s0 < b.s0)
+                ++c.s1;
+            if (c.s1 < a.s1)
+                ++c.s2;
+            if (c.s2 < a.s2)
+                ++c.s3;
+
+            a.s0 = c.s0;
+            a.s1 = c.s1;
+            a.s2 = c.s2;
+            a.s3 = c.s3;
+            
+// TODO: optimized?
+//            var sum = a.s0 + b.s0;
+//            if (sum < b.s0)
+//                ++a.s1;
+//            a.s0 = sum;
+//            a.s1 += b.s1;
         }
 
         public static void Add(ref UInt256 a, UInt256 b)
@@ -1264,77 +1328,113 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static void Subtract(out UInt256 c, ref UInt256 a, ulong b)
         {
-            c.s0 = a.s0 - b;
-            c.s1 = a.s1;
-            c.s2 = a.s2;
-            c.s3 = a.s3;
-            if (a.s0 < b)
+            UInt128 at0 = a.t0;
+            UInt128 at1 = a.t1;
+            
+            UInt128 bt0 = b;
+            UInt128 bt1 = 0;
+            
+            if (at0 < bt0)
             {
-                --c.s1;
-                --c.s2; // check what should be here
-                --c.s3; // check what should be here
+                --at1;
             }
+
+            at0 -= bt0;
+            at1 -= bt1;
+
+            c.s0 = at0.S0;
+            c.s1 = at0.S1;
+            c.s2 = at1.S0;
+            c.s3 = at1.S1;
 
             Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + ((BigInteger)1 << 256)) % ((BigInteger)1 << 256));
         }
 
         public static void Subtract(out UInt256 c, ulong a, ref UInt256 b)
         {
-            c.s0 = a - b.s0;
-            c.s1 = 0 - b.s1;
-            c.s2 = 0 - b.s2;
-            c.s3 = 0 - b.s3;
-            if (a < b.s0)
+            UInt128 at0 = a;
+            UInt128 at1 = 0;
+            
+            UInt128 bt0 = b.t0;
+            UInt128 bt1 = b.t1;
+            
+            if (at0 < bt0)
             {
-                --c.s1;
-                --c.s2; // check what should be here
-                --c.s3; // check what should be here
+                --at1;
             }
+
+            at0 -= bt0;
+            at1 -= bt1;
+
+            c.s0 = at0.S0;
+            c.s1 = at0.S1;
+            c.s2 = at1.S0;
+            c.s3 = at1.S1;
 
             Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + ((BigInteger)1 << 256)) % ((BigInteger)1 << 256));
         }
 
         public static void Subtract(out UInt256 c, ref UInt256 a, ref UInt256 b)
         {
-            c.s0 = a.s0 - b.s0;
-            c.s1 = a.s1 - b.s1;
-            c.s2 = a.s2 - b.s2;
-            c.s3 = a.s3 - b.s3;
-            if (a.s0 < b.s0)
+            UInt128 at0 = a.t0;
+            UInt128 at1 = a.t1;
+            
+            UInt128 bt0 = b.t0;
+            UInt128 bt1 = b.t1;
+            
+            if (at0 < bt0)
             {
-                --c.s1;
-                --c.s2; // check what should be here
-                --c.s3; // check what should be here
+                --at1;
             }
+
+            at0 -= bt0;
+            at1 -= bt1;
+
+            c.s0 = at0.S0;
+            c.s1 = at0.S1;
+            c.s2 = at1.S0;
+            c.s3 = at1.S1;
 
             Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + ((BigInteger)1 << 256)) % ((BigInteger)1 << 256));
         }
 
         public static void Subtract(ref UInt256 a, ulong b)
         {
-            if (a.s0 < b)
+            UInt128 at0 = a.t0;
+            UInt128 at1 = a.t1;
+            
+            if (at0 < b)
             {
-                --a.s1;
-                --a.s2; // check what should be here
-                --a.s3; // check what should be here
+                --at1;
             }
 
-            a.s0 -= b;
+            UInt128.Subtract(ref at0, b);
+            a.s0 = at0.S0;
+            a.s1 = at0.S1;
+            a.s2 = at1.S0;
+            a.s3 = at1.S1;
         }
 
         public static void Subtract(ref UInt256 a, ref UInt256 b)
         {
-            if (a.s0 < b.s0)
+            UInt128 at0 = a.t0;
+            UInt128 at1 = a.t1;
+            
+            UInt128 bt0 = b.t0;
+            UInt128 bt1 = b.t1;
+            
+            if (at0 < bt0)
             {
-                --a.s1;
-                --a.s2; // check what should be here
-                --a.s3; // check what should be here
+                --at1;
             }
 
-            a.s0 -= b.s0;
-            a.s1 -= b.s1;
-            a.s2 -= b.s2; // check what should be here
-            a.s3 -= b.s3; // check what should be here
+            at0 -= bt0;
+            at1 -= bt1;
+
+            a.s0 = at0.S0;
+            a.s1 = at0.S1;
+            a.s2 = at1.S0;
+            a.s3 = at1.S1;
         }
 
         public static void Subtract(ref UInt256 a, UInt256 b)
@@ -1958,18 +2058,18 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static void ModAdd(out UInt256 c, ref UInt256 a, ref UInt256 b, ref UInt256 modulus)
         {
-            throw new NotImplementedException();
-//            Add(out c, ref a, ref b);
-//            if (!LessThan(ref c, ref modulus) || LessThan(ref c, ref a) && LessThan(ref c, ref b))
-//                Subtract(ref c, ref modulus);
+            // this is wrong I guess
+            Add(out c, ref a, ref b);
+            if (!LessThan(ref c, ref modulus) || LessThan(ref c, ref a) && LessThan(ref c, ref b))
+                Subtract(ref c, ref modulus);
         }
 
         public static void ModSub(out UInt256 c, ref UInt256 a, ref UInt256 b, ref UInt256 modulus)
         {
-            throw new NotImplementedException();
-//            Subtract(out c, ref a, ref b);
-//            if (LessThan(ref a, ref b))
-//                Add(ref c, ref modulus);
+            // this is wrong I guess
+            Subtract(out c, ref a, ref b);
+            if (LessThan(ref a, ref b))
+                Add(ref c, ref modulus);
         }
 
         public static void ModMul(out UInt256 c, ref UInt256 a, ref UInt256 b, ref UInt256 modulus)
@@ -2203,7 +2303,6 @@ namespace Nethermind.Dirichlet.Numerics
             if (s0 > 0)
                 --a.s3;
         }
-
 
         public static void Negate(out UInt256 c, ref UInt256 a)
         {
@@ -2579,18 +2678,10 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static void Swap(ref UInt256 a, ref UInt256 b)
         {
-            var as0 = a.s0;
-            var as1 = a.s1;
-            var as2 = a.s2;
-            var as3 = a.s3;
-            a.s0 = b.s0;
-            a.s1 = b.s1;
-            a.s2 = b.s2;
-            a.s3 = b.s3;
-            b.s0 = as0;
-            b.s1 = as1;
-            b.s2 = as2;
-            b.s3 = as3;
+            (a.s0, b.s0) = (b.s0, a.s0);
+            (a.s1, b.s1) = (b.s1, a.s1);
+            (a.s2, b.s2) = (b.s2, a.s2);
+            (a.s3, b.s3) = (b.s3, a.s3);
         }
 
         public static void GreatestCommonDivisor(out UInt256 c, ref UInt256 a, ref UInt256 b)
