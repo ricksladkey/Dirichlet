@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 
 namespace Nethermind.Dirichlet.Numerics
 {
@@ -144,20 +145,6 @@ namespace Nethermind.Dirichlet.Numerics
             Create(out this, value);
         }
 
-        public static void CreateFromBigEndian(out UInt256 c, Span<byte> span)
-        {
-            if (span.Length != 32)
-            {
-                throw new ArgumentException(nameof(span));
-            }
-
-            Span<ulong> ulongs = MemoryMarshal.Cast<byte, ulong>(span);
-            c.s0 = SwapUInt64(ulongs[3]);
-            c.s1 = SwapUInt64(ulongs[2]);
-            c.s2 = SwapUInt64(ulongs[1]);
-            c.s3 = SwapUInt64(ulongs[0]);
-        }
-
         public void ToBigEndian(Span<byte> target)
         {
             Span<ulong> ulongs = MemoryMarshal.Cast<byte, ulong>(target);
@@ -166,16 +153,11 @@ namespace Nethermind.Dirichlet.Numerics
             ulongs[2] = SwapUInt64(s1);
             ulongs[3] = SwapUInt64(s0);
         }
-        
-        private static ushort SwapUInt16(ushort v)
-        {
-            return (ushort)(((v & 0xff) << 8) | ((v >> 8) & 0xff));
-        }
-        
+               
         private static uint SwapUInt32(uint v)
         {
-            return (uint)(((SwapUInt16((ushort)v) & 0xffff) << 0x10) | (SwapUInt16((ushort)(v >> 0x10)) & 0xffff));
-
+            return (v & 0x000000ffU) << 24 | (v & 0x0000ff00U) << 8 |
+                   (v & 0x00ff0000U) >> 8 | (v & 0xff000000U) >> 24;
         }
         
         private static ulong SwapUInt64(ulong v)
@@ -183,18 +165,53 @@ namespace Nethermind.Dirichlet.Numerics
             return (ulong)(((SwapUInt32((uint)v) & 0xffffffffL) << 0x20) | (SwapUInt32((uint)(v >> 0x20)) & 0xffffffffL));
         }
         
-        public static void Create(out UInt256 c, Span<byte> span)
+        public static void CreateFromBigEndian(out UInt256 c, Span<byte> span)
         {
-            if (span.Length != 32)
+            if (span.Length == 0)
             {
-                throw new ArgumentException(nameof(span));
+                c.s0 = 0;
+                c.s1 = 0;
+                c.s2 = 0;
+                c.s3 = 0;
+                return;
             }
-
+            
+            if (span.Length % 8 != 0)
+            {
+                Span<byte> bytes = new byte[span.Length + (8 - span.Length % 8)];
+                span.CopyTo(bytes.Slice(0, span.Length));
+                span = bytes;
+            }
+            
             Span<ulong> ulongs = MemoryMarshal.Cast<byte, ulong>(span);
-            c.s0 = ulongs[0];
-            c.s1 = ulongs[1];
-            c.s2 = ulongs[2];
-            c.s3 = ulongs[3];
+            if (ulongs.Length == 1)
+            {
+                c.s0 = SwapUInt64(ulongs[0]);
+                c.s1 = 0;
+                c.s2 = 0;
+                c.s3 = 0;
+            }
+            else if (ulongs.Length == 2)
+            {
+                c.s0 = SwapUInt64(ulongs[1]);
+                c.s1 = SwapUInt64(ulongs[0]);
+                c.s2 = 0;
+                c.s3 = 0;
+            }
+            else if (ulongs.Length == 3)
+            {
+                c.s0 = SwapUInt64(ulongs[2]);
+                c.s1 = SwapUInt64(ulongs[1]);
+                c.s2 = SwapUInt64(ulongs[0]);
+                c.s3 = 0;
+            }
+            else
+            {   
+                c.s0 = SwapUInt64(ulongs[3]);
+                c.s1 = SwapUInt64(ulongs[2]);
+                c.s2 = SwapUInt64(ulongs[1]);
+                c.s3 = SwapUInt64(ulongs[0]);
+            }
         }
         
         public static void Create(out UInt256 c, uint r0, uint r1, uint r2, uint r3, uint r4, uint r5, uint r6, uint r7)

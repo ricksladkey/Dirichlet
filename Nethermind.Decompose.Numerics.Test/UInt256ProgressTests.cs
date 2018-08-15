@@ -74,41 +74,83 @@ namespace Nethermind.Decompose.Numerics.Test
         public void Create_span()
         {
             byte[] bytes = new byte[32];
-            bytes[0] = 1;
-            bytes[8] = 2;
-            bytes[16] = 3;
-            bytes[24] = 4;
+            bytes[7] = 1;
+            bytes[15] = 2;
+            bytes[23] = 3;
+            bytes[31] = 4;
             
-            UInt256.Create(out UInt256 result, bytes);
-            Assert.AreEqual(1UL, result.S0);
+            UInt256.CreateFromBigEndian(out UInt256 result, bytes);
+            Assert.AreEqual(1UL, result.S3);
+            Assert.AreEqual(2UL, result.S2);
+            Assert.AreEqual(3UL, result.S1);
+            Assert.AreEqual(4UL, result.S0);
+        }
+        
+        [TestMethod]
+        public void Create_span_missing_byte()
+        {
+            byte[] bytes = new byte[31];
+            bytes[7] = 1;
+            bytes[15] = 2;
+            bytes[23] = 3;
+            
+            UInt256.CreateFromBigEndian(out UInt256 result, bytes);
+            Assert.AreEqual(1UL, result.S3);
+            Assert.AreEqual(2UL, result.S2);
+            Assert.AreEqual(3UL, result.S1);
+            Assert.AreEqual(0UL, result.S0);
+        }
+        
+        [TestMethod]
+        public void Create_span_3_bytes()
+        {
+            byte[] bytes = new byte[24];
+            bytes[7] = 1;
+            bytes[15] = 2;
+            bytes[23] = 3;
+            
+            UInt256.CreateFromBigEndian(out UInt256 result, bytes);
+            Assert.AreEqual(0UL, result.S3);
+            Assert.AreEqual(1UL, result.S2);
             Assert.AreEqual(2UL, result.S1);
-            Assert.AreEqual(3UL, result.S2);
-            Assert.AreEqual(4UL, result.S3);
+            Assert.AreEqual(3UL, result.S0);
+        }
+        
+        [TestMethod]
+        public void Create_span_empty()
+        {
+            byte[] bytes = new byte[0];
+            
+            UInt256.CreateFromBigEndian(out UInt256 result, bytes);
+            Assert.AreEqual(0UL, result.S3);
+            Assert.AreEqual(0UL, result.S2);
+            Assert.AreEqual(0UL, result.S1);
+            Assert.AreEqual(0UL, result.S0);
         }
         
         [TestMethod]
         public void Add()
         {
             byte[] bytesA = new byte[32];
-            bytesA[0] = 1;
-            bytesA[8] = 2;
-            bytesA[16] = 3;
-            bytesA[24] = 4;
+            bytesA[7] = 1;
+            bytesA[15] = 2;
+            bytesA[23] = 3;
+            bytesA[31] = 4;
             
             byte[] bytesB = new byte[32];
-            bytesB[0] = 10;
-            bytesB[8] = 20;
-            bytesB[16] = 30;
-            bytesB[24] = 40;
+            bytesB[7] = 10;
+            bytesB[15] = 20;
+            bytesB[23] = 30;
+            bytesB[31] = 40;
             
-            UInt256.Create(out UInt256 a, bytesA);
-            UInt256.Create(out UInt256 b, bytesB);
+            UInt256.CreateFromBigEndian(out UInt256 a, bytesA);
+            UInt256.CreateFromBigEndian(out UInt256 b, bytesB);
             var result = a + b;
             
-            Assert.AreEqual(11UL, result.S0);
-            Assert.AreEqual(22UL, result.S1);
-            Assert.AreEqual(33UL, result.S2);
-            Assert.AreEqual(44UL, result.S3);
+            Assert.AreEqual(11UL, result.S3);
+            Assert.AreEqual(22UL, result.S2);
+            Assert.AreEqual(33UL, result.S1);
+            Assert.AreEqual(44UL, result.S0);
         }
         
         [TestMethod]
@@ -248,6 +290,24 @@ namespace Nethermind.Decompose.Numerics.Test
             Assert.AreEqual(0UL, result.S1);
             Assert.AreEqual(0UL, result.S2);
             Assert.AreEqual(0UL, result.S3);
+        }
+        
+        [TestMethod]
+        public void BigEndian_there_and_back_again()
+        {
+            byte[] bytes = new byte[32];
+            for (int i = 0; i < 32; i++)
+            {
+                bytes[i] = (byte)i;
+            }
+            
+            UInt256.CreateFromBigEndian(out UInt256 a, bytes);
+            a.ToBigEndian(bytes);
+            
+            for (int i = 0; i < 32; i++)
+            {
+                Assert.AreEqual((byte)i, bytes[i]);
+            }
         }
     }
 }
