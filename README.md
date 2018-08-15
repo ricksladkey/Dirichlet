@@ -1,5 +1,7 @@
 ### Dirichlet .NET Number Theory Library
 
+This is a fork of ricksladkey/Dirichlet with significant structural and code changes. Please refer to the original repo. This fork is work in progress and should not be considered stable or correct.
+
 Dirichlet is an number theory library for .NET.
 
 Features:
