@@ -2283,20 +2283,8 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static void LeftShift(out UInt256 c, ref UInt256 a, int b)
         {
-            throw new NotImplementedException();
-//            if (b < 64)
-//                LeftShift64(out c, ref a, b);
-//            else if (b == 64)
-//            {
-//                c.s0 = 0;
-//                c.s1 = a.s0;
-//                return;
-//            }
-//            else
-//            {
-//                c.s0 = 0;
-//                c.s1 = a.s0 << (b - 64);
-//            }
+            c = a;
+            LeftShift(ref c, b);
         }
 
         public static void RightShift64(out UInt256 c, ref UInt256 a, int b)
@@ -2313,19 +2301,8 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static void RightShift(out UInt256 c, ref UInt256 a, int b)
         {
-            throw new NotImplementedException();
-//            if (b < 64)
-//                RightShift64(out c, ref a, b);
-//            else if (b == 64)
-//            {
-//                c.s0 = a.s1;
-//                c.s1 = 0;
-//            }
-//            else
-//            {
-//                c.s0 = a.s1 >> (b - 64);
-//                c.s1 = 0;
-//            }
+            c = a;
+            RightShift(ref c, b);
         }
 
         public static void ArithmeticRightShift64(out UInt256 c, ref UInt256 a, int b)
@@ -2680,23 +2657,19 @@ namespace Nethermind.Dirichlet.Numerics
 
         private static void RightShift64(ref UInt256 c, int d)
         {
-            throw new NotImplementedException();
             if (d == 0)
                 return;
             c.s0 = c.s1 << (64 - d) | c.s0 >> d;
-            c.s1 >>= d;
+            c.s1 = c.s2 << (64 - d) | c.s1 >> d;
+            c.s2 = c.s3 << (64 - d) | c.s2 >> d;
+            c.s3 >>= d;
         }
 
         public static void RightShift(ref UInt256 c, int d)
         {
-            throw new NotImplementedException();
-            if (d < 64)
-                RightShift64(ref c, d);
-            else
-            {
-                c.s0 = c.s1 >> (d - 64);
-                c.s1 = 0;
-            }
+            int rem = d % 64;
+            RightShift64(ref c, rem);
+            FullRightShift(ref c, d - rem);
         }
 
         public static void Shift(ref UInt256 c, int d)
@@ -2751,25 +2724,13 @@ namespace Nethermind.Dirichlet.Numerics
             c.s1 = (ulong) ((long) c.s1 >> 1);
         }
 
-        private static ulong LeftShift64(ref UInt256 c, int d)
+        private static void FullLeftShift(ref UInt256 c, int d)
         {
-            throw new NotImplementedException();
-//            if (d == 0)
-//                return 0;
-//            var dneg = 64 - d;
-//            var result = c.s1 >> dneg;
-//            c.s1 = c.s1 << d | c.s0 >> dneg;
-//            c.s0 <<= d;
-//            return result;
-        }
-
-        public static void LeftShift(ref UInt256 c, int d)
-        {
-            if (d < 0 || d % 64 != 0)
+            if (d == 0)
             {
-                throw new NotImplementedException();    
+                return;
             }
-
+            
             if (d == 64)
             {
                 c.s3 = c.s2;
@@ -2798,14 +2759,63 @@ namespace Nethermind.Dirichlet.Numerics
                 c.s1 = 0;
                 c.s0 = 0;
             }
+        }
+        
+        private static void FullRightShift(ref UInt256 c, int d)
+        {
+            if (d == 0)
+            {
+                return;
+            }
             
-//            if (d < 64)
-//                LeftShift64(ref c, d);
-//            else
-//            {
-//                c.s1 = c.s0 << (d - 64);
-//                c.s0 = 0;
-//            }
+            if (d == 64)
+            {
+                c.s0 = c.s1;
+                c.s1 = c.s2;
+                c.s2 = c.s3;
+                c.s3 = 0;
+            }
+            else if (d == 128)
+            {
+                c.s0 = c.s2;
+                c.s1 = c.s3;
+                c.s2 = 0;
+                c.s3 = 0;
+            }
+            else if (d == 192)
+            {
+                c.s0 = c.s3;
+                c.s1 = 0;
+                c.s2 = 0;
+                c.s3 = 0;
+            }
+            else
+            {
+                c.s0 = 0;
+                c.s1 = 0;
+                c.s2 = 0;
+                c.s3 = 0;
+            }
+        }
+        
+        private static ulong LeftShift64(ref UInt256 c, int d)
+        {
+            if (d == 0)
+                return 0;
+            var dneg = 64 - d;
+            var result = c.s3 >> dneg;
+            c.s3 = c.s3 << d | c.s2 >> dneg;
+            c.s2 = c.s2 << d | c.s1 >> dneg;
+            c.s1 = c.s1 << d | c.s0 >> dneg;
+            c.s0 <<= d;
+            return result;
+        }
+        
+        public static void LeftShift(ref UInt256 c, int d)
+        {
+            int rem = d % 64;
+            LeftShift64(ref c, rem);
+            FullLeftShift(ref c, d - rem);
         }
 
         public static void LeftShift(ref UInt256 c)

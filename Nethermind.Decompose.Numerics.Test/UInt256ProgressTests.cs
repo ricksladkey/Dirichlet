@@ -377,5 +377,26 @@ namespace Nethermind.Decompose.Numerics.Test
             var result = a * b;
             Assert.AreEqual(result, b * a);
         }
+        
+        [TestMethod]
+        public void Shifts()
+        {
+            UInt256 a = new UInt256(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue);
+            for (int i = 0; i < 256; i++)
+            {
+                UInt256 b = a << i;
+                var c = b >> i;
+                var d = c << i;
+                Assert.AreEqual(b, d, $"{i}");
+            }
+            
+            for (int i = 0; i < 256; i++)
+            {
+                UInt256 b = a >> i;
+                var c = b << i;
+                var d = c >> i;
+                Assert.AreEqual(b, d, $"{i}");
+            }
+        }
     }
 }
