@@ -2304,33 +2304,25 @@ namespace Nethermind.Dirichlet.Numerics
             RightShift(ref c, b);
         }
 
-        public static void ArithmeticRightShift64(out UInt256 c, ref UInt256 a, int b)
-        {
-            throw new NotImplementedException();
-//            if (b == 0)
-//                c = a;
-//            else
-//            {
-//                c.s0 = a.s0 >> b | a.s1 << (64 - b);
-//                c.s1 = (ulong)((long)a.s1 >> b);
-//            }
-        }
+//        public static void ArithmeticRightShift64(out UInt256 c, ref UInt256 a, int b)
+//        {
+//            throw new NotImplementedException();
+////            if (b == 0)
+////                c = a;
+////            else
+////            {
+////                c.s0 = a.s0 >> b | a.s1 << (64 - b);
+////                c.s1 = (ulong)((long)a.s1 >> b);
+////            }
+//        }
 
         public static void ArithmeticRightShift(out UInt256 c, ref UInt256 a, int b)
         {
-            throw new NotImplementedException();
-//            if (b < 64)
-//                ArithmeticRightShift64(out c, ref a, b);
-//            else if (b == 64)
-//            {
-//                c.s0 = a.s1;
-//                c.s1 = (ulong)((long)a.s1 >> 63);
-//            }
-//            else
-//            {
-//                c.s0 = a.s1 >> (b - 64);
-//                c.s1 = (ulong)((long)a.s1 >> 63);
-//            }
+            c = a;
+            int rem = b % 64;
+            RightShift64(ref c, rem);
+            FullRightShift(ref c, b - rem);
+            c.s3 = (ulong) (long) c.s3;
         }
 
         public static void And(out UInt256 c, ref UInt256 a, ref UInt256 b)

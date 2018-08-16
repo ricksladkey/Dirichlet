@@ -398,5 +398,13 @@ namespace Nethermind.Decompose.Numerics.Test
                 Assert.AreEqual(b, d, $"{i}");
             }
         }
+        
+        [TestMethod]
+        public void Arithmetic_shift()
+        {
+            UInt256 a = UInt256.Zero;
+            UInt256.ArithmeticRightShift(ref a, 1);
+            Assert.AreEqual(UInt256.Zero, a);
+        }
     }
 }
