@@ -148,6 +148,7 @@ namespace Nethermind.Decompose.Numerics.Test
             UInt256.CreateFromBigEndian(out UInt256 a, bytesA);
             UInt256.CreateFromBigEndian(out UInt256 b, bytesB);
             var result = a + b;
+            Assert.AreEqual(result, b + a);
             
             Assert.AreEqual(11UL, result.S3);
             Assert.AreEqual(22UL, result.S2);
@@ -161,6 +162,7 @@ namespace Nethermind.Decompose.Numerics.Test
             UInt256.Create(out UInt256 a, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue);
             UInt256.Create(out UInt256 b, 1);
             var result = a + b;
+            Assert.AreEqual(result, b + a);
             
             Assert.AreEqual(0UL, result.S0);
             Assert.AreEqual(0UL, result.S1);
@@ -174,6 +176,7 @@ namespace Nethermind.Decompose.Numerics.Test
             UInt256.Create(out UInt256 a, ulong.MaxValue, 0, 0, 0);
             UInt256.Create(out UInt256 b, 1);
             var result = a + b;
+            Assert.AreEqual(result, b + a);
             
             Assert.AreEqual(0UL, result.S0);
             Assert.AreEqual(1UL, result.S1);
@@ -187,6 +190,7 @@ namespace Nethermind.Decompose.Numerics.Test
             UInt256.Create(out UInt256 a, 1);
             UInt256.Create(out UInt256 b, ulong.MaxValue, ulong.MaxValue, 0, 0);
             var result = a + b;
+            Assert.AreEqual(result, b + a);
             
             Assert.AreEqual(0UL, result.S0);
             Assert.AreEqual(0UL, result.S1);
@@ -200,6 +204,7 @@ namespace Nethermind.Decompose.Numerics.Test
             UInt256.Create(out UInt256 a, 1);
             UInt256.Create(out UInt256 b, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, 0);
             var result = a + b;
+            Assert.AreEqual(result, b + a);
             
             Assert.AreEqual(0UL, result.S0);
             Assert.AreEqual(0UL, result.S1);
@@ -212,6 +217,7 @@ namespace Nethermind.Decompose.Numerics.Test
         {
             UInt256.Create(out UInt256 a, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue);
             var result = a + 1UL;
+            Assert.AreEqual(result, 1UL + a);
             
             Assert.AreEqual(0UL, result.S0);
             Assert.AreEqual(0UL, result.S1);
@@ -224,6 +230,7 @@ namespace Nethermind.Decompose.Numerics.Test
         {
             UInt256.Create(out UInt256 a, ulong.MaxValue, 0, 0, 0);
             var result = a + 1UL;
+            Assert.AreEqual(result, 1UL + a);
             
             Assert.AreEqual(0UL, result.S0);
             Assert.AreEqual(1UL, result.S1);
@@ -308,15 +315,6 @@ namespace Nethermind.Decompose.Numerics.Test
         }
         
         [TestMethod]
-        public void Subtract_regression()
-        {
-            BigInteger number = 500000000000;
-            UInt256 a = new UInt256(360101);
-            UInt256 b = new UInt256(360099);
-            var result = number - (a - b);
-        }
-        
-        [TestMethod]
         public void BigEndian_there_and_back_again()
         {
             byte[] bytes = new byte[32];
@@ -332,6 +330,52 @@ namespace Nethermind.Decompose.Numerics.Test
             {
                 Assert.AreEqual((byte)i, bytes[i]);
             }
+        }
+        
+        [TestMethod]
+        public void Multiply64_ulong()
+        {
+            UInt256 a = 1UL;
+            ulong b = 1UL;
+            var result = a * b;
+            Assert.AreEqual(result, b * a);
+            
+            Assert.AreEqual(1UL, result.S0);
+            Assert.AreEqual(0UL, result.S1);
+            Assert.AreEqual(0UL, result.S2);
+            Assert.AreEqual(0UL, result.S3);
+        }
+        
+        [TestMethod]
+        public void Multiply64_uint()
+        {
+            UInt256 a = 1UL;
+            uint b = 1U;
+            var result = a * b;
+            Assert.AreEqual(result, b * a);
+            
+            Assert.AreEqual(1UL, result.S0);
+            Assert.AreEqual(0UL, result.S1);
+            Assert.AreEqual(0UL, result.S2);
+            Assert.AreEqual(0UL, result.S3);
+        }
+        
+        [TestMethod]
+        public void Multiply64_ulong_max()
+        {
+            UInt256 a = new UInt256(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue);
+            ulong b = ulong.MaxValue;
+            var result = a * b;
+            Assert.AreEqual(result, b * a);
+        }
+        
+        [TestMethod]
+        public void Multiply64_uint_max()
+        {
+            UInt256 a = new UInt256(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue);
+            uint b = uint.MaxValue;
+            var result = a * b;
+            Assert.AreEqual(result, b * a);
         }
     }
 }

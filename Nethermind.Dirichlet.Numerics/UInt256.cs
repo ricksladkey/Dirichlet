@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 
 namespace Nethermind.Dirichlet.Numerics
 {
@@ -190,6 +189,11 @@ namespace Nethermind.Dirichlet.Numerics
         public UInt256(ulong value)
         {
             Create(out this, value);
+        }
+        
+        public UInt256(ulong s0, ulong s1, ulong s2, ulong s3)
+        {
+            Create(out this, s0, s1, s2, s3);
         }
 
         public UInt256(decimal value)
@@ -1028,22 +1032,22 @@ namespace Nethermind.Dirichlet.Numerics
 
         private static bool LessThan(ref UInt256 a, long b)
         {
-            return b >= 0 && a.s1 == 0 && a.s0 < (ulong) b;
+            return b >= 0 && a.s3 == 0 && a.s2 == 0 && a.s1 == 0  && a.s0 < (ulong) b;
         }
 
         private static bool LessThan(long a, ref UInt256 b)
         {
-            return a < 0 || b.s1 != 0 || (ulong) a < b.s0;
+            return a < 0 || b.s1 != 0 || b.s2 != 0 || b.s3 != 0 || (ulong) a < b.s0;
         }
 
         private static bool LessThan(ref UInt256 a, ulong b)
         {
-            return a.s1 == 0 && a.s0 < b;
+            return a.s3 == 0 && a.s2 == 0 && a.s1 == 0 && a.s0 < b;
         }
 
         private static bool LessThan(ulong a, ref UInt256 b)
         {
-            return b.s1 != 0 || a < b.s0;
+            return b.s3 != 0 || b.s2 != 0 || b.s1 != 0 || a < b.s0;
         }
 
         private static bool LessThan(ref UInt256 a, ref UInt256 b)
@@ -1069,22 +1073,22 @@ namespace Nethermind.Dirichlet.Numerics
 
         public bool Equals(int other)
         {
-            return other >= 0 && s0 == (uint) other && s1 == 0;
+            return other >= 0 && s0 == (uint) other && s1 == 0 && s2 == 0 && s3 == 0;
         }
 
         public bool Equals(uint other)
         {
-            return s0 == other && s1 == 0;
+            return s0 == other && s1 == 0 && s2 == 0 && s3 == 0;
         }
 
         public bool Equals(long other)
         {
-            return other >= 0 && s0 == (ulong) other && s1 == 0;
+            return other >= 0 && s0 == (ulong) other && s1 == 0 && s2 == 0 && s3 == 0;
         }
 
         public bool Equals(ulong other)
         {
-            return s0 == other && s1 == 0;
+            return s0 == other && s1 == 0 && s2 == 0 && s3 == 0;
         }
 
         public override bool Equals(object obj)
@@ -1101,29 +1105,26 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static void Multiply(out UInt256 c, ulong a, ulong b)
         {
-            throw new NotImplementedException();
-//            Multiply64(out c, a, b);
-//            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
+            Multiply64(out c, a, b);
+            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
         }
 
         public static void Multiply(out UInt256 c, ref UInt256 a, uint b)
         {
-            throw new NotImplementedException();
-//            if (a.s1 == 0)
-//                Multiply64(out c, a.s0, b);
-//            else
-//                Multiply128(out c, ref a, b);
-//            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b % ((BigInteger)1 << 256));
+            if (a.s1 == 0 && a.s2 == 0 && a.s3 == 0)
+                Multiply64(out c, a.s0, b);
+            else
+                Multiply256(out c, ref a, b);
+            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b % ((BigInteger)1 << 256));
         }
 
         public static void Multiply(out UInt256 c, ref UInt256 a, ulong b)
         {
-            throw new NotImplementedException();
-//            if (a.s1 == 0)
-//                Multiply64(out c, a.s0, b);
-//            else
-//                Multiply128(out c, ref a, b);
-//            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b % ((BigInteger)1 << 256));
+            if (a.s1 == 0 && a.s2 == 0 && a.s3 == 0)
+                Multiply64(out c, a.s0, b);
+            else
+                Multiply256(out c, ref a, b);
+            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b % ((BigInteger)1 << 256));
         }
 
         public static void Multiply(out UInt256 c, ref UInt256 a, ref UInt256 b)
@@ -1227,18 +1228,17 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static void Cube(out UInt256 c, ref UInt256 a)
         {
-            throw new NotImplementedException();
-//            UInt128 square;
-//            if (a.s1 == 0)
-//            {
-//                Square64(out square, a.s0);
-//                Multiply(out c, ref square, a.s0);
-//            }
-//            else
-//            {
-//                Multiply128(out square, ref a, ref a);
-//                Multiply128(out c, ref square, ref a);
-//            }
+            UInt256 square;
+            if (a.s1 == 0 && a.s2 == 0 && a.s3 == 0)
+            {
+                Square64(out square, a.s0);
+                Multiply(out c, ref square, a.s0);
+            }
+            else
+            {
+                Multiply256(out square, ref a, ref a);
+                Multiply256(out c, ref square, ref a);
+            }
         }
 
         public static void Add(out UInt256 c, ulong a, ulong b)
@@ -1606,18 +1606,32 @@ namespace Nethermind.Dirichlet.Numerics
 
         private static void Multiply256(out UInt256 w, ref UInt256 u, uint v)
         {
-            throw new NotImplementedException();
-//            Multiply64(out w, u.s0, v);
-//            w.s1 += u.s1 * v;
-//            Debug.Assert((BigInteger)w == (BigInteger)u * v % ((BigInteger)1 << 256));
+            Multiply64(out UInt256 w0, u.s0, v);
+            Multiply64(out UInt256 w1, u.s1, v);
+            Multiply64(out UInt256 w2, u.s2, v);
+            
+            LeftShift(ref w1, 64);
+            LeftShift(ref w2, 128);
+
+            w = w0 + w1 + w2;
+            w.s3 = w2.s3 + u.s3 * v;
+            
+            Debug.Assert((BigInteger)w == (BigInteger)u * v % ((BigInteger)1 << 256));
         }
 
         private static void Multiply256(out UInt256 w, ref UInt256 u, ulong v)
         {
-            throw new NotImplementedException();
-//            Multiply64(out w, u.s0, v);
-//            w.s1 += u.s1 * v;
-//            Debug.Assert((BigInteger)w == (BigInteger)u * v % ((BigInteger)1 << 256));
+            Multiply64(out UInt256 w0, u.s0, v);
+            Multiply64(out UInt256 w1, u.s1, v);
+            Multiply64(out UInt256 w2, u.s2, v);
+            
+            LeftShift(ref w1, 64);
+            LeftShift(ref w2, 128);
+
+            w = w0 + w1 + w2;
+            w.s3 = w2.s3 + u.s3 * v;
+            
+            Debug.Assert((BigInteger)w == (BigInteger)u * v % ((BigInteger)1 << 256));
         }
 
         private static void Multiply256(out UInt256 w, ref UInt256 u, ref UInt256 v)
@@ -2703,9 +2717,10 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static void RightShift(ref UInt256 c)
         {
-            throw new NotImplementedException();
             c.s0 = c.s1 << 63 | c.s0 >> 1;
-            c.s1 >>= 1;
+            c.s1 = c.s2 << 63 | c.s1 >> 1;
+            c.s2 = c.s3 << 63 | c.s2 >> 1;
+            c.s3 >>= 1;
         }
 
         private static void ArithmeticRightShift64(ref UInt256 c, int d)
@@ -2750,7 +2765,40 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static void LeftShift(ref UInt256 c, int d)
         {
-            throw new NotImplementedException();
+            if (d < 0 || d % 64 != 0)
+            {
+                throw new NotImplementedException();    
+            }
+
+            if (d == 64)
+            {
+                c.s3 = c.s2;
+                c.s2 = c.s1;
+                c.s1 = c.s0;
+                c.s0 = 0;
+            }
+            else if (d == 128)
+            {
+                c.s3 = c.s1;
+                c.s2 = c.s0;
+                c.s1 = 0;
+                c.s0 = 0;
+            }
+            else if (d == 192)
+            {
+                c.s3 = c.s0;
+                c.s2 = 0;
+                c.s1 = 0;
+                c.s0 = 0;
+            }
+            else
+            {
+                c.s3 = 0;
+                c.s2 = 0;
+                c.s1 = 0;
+                c.s0 = 0;
+            }
+            
 //            if (d < 64)
 //                LeftShift64(ref c, d);
 //            else
@@ -2762,9 +2810,10 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static void LeftShift(ref UInt256 c)
         {
-            throw new NotImplementedException();
-//            c.s1 = c.s1 << 1 | c.s0 >> 63;
-//            c.s0 <<= 1;
+            c.s3 = c.s3 << 1 | c.s2 >> 63;
+            c.s2 = c.s2 << 1 | c.s1 >> 63;
+            c.s1 = c.s1 << 1 | c.s0 >> 63;
+            c.s0 <<= 1;
         }
 
         public static void Swap(ref UInt256 a, ref UInt256 b)
