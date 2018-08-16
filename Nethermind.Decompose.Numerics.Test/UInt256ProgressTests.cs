@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Numerics;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nethermind.Dirichlet.Numerics;
 
 namespace Nethermind.Decompose.Numerics.Test
@@ -90,9 +92,9 @@ namespace Nethermind.Decompose.Numerics.Test
         public void Create_span_missing_byte()
         {
             byte[] bytes = new byte[31];
-            bytes[7] = 1;
-            bytes[15] = 2;
-            bytes[23] = 3;
+            bytes[6] = 1;
+            bytes[14] = 2;
+            bytes[22] = 3;
             
             UInt256.CreateFromBigEndian(out UInt256 result, bytes);
             Assert.AreEqual(1UL, result.S3);
@@ -243,6 +245,19 @@ namespace Nethermind.Decompose.Numerics.Test
         }
         
         [TestMethod]
+        public void Add_regression_2()
+        {
+            UInt256.Create(out UInt256 b, 13479156459573198416, 18446744073709551615, 18446744073709551615, 18446744073709551615);
+            UInt256.Create(out UInt256 a, 6553255926290448384, 1, 0, 0);
+            var result = a + b;
+            
+            Console.WriteLine(result);
+//            Assert.AreEqual((BigInteger)(a + b) % ((BigInteger)1 << 256), (BigInteger)a + (BigInteger)b);
+        }
+        
+        
+        
+        [TestMethod]
         public void Subtract_carry_all()
         {
             UInt256.Create(out UInt256 a, 0, 0, 0, 0);
@@ -290,6 +305,15 @@ namespace Nethermind.Decompose.Numerics.Test
             Assert.AreEqual(0UL, result.S1);
             Assert.AreEqual(0UL, result.S2);
             Assert.AreEqual(0UL, result.S3);
+        }
+        
+        [TestMethod]
+        public void Subtract_regression()
+        {
+            BigInteger number = 500000000000;
+            UInt256 a = new UInt256(360101);
+            UInt256 b = new UInt256(360099);
+            var result = number - (a - b);
         }
         
         [TestMethod]

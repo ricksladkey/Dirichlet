@@ -1246,29 +1246,39 @@ namespace Nethermind.Dirichlet.Numerics
             c.s1 = a.s1 + b.s1;
             c.s2 = a.s2 + b.s2;
             c.s3 = a.s3 + b.s3;
-            bool carry = false;
+            bool[] carry = new bool[3];
             if (c.s0 < a.s0)
             {
-                ++c.s1;
-                if (c.s1 == 0)
-                {
-                    carry = true;
-                }
+                carry[0] = true;
             }
 
-            if (c.s1 < a.s1 || carry)
+            if (c.s1 < a.s1)
             {
-                carry = false;
-                ++c.s2;
-                if (c.s2 == 0)
-                {
-                    carry = true;
-                }
+                carry[1] = true;
+            }
+
+            if (c.s2 < a.s2)
+            {
+                carry[2] = true;
+            }
+
+            if (carry[0])
+            {
+                c.s1++;
+                if (c.s1 == 0) carry[1] = true;
             }
             
-            if (c.s2 < a.s2 || carry)
-                ++c.s3;
+            if (carry[1])
+            {
+                c.s2++;
+                if (c.s2 == 0) carry[2] = true;
+            }
             
+            if (carry[2])
+            {
+                c.s3++;
+            }
+
             Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 256));
         }
 
