@@ -2238,11 +2238,10 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static void ArithmeticShift(out UInt256 c, ref UInt256 a, int d)
         {
-            throw new NotImplementedException();
-//            if (d < 0)
-//                ArithmeticRightShift(out c, ref a, -d);
-//            else
-//                LeftShift(out c, ref a, d);
+            if (d < 0)
+                ArithmeticRightShift(out c, ref a, -d);
+            else
+                LeftShift(out c, ref a, d);
         }
 
         private static ulong LeftShift64(out UInt256 c, ref UInt256 a, int d)
@@ -2707,21 +2706,18 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static void ArithmeticRightShift(ref UInt256 c, int d)
         {
-            throw new NotImplementedException();
-            if (d < 64)
-                ArithmeticRightShift64(ref c, d);
-            else
-            {
-                c.s0 = (ulong) ((long) c.s1 >> (d - 64));
-                c.s1 = 0;
-            }
+            int rem = d % 64;
+            RightShift64(ref c, rem);
+            FullRightShift(ref c, d - rem);
+            c.s3 = (ulong) (long) c.s3;
         }
 
         public static void ArithmeticRightShift(ref UInt256 c)
         {
-            throw new NotImplementedException();
             c.s0 = c.s1 << 63 | c.s0 >> 1;
-            c.s1 = (ulong) ((long) c.s1 >> 1);
+            c.s1 = c.s2 << 63 | c.s1 >> 1;
+            c.s2 = c.s3 << 63 | c.s2 >> 1;
+            c.s3 = (ulong) ((long) c.s3 >> 1);
         }
 
         private static void FullLeftShift(ref UInt256 c, int d)
