@@ -35,47 +35,93 @@ namespace Nethermind.Dirichlet.Numerics
             public ulong s6;
             public ulong s7;
 
-            public uint r0 => (uint)s0;
-            public uint r1 => (uint)(s0 >> 32);
-            public uint r2 => (uint)s1;
-            public uint r3 => (uint)(s1 >> 32);
-            public uint r4 => (uint)s2;
-            public uint r5 => (uint)(s2 >> 32);
-            public uint r6 => (uint)s3;
-            public uint r7 => (uint)(s3 >> 32);
-            public uint r8 => (uint)s4;
-            public uint r9 => (uint)(s4 >> 32);
-            public uint r10 => (uint)s5;
-            public uint r11 => (uint)(s5 >> 32);
-            public uint r12 => (uint)s6;
-            public uint r13 => (uint)(s6 >> 32);
-            public uint r14 => (uint)s7;
-            public uint r15 => (uint)(s7 >> 32);
+            public uint r0 => (uint) s0;
+            public uint r1 => (uint) (s0 >> 32);
+            public uint r2 => (uint) s1;
+            public uint r3 => (uint) (s1 >> 32);
+            public uint r4 => (uint) s2;
+            public uint r5 => (uint) (s2 >> 32);
+            public uint r6 => (uint) s3;
+            public uint r7 => (uint) (s3 >> 32);
+            public uint r8 => (uint) s4;
+            public uint r9 => (uint) (s4 >> 32);
+            public uint r10 => (uint) s5;
+            public uint r11 => (uint) (s5 >> 32);
+            public uint r12 => (uint) s6;
+            public uint r13 => (uint) (s6 >> 32);
+            public uint r14 => (uint) s7;
+            public uint r15 => (uint) (s7 >> 32);
 
-            public UInt128 t0 { get { UInt128.Create(out UInt128 result, s0, s1); return result; } }
-            public UInt128 t1 { get { UInt128.Create(out UInt128 result, s2, s3); return result; } }
-            public UInt128 t2 { get { UInt128.Create(out UInt128 result, s4, s5); return result; } }
-            public UInt128 t3 { get { UInt128.Create(out UInt128 result, s6, s7); return result; } }
-            
-            public UInt256 u0 { get { Create(out UInt256 result, t0, t1); return result; } }
-            public UInt256 u1 { get { Create(out UInt256 result, t2, t3); return result; } }
+            public UInt128 t0
+            {
+                get
+                {
+                    UInt128.Create(out UInt128 result, s0, s1);
+                    return result;
+                }
+            }
+
+            public UInt128 t1
+            {
+                get
+                {
+                    UInt128.Create(out UInt128 result, s2, s3);
+                    return result;
+                }
+            }
+
+            public UInt128 t2
+            {
+                get
+                {
+                    UInt128.Create(out UInt128 result, s4, s5);
+                    return result;
+                }
+            }
+
+            public UInt128 t3
+            {
+                get
+                {
+                    UInt128.Create(out UInt128 result, s6, s7);
+                    return result;
+                }
+            }
+
+            public UInt256 u0
+            {
+                get
+                {
+                    Create(out UInt256 result, t0, t1);
+                    return result;
+                }
+            }
+
+            public UInt256 u1
+            {
+                get
+                {
+                    Create(out UInt256 result, t2, t3);
+                    return result;
+                }
+            }
 
             public static implicit operator BigInteger(UInt512 a)
             {
                 return
-                    (BigInteger)a.s7 << 448 |
-                    (BigInteger)a.s6 << 384 |
-                    (BigInteger)a.s5 << 320 |
-                    (BigInteger)a.s4 << 256 |
-                    (BigInteger)a.s3 << 192 |
-                    (BigInteger)a.s2 << 128 |
-                    (BigInteger)a.s1 << 64 |
+                    (BigInteger) a.s7 << 448 |
+                    (BigInteger) a.s6 << 384 |
+                    (BigInteger) a.s5 << 320 |
+                    (BigInteger) a.s4 << 256 |
+                    (BigInteger) a.s3 << 192 |
+                    (BigInteger) a.s2 << 128 |
+                    (BigInteger) a.s1 << 64 |
                     a.s0;
             }
 
             public override string ToString()
             {
-                return ((BigInteger)this).ToString();
+                return ((BigInteger) this).ToString();
             }
         }
 
@@ -83,13 +129,28 @@ namespace Nethermind.Dirichlet.Numerics
         private ulong s1;
         private ulong s2;
         private ulong s3;
-        
-        public UInt128 t0 { get { UInt128.Create(out UInt128 result, s0, s1); return result; } }
-        public UInt128 t1 { get { UInt128.Create(out UInt128 result, s2, s3); return result; } }
 
-        private static readonly UInt256 maxValue = ~(UInt256)0;
-        private static readonly UInt256 zero = (UInt256)0;
-        private static readonly UInt256 one = (UInt256)1;
+        public UInt128 t0
+        {
+            get
+            {
+                UInt128.Create(out UInt128 result, s0, s1);
+                return result;
+            }
+        }
+
+        public UInt128 t1
+        {
+            get
+            {
+                UInt128.Create(out UInt128 result, s2, s3);
+                return result;
+            }
+        }
+
+        private static readonly UInt256 maxValue = ~(UInt256) 0;
+        private static readonly UInt256 zero = (UInt256) 0;
+        private static readonly UInt256 one = (UInt256) 1;
 
         public static UInt256 MinValue => zero;
         public static UInt256 MaxValue => maxValue;
@@ -116,6 +177,7 @@ namespace Nethermind.Dirichlet.Numerics
                 result = Zero;
                 return false;
             }
+
             Create(out result, a);
             return true;
         }
@@ -153,18 +215,19 @@ namespace Nethermind.Dirichlet.Numerics
             ulongs[2] = SwapUInt64(s1);
             ulongs[3] = SwapUInt64(s0);
         }
-               
+
         private static uint SwapUInt32(uint v)
         {
             return (v & 0x000000ffU) << 24 | (v & 0x0000ff00U) << 8 |
                    (v & 0x00ff0000U) >> 8 | (v & 0xff000000U) >> 24;
         }
-        
+
         private static ulong SwapUInt64(ulong v)
         {
-            return (ulong)(((SwapUInt32((uint)v) & 0xffffffffL) << 0x20) | (SwapUInt32((uint)(v >> 0x20)) & 0xffffffffL));
+            return (ulong) (((SwapUInt32((uint) v) & 0xffffffffL) << 0x20) |
+                            (SwapUInt32((uint) (v >> 0x20)) & 0xffffffffL));
         }
-        
+
         public static void CreateFromBigEndian(out UInt256 c, Span<byte> span)
         {
             if (span.Length == 0)
@@ -175,14 +238,14 @@ namespace Nethermind.Dirichlet.Numerics
                 c.s3 = 0;
                 return;
             }
-            
+
             if (span.Length % 8 != 0)
             {
                 Span<byte> bytes = new byte[span.Length + (8 - span.Length % 8)];
                 span.CopyTo(bytes.Slice(bytes.Length - span.Length, span.Length));
                 span = bytes;
             }
-            
+
             Span<ulong> ulongs = MemoryMarshal.Cast<byte, ulong>(span);
             if (ulongs.Length == 1)
             {
@@ -206,20 +269,20 @@ namespace Nethermind.Dirichlet.Numerics
                 c.s3 = 0;
             }
             else
-            {   
+            {
                 c.s0 = SwapUInt64(ulongs[3]);
                 c.s1 = SwapUInt64(ulongs[2]);
                 c.s2 = SwapUInt64(ulongs[1]);
                 c.s3 = SwapUInt64(ulongs[0]);
             }
         }
-        
+
         public static void Create(out UInt256 c, uint r0, uint r1, uint r2, uint r3, uint r4, uint r5, uint r6, uint r7)
         {
-            c.s0 = (ulong)r1 << 32 | r0;
-            c.s1 = (ulong)r3 << 32 | r2;
-            c.s2 = (ulong)r5 << 32 | r4;
-            c.s3 = (ulong)r7 << 32 | r6;
+            c.s0 = (ulong) r1 << 32 | r0;
+            c.s1 = (ulong) r3 << 32 | r2;
+            c.s2 = (ulong) r5 << 32 | r4;
+            c.s3 = (ulong) r7 << 32 | r6;
         }
 
         public static void Create(out UInt256 c, UInt128 t0, UInt128 t1)
@@ -229,7 +292,7 @@ namespace Nethermind.Dirichlet.Numerics
             c.s2 = t1.S0;
             c.s3 = t1.S1;
         }
-        
+
         public static void Create(out UInt256 c, ulong s0, ulong s1, ulong s2, ulong s3)
         {
             c.s0 = s0;
@@ -240,7 +303,7 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static void Create(out UInt256 c, long a)
         {
-            c.s0 = (ulong)a;
+            c.s0 = (ulong) a;
             c.s1 = a < 0 ? ulong.MaxValue : 0;
             c.s2 = a < 0 ? ulong.MaxValue : 0;
             c.s3 = a < 0 ? ulong.MaxValue : 0;
@@ -257,7 +320,7 @@ namespace Nethermind.Dirichlet.Numerics
         public static void Create(out UInt256 c, decimal a)
         {
             var bits = decimal.GetBits(decimal.Truncate(a));
-            Create(out c, (uint)bits[0], (uint)bits[1], (uint)bits[2], 0, 0, 0, 0, 0);
+            Create(out c, (uint) bits[0], (uint) bits[1], (uint) bits[2], 0, 0, 0, 0, 0);
             if (a < 0)
                 Negate(ref c);
         }
@@ -267,10 +330,10 @@ namespace Nethermind.Dirichlet.Numerics
             var sign = a.Sign;
             if (sign == -1)
                 a = -a;
-            c.s0 = (ulong)(a & ulong.MaxValue);
-            c.s1 = (ulong)(a >> 64);
-            c.s2 = (ulong)(a >> 128);
-            c.s3 = (ulong)(a >> 192);
+            c.s0 = (ulong) (a & ulong.MaxValue);
+            c.s1 = (ulong) (a >> 64);
+            c.s2 = (ulong) (a >> 128);
+            c.s3 = (ulong) (a >> 192);
             if (sign == -1)
                 Negate(ref c);
         }
@@ -283,34 +346,36 @@ namespace Nethermind.Dirichlet.Numerics
                 negate = true;
                 a = -a;
             }
+
             if (a <= ulong.MaxValue)
             {
-                c.s0 = (ulong)a;
+                c.s0 = (ulong) a;
                 c.s1 = 0;
                 c.s2 = 0;
                 c.s3 = 0;
             }
             else
             {
-                var shift = Math.Max((int)Math.Ceiling(Math.Log(a, 2)) - 63, 0);
-                c.s0 = (ulong)(a / Math.Pow(2, shift));
+                var shift = Math.Max((int) Math.Ceiling(Math.Log(a, 2)) - 63, 0);
+                c.s0 = (ulong) (a / Math.Pow(2, shift));
                 c.s1 = 0;
                 c.s2 = 0;
                 c.s3 = 0;
                 LeftShift(ref c, shift);
             }
+
             if (negate)
                 Negate(ref c);
         }
 
-        private uint r0 => (uint)s0;
-        private uint r1 => (uint)(s0 >> 32);
-        private uint r2 => (uint)s1;
-        private uint r3 => (uint)(s1 >> 32);
-        private uint r4 => (uint)s2;
-        private uint r5 => (uint)(s2 >> 32);
-        private uint r6 => (uint)s3;
-        private uint r7 => (uint)(s3 >> 32);
+        private uint r0 => (uint) s0;
+        private uint r1 => (uint) (s0 >> 32);
+        private uint r2 => (uint) s1;
+        private uint r3 => (uint) (s1 >> 32);
+        private uint r4 => (uint) s2;
+        private uint r5 => (uint) (s2 >> 32);
+        private uint r6 => (uint) s3;
+        private uint r7 => (uint) (s3 >> 32);
 
         public ulong S0 => s0;
         public ulong S1 => s1;
@@ -325,12 +390,12 @@ namespace Nethermind.Dirichlet.Numerics
 
         public override string ToString()
         {
-            return ((BigInteger)this).ToString();
+            return ((BigInteger) this).ToString();
         }
 
         public string ToString(string format)
         {
-            return ((BigInteger)this).ToString(format);
+            return ((BigInteger) this).ToString(format);
         }
 
         public string ToString(IFormatProvider provider)
@@ -340,7 +405,7 @@ namespace Nethermind.Dirichlet.Numerics
 
         public string ToString(string format, IFormatProvider provider)
         {
-            return ((BigInteger)this).ToString(format, provider);
+            return ((BigInteger) this).ToString(format, provider);
         }
 
         public static explicit operator UInt256(double a)
@@ -409,63 +474,39 @@ namespace Nethermind.Dirichlet.Numerics
             return c;
         }
 
-        public static explicit operator float(UInt256 a)
-        {
-            return ConvertToFloat(ref a);
-        }
-
-        public static explicit operator double(UInt256 a)
-        {
-            return ConvertToDouble(ref a);
-        }
-
-        public static float ConvertToFloat(ref UInt256 a)
-        {
-            if (a.s1 == 0)
-                return a.s0;
-            return a.s1 * (float)ulong.MaxValue + a.s0;
-        }
-
-        public static double ConvertToDouble(ref UInt256 a)
-        {
-            if (a.s1 == 0)
-                return a.s0;
-            return a.s1 * (double)ulong.MaxValue + a.s0;
-        }
-
         public static explicit operator sbyte(UInt256 a)
         {
-            return (sbyte)a.s0;
+            return (sbyte) a.s0;
         }
 
         public static explicit operator byte(UInt256 a)
         {
-            return (byte)a.s0;
+            return (byte) a.s0;
         }
 
         public static explicit operator short(UInt256 a)
         {
-            return (short)a.s0;
+            return (short) a.s0;
         }
 
         public static explicit operator ushort(UInt256 a)
         {
-            return (ushort)a.s0;
+            return (ushort) a.s0;
         }
 
         public static explicit operator int(UInt256 a)
         {
-            return (int)a.s0;
+            return (int) a.s0;
         }
 
         public static explicit operator uint(UInt256 a)
         {
-            return (uint)a.s0;
+            return (uint) a.s0;
         }
 
         public static explicit operator long(UInt256 a)
         {
-            return (long)a.s0;
+            return (long) a.s0;
         }
 
         public static explicit operator ulong(UInt256 a)
@@ -480,22 +521,22 @@ namespace Nethermind.Dirichlet.Numerics
             var shift = Math.Max(0, 32 - GetBitLength(a.s1));
             UInt256 ashift;
             RightShift(out ashift, ref a, shift);
-            return new decimal((int)a.r0, (int)a.r1, (int)a.r2, false, (byte)shift);
+            return new decimal((int) a.r0, (int) a.r1, (int) a.r2, false, (byte) shift);
         }
 
         public static implicit operator BigInteger(UInt256 a)
-        {   
+        {
             BigInteger result = a.s0;
             if (a.s1 != 0)
             {
                 result |= (BigInteger) a.s1 << 64;
             }
-            
+
             if (a.s2 != 0)
             {
                 result |= (BigInteger) a.s2 << 128;
             }
-            
+
             if (a.s3 != 0)
             {
                 result |= (BigInteger) a.s3 << 192;
@@ -524,12 +565,12 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static uint operator &(UInt256 a, uint b)
         {
-            return (uint)a.s0 & b;
+            return (uint) a.s0 & b;
         }
 
         public static uint operator &(uint a, UInt256 b)
         {
-            return a & (uint)b.s0;
+            return a & (uint) b.s0;
         }
 
         public static ulong operator &(UInt256 a, ulong b)
@@ -956,28 +997,24 @@ namespace Nethermind.Dirichlet.Numerics
         {
             if (s1 != 0 || other < 0)
                 return 1;
-            return s0.CompareTo((ulong)other);
+            return s0.CompareTo((ulong) other);
         }
 
         public int CompareTo(uint other)
         {
-            if (s1 != 0)
-                return 1;
-            return s0.CompareTo((ulong)other);
+            return s1 != 0 ? 1 : s0.CompareTo((ulong) other);
         }
 
         public int CompareTo(long other)
         {
             if (s1 != 0 || other < 0)
                 return 1;
-            return s0.CompareTo((ulong)other);
+            return s0.CompareTo((ulong) other);
         }
 
         public int CompareTo(ulong other)
         {
-            if (s1 != 0)
-                return 1;
-            return s0.CompareTo(other);
+            return s1 != 0 ? 1 : s0.CompareTo(other);
         }
 
         public int CompareTo(object obj)
@@ -986,17 +1023,17 @@ namespace Nethermind.Dirichlet.Numerics
                 return 1;
             if (!(obj is UInt256))
                 throw new ArgumentException();
-            return CompareTo((UInt256)obj);
+            return CompareTo((UInt256) obj);
         }
 
         private static bool LessThan(ref UInt256 a, long b)
         {
-            return b >= 0 && a.s1 == 0 && a.s0 < (ulong)b;
+            return b >= 0 && a.s1 == 0 && a.s0 < (ulong) b;
         }
 
         private static bool LessThan(long a, ref UInt256 b)
         {
-            return a < 0 || b.s1 != 0 || (ulong)a < b.s0;
+            return a < 0 || b.s1 != 0 || (ulong) a < b.s0;
         }
 
         private static bool LessThan(ref UInt256 a, ulong b)
@@ -1032,7 +1069,7 @@ namespace Nethermind.Dirichlet.Numerics
 
         public bool Equals(int other)
         {
-            return other >= 0 && s0 == (uint)other && s1 == 0;
+            return other >= 0 && s0 == (uint) other && s1 == 0;
         }
 
         public bool Equals(uint other)
@@ -1042,7 +1079,7 @@ namespace Nethermind.Dirichlet.Numerics
 
         public bool Equals(long other)
         {
-            return other >= 0 && s0 == (ulong)other && s1 == 0;
+            return other >= 0 && s0 == (ulong) other && s1 == 0;
         }
 
         public bool Equals(ulong other)
@@ -1054,7 +1091,7 @@ namespace Nethermind.Dirichlet.Numerics
         {
             if (!(obj is UInt256))
                 return false;
-            return Equals((UInt256)obj);
+            return Equals((UInt256) obj);
         }
 
         public override int GetHashCode()
@@ -1172,15 +1209,13 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static UInt256 Cube(ulong a)
         {
-            UInt256 c;
-            Cube(out c, a);
+            Cube(out UInt256 c, a);
             return c;
         }
 
         public static UInt256 Cube(UInt256 a)
         {
-            UInt256 c;
-            Cube(out c, ref a);
+            Cube(out UInt256 c, ref a);
             return c;
         }
 
@@ -1214,8 +1249,8 @@ namespace Nethermind.Dirichlet.Numerics
             c.s3 = 0;
             if (c.s0 < b)
                 c.s1 = 1;
-            
-            Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b));
+
+            Debug.Assert((BigInteger) c == ((BigInteger) a + (BigInteger) b));
         }
 
         public static void Add(out UInt256 c, ref UInt256 a, ulong b)
@@ -1237,7 +1272,7 @@ namespace Nethermind.Dirichlet.Numerics
                 }
             }
 
-            Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 256));
+            Debug.Assert((BigInteger) c == ((BigInteger) a + (BigInteger) b) % ((BigInteger) 1 << 256));
         }
 
         public static void Add(out UInt256 c, ref UInt256 a, ref UInt256 b)
@@ -1246,40 +1281,44 @@ namespace Nethermind.Dirichlet.Numerics
             c.s1 = a.s1 + b.s1;
             c.s2 = a.s2 + b.s2;
             c.s3 = a.s3 + b.s3;
-            bool[] carry = new bool[3];
+
+            bool carryS1 = false;
+            bool carryS2 = false;
+            bool carryS3 = false;
+
             if (c.s0 < a.s0)
             {
-                carry[0] = true;
+                carryS1 = true;
             }
 
             if (c.s1 < a.s1)
             {
-                carry[1] = true;
+                carryS2 = true;
             }
 
             if (c.s2 < a.s2)
             {
-                carry[2] = true;
+                carryS3 = true;
             }
 
-            if (carry[0])
+            if (carryS1)
             {
                 c.s1++;
-                if (c.s1 == 0) carry[1] = true;
+                if (c.s1 == 0) carryS2 = true;
             }
-            
-            if (carry[1])
+
+            if (carryS2)
             {
                 c.s2++;
-                if (c.s2 == 0) carry[2] = true;
+                if (c.s2 == 0) carryS3 = true;
             }
-            
-            if (carry[2])
+
+            if (carryS3)
             {
                 c.s3++;
             }
 
-            Debug.Assert((BigInteger)c == ((BigInteger)a + (BigInteger)b) % ((BigInteger)1 << 256));
+            Debug.Assert((BigInteger) c == ((BigInteger) a + (BigInteger) b) % ((BigInteger) 1 << 256));
         }
 
         private static ulong Add(ulong a, ulong b, ref uint carry)
@@ -1336,7 +1375,7 @@ namespace Nethermind.Dirichlet.Numerics
                     carry = true;
                 }
             }
-            
+
             if (c.s2 < a.s2 || carry)
                 ++c.s3;
 
@@ -1344,7 +1383,7 @@ namespace Nethermind.Dirichlet.Numerics
             a.s1 = c.s1;
             a.s2 = c.s2;
             a.s3 = c.s3;
-            
+
 // TODO: optimized?
 //            var sum = a.s0 + b.s0;
 //            if (sum < b.s0)
@@ -1362,10 +1401,10 @@ namespace Nethermind.Dirichlet.Numerics
         {
             UInt128 at0 = a.t0;
             UInt128 at1 = a.t1;
-            
+
             UInt128 bt0 = b;
             UInt128 bt1 = 0;
-            
+
             if (at0 < bt0)
             {
                 --at1;
@@ -1379,17 +1418,18 @@ namespace Nethermind.Dirichlet.Numerics
             c.s2 = at1.S0;
             c.s3 = at1.S1;
 
-            Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + ((BigInteger)1 << 256)) % ((BigInteger)1 << 256));
+            Debug.Assert((BigInteger) c ==
+                         ((BigInteger) a - (BigInteger) b + ((BigInteger) 1 << 256)) % ((BigInteger) 1 << 256));
         }
 
         public static void Subtract(out UInt256 c, ulong a, ref UInt256 b)
         {
             UInt128 at0 = a;
             UInt128 at1 = 0;
-            
+
             UInt128 bt0 = b.t0;
             UInt128 bt1 = b.t1;
-            
+
             if (at0 < bt0)
             {
                 --at1;
@@ -1403,17 +1443,18 @@ namespace Nethermind.Dirichlet.Numerics
             c.s2 = at1.S0;
             c.s3 = at1.S1;
 
-            Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + ((BigInteger)1 << 256)) % ((BigInteger)1 << 256));
+            Debug.Assert((BigInteger) c ==
+                         ((BigInteger) a - (BigInteger) b + ((BigInteger) 1 << 256)) % ((BigInteger) 1 << 256));
         }
 
         public static void Subtract(out UInt256 c, ref UInt256 a, ref UInt256 b)
         {
             UInt128 at0 = a.t0;
             UInt128 at1 = a.t1;
-            
+
             UInt128 bt0 = b.t0;
             UInt128 bt1 = b.t1;
-            
+
             if (at0 < bt0)
             {
                 --at1;
@@ -1427,14 +1468,15 @@ namespace Nethermind.Dirichlet.Numerics
             c.s2 = at1.S0;
             c.s3 = at1.S1;
 
-            Debug.Assert((BigInteger)c == ((BigInteger)a - (BigInteger)b + ((BigInteger)1 << 256)) % ((BigInteger)1 << 256));
+            Debug.Assert((BigInteger) c ==
+                         ((BigInteger) a - (BigInteger) b + ((BigInteger) 1 << 256)) % ((BigInteger) 1 << 256));
         }
 
         public static void Subtract(ref UInt256 a, ulong b)
         {
             UInt128 at0 = a.t0;
             UInt128 at1 = a.t1;
-            
+
             if (at0 < b)
             {
                 --at1;
@@ -1451,10 +1493,10 @@ namespace Nethermind.Dirichlet.Numerics
         {
             UInt128 at0 = a.t0;
             UInt128 at1 = a.t1;
-            
+
             UInt128 bt0 = b.t0;
             UInt128 bt1 = b.t1;
-            
+
             if (at0 < bt0)
             {
                 --at1;
@@ -1476,88 +1518,93 @@ namespace Nethermind.Dirichlet.Numerics
 
         private static void Square64(out UInt256 w, ulong u)
         {
-            throw new NotImplementedException();
-//            var u0 = (ulong)(uint)u;
-//            var u1 = u >> 32;
-//            var carry = u0 * u0;
-//            var r0 = (uint)carry;
-//            var u0u1 = u0 * u1;
-//            carry = (carry >> 32) + u0u1;
-//            var r2 = carry >> 32;
-//            carry = (uint)carry + u0u1;
-//            w.s0 = carry << 32 | r0;
-//            w.s1 = (carry >> 32) + r2 + u1 * u1;
-//            Debug.Assert((BigInteger)w == (BigInteger)u * u);
+            var u0 = (ulong) (uint) u;
+            var u1 = u >> 32;
+            var carry = u0 * u0;
+            var r0 = (uint) carry;
+            var u0u1 = u0 * u1;
+            carry = (carry >> 32) + u0u1;
+            var r2 = carry >> 32;
+            carry = (uint) carry + u0u1;
+            w.s0 = carry << 32 | r0;
+            w.s1 = (carry >> 32) + r2 + u1 * u1;
+            w.s2 = 0;
+            w.s3 = 0;
+            Debug.Assert((BigInteger) w == (BigInteger) u * u);
         }
 
         private static void Multiply64(out UInt256 w, uint u, uint v)
         {
-            throw new NotImplementedException();
-//            w.s0 = (ulong)u * v;
-//            w.s1 = 0;
-//            Debug.Assert((BigInteger)w == (BigInteger)u * v);
+            w.s0 = (ulong) u * v;
+            w.s1 = 0;
+            w.s2 = 0;
+            w.s3 = 0;
+            Debug.Assert((BigInteger) w == (BigInteger) u * v);
         }
 
         private static void Multiply64(out UInt256 w, ulong u, uint v)
         {
-            throw new NotImplementedException();
-//            var u0 = (ulong)(uint)u;
-//            var u1 = u >> 32;
-//            var carry = u0 * v;
-//            var r0 = (uint)carry;
-//            carry = (carry >> 32) + u1 * v;
-//            w.s0 = carry << 32 | r0;
-//            w.s1 = carry >> 32;
-//            Debug.Assert((BigInteger)w == (BigInteger)u * v);
+            var u0 = (ulong) (uint) u;
+            var u1 = u >> 32;
+            var carry = u0 * v;
+            var r0 = (uint) carry;
+            carry = (carry >> 32) + u1 * v;
+            w.s0 = carry << 32 | r0;
+            w.s1 = carry >> 32;
+            w.s2 = 0;
+            w.s3 = 0;
+            Debug.Assert((BigInteger) w == (BigInteger) u * v);
         }
 
         private static void Multiply64(out UInt256 w, ulong u, ulong v)
         {
-            throw new NotImplementedException();
-//            var u0 = (ulong)(uint)u;
-//            var u1 = u >> 32;
-//            var v0 = (ulong)(uint)v;
-//            var v1 = v >> 32;
-//            var carry = u0 * v0;
-//            var r0 = (uint)carry;
-//            carry = (carry >> 32) + u0 * v1;
-//            var r2 = carry >> 32;
-//            carry = (uint)carry + u1 * v0;
-//            w.s0 = carry << 32 | r0;
-//            w.s1 = (carry >> 32) + r2 + u1 * v1;
-//            Debug.Assert((BigInteger)w == (BigInteger)u * v);
+            var u0 = (ulong) (uint) u;
+            var u1 = u >> 32;
+            var v0 = (ulong) (uint) v;
+            var v1 = v >> 32;
+            var carry = u0 * v0;
+            var r0 = (uint) carry;
+            carry = (carry >> 32) + u0 * v1;
+            var r2 = carry >> 32;
+            carry = (uint) carry + u1 * v0;
+            w.s0 = carry << 32 | r0;
+            w.s1 = (carry >> 32) + r2 + u1 * v1;
+            w.s2 = 0;
+            w.s3 = 0;
+            Debug.Assert((BigInteger) w == (BigInteger) u * v);
         }
 
         private static void Multiply64(out UInt256 w, ulong u, ulong v, ulong c)
         {
-            throw new NotImplementedException();
-//            var u0 = (ulong)(uint)u;
-//            var u1 = u >> 32;
-//            var v0 = (ulong)(uint)v;
-//            var v1 = v >> 32;
-//            var carry = u0 * v0 + (uint)c;
-//            var r0 = (uint)carry;
-//            carry = (carry >> 32) + u0 * v1 + (c >> 32);
-//            var r2 = carry >> 32;
-//            carry = (uint)carry + u1 * v0;
-//            w.s0 = carry << 32 | r0;
-//            w.s1 = (carry >> 32) + r2 + u1 * v1;
-//            Debug.Assert((BigInteger)w == (BigInteger)u * v + c);
+            var u0 = (ulong) (uint) u;
+            var u1 = u >> 32;
+            var v0 = (ulong) (uint) v;
+            var v1 = v >> 32;
+            var carry = u0 * v0 + (uint) c;
+            var r0 = (uint) carry;
+            carry = (carry >> 32) + u0 * v1 + (c >> 32);
+            var r2 = carry >> 32;
+            carry = (uint) carry + u1 * v0;
+            w.s0 = carry << 32 | r0;
+            w.s1 = (carry >> 32) + r2 + u1 * v1;
+            w.s2 = 0;
+            w.s3 = 0;
+            Debug.Assert((BigInteger) w == (BigInteger) u * v + c);
         }
 
         private static ulong MultiplyHigh64(ulong u, ulong v, ulong c)
         {
-            var u0 = (ulong)(uint)u;
+            var u0 = (ulong) (uint) u;
             var u1 = u >> 32;
-            var v0 = (ulong)(uint)v;
+            var v0 = (ulong) (uint) v;
             var v1 = v >> 32;
-            var carry = ((u0 * v0 + (uint)c) >> 32) + u0 * v1 + (c >> 32);
+            var carry = ((u0 * v0 + (uint) c) >> 32) + u0 * v1 + (c >> 32);
             var r2 = carry >> 32;
-            carry = (uint)carry + u1 * v0;
+            carry = (uint) carry + u1 * v0;
             return (carry >> 32) + r2 + u1 * v1;
         }
 
-        private static void Multiply128(out UInt128 w, ref UInt128 u, uint v)
+        private static void Multiply256(out UInt256 w, ref UInt256 u, uint v)
         {
             throw new NotImplementedException();
 //            Multiply64(out w, u.s0, v);
@@ -1565,7 +1612,7 @@ namespace Nethermind.Dirichlet.Numerics
 //            Debug.Assert((BigInteger)w == (BigInteger)u * v % ((BigInteger)1 << 256));
         }
 
-        private static void Multiply128(out UInt128 w, ref UInt128 u, ulong v)
+        private static void Multiply256(out UInt256 w, ref UInt256 u, ulong v)
         {
             throw new NotImplementedException();
 //            Multiply64(out w, u.s0, v);
@@ -1573,7 +1620,7 @@ namespace Nethermind.Dirichlet.Numerics
 //            Debug.Assert((BigInteger)w == (BigInteger)u * v % ((BigInteger)1 << 256));
         }
 
-        private static void Multiply128(out UInt128 w, ref UInt128 u, ref UInt128 v)
+        private static void Multiply256(out UInt256 w, ref UInt256 u, ref UInt256 v)
         {
             throw new NotImplementedException();
 //            Multiply64(out w, u.s0, v.s0);
@@ -2045,7 +2092,8 @@ namespace Nethermind.Dirichlet.Numerics
 //            return (uint)qhat;
         }
 
-        private static uint DivRem(uint u0, ref uint u1, ref uint u2, ref uint u3, ref uint u4, uint v1, uint v2, uint v3, uint v4)
+        private static uint DivRem(uint u0, ref uint u1, ref uint u2, ref uint u3, ref uint u4, uint v1, uint v2,
+            uint v3, uint v4)
         {
             throw new NotImplementedException();
 //            var qhat = Q(u0, u1, u2, v1, v2);
@@ -2190,6 +2238,7 @@ namespace Nethermind.Dirichlet.Numerics
                 c = a;
                 return 0;
             }
+
             var dneg = 64 - d;
             c.s3 = a.s3 << d | a.s2 >> dneg;
             c.s2 = a.s2 << d | a.s1 >> dneg;
@@ -2205,6 +2254,7 @@ namespace Nethermind.Dirichlet.Numerics
                 c = a;
                 return 0;
             }
+
             var dneg = 64 - d;
             c.s7 = a.s7 << d | a.s6 >> dneg;
             c.s6 = a.s6 << d | a.s5 >> dneg;
@@ -2344,7 +2394,31 @@ namespace Nethermind.Dirichlet.Numerics
             c.s3 = 0 - a.s3;
             if (a.s0 > 0)
                 --c.s3;
-            Debug.Assert((BigInteger)c == (BigInteger)(~a + 1));
+            Debug.Assert((BigInteger) c == (BigInteger) (~a + 1));
+        }
+
+        public static explicit operator float(UInt256 a)
+        {
+            return ConvertToFloat(ref a);
+        }
+
+        public static explicit operator double(UInt256 a)
+        {
+            return ConvertToDouble(ref a);
+        }
+
+        public static float ConvertToFloat(ref UInt256 a)
+        {
+            if (a.s1 == 0)
+                return a.s0;
+            return a.s1 * (float) ulong.MaxValue + a.s0;
+        }
+
+        public static double ConvertToDouble(ref UInt256 a)
+        {
+            if (a.s1 == 0)
+                return a.s0;
+            return a.s1 * (double) ulong.MaxValue + a.s0;
         }
 
         public static void Pow(out UInt256 result, ref UInt256 value, uint exponent)
@@ -2357,32 +2431,33 @@ namespace Nethermind.Dirichlet.Numerics
                     var previous = result;
                     Multiply(out result, ref previous, ref value);
                 }
+
                 if (exponent != 1)
                 {
                     var previous = value;
                     Square(out value, ref previous);
                 }
+
                 exponent >>= 1;
             }
         }
 
         public static UInt256 Pow(UInt256 value, uint exponent)
         {
-            UInt256 result;
-            Pow(out result, ref value, exponent);
+            Pow(out UInt256 result, ref value, exponent);
             return result;
         }
 
-        private const int maxRepShift = 53;
-        private static readonly ulong maxRep = (ulong)1 << maxRepShift;
-        private static readonly UInt256 maxRepSquaredHigh = (ulong)1 << (2 * maxRepShift - 64);
+        private const int MaxRepShift = 53;
+        private const ulong MaxRep = (ulong) 1 << MaxRepShift;
+        private static readonly UInt256 MaxRepSquaredHigh = (ulong) 1 << (2 * MaxRepShift - 64);
 
         public static ulong FloorSqrt(UInt256 a)
         {
-            if (a.s1 == 0 && a.s0 <= maxRep)
-                return (ulong)Math.Sqrt(a.s0);
-            var s = (ulong)Math.Sqrt(ConvertToDouble(ref a));
-            if (a.s1 < maxRepSquaredHigh)
+            if (a.s1 == 0 && a.s0 <= MaxRep)
+                return (ulong) Math.Sqrt(a.s0);
+            var s = (ulong) Math.Sqrt(ConvertToDouble(ref a));
+            if (a.s1 < MaxRepSquaredHigh)
             {
                 UInt256 s2;
                 Square(out s2, s);
@@ -2391,20 +2466,21 @@ namespace Nethermind.Dirichlet.Numerics
                     --s;
                 else if (r - (s << 1) <= long.MaxValue)
                     ++s;
-                Debug.Assert((BigInteger)s * s <= a && (BigInteger)(s + 1) * (s + 1) > a);
+                Debug.Assert((BigInteger) s * s <= a && (BigInteger) (s + 1) * (s + 1) > a);
                 return s;
             }
+
             s = FloorSqrt(ref a, s);
-            Debug.Assert((BigInteger)s * s <= a && (BigInteger)(s + 1) * (s + 1) > a);
+            Debug.Assert((BigInteger) s * s <= a && (BigInteger) (s + 1) * (s + 1) > a);
             return s;
         }
 
         public static ulong CeilingSqrt(UInt256 a)
         {
-            if (a.s1 == 0 && a.s0 <= maxRep)
-                return (ulong)Math.Ceiling(Math.Sqrt(a.s0));
-            var s = (ulong)Math.Ceiling(Math.Sqrt(ConvertToDouble(ref a)));
-            if (a.s1 < maxRepSquaredHigh)
+            if (a.s1 == 0 && a.s0 <= MaxRep)
+                return (ulong) Math.Ceiling(Math.Sqrt(a.s0));
+            var s = (ulong) Math.Ceiling(Math.Sqrt(ConvertToDouble(ref a)));
+            if (a.s1 < MaxRepSquaredHigh)
             {
                 Square(out UInt256 s2, s);
                 var r = s2.s0 - a.s0;
@@ -2412,20 +2488,21 @@ namespace Nethermind.Dirichlet.Numerics
                     ++s;
                 else if (r - (s << 1) <= long.MaxValue)
                     --s;
-                Debug.Assert((BigInteger)(s - 1) * (s - 1) < a && (BigInteger)s * s >= a);
+                Debug.Assert((BigInteger) (s - 1) * (s - 1) < a && (BigInteger) s * s >= a);
                 return s;
             }
+
             s = FloorSqrt(ref a, s);
             Square(out UInt256 square, s);
             if (square.S0 != a.S0 || square.S1 != a.S1)
                 ++s;
-            Debug.Assert((BigInteger)(s - 1) * (s - 1) < a && (BigInteger)s * s >= a);
+            Debug.Assert((BigInteger) (s - 1) * (s - 1) < a && (BigInteger) s * s >= a);
             return s;
         }
 
         private static ulong FloorSqrt(ref UInt256 a, ulong s)
         {
-            var sprev = (ulong)0;
+            var sprev = (ulong) 0;
             while (true)
             {
                 // Equivalent to:
@@ -2434,22 +2511,24 @@ namespace Nethermind.Dirichlet.Numerics
                 Add(out UInt256 sum, ref div, s);
                 var snext = sum.S0 >> 1;
                 if (sum.S1 != 0)
-                    snext |= (ulong)1 << 63;
+                    snext |= (ulong) 1 << 63;
                 if (snext == sprev)
                 {
                     if (snext < s)
                         s = snext;
                     break;
                 }
+
                 sprev = s;
                 s = snext;
             }
+
             return s;
         }
 
         public static ulong FloorCbrt(UInt256 a)
         {
-            var s = (ulong)Math.Pow(ConvertToDouble(ref a), (double)1 / 3);
+            var s = (ulong) Math.Pow(ConvertToDouble(ref a), (double) 1 / 3);
             Cube(out UInt256 s3, s);
             if (a < s3)
                 --s;
@@ -2460,13 +2539,14 @@ namespace Nethermind.Dirichlet.Numerics
                 if (LessThan(ref sum, ref diff))
                     ++s;
             }
-            Debug.Assert((BigInteger)s * s * s <= a && (BigInteger)(s + 1) * (s + 1) * (s + 1) > a);
+
+            Debug.Assert((BigInteger) s * s * s <= a && (BigInteger) (s + 1) * (s + 1) * (s + 1) > a);
             return s;
         }
 
         public static ulong CeilingCbrt(UInt256 a)
         {
-            var s = (ulong)Math.Ceiling(Math.Pow(ConvertToDouble(ref a), (double)1 / 3));
+            var s = (ulong) Math.Ceiling(Math.Pow(ConvertToDouble(ref a), (double) 1 / 3));
             Cube(out UInt256 s3, s);
             if (s3 < a)
                 ++s;
@@ -2477,7 +2557,8 @@ namespace Nethermind.Dirichlet.Numerics
                 if (LessThan(ref sum, ref diff))
                     --s;
             }
-            Debug.Assert((BigInteger)(s - 1) * (s - 1) * (s - 1) < a && (BigInteger)s * s * s >= a);
+
+            Debug.Assert((BigInteger) (s - 1) * (s - 1) * (s - 1) < a && (BigInteger) s * s * s >= a);
             return s;
         }
 
@@ -2633,7 +2714,7 @@ namespace Nethermind.Dirichlet.Numerics
             if (d == 0)
                 return;
             c.s0 = c.s1 << (64 - d) | c.s0 >> d;
-            c.s1 = (ulong)((long)c.s1 >> d);
+            c.s1 = (ulong) ((long) c.s1 >> d);
         }
 
         public static void ArithmeticRightShift(ref UInt256 c, int d)
@@ -2643,7 +2724,7 @@ namespace Nethermind.Dirichlet.Numerics
                 ArithmeticRightShift64(ref c, d);
             else
             {
-                c.s0 = (ulong)((long)c.s1 >> (d - 64));
+                c.s0 = (ulong) ((long) c.s1 >> (d - 64));
                 c.s1 = 0;
             }
         }
@@ -2652,7 +2733,7 @@ namespace Nethermind.Dirichlet.Numerics
         {
             throw new NotImplementedException();
             c.s0 = c.s1 << 63 | c.s0 >> 1;
-            c.s1 = (ulong)((long)c.s1 >> 1);
+            c.s1 = (ulong) ((long) c.s1 >> 1);
         }
 
         private static ulong LeftShift64(ref UInt256 c, int d)
@@ -2877,7 +2958,7 @@ namespace Nethermind.Dirichlet.Numerics
                 int count;
                 for (count = 0; value != 0; count++)
                     value >>= 1;
-                return (byte)count;
+                return (byte) count;
             }).ToArray();
 
         private static int GetBitLength(uint value)
@@ -2903,8 +2984,8 @@ namespace Nethermind.Dirichlet.Numerics
         {
             var r1 = value >> 32;
             if (r1 != 0)
-                return GetBitLength((uint)r1) + 32;
-            return GetBitLength((uint)value);
+                return GetBitLength((uint) r1) + 32;
+            return GetBitLength((uint) value);
         }
 
         public static void Reduce(out UInt256 w, ref UInt256 u, ref UInt256 v, ref UInt256 n, ulong k0)
