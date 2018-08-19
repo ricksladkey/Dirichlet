@@ -190,7 +190,7 @@ namespace Nethermind.Dirichlet.Numerics
         {
             Create(out this, value);
         }
-        
+
         public UInt256(ulong s0, ulong s1, ulong s2, ulong s3)
         {
             Create(out this, s0, s1, s2, s3);
@@ -213,11 +213,42 @@ namespace Nethermind.Dirichlet.Numerics
 
         public void ToBigEndian(Span<byte> target)
         {
-            Span<ulong> ulongs = MemoryMarshal.Cast<byte, ulong>(target);
-            ulongs[0] = SwapUInt64(s3);
-            ulongs[1] = SwapUInt64(s2);
-            ulongs[2] = SwapUInt64(s1);
-            ulongs[3] = SwapUInt64(s0);
+            if (target.Length == 0)
+            {
+                return;
+            }
+            
+            if (target.Length > 0)
+            {
+                for (int i = 0; i < 8 && i < target.Length; i++)
+                {
+                    target[target.Length - i - 1] = (byte)((s0 >> i * 8) & 255);
+                }
+            }
+            
+            if (target.Length > 8)
+            {
+                for (int i = 0; i < 8 && i < target.Length; i++)
+                {
+                    target[target.Length - i - 9] = (byte)((s1 >> i * 8) & 255);
+                }
+            }
+            
+            if (target.Length > 16)
+            {
+                for (int i = 0; i < 8 && i < target.Length; i++)
+                {
+                    target[target.Length - i - 17] = (byte)((s2 >> i * 8) & 255);
+                }
+            }
+            
+            if (target.Length > 24)
+            {
+                for (int i = 0; i < 8 && i < target.Length; i++)
+                {
+                    target[32 - i - 1] = (byte)((s3 >> i * 8) & 255);
+                }
+            }
         }
 
         private static uint SwapUInt32(uint v)
@@ -234,50 +265,50 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static void CreateFromBigEndian(out UInt256 c, Span<byte> span)
         {
-            if (span.Length == 0)
+            int byteCount = span.Length;
+            int unalignedBytes = byteCount % 8;
+            int dwordCount = byteCount / 8 + (unalignedBytes == 0 ? 0 : 1);
+
+            c.s0 = 0;
+            c.s1 = 0;
+            c.s2 = 0;
+            c.s3 = 0;
+
+            if (dwordCount == 0)
             {
-                c.s0 = 0;
-                c.s1 = 0;
-                c.s2 = 0;
-                c.s3 = 0;
                 return;
             }
 
-            if (span.Length % 8 != 0)
+            if (dwordCount >= 1)
             {
-                Span<byte> bytes = new byte[span.Length + (8 - span.Length % 8)];
-                span.CopyTo(bytes.Slice(bytes.Length - span.Length, span.Length));
-                span = bytes;
+                for (int j = 0; j < 8 && j < byteCount; j++)
+                {
+                    c.s0 = (c.s0 << 8) | span[j];
+                }
             }
 
-            Span<ulong> ulongs = MemoryMarshal.Cast<byte, ulong>(span);
-            if (ulongs.Length == 1)
+            if (dwordCount >= 2)
             {
-                c.s0 = SwapUInt64(ulongs[0]);
-                c.s1 = 0;
-                c.s2 = 0;
-                c.s3 = 0;
+                for (int j = 8; j < 16 && j < byteCount; j++)
+                {
+                    c.s1 = (c.s1 << 8) | span[j];
+                }
             }
-            else if (ulongs.Length == 2)
+
+            if (dwordCount >= 3)
             {
-                c.s0 = SwapUInt64(ulongs[1]);
-                c.s1 = SwapUInt64(ulongs[0]);
-                c.s2 = 0;
-                c.s3 = 0;
+                for (int j = 16; j < 24 && j < byteCount; j++)
+                {
+                    c.s2 = (c.s2 << 8) | span[j];
+                }
             }
-            else if (ulongs.Length == 3)
+
+            if (dwordCount >= 4)
             {
-                c.s0 = SwapUInt64(ulongs[2]);
-                c.s1 = SwapUInt64(ulongs[1]);
-                c.s2 = SwapUInt64(ulongs[0]);
-                c.s3 = 0;
-            }
-            else
-            {
-                c.s0 = SwapUInt64(ulongs[3]);
-                c.s1 = SwapUInt64(ulongs[2]);
-                c.s2 = SwapUInt64(ulongs[1]);
-                c.s3 = SwapUInt64(ulongs[0]);
+                for (int j = 24; j < 32 && j < byteCount; j++)
+                {
+                    c.s3 = (c.s3 << 8) | span[j];
+                }
             }
         }
 
@@ -1032,7 +1063,7 @@ namespace Nethermind.Dirichlet.Numerics
 
         private static bool LessThan(ref UInt256 a, long b)
         {
-            return b >= 0 && a.s3 == 0 && a.s2 == 0 && a.s1 == 0  && a.s0 < (ulong) b;
+            return b >= 0 && a.s3 == 0 && a.s2 == 0 && a.s1 == 0 && a.s0 < (ulong) b;
         }
 
         private static bool LessThan(long a, ref UInt256 b)
@@ -1106,7 +1137,7 @@ namespace Nethermind.Dirichlet.Numerics
         public static void Multiply(out UInt256 c, ulong a, ulong b)
         {
             Multiply64(out c, a, b);
-            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b);
+            Debug.Assert((BigInteger) c == (BigInteger) a * (BigInteger) b);
         }
 
         public static void Multiply(out UInt256 c, ref UInt256 a, uint b)
@@ -1115,7 +1146,7 @@ namespace Nethermind.Dirichlet.Numerics
                 Multiply64(out c, a.s0, b);
             else
                 Multiply256(out c, ref a, b);
-            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b % ((BigInteger)1 << 256));
+            Debug.Assert((BigInteger) c == (BigInteger) a * (BigInteger) b % ((BigInteger) 1 << 256));
         }
 
         public static void Multiply(out UInt256 c, ref UInt256 a, ulong b)
@@ -1124,7 +1155,7 @@ namespace Nethermind.Dirichlet.Numerics
                 Multiply64(out c, a.s0, b);
             else
                 Multiply256(out c, ref a, b);
-            Debug.Assert((BigInteger)c == (BigInteger)a * (BigInteger)b % ((BigInteger)1 << 256));
+            Debug.Assert((BigInteger) c == (BigInteger) a * (BigInteger) b % ((BigInteger) 1 << 256));
         }
 
         public static void Multiply(out UInt256 c, ref UInt256 a, ref UInt256 b)
@@ -1273,6 +1304,28 @@ namespace Nethermind.Dirichlet.Numerics
             }
 
             Debug.Assert((BigInteger) c == ((BigInteger) a + (BigInteger) b) % ((BigInteger) 1 << 256));
+        }
+        
+        public static void AddInPlace(Span<byte> a, Span<byte> b)
+        {
+            byte carry = 0;
+            for (int i = 31; i >= 0; i--)
+            {
+                a[i] += b[i];
+                if (a[i] < b[i])
+                {
+                    a[i] += carry;
+                    carry = 1;
+                }
+                else if (carry == 1)
+                {
+                    a[i]++;
+                    if (a[i] != 0)
+                    {
+                        carry = 0;
+                    }
+                }
+            }
         }
 
         public static void Add(out UInt256 c, ref UInt256 a, ref UInt256 b)
@@ -1609,14 +1662,14 @@ namespace Nethermind.Dirichlet.Numerics
             Multiply64(out UInt256 w0, u.s0, v);
             Multiply64(out UInt256 w1, u.s1, v);
             Multiply64(out UInt256 w2, u.s2, v);
-            
+
             LeftShift(ref w1, 64);
             LeftShift(ref w2, 128);
 
             w = w0 + w1 + w2;
             w.s3 = w2.s3 + u.s3 * v;
-            
-            Debug.Assert((BigInteger)w == (BigInteger)u * v % ((BigInteger)1 << 256));
+
+            Debug.Assert((BigInteger) w == (BigInteger) u * v % ((BigInteger) 1 << 256));
         }
 
         private static void Multiply256(out UInt256 w, ref UInt256 u, ulong v)
@@ -1624,14 +1677,14 @@ namespace Nethermind.Dirichlet.Numerics
             Multiply64(out UInt256 w0, u.s0, v);
             Multiply64(out UInt256 w1, u.s1, v);
             Multiply64(out UInt256 w2, u.s2, v);
-            
+
             LeftShift(ref w1, 64);
             LeftShift(ref w2, 128);
 
             w = w0 + w1 + w2;
             w.s3 = w2.s3 + u.s3 * v;
-            
-            Debug.Assert((BigInteger)w == (BigInteger)u * v % ((BigInteger)1 << 256));
+
+            Debug.Assert((BigInteger) w == (BigInteger) u * v % ((BigInteger) 1 << 256));
         }
 
         private static void Multiply256(out UInt256 w, ref UInt256 u, ref UInt256 v)
@@ -2718,7 +2771,7 @@ namespace Nethermind.Dirichlet.Numerics
             {
                 return;
             }
-            
+
             if (d == 64)
             {
                 c.s3 = c.s2;
@@ -2748,14 +2801,14 @@ namespace Nethermind.Dirichlet.Numerics
                 c.s0 = 0;
             }
         }
-        
+
         private static void FullRightShift(ref UInt256 c, int d)
         {
             if (d == 0)
             {
                 return;
             }
-            
+
             if (d == 64)
             {
                 c.s0 = c.s1;
@@ -2785,7 +2838,7 @@ namespace Nethermind.Dirichlet.Numerics
                 c.s3 = 0;
             }
         }
-        
+
         private static ulong LeftShift64(ref UInt256 c, int d)
         {
             if (d == 0)
@@ -2798,7 +2851,7 @@ namespace Nethermind.Dirichlet.Numerics
             c.s0 <<= d;
             return result;
         }
-        
+
         public static void LeftShift(ref UInt256 c, int d)
         {
             int rem = d % 64;

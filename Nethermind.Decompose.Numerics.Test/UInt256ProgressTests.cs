@@ -262,8 +262,6 @@ namespace Nethermind.Decompose.Numerics.Test
 //            Assert.AreEqual((BigInteger)(a + b) % ((BigInteger)1 << 256), (BigInteger)a + (BigInteger)b);
         }
         
-        
-        
         [TestMethod]
         public void Subtract_carry_all()
         {
@@ -317,18 +315,19 @@ namespace Nethermind.Decompose.Numerics.Test
         [TestMethod]
         public void BigEndian_there_and_back_again()
         {
-            byte[] bytes = new byte[32];
-            for (int i = 0; i < 32; i++)
+            int length = 32;
+            byte[] bytes = new byte[length];
+            for (int i = 0; i < length; i++)
             {
-                bytes[i] = (byte)i;
+                bytes[i] = (byte)(length - (byte)i - 1);
             }
             
             UInt256.CreateFromBigEndian(out UInt256 a, bytes);
             a.ToBigEndian(bytes);
             
-            for (int i = 0; i < 32; i++)
+            for (int i = length - 1; i >= 0; i--)
             {
-                Assert.AreEqual((byte)i, bytes[i]);
+                Assert.AreEqual((byte)(length - (byte)i - 1), bytes[i], $"{i}");
             }
         }
         
@@ -405,6 +404,19 @@ namespace Nethermind.Decompose.Numerics.Test
             UInt256 a = UInt256.Zero;
             UInt256.ArithmeticRightShift(ref a, 1);
             Assert.AreEqual(UInt256.Zero, a);
+        }
+        
+        [TestMethod]
+        public void Span_add()
+        {
+            byte[] bytes = new byte[64];
+            for (int i = 0; i < 64; i++)
+            {
+                bytes[i] = (byte)i;
+            }
+            
+            Span<byte> span = bytes.AsSpan();
+            UInt256.AddInPlace(span.Slice(0, 32), span.Slice(32, 32));
         }
     }
 }
