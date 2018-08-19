@@ -222,7 +222,7 @@ namespace Nethermind.Dirichlet.Numerics
             {
                 for (int i = 0; i < 8 && i < target.Length; i++)
                 {
-                    target[target.Length - i - 1] = (byte)((s0 >> i * 8) & 255);
+                    target[target.Length - i - 1] = (byte)(s0 >> (i * 8));
                 }
             }
             
@@ -230,7 +230,7 @@ namespace Nethermind.Dirichlet.Numerics
             {
                 for (int i = 0; i < 8 && i < target.Length; i++)
                 {
-                    target[target.Length - i - 9] = (byte)((s1 >> i * 8) & 255);
+                    target[target.Length - i - 9] = (byte)(s1 >> (i * 8));
                 }
             }
             
@@ -238,7 +238,7 @@ namespace Nethermind.Dirichlet.Numerics
             {
                 for (int i = 0; i < 8 && i < target.Length; i++)
                 {
-                    target[target.Length - i - 17] = (byte)((s2 >> i * 8) & 255);
+                    target[target.Length - i - 17] = (byte)(s2 >> (i * 8));
                 }
             }
             
@@ -246,22 +246,22 @@ namespace Nethermind.Dirichlet.Numerics
             {
                 for (int i = 0; i < 8 && i < target.Length; i++)
                 {
-                    target[32 - i - 1] = (byte)((s3 >> i * 8) & 255);
+                    target[32 - i - 25] = (byte)(s3 >> (i * 8));
                 }
             }
         }
 
-        private static uint SwapUInt32(uint v)
-        {
-            return (v & 0x000000ffU) << 24 | (v & 0x0000ff00U) << 8 |
-                   (v & 0x00ff0000U) >> 8 | (v & 0xff000000U) >> 24;
-        }
-
-        private static ulong SwapUInt64(ulong v)
-        {
-            return (ulong) (((SwapUInt32((uint) v) & 0xffffffffL) << 0x20) |
-                            (SwapUInt32((uint) (v >> 0x20)) & 0xffffffffL));
-        }
+//        private static uint SwapUInt32(uint v)
+//        {
+//            return (v & 0x000000ffU) << 24 | (v & 0x0000ff00U) << 8 |
+//                   (v & 0x00ff0000U) >> 8 | (v & 0xff000000U) >> 24;
+//        }
+//
+//        private static ulong SwapUInt64(ulong v)
+//        {
+//            return (ulong) (((SwapUInt32((uint) v) & 0xffffffffL) << 0x20) |
+//                            (SwapUInt32((uint) (v >> 0x20)) & 0xffffffffL));
+//        }
 
         public static void CreateFromBigEndian(out UInt256 c, Span<byte> span)
         {
@@ -281,33 +281,49 @@ namespace Nethermind.Dirichlet.Numerics
 
             if (dwordCount >= 1)
             {
-                for (int j = 0; j < 8 && j < byteCount; j++)
+                for (int j = 8; j > 0; j--)
                 {
-                    c.s0 = (c.s0 << 8) | span[j];
+                    c.s0 = c.s0 << 8;
+                    if (j <= byteCount)
+                    {
+                        c.s0 = c.s0 | span[byteCount - j];
+                    }
                 }
             }
 
             if (dwordCount >= 2)
             {
-                for (int j = 8; j < 16 && j < byteCount; j++)
+                for (int j = 16; j > 8; j--)
                 {
-                    c.s1 = (c.s1 << 8) | span[j];
+                    c.s1 = c.s1 << 8;
+                    if (j <= byteCount)
+                    {
+                        c.s1 = c.s1 | span[byteCount - j];
+                    }
                 }
             }
 
             if (dwordCount >= 3)
             {
-                for (int j = 16; j < 24 && j < byteCount; j++)
+                for (int j = 24; j > 16; j--)
                 {
-                    c.s2 = (c.s2 << 8) | span[j];
+                    c.s2 = c.s2 << 8;
+                    if (j <= byteCount)
+                    {
+                        c.s2 = c.s2 | span[byteCount - j];
+                    }
                 }
             }
 
             if (dwordCount >= 4)
             {
-                for (int j = 24; j < 32 && j < byteCount; j++)
+                for (int j = 32; j > 24; j--)
                 {
-                    c.s3 = (c.s3 << 8) | span[j];
+                    c.s3 = c.s3 << 8;
+                    if (j <= byteCount)
+                    {
+                        c.s3 = c.s3 | span[byteCount - j];
+                    }
                 }
             }
         }
