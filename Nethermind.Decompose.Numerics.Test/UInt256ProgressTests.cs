@@ -97,8 +97,8 @@ namespace Nethermind.Decompose.Numerics.Test
             bytes[22] = 3;
             
             UInt256.CreateFromBigEndian(out UInt256 result, bytes);
-//            Assert.AreEqual(1UL, result.S3);
-//            Assert.AreEqual(2UL, result.S2);
+            Assert.AreEqual(1UL, result.S3);
+            Assert.AreEqual(2UL, result.S2);
             Assert.AreEqual(3UL, result.S1);
             Assert.AreEqual(0UL, result.S0);
         }

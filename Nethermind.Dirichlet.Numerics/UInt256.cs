@@ -251,19 +251,33 @@ namespace Nethermind.Dirichlet.Numerics
             }
         }
 
-//        private static uint SwapUInt32(uint v)
-//        {
-//            return (v & 0x000000ffU) << 24 | (v & 0x0000ff00U) << 8 |
-//                   (v & 0x00ff0000U) >> 8 | (v & 0xff000000U) >> 24;
-//        }
-//
-//        private static ulong SwapUInt64(ulong v)
-//        {
-//            return (ulong) (((SwapUInt32((uint) v) & 0xffffffffL) << 0x20) |
-//                            (SwapUInt32((uint) (v >> 0x20)) & 0xffffffffL));
-//        }
-
+        private static ulong SwapBytes(ulong x)
+        {
+            // swap adjacent 32-bit blocks
+            x = (x >> 32) | (x << 32);
+            // swap adjacent 16-bit blocks
+            x = ((x & 0xFFFF0000FFFF0000) >> 16) | ((x & 0x0000FFFF0000FFFF) << 16);
+            // swap adjacent 8-bit blocks
+            return ((x & 0xFF00FF00FF00FF00) >> 8) | ((x & 0x00FF00FF00FF00FF) << 8);
+        }
+        
         public static void CreateFromBigEndian(out UInt256 c, Span<byte> span)
+        {
+            Span<ulong> ulongs = MemoryMarshal.Cast<byte, ulong>(span);
+            if (ulongs.Length == 4)
+            {
+                c.s0 = SwapBytes(ulongs[3]);
+                c.s1 = SwapBytes(ulongs[2]);
+                c.s2 = SwapBytes(ulongs[1]);
+                c.s3 = SwapBytes(ulongs[0]);    
+            }
+            else
+            {
+                CreateFromBigEndian2(out c, span);
+            }
+        }
+
+        public static void CreateFromBigEndian2(out UInt256 c, Span<byte> span)
         {
             int byteCount = span.Length;
             int unalignedBytes = byteCount % 8;
