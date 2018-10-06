@@ -1365,48 +1365,33 @@ namespace Nethermind.Dirichlet.Numerics
             c.s2 = a.s2 + b.s2;
             c.s3 = a.s3 + b.s3;
 
-            bool carryS1 = false;
-            bool carryS2 = false;
-            bool carryS3 = false;
-
+            bool carry = false;
             if (c.s0 < a.s0)
             {
-                carryS1 = true;
+                ++c.s1;
+                if (c.s1 == 0)
+                {
+                    carry = true;
+                }
             }
 
-            if (c.s1 < a.s1)
+            if (c.s1 < a.s1 || carry)
             {
-                carryS2 = true;
+                carry = false;
+                ++c.s2;
+                if (c.s2 == 0)
+                {
+                    carry = true;
+                }
             }
 
-            if (c.s2 < a.s2)
-            {
-                carryS3 = true;
-            }
-
-            if (carryS1)
-            {
-                c.s1++;
-                if (c.s1 == 0) carryS2 = true;
-            }
-
-            if (carryS2)
-            {
-                c.s2++;
-                if (c.s2 == 0) carryS3 = true;
-            }
-
-            if (carryS3)
-            {
-                c.s3++;
-            }
+            if (c.s2 < a.s2 || carry)
+                ++c.s3;
 
             if (checkOverflows && (c.s3 < a.S3 || c.s3 < b.S3))
             {
                 throw new OverflowException("UInt256 add operation resulted in an overflow");
             }
-
-            c.s3 = a.s3 + b.s3;
 
             Debug.Assert((BigInteger) c == ((BigInteger) a + (BigInteger) b) % ((BigInteger) 1 << 256));
         }
@@ -1473,13 +1458,6 @@ namespace Nethermind.Dirichlet.Numerics
             a.s1 = c.s1;
             a.s2 = c.s2;
             a.s3 = c.s3;
-
-// TODO: optimized?
-//            var sum = a.s0 + b.s0;
-//            if (sum < b.s0)
-//                ++a.s1;
-//            a.s0 = sum;
-//            a.s1 += b.s1;
         }
 
         public static void Add(ref UInt256 a, UInt256 b)
