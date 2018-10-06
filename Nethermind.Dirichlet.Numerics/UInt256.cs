@@ -1365,28 +1365,47 @@ namespace Nethermind.Dirichlet.Numerics
             c.s2 = a.s2 + b.s2;
             c.s3 = a.s3 + b.s3;
 
-            bool carry = false;
-            if (c.s0 < a.s0)
+            bool carry1 = false;
+            bool carry2 = false;
+            bool carry3 = false;
+            
+            if (c.s0 < b.s0)
             {
-                ++c.s1;
+                carry1 = true;
+            }
+
+            if (c.s1 < a.s1)
+            {
+                carry2 = true;
+            }
+
+            if (c.s2 < a.s2)
+            {
+                carry3 = true;
+            }
+
+            if (carry1)
+            {
+                c.s1++;
                 if (c.s1 == 0)
                 {
-                    carry = true;
+                    carry2 = true;
                 }
             }
-
-            if (c.s1 < a.s1 || carry)
+            
+            if (carry2)
             {
-                carry = false;
-                ++c.s2;
+                c.s2++;
                 if (c.s2 == 0)
                 {
-                    carry = true;
+                    carry3 = true;
                 }
             }
-
-            if (c.s2 < a.s2 || carry)
-                ++c.s3;
+            
+            if (carry3)
+            {
+                c.s3++;
+            }
 
             if (checkOverflows && (c.s3 < a.S3 || c.s3 < b.S3))
             {
@@ -1423,7 +1442,7 @@ namespace Nethermind.Dirichlet.Numerics
             a.s0 = sum;
         }
 
-        public static void Add(ref UInt256 a, ref UInt256 b)
+        public static void Add(ref UInt256 a, ref UInt256 b, bool checkOverflows = true)
         {
             UInt256 c;
             c.s0 = a.s0 + b.s0;
@@ -1431,29 +1450,55 @@ namespace Nethermind.Dirichlet.Numerics
             c.s2 = a.s2 + b.s2;
             c.s3 = a.s3 + b.s3;
 
-            bool carry = false;
+            bool carry1 = false;
+            bool carry2 = false;
+            bool carry3 = false;
+            
             if (c.s0 < b.s0)
             {
-                ++c.s1;
+                carry1 = true;
+            }
+
+            if (c.s1 < a.s1)
+            {
+                carry2 = true;
+            }
+
+            if (c.s2 < a.s2)
+            {
+                carry3 = true;
+            }
+
+            if (carry1)
+            {
+                c.s1++;
                 if (c.s1 == 0)
                 {
-                    carry = true;
+                    carry2 = true;
                 }
             }
-
-            if (c.s1 < a.s1 || carry)
+            
+            if (carry2)
             {
-                carry = false;
-                ++c.s2;
+                c.s2++;
                 if (c.s2 == 0)
                 {
-                    carry = true;
+                    carry3 = true;
                 }
             }
+            
+            if (carry3)
+            {
+                c.s3++;
+            }
 
-            if (c.s2 < a.s2 || carry)
-                ++c.s3;
+            if (checkOverflows && (c.s3 < a.S3 || c.s3 < b.S3))
+            {
+                throw new OverflowException("UInt256 add operation resulted in an overflow");
+            }
 
+            Debug.Assert((BigInteger) c == ((BigInteger) a + (BigInteger) b) % ((BigInteger) 1 << 256));
+            
             a.s0 = c.s0;
             a.s1 = c.s1;
             a.s2 = c.s2;
