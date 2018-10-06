@@ -217,36 +217,36 @@ namespace Nethermind.Dirichlet.Numerics
             {
                 return;
             }
-            
+
             if (target.Length > 0)
             {
                 for (int i = 0; i < 8 && i < target.Length; i++)
                 {
-                    target[target.Length - i - 1] = (byte)(s0 >> (i * 8));
+                    target[target.Length - i - 1] = (byte) (s0 >> (i * 8));
                 }
             }
-            
+
             if (target.Length > 8)
             {
                 for (int i = 0; i < 8 && i < target.Length; i++)
                 {
-                    target[target.Length - i - 9] = (byte)(s1 >> (i * 8));
+                    target[target.Length - i - 9] = (byte) (s1 >> (i * 8));
                 }
             }
-            
+
             if (target.Length > 16)
             {
                 for (int i = 0; i < 8 && i < target.Length; i++)
                 {
-                    target[target.Length - i - 17] = (byte)(s2 >> (i * 8));
+                    target[target.Length - i - 17] = (byte) (s2 >> (i * 8));
                 }
             }
-            
+
             if (target.Length > 24)
             {
                 for (int i = 0; i < 8 && i < target.Length; i++)
                 {
-                    target[32 - i - 25] = (byte)(s3 >> (i * 8));
+                    target[32 - i - 25] = (byte) (s3 >> (i * 8));
                 }
             }
         }
@@ -260,7 +260,7 @@ namespace Nethermind.Dirichlet.Numerics
             // swap adjacent 8-bit blocks
             return ((x & 0xFF00FF00FF00FF00) >> 8) | ((x & 0x00FF00FF00FF00FF) << 8);
         }
-        
+
         public static void CreateFromBigEndian(out UInt256 c, Span<byte> span)
         {
             Span<ulong> ulongs = MemoryMarshal.Cast<byte, ulong>(span);
@@ -269,7 +269,7 @@ namespace Nethermind.Dirichlet.Numerics
                 c.s0 = SwapBytes(ulongs[3]);
                 c.s1 = SwapBytes(ulongs[2]);
                 c.s2 = SwapBytes(ulongs[1]);
-                c.s3 = SwapBytes(ulongs[0]);    
+                c.s3 = SwapBytes(ulongs[0]);
             }
             else
             {
@@ -1335,7 +1335,7 @@ namespace Nethermind.Dirichlet.Numerics
 
             Debug.Assert((BigInteger) c == ((BigInteger) a + (BigInteger) b) % ((BigInteger) 1 << 256));
         }
-        
+
         public static void AddInPlace(Span<byte> a, Span<byte> b)
         {
             byte carry = 0;
@@ -1358,7 +1358,7 @@ namespace Nethermind.Dirichlet.Numerics
             }
         }
 
-        public static void Add(out UInt256 c, ref UInt256 a, ref UInt256 b)
+        public static void Add(out UInt256 c, ref UInt256 a, ref UInt256 b, bool checkOverflows = true)
         {
             c.s0 = a.s0 + b.s0;
             c.s1 = a.s1 + b.s1;
@@ -1400,6 +1400,13 @@ namespace Nethermind.Dirichlet.Numerics
             {
                 c.s3++;
             }
+
+            if (checkOverflows && (c.s3 < a.S3 || c.s3 < b.S3))
+            {
+                throw new OverflowException("UInt256 add operation resulted in an overflow");
+            }
+
+            c.s3 = a.s3 + b.s3;
 
             Debug.Assert((BigInteger) c == ((BigInteger) a + (BigInteger) b) % ((BigInteger) 1 << 256));
         }
@@ -3196,6 +3203,12 @@ namespace Nethermind.Dirichlet.Numerics
 //            UInt128 w;
 //            Reduce(out w, ref t, ref n, k0);
 //            return w;
+        }
+
+        public static bool AddWouldOverflow(ref UInt256 a, ref UInt256 b)
+        {
+            Add(out UInt256 c, ref a, ref b, false);
+            return c < a || c < b;
         }
     }
 }
