@@ -396,9 +396,9 @@ namespace Nethermind.Dirichlet.Numerics
             if (sign == -1)
                 a = -a;
             c.s0 = (ulong) (a & ulong.MaxValue);
-            c.s1 = (ulong) (a >> 64);
-            c.s2 = (ulong) (a >> 128);
-            c.s3 = (ulong) (a >> 192);
+            c.s1 = (ulong) ((a >> 64) & ulong.MaxValue);
+            c.s2 = (ulong) ((a >> 128) & ulong.MaxValue);
+            c.s3 = (ulong) ((a >> 192));
             if (sign == -1)
                 Negate(ref c);
         }
@@ -1368,7 +1368,7 @@ namespace Nethermind.Dirichlet.Numerics
             bool carry1 = false;
             bool carry2 = false;
             bool carry3 = false;
-            
+
             if (c.s0 < b.s0)
             {
                 carry1 = true;
@@ -1392,7 +1392,7 @@ namespace Nethermind.Dirichlet.Numerics
                     carry2 = true;
                 }
             }
-            
+
             if (carry2)
             {
                 c.s2++;
@@ -1401,7 +1401,7 @@ namespace Nethermind.Dirichlet.Numerics
                     carry3 = true;
                 }
             }
-            
+
             if (carry3)
             {
                 c.s3++;
@@ -1453,7 +1453,7 @@ namespace Nethermind.Dirichlet.Numerics
             bool carry1 = false;
             bool carry2 = false;
             bool carry3 = false;
-            
+
             if (c.s0 < b.s0)
             {
                 carry1 = true;
@@ -1477,7 +1477,7 @@ namespace Nethermind.Dirichlet.Numerics
                     carry2 = true;
                 }
             }
-            
+
             if (carry2)
             {
                 c.s2++;
@@ -1486,7 +1486,7 @@ namespace Nethermind.Dirichlet.Numerics
                     carry3 = true;
                 }
             }
-            
+
             if (carry3)
             {
                 c.s3++;
@@ -1498,7 +1498,7 @@ namespace Nethermind.Dirichlet.Numerics
             }
 
             Debug.Assert((BigInteger) c == ((BigInteger) a + (BigInteger) b) % ((BigInteger) 1 << 256));
-            
+
             a.s0 = c.s0;
             a.s1 = c.s1;
             a.s2 = c.s2;

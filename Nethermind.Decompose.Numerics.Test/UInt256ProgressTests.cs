@@ -161,13 +161,12 @@ namespace Nethermind.Decompose.Numerics.Test
         {
             UInt256.Create(out UInt256 a, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue);
             UInt256.Create(out UInt256 b, 1);
-            var result = a + b;
-            Assert.AreEqual(result, b + a);
+            UInt256.Add(out UInt256 c, ref a, ref b, false);;
             
-            Assert.AreEqual(0UL, result.S0);
-            Assert.AreEqual(0UL, result.S1);
-            Assert.AreEqual(0UL, result.S2);
-            Assert.AreEqual(0UL, result.S3);
+            Assert.AreEqual(0UL, c.S0);
+            Assert.AreEqual(0UL, c.S1);
+            Assert.AreEqual(0UL, c.S2);
+            Assert.AreEqual(0UL, c.S3);
         }
         
         [TestMethod]
@@ -243,7 +242,7 @@ namespace Nethermind.Decompose.Numerics.Test
         {
             UInt256.Create(out UInt256 a, 0, 0, 0, 7809331261766606202);
             UInt256.Create(out UInt256 b, 0, 18446744069414584320, 18446744073709551615, 18446744073709551615);
-            var result = a + b;
+            UInt256.Add(out UInt256 result, ref a, ref b, false);
             
             Assert.AreEqual(0UL, result.S0);
             Assert.AreEqual(18446744069414584320UL, result.S1);
@@ -256,7 +255,7 @@ namespace Nethermind.Decompose.Numerics.Test
         {
             UInt256.Create(out UInt256 b, 13479156459573198416, 18446744073709551615, 18446744073709551615, 18446744073709551615);
             UInt256.Create(out UInt256 a, 6553255926290448384, 1, 0, 0);
-            var result = a + b;
+            UInt256.Add(out UInt256 result, ref a, ref b, false);
             
             Console.WriteLine(result);
 //            Assert.AreEqual((BigInteger)(a + b) % ((BigInteger)1 << 256), (BigInteger)a + (BigInteger)b);
@@ -427,7 +426,32 @@ namespace Nethermind.Decompose.Numerics.Test
             a.ToBigEndian(bigEndian);
             
             UInt256.CreateFromBigEndian(out UInt256 b, bigEndian);
+            var c = UInt256.Parse(a.ToString());
+            
             Assert.AreEqual(a, b);
+            Assert.AreEqual(a, c);
         }
+
+        [TestMethod]
+        public void To_big_endian_and_back_max_value()
+        {
+            UInt256 a = UInt256.MaxValue;
+            byte[] bigEndian = new byte[32];
+            a.ToBigEndian(bigEndian);
+            UInt256.CreateFromBigEndian(out UInt256 b, bigEndian);
+            var c = UInt256.Parse(a.ToString());
+            
+            Assert.AreEqual(a, b);
+            Assert.AreEqual(a, c);
+        }
+
+        [TestMethod] public void Parse_throws_on_just_too_large()
+        {
+            BigInteger max = UInt256.MaxValue;
+            BigInteger maxPlusOne = max + 1;
+            
+            var maxUInt = UInt256.Parse(max.ToString());
+            Assert.ThrowsException<OverflowException>(() => UInt256.Parse(maxPlusOne.ToString()));
+        }   
     }
 }
