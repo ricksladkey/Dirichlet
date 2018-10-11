@@ -1812,9 +1812,9 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static uint Remainder(ref UInt256 u, uint v)
         {
+            if (u.s1 == 0)
+                return (uint)(u.s0 % v);
             throw new NotImplementedException();
-//            if (u.s1 == 0)
-//                return (uint)(u.s0 % v);
 //            if (u.s1 <= uint.MaxValue)
 //                return Remainder96(ref u, v);
 //            return Remainder128(ref u, v);
