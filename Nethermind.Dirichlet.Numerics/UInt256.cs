@@ -2803,10 +2803,10 @@ namespace Nethermind.Dirichlet.Numerics
         private static void ArithmeticRightShift64(ref UInt256 c, int d)
         {
             throw new NotImplementedException();
-            if (d == 0)
-                return;
-            c.s0 = c.s1 << (64 - d) | c.s0 >> d;
-            c.s1 = (ulong) ((long) c.s1 >> d);
+//            if (d == 0)
+//                return;
+//            c.s0 = c.s1 << (64 - d) | c.s0 >> d;
+//            c.s1 = (ulong) ((long) c.s1 >> d);
         }
 
         public static void ArithmeticRightShift(ref UInt256 c, int d)
