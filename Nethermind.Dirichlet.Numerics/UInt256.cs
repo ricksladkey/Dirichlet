@@ -162,16 +162,39 @@ namespace Nethermind.Dirichlet.Numerics
                 throw new FormatException();
             return c;
         }
+        
+        public static UInt256 Parse(ReadOnlySpan<char> value, NumberStyles numberStyles)
+        {
+            if (!TryParse(value, numberStyles, CultureInfo.InvariantCulture, out UInt256 c))
+                throw new FormatException();
+            return c;
+        }
 
         public static bool TryParse(string value, out UInt256 result)
         {
-            return TryParse(value, NumberStyles.Integer, NumberFormatInfo.CurrentInfo, out result);
+            return TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out result);
+        }
+        
+        public static bool TryParse(ReadOnlySpan<char> value, out UInt256 result)
+        {
+            return TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out result);
         }
 
         public static bool TryParse(string value, NumberStyles style, IFormatProvider provider, out UInt256 result)
         {
-            BigInteger a;
-            if (!BigInteger.TryParse(value, style, provider, out a))
+            if (!BigInteger.TryParse(value, style, provider, out BigInteger a))
+            {
+                result = Zero;
+                return false;
+            }
+
+            Create(out result, a);
+            return true;
+        }
+        
+        public static bool TryParse(ReadOnlySpan<char> value, NumberStyles style, IFormatProvider provider, out UInt256 result)
+        {
+            if (!BigInteger.TryParse(value, style, provider, out BigInteger a))
             {
                 result = Zero;
                 return false;
