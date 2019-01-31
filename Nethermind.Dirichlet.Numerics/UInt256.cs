@@ -182,19 +182,28 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static bool TryParse(string value, NumberStyles style, IFormatProvider provider, out UInt256 result)
         {
-            if (!BigInteger.TryParse(value, style, provider, out BigInteger a))
-            {
-                result = Zero;
-                return false;
-            }
-
-            Create(out result, a);
-            return true;
+            return TryParse(value.AsSpan(), style, provider, out result);
         }
         
         public static bool TryParse(ReadOnlySpan<char> value, NumberStyles style, IFormatProvider provider, out UInt256 result)
         {
-            if (!BigInteger.TryParse(value, style, provider, out BigInteger a))
+            BigInteger a;
+            bool bigParsedProperly;
+            if ((style & NumberStyles.HexNumber) == NumberStyles.HexNumber && value[0] != 0)
+            {
+                Span<char> fixedHexValue = stackalloc char[value.Length + 1];
+                fixedHexValue[0] = '0';
+                value.CopyTo(fixedHexValue.Slice(1));
+                bigParsedProperly = BigInteger.TryParse(fixedHexValue, style, provider, out a);
+            }
+            else
+            { 
+                Span<char> fixedHexValue =  stackalloc char[value.Length];
+                value.CopyTo(fixedHexValue);
+                bigParsedProperly = BigInteger.TryParse(fixedHexValue, style, provider, out a);
+            }
+            
+            if (!bigParsedProperly)
             {
                 result = Zero;
                 return false;

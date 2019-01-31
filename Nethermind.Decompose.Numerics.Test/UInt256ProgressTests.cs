@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Numerics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nethermind.Dirichlet.Numerics;
@@ -430,6 +431,14 @@ namespace Nethermind.Decompose.Numerics.Test
             
             Assert.AreEqual(a, b);
             Assert.AreEqual(a, c);
+        }
+        
+        [TestMethod]
+        public void To_big_endian_and_back_regression_goerli()
+        {
+            UInt256.TryParse("84595161401484a000000".Replace("0x", string.Empty), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out UInt256 a);
+            string stringValue = a.ToString();
+            Assert.AreEqual("10000000000000000000000000", stringValue);
         }
 
         [TestMethod]
