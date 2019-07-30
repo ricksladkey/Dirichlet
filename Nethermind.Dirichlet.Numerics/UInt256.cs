@@ -480,7 +480,7 @@ namespace Nethermind.Dirichlet.Numerics
         public ulong S3 => s3;
 
         public bool IsZero => (s0 | s1 | s2 | s3) == 0;
-        public bool IsOne => (s0 | s1 | s2 | s3) == 1;
+        public bool IsOne => s0 == 1 && s1 == 0 && s2 == 0 && s3 == 0;
         public bool IsPowerOfTwo => (this & (this - 1)).IsZero;
         public bool IsEven => (s0 & 1) == 0;
         public int Sign => IsZero ? 0 : 1;
