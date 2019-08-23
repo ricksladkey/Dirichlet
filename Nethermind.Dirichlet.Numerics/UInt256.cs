@@ -260,7 +260,7 @@ namespace Nethermind.Dirichlet.Numerics
 
             if (target.Length > 8)
             {
-                for (int i = 0; i < 8 && i < target.Length; i++)
+                for (int i = 0; i < 8 && i < target.Length - 8; i++)
                 {
                     target[target.Length - i - 9] = (byte) (s1 >> (i * 8));
                 }
@@ -268,7 +268,7 @@ namespace Nethermind.Dirichlet.Numerics
 
             if (target.Length > 16)
             {
-                for (int i = 0; i < 8 && i < target.Length; i++)
+                for (int i = 0; i < 8 && i < target.Length - 16; i++)
                 {
                     target[target.Length - i - 17] = (byte) (s2 >> (i * 8));
                 }
@@ -276,7 +276,7 @@ namespace Nethermind.Dirichlet.Numerics
 
             if (target.Length > 24)
             {
-                for (int i = 0; i < 8 && i < target.Length; i++)
+                for (int i = 0; i < 8 && i < target.Length - 24; i++)
                 {
                     target[32 - i - 25] = (byte) (s3 >> (i * 8));
                 }
