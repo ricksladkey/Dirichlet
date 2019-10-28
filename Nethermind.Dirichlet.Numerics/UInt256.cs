@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Nethermind.Dirichlet.Numerics
@@ -247,42 +248,27 @@ namespace Nethermind.Dirichlet.Numerics
 
         public void ToBigEndian(Span<byte> target)
         {
-            if (target.Length == 0)
+            if (target.Length == 32)
             {
-                return;
+                BinaryPrimitives.WriteUInt64BigEndian(target.Slice(0, 8), s3);
+                BinaryPrimitives.WriteUInt64BigEndian(target.Slice(8, 8), s2);
+                BinaryPrimitives.WriteUInt64BigEndian(target.Slice(16, 8), s1);
+                BinaryPrimitives.WriteUInt64BigEndian(target.Slice(24, 8), s0);
             }
-
-            if (target.Length > 0)
+            else if (target.Length == 20)
             {
-                for (int i = 0; i < 8 && i < target.Length; i++)
-                {
-                    target[target.Length - i - 1] = (byte) (s0 >> (i * 8));
-                }
+                BinaryPrimitives.WriteUInt32BigEndian(target.Slice(0, 4), (uint)s2);
+                BinaryPrimitives.WriteUInt64BigEndian(target.Slice(4, 8), s1);
+                BinaryPrimitives.WriteUInt64BigEndian(target.Slice(12, 8), s0);
             }
-
-            if (target.Length > 8)
-            {
-                for (int i = 0; i < 8 && i < target.Length - 8; i++)
-                {
-                    target[target.Length - i - 9] = (byte) (s1 >> (i * 8));
-                }
-            }
-
-            if (target.Length > 16)
-            {
-                for (int i = 0; i < 8 && i < target.Length - 16; i++)
-                {
-                    target[target.Length - i - 17] = (byte) (s2 >> (i * 8));
-                }
-            }
-
-            if (target.Length > 24)
-            {
-                for (int i = 0; i < 8 && i < target.Length - 24; i++)
-                {
-                    target[32 - i - 25] = (byte) (s3 >> (i * 8));
-                }
-            }
+        }
+        
+        public void ToLittleEndian(Span<byte> target)
+        {
+            BinaryPrimitives.WriteUInt64LittleEndian(target.Slice(0, 8), s0);
+            BinaryPrimitives.WriteUInt64LittleEndian(target.Slice(8, 8), s1);
+            BinaryPrimitives.WriteUInt64LittleEndian(target.Slice(16, 8), s2);
+            BinaryPrimitives.WriteUInt64LittleEndian(target.Slice(24, 8), s3);
         }
 
         public static void CreateFromBigEndian(out UInt256 c, Span<byte> span)
@@ -301,7 +287,8 @@ namespace Nethermind.Dirichlet.Numerics
             }
         }
 
-        public static void CreateFromBigEndian2(out UInt256 c, Span<byte> span)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void CreateFromBigEndian2(out UInt256 c, Span<byte> span)
         {
             int byteCount = span.Length;
             int unalignedBytes = byteCount % 8;
