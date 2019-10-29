@@ -271,6 +271,22 @@ namespace Nethermind.Dirichlet.Numerics
             BinaryPrimitives.WriteUInt64LittleEndian(target.Slice(24, 8), s3);
         }
 
+        public static void CreateFromLittleEndian(out UInt256 c, Span<byte> span)
+        {
+            Span<ulong> ulongs = MemoryMarshal.Cast<byte, ulong>(span);
+            if (ulongs.Length == 4)
+            {
+                c.s0 = ulongs[0];
+                c.s1 = ulongs[1];
+                c.s2 = ulongs[2];
+                c.s3 = ulongs[3];
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+        }
+        
         public static void CreateFromBigEndian(out UInt256 c, Span<byte> span)
         {
             Span<ulong> ulongs = MemoryMarshal.Cast<byte, ulong>(span);
