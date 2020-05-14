@@ -287,9 +287,9 @@ namespace Nethermind.Dirichlet.Numerics
             }
         }
         
-        public static void CreateFromBigEndian(out UInt256 c, Span<byte> span)
+        public static void CreateFromBigEndian(out UInt256 c, ReadOnlySpan<byte> span)
         {
-            Span<ulong> ulongs = MemoryMarshal.Cast<byte, ulong>(span);
+            ReadOnlySpan<ulong> ulongs = MemoryMarshal.Cast<byte, ulong>(span);
             if (ulongs.Length == 4)
             {
                 c.s0 = BinaryPrimitives.ReverseEndianness(ulongs[3]);
@@ -304,7 +304,7 @@ namespace Nethermind.Dirichlet.Numerics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void CreateFromBigEndian2(out UInt256 c, Span<byte> span)
+        private static void CreateFromBigEndian2(out UInt256 c, ReadOnlySpan<byte> span)
         {
             int byteCount = span.Length;
             int unalignedBytes = byteCount % 8;
