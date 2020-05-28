@@ -1151,7 +1151,7 @@ namespace Nethermind.Dirichlet.Numerics
 
         public static bool Equals(ref UInt256 a, ref UInt256 b)
         {
-            return a.s0 == b.s0 && a.s1 == b.s1 && a.s2 == b.s2 && a.s2 == b.s2;
+            return a.s0 == b.s0 && a.s1 == b.s1 && a.s2 == b.s2 && a.s3 == b.s3;
         }
 
         public bool Equals(UInt256 other)
